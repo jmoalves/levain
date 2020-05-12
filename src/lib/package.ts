@@ -1,9 +1,12 @@
+import Repository from './repository'
+
 export default class Package {
   // eslint-disable-next-line no-useless-constructor
   constructor(
     private _name: string,
     private _rootDir: string,
-    private _dependencies?: Package[]) {
+    private _dependencies?: string[],
+    private _repo?: Repository) {
   }
 
   get name() {
@@ -16,5 +19,9 @@ export default class Package {
 
   get dependencies() {
     return this._dependencies
+  }
+
+  get repo() {
+    return this._repo;
   }
 }
