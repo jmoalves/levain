@@ -1,7 +1,13 @@
 import {Command} from '@oclif/command'
 
+import * as path from 'path';
+import * as fs from 'fs';
+
 import 'reflect-metadata'
 import getDecorators from 'inversify-inject-decorators'
+
+import * as jsYaml from 'js-yaml';
+
 import Config, {container} from '../lib/config'
 import Package from '../lib/package'
 import Repository from '../lib/repository'
@@ -37,8 +43,11 @@ export default class InstallCommand extends Command {
 
     this.log("");
     this.log("================");
-    for (let pkg of pkgs.keys()) {
-      this.log('install', pkg);
+    for (let name of pkgs.keys()) {
+      let pkg = pkgs.get(name);
+      if (pkg) {
+        this.installPackage(pkg);
+      }
     }
   }
 
@@ -64,5 +73,29 @@ export default class InstallCommand extends Command {
 
     pkgs.set(pkgName, pkgDef);
     return error;
+  }
+
+  private installPackage(pkg: Package): void {
+    if (!this._config) {
+      return;
+    }
+
+    try {
+      let doc = jsYaml.safeLoad(fs.readFileSync(path.resolve(pkg.rootDir, 'install.yaml')));
+      
+      //this.log(pkg.name, "Install", JSON.stringify(doc));
+      for (let action in doc) {
+        let handler = this._config.resolveAction(action);
+        if (handler) {
+          handler.execute(pkg, doc[action]);
+        } else {
+          this.log(pkg.name + " - No handler for " + action);
+        }
+      }
+    } catch (err) {
+      if (err.code == 'ENOENT') {
+        this.log(pkg.name + " - No install.yaml at " +pkg.rootDir);
+      }
+    }
   }
 }
