@@ -1,12 +1,12 @@
 {
-  "name": "dev-ub",
+  "name": "levain",
   "description": "Yet another install util",
   "version": "0.0.1",
   "author": "João Mauricio Alves <jmoalves.dev@pobox.com>",
   "bin": {
-    "dev-ub": "./bin/run"
+    "levain": "./bin/run"
   },
-  "bugs": "https://github.com/jmoalves/dev-ub/issues",
+  "bugs": "https://github.com/jmoalves/levain/issues",
   "dependencies": {
     "@oclif/command": "^1.5.19",
     "@oclif/config": "^1.14.0",
@@ -38,7 +38,7 @@
     "/npm-shrinkwrap.json",
     "/oclif.manifest.json"
   ],
-  "homepage": "https://github.com/jmoalves/dev-ub",
+  "homepage": "https://github.com/jmoalves/levain",
   "keywords": [
     "oclif"
   ],
@@ -46,12 +46,12 @@
   "main": "lib/index.js",
   "oclif": {
     "commands": "./lib/commands",
-    "bin": "dev-ub",
+    "bin": "levain",
     "plugins": [
       "@oclif/plugin-help"
     ]
   },
-  "repository": "jmoalves/dev-ub",
+  "repository": "jmoalves/levain",
   "scripts": {
     "postpack": "rm -f oclif.manifest.json",
     "posttest": "eslint . --ext .ts --config .eslintrc",
