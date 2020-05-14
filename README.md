@@ -1,7 +1,7 @@
-dev-ub
+levain
 ======
 
-Yet another install util
+Something to help you make your software grow
 
 [![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
 [![Version](https://img.shields.io/npm/v/dev-ub.svg)](https://npmjs.org/package/dev-ub)
