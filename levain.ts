@@ -1,4 +1,5 @@
-import { execute } from './lib/loader.ts';
+import Loader from './lib/loader.ts';
+import Config from './lib/config.ts';
 
 const { args, exit } = Deno;
 
@@ -27,5 +28,8 @@ if (first && first.startsWith("-")) { // TODO: Improve this!
 }
 
 let cmd:string = first!;
-execute(cmd, myArgs);
+
+const config = new Config();
+const loader = new Loader(config)
+loader.execute(cmd, myArgs);
 
