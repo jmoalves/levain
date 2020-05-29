@@ -18,8 +18,6 @@ if (myArgs.length == 0) {
     exit(1);
 }
 
-console.log("");
-
 // First parameter is the command
 let first = myArgs.shift();
 if (first && first.startsWith("-")) { // TODO: Improve this!
@@ -31,5 +29,8 @@ let cmd:string = first!;
 
 const config = new Config();
 const loader = new Loader(config)
+
+console.log("");
+console.log("==================================");
 loader.execute(cmd, myArgs);
 

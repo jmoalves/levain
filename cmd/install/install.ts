@@ -8,7 +8,7 @@ export default class Install implements Command {
     }
 
     execute(args: string[]): void {
-        console.log("install " + JSON.stringify(args) + " config=" + JSON.stringify(this.config.repository));
+        console.log("install " + JSON.stringify(args));
 
         let error:boolean = false;
         let pkgs:Map<string, Package> = new Map();
