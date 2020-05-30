@@ -108,7 +108,7 @@ let System, __instantiateAsync, __instantiate;
 })();
 
 System.register(
-  "file:///C:/bndes-java-env.kit/bootstrap/levain/lib/command",
+  "file:///C:/bndes-java-env.kit/bootstrap/levain/src/lib/command",
   [],
   function (exports_1, context_1) {
     "use strict";
@@ -3314,7 +3314,7 @@ System.register(
   },
 );
 System.register(
-  "file:///C:/bndes-java-env.kit/bootstrap/levain/lib/repository",
+  "file:///C:/bndes-java-env.kit/bootstrap/levain/src/lib/repository",
   [],
   function (exports_15, context_15) {
     "use strict";
@@ -3327,7 +3327,7 @@ System.register(
   },
 );
 System.register(
-  "file:///C:/bndes-java-env.kit/bootstrap/levain/lib/package",
+  "file:///C:/bndes-java-env.kit/bootstrap/levain/src/lib/package",
   [],
   function (exports_16, context_16) {
     "use strict";
@@ -3372,8 +3372,9 @@ System.register(
             return "Package[" +
               "name=" + this.name +
               ", yaml=" + this.yaml +
-              (this._yamlStruc ? ", pkgDef=" + JSON.stringify(this._yamlStruc)
-              : "") +
+              (this._yamlStruc
+                ? ", pkgDef=" + JSON.stringify(this._yamlStruc)
+                : "") +
               (this.dependencies ? ", deps=" + this.dependencies : "") +
               "]";
           }
@@ -3395,7 +3396,7 @@ System.register(
   },
 );
 System.register(
-  "file:///C:/bndes-java-env.kit/bootstrap/levain/lib/repositories/cache",
+  "file:///C:/bndes-java-env.kit/bootstrap/levain/src/lib/repositories/cache",
   [],
   function (exports_17, context_17) {
     "use strict";
@@ -3431,7 +3432,7 @@ System.register(
   },
 );
 System.register(
-  "file:///C:/bndes-java-env.kit/bootstrap/levain/lib/repositories/chain",
+  "file:///C:/bndes-java-env.kit/bootstrap/levain/src/lib/repositories/chain",
   [],
   function (exports_18, context_18) {
     "use strict";
@@ -3464,7 +3465,7 @@ System.register(
   },
 );
 System.register(
-  "file:///C:/bndes-java-env.kit/bootstrap/levain/lib/repositories/null",
+  "file:///C:/bndes-java-env.kit/bootstrap/levain/src/lib/repositories/null",
   [],
   function (exports_19, context_19) {
     "use strict";
@@ -7806,11 +7807,11 @@ System.register(
   },
 );
 System.register(
-  "file:///C:/bndes-java-env.kit/bootstrap/levain/lib/repositories/fs",
+  "file:///C:/bndes-java-env.kit/bootstrap/levain/src/lib/repositories/fs",
   [
     "https://deno.land/std/path/mod",
     "https://deno.land/std/encoding/yaml",
-    "file:///C:/bndes-java-env.kit/bootstrap/levain/lib/package",
+    "file:///C:/bndes-java-env.kit/bootstrap/levain/src/lib/package",
   ],
   function (exports_52, context_52) {
     "use strict";
@@ -7890,13 +7891,13 @@ System.register(
   },
 );
 System.register(
-  "file:///C:/bndes-java-env.kit/bootstrap/levain/lib/config",
+  "file:///C:/bndes-java-env.kit/bootstrap/levain/src/lib/config",
   [
     "https://deno.land/std/path/mod",
-    "file:///C:/bndes-java-env.kit/bootstrap/levain/lib/repositories/cache",
-    "file:///C:/bndes-java-env.kit/bootstrap/levain/lib/repositories/chain",
-    "file:///C:/bndes-java-env.kit/bootstrap/levain/lib/repositories/null",
-    "file:///C:/bndes-java-env.kit/bootstrap/levain/lib/repositories/fs",
+    "file:///C:/bndes-java-env.kit/bootstrap/levain/src/lib/repositories/cache",
+    "file:///C:/bndes-java-env.kit/bootstrap/levain/src/lib/repositories/chain",
+    "file:///C:/bndes-java-env.kit/bootstrap/levain/src/lib/repositories/null",
+    "file:///C:/bndes-java-env.kit/bootstrap/levain/src/lib/repositories/fs",
   ],
   function (exports_53, context_53) {
     "use strict";
@@ -7986,7 +7987,7 @@ System.register(
   },
 );
 System.register(
-  "file:///C:/bndes-java-env.kit/bootstrap/levain/lib/action",
+  "file:///C:/bndes-java-env.kit/bootstrap/levain/src/lib/action",
   [],
   function (exports_54, context_54) {
     "use strict";
@@ -7999,7 +8000,7 @@ System.register(
   },
 );
 System.register(
-  "file:///C:/bndes-java-env.kit/bootstrap/levain/lib/loader",
+  "file:///C:/bndes-java-env.kit/bootstrap/levain/src/lib/loader",
   [],
   function (exports_55, context_55) {
     "use strict";
@@ -8031,10 +8032,10 @@ System.register(
   },
 );
 System.register(
-  "file:///C:/bndes-java-env.kit/bootstrap/levain/levain",
+  "file:///C:/bndes-java-env.kit/bootstrap/levain/src/levain",
   [
-    "file:///C:/bndes-java-env.kit/bootstrap/levain/lib/loader",
-    "file:///C:/bndes-java-env.kit/bootstrap/levain/lib/config",
+    "file:///C:/bndes-java-env.kit/bootstrap/levain/src/lib/loader",
+    "file:///C:/bndes-java-env.kit/bootstrap/levain/src/lib/config",
   ],
   function (exports_56, context_56) {
     "use strict";
@@ -8092,4 +8093,4 @@ System.register(
   },
 );
 
-__instantiate("file:///C:/bndes-java-env.kit/bootstrap/levain/levain");
+__instantiate("file:///C:/bndes-java-env.kit/bootstrap/levain/src/levain");
