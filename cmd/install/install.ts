@@ -43,7 +43,7 @@ export default class Install implements Command {
             return true;
         }    
 
-        // Busca dependências primeira - Ordenação topológica por busca em profundidade
+        // Deep first navigation - topological order of dependencies
         let error:boolean = false;
         if (pkgDef.dependencies) {
             for (let dep of pkgDef.dependencies) {
