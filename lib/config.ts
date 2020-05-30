@@ -22,8 +22,6 @@ export default class Config {
     this._repository = new CacheRepository(this, 
       new ChainRepository(this, [
         new FileSystemRepository(this, '.'),
-        // new FileSystemRepository('C:\\bndes-java-env.kit\\repo'),
-        // new FileSystemRepository('C:\\bndes-java-env.kit\\repo2'),
         new NullRepository(this)
       ])
     );
