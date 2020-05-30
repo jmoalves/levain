@@ -1,7 +1,8 @@
-import Command from "../../lib/command.ts";
-import Config from "../../lib/config.ts";
-import Package from "../../lib/package.ts";
-import Repository from "../../lib/repository.ts";
+import Command from "../lib/command.ts";
+import Config from "../lib/config.ts";
+import Package from "../lib/package.ts";
+import Repository from "../lib/repository.ts";
+import Loader from '../lib/loader.ts';
 
 export default class Install implements Command {
     constructor(private config:Config) {
@@ -68,8 +69,9 @@ export default class Install implements Command {
             return;
         }
 
+        const loader = new Loader(this.config);
         for (let action of actions) {
-            console.log(this.config.replaceVars(pkg, action));
+            loader.action(pkg, action);
         }
     }
 }
