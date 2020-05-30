@@ -47,8 +47,8 @@ export default class Install implements Command {
         let error:boolean = false;
         if (pkgDef.dependencies) {
             for (let dep of pkgDef.dependencies) {
-            let myError:boolean = this.resolvePackages(repo, pkgs, dep);
-            error = error || myError;
+                let myError:boolean = this.resolvePackages(repo, pkgs, dep);
+                error = error || myError;
             }
         }
 
