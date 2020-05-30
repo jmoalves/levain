@@ -62,5 +62,14 @@ export default class Install implements Command {
         }
 
         console.log("INSTALL " + pkg.name);
-    }    
+        let actions = pkg.yamlItem("install")
+        if (!actions) {
+            console.log("Nothing to do");
+            return;
+        }
+
+        for (let action of actions) {
+            console.log(this.config.replaceVars(pkg, action));
+        }
+    }
 }

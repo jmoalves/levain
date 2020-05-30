@@ -1,5 +1,7 @@
 import * as path from "https://deno.land/std/path/mod.ts";
 
+import Package from './package.ts';
+
 import Repository from './repository.ts'
 import CacheRepository from './repositories/cache.ts'
 import ChainRepository from './repositories/chain.ts'
@@ -33,6 +35,30 @@ export default class Config {
 
   get repository(): Repository {
     return this._repository;
+  }
+
+  replaceVars(pkg:Package, text: string): string {
+    let pkgConfig = pkg.yamlItem("config");
+
+    let myText = text;
+
+    let vars = myText.match(/\${[^${}]+}/);
+    if (vars) {
+      for (let v of vars) {
+        let vName = v.replace("$", "").replace("{", "").replace("}", "");
+        let value: string|undefined = undefined;
+
+        if (pkgConfig) {
+          value = pkgConfig[vName];
+        }
+
+        if (value) {
+          myText = myText.replace(v, value);  
+        }
+      }
+    }
+
+    return myText;
   }
 
   // TODO: We must find a standard Deno function for this!
