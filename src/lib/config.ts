@@ -9,26 +9,16 @@ import NullRepository from './repositories/null.ts'
 import FileSystemRepository from './repositories/fs.ts'
 
 export default class Config {
-  private _levainHome: string|undefined;
   private _repository: Repository;
+  private _env:any = {};
 
-  constructor() {
-    let home = this.homedir();
-    if (home) {
-      this._levainHome = path.resolve(home, "levain");
-      console.log("DEFAULT levainHome:", this._levainHome);
-    }
+  constructor(args: any) {
+    this.configEnv(args);
+    this.configHome();
+    this._repository = this.configRepo();
 
-    this._repository = new CacheRepository(this, 
-      new ChainRepository(this, [
-        new FileSystemRepository(this, '.'),
-        new NullRepository(this)
-      ])
-    );
-  }
-
-  get levainHome(): string|undefined {
-    return this._levainHome;
+    console.log("Config:");
+    console.log(JSON.stringify(this._env, null, 3));
   }
 
   get repository(): Repository {
@@ -46,7 +36,11 @@ export default class Config {
         let vName = v.replace("$", "").replace("{", "").replace("}", "");
         let value: string|undefined = undefined;
 
-        if (pkgConfig) {
+        if (!value && this._env) {
+          value = this._env[vName];
+        }
+        
+        if (!value && pkgConfig) {
           value = pkgConfig[vName];
         }
 
@@ -57,6 +51,36 @@ export default class Config {
     }
 
     return myText;
+  }
+
+  /////////////////////////////////////////////////////////////////////////////////
+  private configEnv(args: any): void {
+    Object.keys(args).forEach(key => {
+      if (!key.startsWith("_")) {
+        this._env[key] = args[key];
+      }
+    });
+  }
+
+  private configHome(): void {
+    if (this._env["levainHome"]) {
+      return;
+    }
+
+    let home = this.homedir();
+    if (home) {
+      this._env["levainHome"] = path.resolve(home, "levain");
+      return;
+    }  
+  }
+
+  private configRepo(): Repository { 
+    return new CacheRepository(this, 
+      new ChainRepository(this, [
+        new FileSystemRepository(this, '.'),
+        new NullRepository(this)
+      ])
+    );  
   }
 
   // TODO: We must find a standard Deno function for this!

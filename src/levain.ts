@@ -1,38 +1,49 @@
+import { parse } from "https://deno.land/std/flags/mod.ts";
+
 import Loader from './lib/loader.ts';
 import Config from './lib/config.ts';
-
-const { args, exit } = Deno;
 
 console.log("levain v0.0.1");
 console.log("");
 
-// TODO: We should use a command line parser. But not Deno.flags.
-// args clone
-const myArgs:string[] = [];
-let optionSpace:boolean = true;
-for (let arg of args) {
-    if (optionSpace && arg.startsWith("-")) {
-        console.log("General option ignored", arg);
-    } else {
-        optionSpace = false;
-        myArgs.push(arg);
-    }
-}
-
-// TODO: Handle general options
-
-// TODO: No parameters? Show Help
-if (myArgs.length == 0) {
-    exit(1);
-}
+const myArgs = parseArgs();
+console.log("args", JSON.stringify(myArgs));
 
 // Context
-const config = new Config();
+const config = new Config(myArgs);
 //
+
+
+// TODO: No parameters? Show Help
+if (myArgs._.length == 0) {
+    Deno.exit(1);
+}
 
 console.log("");
 console.log("==================================");
 // First parameter is the command
-let cmd:string = myArgs.shift()!;
+let cmd:string = myArgs._.shift()!;
 const loader = new Loader(config);
-loader.command(cmd, myArgs);
+loader.command(cmd, myArgs._);
+
+/////////////////////////////////////////////////////////////////////////////////
+function parseArgs(): any {
+    const { args } = Deno;
+
+    return parse(args, {
+        string: [
+            "levainHome"
+        ],
+        boolean: [
+        ],
+        stopEarly: true,
+        unknown: (v) => { 
+            if (v.startsWith("-")) {
+                console.log("ERROR: Unknown option", v);
+                return false;
+            } else {
+                return true;
+            }
+        }
+    });    
+}
