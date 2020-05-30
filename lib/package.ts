@@ -1,12 +1,20 @@
 import Repository from './repository.ts'
 
 export default class Package {
-  // eslint-disable-next-line no-useless-constructor
+  private _dependencies: string[]|undefined = undefined;
+
   constructor(
-    private _name: string,
-    private _yamlFile: string,
-    private _yamlStruc: any,
-    private _repo?: Repository) {
+        private _name: string,
+        private _yamlFile: string,
+        private _yamlStruc: any,
+        private _repo?: Repository) {
+    if (this._yamlStruc) {
+      if (this._yamlStruc.dependencies) {
+        this._dependencies = this._yamlStruc.dependencies;
+      }
+    }
+
+    this._dependencies = this.normalizeDeps(this._dependencies);
   }
 
   get name(): string {
@@ -18,17 +26,19 @@ export default class Package {
   }
 
   get dependencies(): string[]|undefined {
-    if (this._yamlStruc) {
-      if (this._yamlStruc.dependencies) {
-        return this._yamlStruc.dependencies;
-      }
-    }
-
-    return undefined;
+    return this._dependencies;
   }
 
   get repo(): Repository|undefined {
     return this._repo;
+  }
+
+  yamlItem(key: string): any|undefined {
+    if (this._yamlStruc) {
+      return this._yamlStruc[key];
+    }
+
+    return undefined;
   }
 
   toString(): string {
@@ -38,5 +48,20 @@ export default class Package {
       + (this._yamlStruc ? ", pkgDef=" + JSON.stringify(this._yamlStruc) : "")
       + (this.dependencies ? ", deps=" + this.dependencies : "") 
       + "]"
+  }
+
+  private normalizeDeps(deps: string[]|undefined): string[]|undefined {
+    if (this._name == "levain") {
+      return undefined;
+    }
+
+    let set:Set<string> = new Set<string>();
+    set.add("levain"); // first dependency
+
+    if (deps) {
+      deps.forEach(v => set.add(v));
+    }
+
+    return [...set];
   }
 }

@@ -35,4 +35,4 @@ console.log("==================================");
 // First parameter is the command
 let cmd:string = myArgs.shift()!;
 const loader = new Loader(config);
-loader.execute(cmd, myArgs);
+loader.command(cmd, myArgs);
