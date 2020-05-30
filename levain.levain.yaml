@@ -1,7 +1,6 @@
-config: {
-    envRoot: C:/dev-env
-  }
-
 install:
-  - mkdir ${envRoot}
-  - mkdir ${}
+  - mkdir --compact ${levainHome}/levain 
+  - copy src ${levainHome}/levain
+  - copy bin ${levainHome}/levain
+  - copy levain.cmd ${levainHome}/levain
+  - copy levain.sh ${levainHome}/levain
