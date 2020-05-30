@@ -13,9 +13,10 @@ console.log("args", JSON.stringify(myArgs));
 const config = new Config(myArgs);
 //
 
-
 // TODO: No parameters? Show Help
 if (myArgs._.length == 0) {
+    console.log("");
+    console.log("Nothing to do. Do you want some help?");
     Deno.exit(1);
 }
 
