@@ -39,7 +39,7 @@ export default class Copy implements Action {
         }
 
         for (let item of src) {
-            item = path.resolve(item);
+            item = path.resolve(pkg.pkgDir, item);
             let realDst = path.resolve(dst);
             if (copyToDir) {
                 realDst = path.resolve(dst, path.basename(item));
@@ -49,7 +49,12 @@ export default class Copy implements Action {
                 console.log("COPY", item, "=>", realDst);
             }
             
-            copySync(item, realDst, { overwrite: true });
+            try {
+                copySync(item, realDst, { overwrite: true });
+            } catch (err) {
+                console.error("ERROR: COPY", item, "=>", realDst, err);
+                throw err;
+            }
         }
     }
 

@@ -1,4 +1,5 @@
 import Repository from './repository.ts'
+import * as path from "https://deno.land/std/path/mod.ts";
 
 export default class Package {
   private _dependencies: string[]|undefined = undefined;
@@ -29,6 +30,10 @@ export default class Package {
 
   get baseDir(): string {
     return this._baseDir;
+  }
+
+  get pkgDir(): string {
+    return path.resolve(path.dirname(this.yaml));
   }
 
   get yaml(): string {

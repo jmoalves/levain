@@ -15,7 +15,6 @@ export default class FileSystemRepository implements Repository {
 
     if (pkg) {
       console.log("FSRepo:", packageName, "=>", pkg.toString());
-      console.log("");  
     }
 
     return pkg;

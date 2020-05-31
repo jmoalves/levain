@@ -15,7 +15,7 @@ export default class Config {
   constructor(args: any) {
     this.configEnv(args);
     this.configHome();
-    this._repository = this.configRepo();
+    this._repository = this.configRepo(args);
 
     console.log("Config:");
     console.log(JSON.stringify(this._env, null, 3));
@@ -86,12 +86,38 @@ export default class Config {
     }  
   }
 
-  private configRepo(): Repository { 
+  private configRepo(args: any): Repository {
+    let repos:Repository[] = [];
+    
+    repos.push(new FileSystemRepository(this, '.'));
+    
+    if (args.addRepo) {
+      let newRepos:string[] = [];
+      if (typeof(args.addRepo) == "string") {
+        newRepos.push(args.addRepo);
+      } else {
+        newRepos = args.addRepo;
+      }
+
+      for (let repo of newRepos) {
+        try {
+          const fileInfo = Deno.statSync(repo);
+          if (!fileInfo || !fileInfo.isDirectory) {
+              throw `addRepo - invalid dir ${repo}`;
+          }
+        } catch (err) {
+          if (err.name != "NotFound") {
+              throw err;
+          }
+        }
+
+        repos.push(new FileSystemRepository(this, repo));
+      }
+    }
+    repos.push(new NullRepository(this));
+
     return new CacheRepository(this, 
-      new ChainRepository(this, [
-        new FileSystemRepository(this, '.'),
-        new NullRepository(this)
-      ])
+      new ChainRepository(this, repos)
     );  
   }
 
