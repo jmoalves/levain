@@ -68,7 +68,9 @@ export default class Install implements Command {
             console.log("Nothing to do");
             return;
         }
-        actions.push("copy " + pkg.name + ".levain.yaml ${levainHome}");
+
+        actions.push("mkdir ${levainHome}/.registry");
+        actions.push("copy " + pkg.name + ".levain.yaml ${levainHome}/.registry");
 
         const loader = new Loader(this.config);
         for (let action of actions) {
