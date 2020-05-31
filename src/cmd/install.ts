@@ -23,8 +23,7 @@ export default class Install implements Command {
             return;
         }
 
-        console.log("");
-        console.log("================");
+        console.log("==================================");
         for (let name of pkgs.keys()) {
             let pkg = pkgs.get(name);
             if (pkg) {
@@ -62,15 +61,16 @@ export default class Install implements Command {
             return;
         }
 
-        console.log("INSTALL " + pkg.name);
+        console.log("");
+        console.log("=== INSTALL " + pkg.name);
         let actions = pkg.yamlItem("cmd.install")
         if (!actions) {
             console.log("Nothing to do");
             return;
         }
 
-        actions.push("mkdir ${levainHome}/.registry");
-        actions.push("copy " + pkg.name + ".levain.yaml ${levainHome}/.registry");
+        actions.push("mkdir ${levainHome}/.levainRegistry");
+        actions.push("copy " + pkg.name + ".levain.yaml ${levainHome}/.levainRegistry");
 
         const loader = new Loader(this.config);
         for (let action of actions) {
