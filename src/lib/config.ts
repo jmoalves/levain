@@ -40,6 +40,11 @@ export default class Config {
         }
         
         if (!value) {
+          let handler:any = pkg;
+          value = handler[vName];
+        }
+
+        if (!value) {
           value = pkg.yamlItem(vName);
         }
 

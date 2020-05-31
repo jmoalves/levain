@@ -39,7 +39,8 @@ export default class Copy implements Action {
         }
 
         for (let item of src) {
-            let realDst = dst;
+            item = path.resolve(item);
+            let realDst = path.resolve(dst);
             if (copyToDir) {
                 realDst = path.resolve(dst, path.basename(item));
             }
