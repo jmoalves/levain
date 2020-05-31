@@ -5,6 +5,8 @@ export default class Package {
 
   constructor(
         private _name: string,
+        private _version: string,
+        private _baseDir: string,
         private _yamlFile: string,
         private _yamlStruc: any,
         private _repo?: Repository) {
@@ -19,6 +21,14 @@ export default class Package {
 
   get name(): string {
     return this._name
+  }
+
+  get version(): string {
+    return this._version;
+  }
+
+  get baseDir(): string {
+    return this._baseDir;
   }
 
   get yaml(): string {
@@ -43,10 +53,11 @@ export default class Package {
 
   toString(): string {
     return "Package[" 
-      + "name=" + this.name 
-      + ", yaml=" + this.yaml 
-      + (this._yamlStruc ? ", pkgDef=" + JSON.stringify(this._yamlStruc) : "")
+      + this.name 
+      + " v" + this.version 
+      + ", baseDir=" + this.baseDir 
       + (this.dependencies ? ", deps=" + this.dependencies : "") 
+      + ", yaml=" + this.yaml 
       + "]"
   }
 

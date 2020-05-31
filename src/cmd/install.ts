@@ -62,15 +62,21 @@ export default class Install implements Command {
         }
 
         console.log("");
-        console.log("=== INSTALL " + pkg.name);
+        console.log("=== INSTALL", pkg.name,"-", pkg.version);
         let actions = pkg.yamlItem("cmd.install")
         if (!actions) {
             console.log("Nothing to do");
             return;
         }
 
-        actions.push("mkdir ${levainHome}/.levainRegistry");
+        // Standard actions - At the head (unshift), this is a STACK! (reverse order)
+        actions.unshift("mkdir ${baseDir}");
+        actions.unshift("mkdir ${levainHome}/.levainRegistry");
+        actions.unshift("mkdir --compact ${levainHome}"); 
+      
+        // Standard actions - At the rear (push), it is in normal order        
         actions.push("copy " + pkg.name + ".levain.yaml ${levainHome}/.levainRegistry");
+        //
 
         const loader = new Loader(this.config);
         for (let action of actions) {

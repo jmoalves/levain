@@ -54,9 +54,9 @@ export default class FileSystemRepository implements Repository {
     //console.log(`FSRepo: PKG[${packageName}] => ${filename}`);
     let yamlStr:string = Deno.readTextFileSync(filename);
 
-    let yamlStruct = yaml.parse(yamlStr);
+    let yamlStruct:any = yaml.parse(yamlStr);
 
-    let pkg:Package = new Package(packageName, filename, yamlStruct, this);
+    let pkg:Package = new Package(packageName, yamlStruct.version, "${levainHome}/" + packageName, filename, yamlStruct, this);
     return pkg;
   }
 }

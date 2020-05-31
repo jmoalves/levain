@@ -1,9 +1,5 @@
 version: 0.0.1
 
-baseDir: ${levainHome}/levain
-
 cmd.install:
-  - mkdir --compact ${levainHome} 
-  - mkdir ${baseDir} 
   - copy --verbose src bin levain.cmd levain.sh ${baseDir}
   - addpath ${baseDir}/bin
