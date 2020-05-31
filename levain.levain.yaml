@@ -4,7 +4,6 @@ baseDir: ${levainHome}/levain
 
 cmd.install:
   - mkdir --compact ${levainHome} 
-  - mkdir ${levainHome}/.registry 
   - mkdir ${baseDir} 
   - copy --verbose src bin levain.cmd levain.sh ${baseDir}
   - addpath ${baseDir}/bin

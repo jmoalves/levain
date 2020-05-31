@@ -16,7 +16,6 @@ export default class Loader {
     async action(pkg:Package, cmdline: string) {
         let args = this.config.replaceVars(pkg, cmdline).split(" ");
         let action = args.shift();
-        console.log("Action: ", action, JSON.stringify(args));
         const module = await import(`../action/${action}.ts`);
         const handler:Action = new module.default(this.config);
         handler.execute(pkg, args);
