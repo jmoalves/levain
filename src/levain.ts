@@ -33,7 +33,8 @@ function parseArgs(): any {
 
     return parse(args, {
         string: [
-            "levainHome"
+            "levainHome",
+            "addRepo"
         ],
         boolean: [
         ],
