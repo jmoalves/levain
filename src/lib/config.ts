@@ -29,25 +29,32 @@ export default class Config {
     let pkgConfig = pkg.yamlItem("config");
 
     let myText = text;
-
-    let vars = myText.match(/\${[^${}]+}/);
-    if (vars) {
+    let vars = myText.match(/\${[^${}]+}/)
+    while (vars) {
       for (let v of vars) {
         let vName = v.replace("$", "").replace("{", "").replace("}", "");
         let value: string|undefined = undefined;
-
+        
         if (!value && this._env) {
           value = this._env[vName];
         }
         
+        if (!value) {
+          value = pkg.yamlItem(vName);
+        }
+
         if (!value && pkgConfig) {
           value = pkgConfig[vName];
         }
 
         if (value) {
           myText = myText.replace(v, value);  
+        } else {
+          throw `${v} is undefined`;
         }
       }
+ 
+      vars = myText.match(/\${[^${}]+}/)
     }
 
     return myText;

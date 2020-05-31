@@ -1,6 +1,12 @@
-install:
-  - mkdir --compact ${levainHome}/levain 
-  - copy src ${levainHome}/levain
-  - copy bin ${levainHome}/levain
-  - copy levain.cmd ${levainHome}/levain
-  - copy levain.sh ${levainHome}/levain
+version: 0.0.1
+
+baseDir: ${levainHome}/levain
+
+cmd.install:
+  - mkdir --compact ${levainHome} 
+  - mkdir ${baseDir} 
+  - copy src ${baseDir}
+  - copy bin ${baseDir}
+  - copy levain.cmd ${baseDir}
+  - copy levain.sh ${baseDir}
+  - addpath ${baseDir}/bin

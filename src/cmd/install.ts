@@ -63,11 +63,12 @@ export default class Install implements Command {
         }
 
         console.log("INSTALL " + pkg.name);
-        let actions = pkg.yamlItem("install")
+        let actions = pkg.yamlItem("cmd.install")
         if (!actions) {
             console.log("Nothing to do");
             return;
         }
+        actions.push("copy " + pkg.name + ".levain.yaml ${levainHome}");
 
         const loader = new Loader(this.config);
         for (let action of actions) {
