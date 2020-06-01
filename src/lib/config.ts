@@ -25,8 +25,8 @@ export default class Config {
     return this._repository;
   }
 
-  replaceVars(pkg:Package, text: string): string {
-    let pkgConfig = pkg.yamlItem("config");
+  replaceVars(text: string, pkg?: Package|null|undefined): string {
+    let pkgConfig = pkg?.yamlItem("config");
 
     let myText = text;
     let vars = myText.match(/\${[^${}]+}/)
@@ -39,12 +39,12 @@ export default class Config {
           value = this._env[vName];
         }
         
-        if (!value) {
+        if (!value && pkg) {
           let handler:any = pkg;
           value = handler[vName];
         }
 
-        if (!value) {
+        if (!value && pkg) {
           value = pkg.yamlItem(vName);
         }
 
