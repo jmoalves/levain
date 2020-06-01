@@ -1,4 +1,5 @@
 import { parse } from "https://deno.land/std/flags/mod.ts";
+import * as path from "https://deno.land/std/path/mod.ts";
 
 import Action from "../lib/action.ts";
 import Config from "../lib/config.ts";
@@ -15,7 +16,7 @@ export default class Mkdir implements Action {
             throw "Action - mkdir - You should inform a single directory";            
         }
 
-        const dirname = args._[0];
+        const dirname = path.resolve(pkg.baseDir, args._[0]);
         try {
             const fileInfo = Deno.statSync(dirname);
             if (fileInfo.isDirectory) {

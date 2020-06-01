@@ -55,7 +55,13 @@ export default class FileSystemRepository implements Repository {
 
     let yamlStruct:any = yaml.parse(yamlStr);
 
-    let pkg:Package = new Package(packageName, yamlStruct.version, "${levainHome}/" + packageName, filename, yamlStruct, this);
+    let pkg:Package = new Package(
+      packageName, 
+      yamlStruct.version, 
+      this.config.replaceVars(`\${levainHome}/${packageName}`), 
+      filename, 
+      yamlStruct, 
+      this);
     return pkg;
   }
 }
