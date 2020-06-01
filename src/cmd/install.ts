@@ -1,3 +1,5 @@
+import { existsSync } from "https://deno.land/std/fs/mod.ts";
+
 import Command from "../lib/command.ts";
 import Config from "../lib/config.ts";
 import Package from "../lib/package.ts";
@@ -70,6 +72,11 @@ export default class Install implements Command {
 
         console.log("");
         console.log("=== INSTALL", pkg.name, "-", pkg.version);
+        if (existsSync(`${pkg.baseDir}`)) {
+            console.log("Already installed at", pkg.baseDir);
+            return;
+        }
+
         let actions = pkg.yamlItem("cmd.install")
         if (!actions) {
             console.log("Nothing to do");
@@ -78,11 +85,11 @@ export default class Install implements Command {
 
         // Standard actions - At the head (unshift), this is a STACK! (reverse order)
         actions.unshift("mkdir ${baseDir}");
-        actions.unshift("mkdir ${levainHome}/.levainRegistry");
+        actions.unshift("mkdir ${levainHome}/.levain/registry");
         actions.unshift("mkdir --compact ${levainHome}"); 
       
         // Standard actions - At the rear (push), it is in normal order        
-        actions.push("copy --verbose " + pkg.name + ".levain.yaml ${levainHome}/.levainRegistry");
+        actions.push("copy --verbose " + pkg.name + ".levain.yaml ${levainHome}/.levain/registry");
         //
 
         const loader = new Loader(this.config);
