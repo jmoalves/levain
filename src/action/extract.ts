@@ -1,6 +1,8 @@
 import { parse } from "https://deno.land/std/flags/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 
+// import { readZip } from "https://deno.land/x/jszip/mod.ts";
+
 import Action from "../lib/action.ts";
 import Config from "../lib/config.ts";
 import Package from '../lib/package.ts';
@@ -9,7 +11,7 @@ export default class Extract implements Action {
     constructor(private config:Config) {
     }
 
-    execute(pkg:Package, parameters:string[]):void {
+    async execute(pkg:Package, parameters:string[]) {
         let args = this.parseArgs(parameters);
         
         if (args._.length != 2) {
@@ -21,6 +23,11 @@ export default class Extract implements Action {
         const dst = path.resolve(pkg.baseDir, args._[1]);
 
         console.log("EXTRACT", src, "=>", dst);
+
+        // const zip = await readZip(src);
+        // for (const z of zip) {
+        //   console.log(z.name);
+        // }
     }
 
     private parseArgs(args: string[]): any {
