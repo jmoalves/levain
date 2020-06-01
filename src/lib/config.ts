@@ -89,32 +89,11 @@ export default class Config {
   private configRepo(args: any): Repository {
     let repos:Repository[] = [];
     
-    repos.push(new FileSystemRepository(this, '.'));
-    
-    if (args.addRepo) {
-      let newRepos:string[] = [];
-      if (typeof(args.addRepo) == "string") {
-        newRepos.push(args.addRepo);
-      } else {
-        newRepos = args.addRepo;
-      }
+    this.addLevainRepo(repos);
+    this.addRepos(repos, args.addRepo);
 
-      for (let repo of newRepos) {
-        try {
-          const fileInfo = Deno.statSync(repo);
-          if (!fileInfo || !fileInfo.isDirectory) {
-              throw `addRepo - invalid dir ${repo}`;
-          }
-        } catch (err) {
-          if (err.name != "NotFound") {
-              throw err;
-          }
-        }
-
-        repos.push(new FileSystemRepository(this, repo));
-      }
-    }
-    repos.push(new NullRepository(this));
+    // CWD
+    repos.push(new FileSystemRepository(this, Deno.cwd()));
 
     return new CacheRepository(this, 
       new ChainRepository(this, repos)
@@ -139,5 +118,38 @@ export default class Config {
 
     // What else?
     return undefined;
+  }
+
+  private addLevainRepo(repos: Repository[]) {
+    // https://stackoverflow.com/questions/61829367/node-js-dirname-filename-equivalent-in-deno
+    const levainPkg = path.resolve(path.dirname(path.fromFileUrl(import.meta.url)), "../..");
+    repos.push(new FileSystemRepository(this, levainPkg));
+  }
+  
+  private addRepos(repos: Repository[], addRepo: undefined|string|string[]) {
+    if (addRepo) {
+      let newRepos:string[] = [];
+      if (typeof(addRepo) == "string") {
+        newRepos.push(addRepo);
+      } else {
+        newRepos = addRepo;
+      }
+
+      for (let repo of newRepos) {
+        try {
+          const fileInfo = Deno.statSync(repo);
+          if (!fileInfo || !fileInfo.isDirectory) {
+              throw `addRepo - invalid dir ${repo}`;
+          }
+        } catch (err) {
+          if (err.name != "NotFound") {
+              throw err;
+          }
+        }
+
+        repos.push(new FileSystemRepository(this, repo));
+      }
+    }
+    repos.push(new NullRepository(this));
   }
 }
