@@ -21,11 +21,14 @@ export default class Extract implements Action {
         const dst = path.resolve(pkg.baseDir, args._[1]);
 
         console.log("EXTRACT", src, "=>", dst);
+        const unzip = new Unzipper(this.config);
+        await unzip.extract(args.strip, src, dst);
     }
 
     private parseArgs(args: string[]): any {
         return parse(args, {
             string: [
+                "strip"
             ],
             boolean: [
             ],
@@ -39,5 +42,21 @@ export default class Extract implements Action {
                 }
             }
         });    
+    }
+}
+
+class Unzipper {
+    constructor(private config:Config) {}
+
+    async extract(strip: string|undefined, src: string, dst: string) {
+        // TODO: Handle other os's
+
+        let args = `cmd /c ${this.config.extraBinDir}\\unzip -qn ${src} -d ${dst}`.split(" ");
+
+        const p = Deno.run({
+            cmd: args
+        });
+        
+        await p.status();
     }
 }

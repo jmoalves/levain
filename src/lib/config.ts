@@ -65,6 +65,10 @@ export default class Config {
     return myText;
   }
 
+  get extraBinDir(): string {
+    return path.resolve(this.levainSrcDir, "extra-bin", Deno.build.os);
+  }
+  
   /////////////////////////////////////////////////////////////////////////////////
   private configEnv(args: any): void {
     Object.keys(args).forEach(key => {
@@ -120,10 +124,13 @@ export default class Config {
     return undefined;
   }
 
-  private addLevainRepo(repos: Repository[]) {
+  private get levainSrcDir(): string {
     // https://stackoverflow.com/questions/61829367/node-js-dirname-filename-equivalent-in-deno
-    const levainPkg = path.resolve(path.dirname(path.fromFileUrl(import.meta.url)), "../..");
-    repos.push(new FileSystemRepository(this, levainPkg));
+    return path.resolve(path.dirname(path.fromFileUrl(import.meta.url)), "../..");
+  }
+
+  private addLevainRepo(repos: Repository[]) {
+    repos.push(new FileSystemRepository(this, this.levainSrcDir));
   }
   
   private addRepos(repos: Repository[], addRepo: undefined|string|string[]) {
