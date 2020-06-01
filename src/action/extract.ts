@@ -12,8 +12,8 @@ export default class Extract implements Action {
     async execute(pkg:Package, parameters:string[]) {
         let args = this.parseArgs(parameters);
 
+        // console.log("Args:", JSON.stringify(args));
         if (args._.length != 2) {
-            console.log("Args:", JSON.stringify(args));
             console.error("You must inform the file to extract and the destination directory");
             throw "Illegal arguments";
         }

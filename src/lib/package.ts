@@ -29,7 +29,7 @@ export default class Package {
   }
 
   get baseDir(): string {
-    return this._baseDir;
+    return path.resolve(this._baseDir);
   }
 
   get pkgDir(): string {
