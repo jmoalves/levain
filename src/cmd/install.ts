@@ -8,7 +8,7 @@ export default class Install implements Command {
     constructor(private config:Config) {
     }
 
-    execute(args: string[]): void {
+    async execute(args: string[]) {
         console.log("install " + JSON.stringify(args));
 
         let error:boolean = false;
@@ -27,7 +27,7 @@ export default class Install implements Command {
         for (let name of pkgs.keys()) {
             let pkg = pkgs.get(name);
             if (pkg) {
-                this.installPackage(pkg);
+                await this.installPackage(pkg);
             }
         }
     }
@@ -56,7 +56,7 @@ export default class Install implements Command {
         return error;
     }
 
-    private installPackage(pkg: Package): void {
+    private async installPackage(pkg: Package) {
         if (!this.config) {
             return;
         }
@@ -80,7 +80,7 @@ export default class Install implements Command {
 
         const loader = new Loader(this.config);
         for (let action of actions) {
-            loader.action(pkg, action);
+            await loader.action(pkg, action);
         }
     }
 }

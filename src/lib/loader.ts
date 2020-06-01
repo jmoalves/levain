@@ -10,7 +10,7 @@ export default class Loader {
     async command(cmd: string, args: string[]) {
         const module = await import(`../cmd/${cmd}.ts`);
         const handler:Command = new module.default(this.config);
-        handler.execute(args);
+        await handler.execute(args);
     }
 
     async action(pkg:Package, cmdline: string) {
@@ -18,6 +18,6 @@ export default class Loader {
         let action = args.shift();
         const module = await import(`../action/${action}.ts`);
         const handler:Action = new module.default(this.config);
-        handler.execute(pkg, args);
+        await handler.execute(pkg, args);
     }
 }
