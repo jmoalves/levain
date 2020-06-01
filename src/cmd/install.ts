@@ -24,8 +24,12 @@ export default class Install implements Command {
         }
 
         console.log("");
-        console.log("Packages to install =>", pkgs.keys());
+        console.log("=== Package list (in order):");
+        for (let name of pkgs.keys()) {
+            console.log(name);
+        }
 
+        console.log("");
         console.log("==================================");
         for (let name of pkgs.keys()) {
             let pkg = pkgs.get(name);
