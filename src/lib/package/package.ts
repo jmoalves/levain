@@ -1,6 +1,6 @@
 import * as path from "https://deno.land/std/path/mod.ts";
 
-import Repository from '../repository.ts'
+import Repository from '../repository/repository.ts'
 
 export default class Package {
   private _dependencies: string[]|undefined = undefined;
