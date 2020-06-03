@@ -56,9 +56,70 @@ export default class Shell implements Command {
             throw `${Deno.build.os} not supported`;
         }
 
-        let cmd = "cmd /u /k";
+        let cmd = this.concatCmd(
+            "cmd /u /k",
+            this.addPath(context),
+            'prompt [levain]$P$G'
+        );
+        console.log("- CMD -", cmd);
 
+        let opt:any = {};
+        opt.cmd = cmd.split(" ");
+        opt.env = {}
+
+        this.setEnv(context, opt.env);
+        if (this.config.levainHome) {
+            opt.env["levainHome"] = this.config.levainHome;
+        }
+
+        const p = Deno.run(opt);
+        
+        await p.status();
+
+        console.log("");
+        console.log("Levain - Goodbye!");
+    }
+
+    private concatCmd(...parts :(string|undefined)[]) :string {
+        return this.concatCmdArr(parts);
+    }
+    
+    private concatCmdArr(parts :(string|undefined)[]) :string {
+        if (!parts) {
+            return "";
+        }
+
+        // first
+        // first second
+        // first second && third
+        // first secont && third && fourth (and so on)
+        // undefine does not count
+        let sep = "";
+        let idx = 1;
+        let result:string = "";
+        for (let part of parts) {
+            if (part) {
+                if (idx == 1) {
+                    sep = "";
+                } else if (idx < 3) {
+                    sep = " ";
+                } else {
+                    sep = " && ";
+                }
+                result += sep + part;
+                idx++;
+            }
+        }
+
+        return result;
+    }
+
+    private addPath(context: any): string|undefined {
         let myPath:string = context.action?.addpath?.path;
+        if (!myPath) {
+            return "";
+        }
+
         let pathStr = undefined;
         if (myPath) {
             for (let p of myPath) {
@@ -71,29 +132,24 @@ export default class Shell implements Command {
             }    
 
             if (pathStr) {
-                pathStr = ` path ${pathStr};%PATH%`;
-            }
-
-            cmd += pathStr + " &&";
-        }
-
-        cmd += ' prompt [levain]$P$G';
-        console.log("- CMD -", cmd);
-
-        let opt:any = {};
-        opt.cmd = cmd.split(" ");
-
-        if (this.config.levainHome) {
-            opt.env = {
-                "levainHome": this.config.levainHome
+                pathStr = `path ${pathStr};%PATH%`;
             }
         }
 
-        const p = Deno.run(opt);
-        
-        await p.status();
+        return pathStr;
+    }
 
-        console.log("");
-        console.log("Levain - Goodbye!");
+    private setEnv(context: any, env: any): void {
+        if (!context.action?.setEnv?.env) {
+            console.log("sem env");
+            return undefined;
+        }
+
+        for (let key of Object.keys(context.action.setEnv.env)) {
+            let value = context.action.setEnv.env[key];
+            if (value) {
+                env[key] = value;
+            }
+        }
     }
 }
