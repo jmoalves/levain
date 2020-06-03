@@ -13,11 +13,11 @@ export default class Loader {
         await handler.execute(args);
     }
 
-    async action(pkg:Package, cmdline: string) {
+    async action(context:any, pkg:Package, cmdline: string) {
         let args = this.config.replaceVars(cmdline, pkg).split(" ");
         let action = args.shift();
         const module = await import(`../action/${action}.ts`);
         const handler:Action = new module.default(this.config);
-        await handler.execute(pkg, args);
+        await handler.execute(context, pkg, args);
     }
 }

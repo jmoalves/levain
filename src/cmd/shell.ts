@@ -21,12 +21,15 @@ export default class Shell implements Command {
 
         console.log("");
         console.log("==================================");
+        const context:any = {};
         for (let pkg of pkgs) {
-            await this.loadShell(pkg);
+            await this.shellActions(context, pkg);
         }
+
+        this.openShell(context.action.addpath.path);
     }
 
-    private async loadShell(pkg: Package) {
+    private async shellActions(context:any, pkg: Package) {
         if (!this.config) {
             return;
         }
@@ -43,7 +46,34 @@ export default class Shell implements Command {
         console.log("=== ENV", pkg.name, "-", pkg.version);
         const loader = new Loader(this.config);
         for (let action of actions) {
-            await loader.action(pkg, action);
+            await loader.action(context, pkg, action);
         }
+    }
+
+    async openShell(myPath: string) {
+        // TODO: Handle other os's
+        if (Deno.build.os != "windows") {
+            throw `${Deno.build.os} not supported`;
+        }
+
+        let pathStr = "";
+        for (let p of myPath) {
+            if (pathStr.length != 0) {
+                pathStr += ";";
+            }
+            pathStr += p;
+        }
+
+        console.log("- CMD - PATH", pathStr);
+        let args = `cmd /k path ${pathStr};%PATH && cls && echo Levain shell`.split(" ");
+
+        const p = Deno.run({
+            cmd: args
+        });
+        
+        await p.status();
+
+        console.log("");
+        console.log("Levain - Goodbye");
     }
 }

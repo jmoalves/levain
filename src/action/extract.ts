@@ -9,7 +9,7 @@ export default class Extract implements Action {
     constructor(private config:Config) {
     }
 
-    async execute(pkg:Package, parameters:string[]) {
+    async execute(context:any, pkg:Package, parameters:string[]) {
         let args = this.parseArgs(parameters);
 
         // console.log("Args:", JSON.stringify(args));
