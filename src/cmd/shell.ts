@@ -1,3 +1,4 @@
+import { parse } from "https://deno.land/std/flags/mod.ts";
 import { existsSync } from "https://deno.land/std/fs/mod.ts";
 
 import Command from "../lib/command.ts";
@@ -10,9 +11,17 @@ export default class Shell implements Command {
     }
 
     async execute(args: string[]) {
+        let myArgs = this.parseArgs(args);
         console.log("shell " + JSON.stringify(args));
 
-        let pkgs:Package[]|null = this.config.packageManager.resolvePackages(args);
+        let pkgNames: string[] = [];
+        if (typeof(myArgs.package) == "string") {
+            pkgNames.push(myArgs.package);
+        } else {
+            pkgNames = myArgs.package;
+        }
+
+        let pkgs:Package[]|null = this.config.packageManager.resolvePackages(pkgNames);
 
         if (!pkgs) {
             console.error("");
@@ -26,7 +35,27 @@ export default class Shell implements Command {
             await this.shellActions(context, pkg);
         }
 
-        this.openShell(context);
+        this.openShell(context, myArgs);
+    }
+
+    private parseArgs(args: string[]): any {
+        return parse(args, {
+            string: [
+                "package"
+            ],
+            boolean: [
+                "run"
+            ],
+            stopEarly: true,
+            unknown: (v) => { 
+                if (v.startsWith("-")) {
+                    console.log("ERROR: Unknown option", v);
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        });    
     }
 
     private async shellActions(context:any, pkg: Package) {
@@ -50,16 +79,17 @@ export default class Shell implements Command {
         }
     }
 
-    async openShell(context: any) {
+    async openShell(context: any, args: any) {
         // TODO: Handle other os's
         if (Deno.build.os != "windows") {
             throw `${Deno.build.os} not supported`;
         }
 
         let cmd = this.concatCmd(
-            "cmd /u /k",
+            "cmd /u " + (args.run ? "/c" : "/k"),
             this.addPath(context),
-            'prompt [levain]$P$G'
+            (args.run ? undefined : 'prompt [levain]$P$G'),
+            (args.run ? args._.join(" ") : undefined)
         );
         console.log("- CMD -", cmd);
 
@@ -76,8 +106,10 @@ export default class Shell implements Command {
         
         await p.status();
 
-        console.log("");
-        console.log("Levain - Goodbye!");
+        if (!args.run) {
+            console.log("");
+            console.log("Levain - Goodbye!");    
+        }
     }
 
     private concatCmd(...parts :(string|undefined)[]) :string {
