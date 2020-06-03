@@ -1,23 +1,25 @@
 import * as path from "https://deno.land/std/path/mod.ts";
+import * as yaml from "https://deno.land/std/encoding/yaml.ts";
 
 import Repository from '../repository/repository.ts'
 
 export default class Package {
+  private _version: string;
   private _dependencies: string[]|undefined = undefined;
+  private _yamlStruct: any;
 
   constructor(
         private _name: string,
-        private _version: string,
         private _baseDir: string,
         private _yamlFile: string,
-        private _yamlStruc: any,
+        yamlStr: string,
         private _repo?: Repository) {
-    if (this._yamlStruc) {
-      if (this._yamlStruc.dependencies) {
-        this._dependencies = this._yamlStruc.dependencies;
-      }
-    }
+    this._yamlStruct = yaml.parse(yamlStr);
 
+    this._version = this._yamlStruct.version;
+    if (this._yamlStruct.dependencies) {
+      this._dependencies = this._yamlStruct.dependencies;
+    }
     this._dependencies = this.normalizeDeps(this._dependencies);
   }
 
@@ -50,8 +52,8 @@ export default class Package {
   }
 
   yamlItem(key: string): any|undefined {
-    if (this._yamlStruc) {
-      return this._yamlStruc[key];
+    if (this._yamlStruct) {
+      return this._yamlStruct[key];
     }
 
     return undefined;
