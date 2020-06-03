@@ -65,15 +65,21 @@ export default class Shell implements Command {
         }
 
         console.log("- CMD - PATH", pathStr);
-        let args = `cmd /k path ${pathStr};%PATH && cls && echo Levain shell`.split(" ");
+        let args = `cmd /u /k path ${pathStr};%PATH && prompt [levain]$P$G`.split(" ");
 
-        const p = Deno.run({
-            cmd: args
-        });
+        let opt:any = {};
+        opt.cmd = args;
+        if (this.config.levainHome) {
+            opt.env = {
+                "levainHome": this.config.levainHome
+            }
+        }
+
+        const p = Deno.run(opt);
         
         await p.status();
 
         console.log("");
-        console.log("Levain - Goodbye");
+        console.log("Levain - Goodbye!");
     }
 }
