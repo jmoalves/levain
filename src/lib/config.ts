@@ -102,6 +102,13 @@ export default class Config {
       return;
     }
 
+    let envDef = Deno.env.get("levainHome");
+    console.log("envDef", envDef);
+    if (envDef) {
+      this._env["levainHome"] = path.resolve(envDef);
+      return;
+    }
+
     let home = this.homedir();
     if (home) {
       this._env["levainHome"] = path.resolve(home, "levain");
