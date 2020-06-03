@@ -1,6 +1,6 @@
 import Config from "../config.ts";
 import Package from "./package.ts";
-import Repository from "../repository.ts";
+import Repository from "../repository/repository.ts";
 
 export default class PackageManager {
     constructor(private config: Config) {

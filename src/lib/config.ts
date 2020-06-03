@@ -2,11 +2,11 @@ import * as path from "https://deno.land/std/path/mod.ts";
 
 import Package from './package/package.ts';
 
-import Repository from './repository.ts'
-import CacheRepository from './repositories/cache.ts'
-import ChainRepository from './repositories/chain.ts'
-import NullRepository from './repositories/null.ts'
-import FileSystemRepository from './repositories/fs.ts'
+import Repository from './repository/repository.ts'
+import CacheRepository from './repository/cache.ts'
+import ChainRepository from './repository/chain.ts'
+import NullRepository from './repository/null.ts'
+import FileSystemRepository from './repository/fs.ts'
 import PackageManager from "./package/manager.ts";
 
 export default class Config {
