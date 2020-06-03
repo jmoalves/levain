@@ -9,7 +9,7 @@ export default class Mkdir implements Action {
     constructor(private config:Config) {
     }
 
-    execute(pkg:Package, parameters:string[]):void {
+    execute(context:any, pkg:Package, parameters:string[]):void {
         let args = this.parseArgs(parameters);
 
         if (args._.length != 1) {

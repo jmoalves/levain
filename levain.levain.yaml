@@ -4,4 +4,4 @@ cmd.install:
   - copy --verbose src bin levain.cmd levain.sh ${baseDir}
 
 cmd.shell:
-  - addpath ${baseDir}/bin
+  - addpath ${baseDir}
