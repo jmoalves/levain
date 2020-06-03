@@ -1,5 +1,4 @@
 import * as path from "https://deno.land/std/path/mod.ts";
-import * as yaml from "https://deno.land/std/encoding/yaml.ts";
 
 import Repository from './repository.ts'
 import Package from '../package/package.ts'
@@ -40,27 +39,24 @@ export default class FileSystemRepository implements Repository {
     return undefined;
   }
 
-  private readPackage(packageName:string, filename: string): Package|undefined {
-    if (!filename.match(packageName + ".levain.yaml")) {
+  private readPackage(packageName:string, yamlFile: string): Package|undefined {
+    if (!yamlFile.match(packageName + ".levain.yaml")) {
       return undefined;
     }
 
-    let fileinfo = Deno.lstatSync(filename);
+    let fileinfo = Deno.lstatSync(yamlFile);
     if (!fileinfo.isFile) {
       return undefined;
     }
 
-    //console.log(`FSRepo: PKG[${packageName}] => ${filename}`);
-    let yamlStr:string = Deno.readTextFileSync(filename);
-
-    let yamlStruct:any = yaml.parse(yamlStr);
+    //console.log(`FSRepo: PKG[${packageName}] => ${yamlFile}`);
+    let yamlStr:string = Deno.readTextFileSync(yamlFile);
 
     let pkg:Package = new Package(
       packageName, 
-      yamlStruct.version, 
       this.config.replaceVars(`\${levainHome}/${packageName}`), 
-      filename, 
-      yamlStruct, 
+      yamlFile, 
+      yamlStr, 
       this);
     return pkg;
   }

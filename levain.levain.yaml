@@ -3,5 +3,5 @@ version: 0.0.1
 cmd.install:
   - copy --verbose src bin levain.cmd levain.sh ${baseDir}
 
-cmd.env:
+cmd.shell:
   - addpath ${baseDir}/bin
