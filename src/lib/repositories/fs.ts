@@ -2,7 +2,7 @@ import * as path from "https://deno.land/std/path/mod.ts";
 import * as yaml from "https://deno.land/std/encoding/yaml.ts";
 
 import Repository from '../repository.ts'
-import Package from '../package.ts'
+import Package from '../package/package.ts'
 import Config from '../config.ts';
 
 export default class FileSystemRepository implements Repository {

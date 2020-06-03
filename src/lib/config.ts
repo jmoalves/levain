@@ -1,14 +1,16 @@
 import * as path from "https://deno.land/std/path/mod.ts";
 
-import Package from './package.ts';
+import Package from './package/package.ts';
 
 import Repository from './repository.ts'
 import CacheRepository from './repositories/cache.ts'
 import ChainRepository from './repositories/chain.ts'
 import NullRepository from './repositories/null.ts'
 import FileSystemRepository from './repositories/fs.ts'
+import PackageManager from "./package/manager.ts";
 
 export default class Config {
+  private _pkgManager: PackageManager;
   private _repository: Repository;
   private _env:any = {};
 
@@ -16,6 +18,7 @@ export default class Config {
     this.configEnv(args);
     this.configHome();
     this._repository = this.configRepo(args);
+    this._pkgManager = new PackageManager(this);
 
     console.log("Config:");
     console.log(JSON.stringify(this._env, null, 3));
@@ -23,6 +26,10 @@ export default class Config {
 
   get repository(): Repository {
     return this._repository;
+  }
+
+  get packageManager(): PackageManager {
+    return this._pkgManager;
   }
 
   replaceVars(text: string, pkg?: Package|null|undefined): string {
@@ -68,7 +75,7 @@ export default class Config {
   get extraBinDir(): string {
     return path.resolve(this.levainSrcDir, "extra-bin", Deno.build.os);
   }
-  
+
   /////////////////////////////////////////////////////////////////////////////////
   private configEnv(args: any): void {
     Object.keys(args).forEach(key => {
