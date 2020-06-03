@@ -1,4 +1,5 @@
 import * as path from "https://deno.land/std/path/mod.ts";
+import { existsSync } from "https://deno.land/std/fs/mod.ts";
 
 import Repository from './repository.ts'
 import Package from '../package/package.ts'
@@ -10,6 +11,10 @@ export default class FileSystemRepository implements Repository {
   }
 
   resolvePackage(packageName: string): Package | undefined {
+    if (!existsSync(`${this.rootDir}`)) {
+      return undefined;
+    }
+
     let pkg = this.readDir(packageName, this.rootDir);
 
     if (pkg) {

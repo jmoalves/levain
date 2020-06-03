@@ -46,11 +46,11 @@ export default class Install implements Command {
 
         // Standard actions - At the head (unshift), this is a STACK! (reverse order)
         actions.unshift("mkdir ${baseDir}");
-        actions.unshift("mkdir ${levainHome}/.levain/registry");
+        actions.unshift("mkdir " + this.config.levainRegistry);
         actions.unshift("mkdir --compact ${levainHome}"); 
       
         // Standard actions - At the rear (push), it is in normal order        
-        actions.push("copy --verbose " + pkg.name + ".levain.yaml ${levainHome}/.levain/registry");
+        actions.push("copy --verbose " + pkg.name + ".levain.yaml " + this.config.levainRegistry);
         //
 
         const loader = new Loader(this.config);
