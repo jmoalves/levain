@@ -32,6 +32,18 @@ export default class Config {
     return this._pkgManager;
   }
 
+  get levainHome(): string|undefined {
+    return this._env["levainHome"];
+  }
+
+  get levainRegistry(): string|undefined {
+    if (!this.levainHome) {
+      return undefined;
+    }
+
+    return path.resolve(this.levainHome, ".levain", "registry");
+  }
+
   replaceVars(text: string, pkg?: Package|null|undefined): string {
     let pkgConfig = pkg?.yamlItem("config");
 
@@ -100,6 +112,8 @@ export default class Config {
   private configRepo(args: any): Repository {
     let repos:Repository[] = [];
     
+    this.addLevainRegistry(repos);
+
     this.addLevainRepo(repos);
     this.addRepos(repos, args.addRepo);
 
@@ -134,6 +148,12 @@ export default class Config {
   private get levainSrcDir(): string {
     // https://stackoverflow.com/questions/61829367/node-js-dirname-filename-equivalent-in-deno
     return path.resolve(path.dirname(path.fromFileUrl(import.meta.url)), "../..");
+  }
+
+  private addLevainRegistry(repos: Repository[]) {
+    if (this.levainRegistry) {
+      repos.push(new FileSystemRepository(this, this.levainRegistry));
+    }
   }
 
   private addLevainRepo(repos: Repository[]) {
