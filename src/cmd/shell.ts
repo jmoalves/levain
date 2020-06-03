@@ -31,19 +31,16 @@ export default class Shell implements Command {
             return;
         }
 
-        console.log("");
-        console.log("=== ENV", pkg.name, "-", pkg.version);
         if (!existsSync(`${pkg.baseDir}`)) {
-            console.log("NOT installed at", pkg.baseDir);
             return;
         }
 
         let actions = pkg.yamlItem("cmd.shell")
         if (!actions) {
-            console.log("Nothing to do");
             return;
         }
 
+        console.log("=== ENV", pkg.name, "-", pkg.version);
         const loader = new Loader(this.config);
         for (let action of actions) {
             await loader.action(pkg, action);
