@@ -22,8 +22,9 @@ export default class Extract implements Action {
         const dst = path.resolve(pkg.baseDir, args._[1]);
 
         console.log("EXTRACT", src, "=>", dst);
-        const unzip = new Unzipper(this.config);
-        await unzip.extract(args.strip, src, dst);
+        const factory:ExtractorFactory = new ExtractorFactory();
+        const extractor:Extractor = factory.createExtractor(this.config, src);
+        await extractor.extract(args.strip, src, dst);
     }
 
     private parseArgs(args: string[]): any {
@@ -100,6 +101,10 @@ class ExtractorFactory {
             return new Unzipper(config);
         }
 
+        if (src.endsWith(".7z.exe")) {
+            return new SevenZip(config);
+        }
+
         throw `${src} - file not supported.`;
     }
 }
@@ -121,6 +126,31 @@ class Unzipper extends Extractor {
 
         const p = Deno.run({
             cmd: args
+        });
+        
+        await p.status();
+    }    
+}
+
+
+class SevenZip extends Extractor {
+    constructor(config:Config) {
+        super(config);
+    }
+
+    async extractImpl(src: string, dst: string) {
+        // TODO: Handle other os's
+        if (Deno.build.os != "windows") {
+            throw `${Deno.build.os} not supported`;
+        }
+
+        console.log("- 7z", src, "=>", dst);
+
+        let args = `cmd /c ${this.config.extraBinDir}\\7z.exe x -bd -o${dst} ${src}`.split(" ");
+
+        const p = Deno.run({
+            cmd: args,
+            stdout: "null"
         });
         
         await p.status();
