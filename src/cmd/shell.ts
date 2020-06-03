@@ -26,7 +26,7 @@ export default class Shell implements Command {
             await this.shellActions(context, pkg);
         }
 
-        this.openShell(context.action.addpath.path);
+        this.openShell(context);
     }
 
     private async shellActions(context:any, pkg: Package) {
@@ -50,25 +50,39 @@ export default class Shell implements Command {
         }
     }
 
-    async openShell(myPath: string) {
+    async openShell(context: any) {
         // TODO: Handle other os's
         if (Deno.build.os != "windows") {
             throw `${Deno.build.os} not supported`;
         }
 
-        let pathStr = "";
-        for (let p of myPath) {
-            if (pathStr.length != 0) {
-                pathStr += ";";
+        let cmd = "cmd /u /k";
+
+        let myPath:string = context.action?.addpath?.path;
+        let pathStr = undefined;
+        if (myPath) {
+            for (let p of myPath) {
+                if (pathStr) {
+                    pathStr += ";";
+                } else {
+                    pathStr = "";
+                }
+                pathStr += p;
+            }    
+
+            if (pathStr) {
+                pathStr = ` path ${pathStr};%PATH%`;
             }
-            pathStr += p;
+
+            cmd += pathStr + " &&";
         }
 
-        console.log("- CMD - PATH", pathStr);
-        let args = `cmd /u /k path ${pathStr};%PATH && prompt [levain]$P$G`.split(" ");
+        cmd += ' prompt [levain]$P$G';
+        console.log("- CMD -", cmd);
 
         let opt:any = {};
-        opt.cmd = args;
+        opt.cmd = cmd.split(" ");
+
         if (this.config.levainHome) {
             opt.env = {
                 "levainHome": this.config.levainHome
