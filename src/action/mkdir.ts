@@ -3,7 +3,7 @@ import * as path from "https://deno.land/std/path/mod.ts";
 
 import Action from "../lib/action.ts";
 import Config from "../lib/config.ts";
-import Package from '../lib/package.ts';
+import Package from '../lib/package/package.ts';
 
 export default class Mkdir implements Action {
     constructor(private config:Config) {

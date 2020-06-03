@@ -1,5 +1,5 @@
 import Repository from '../repository.ts'
-import Package from '../package.ts'
+import Package from '../package/package.ts'
 import Config from "../config.ts";
 
 export default class CacheRepository implements Repository {

@@ -1,7 +1,7 @@
 import Command from "./command.ts";
 import Config from "./config.ts";
 import Action from "./action.ts";
-import Package from './package.ts';
+import Package from './package/package.ts';
 
 export default class Loader {
     constructor(private config:Config) {

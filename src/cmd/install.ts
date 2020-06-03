@@ -2,7 +2,7 @@ import { existsSync } from "https://deno.land/std/fs/mod.ts";
 
 import Command from "../lib/command.ts";
 import Config from "../lib/config.ts";
-import Package from "../lib/package.ts";
+import Package from "../lib/package/package.ts";
 import Repository from "../lib/repository.ts";
 import Loader from '../lib/loader.ts';
 
@@ -13,56 +13,18 @@ export default class Install implements Command {
     async execute(args: string[]) {
         console.log("install " + JSON.stringify(args));
 
-        let error:boolean = false;
-        let pkgs:Map<string, Package> = new Map();
-        for (const pkgName of args) {
-            let myError:boolean = this.resolvePackages(this.config.repository, pkgs, pkgName);
-            error = error || myError;
-        }
+        let pkgs:Package[]|null = this.config.packageManager.resolvePackages(args);
 
-        if (error) {
+        if (!pkgs) {
             console.error("");
             return;
         }
 
         console.log("");
-        console.log("=== Package list (in order):");
-        for (let name of pkgs.keys()) {
-            console.log(name);
-        }
-
-        console.log("");
         console.log("==================================");
-        for (let name of pkgs.keys()) {
-            let pkg = pkgs.get(name);
-            if (pkg) {
-                await this.installPackage(pkg);
-            }
+        for (let pkg of pkgs) {
+            await this.installPackage(pkg);
         }
-    }
-
-    private resolvePackages(repo:Repository, pkgs:Map<string, Package>, pkgName:string):boolean {
-        if (pkgs.has(pkgName)) {
-            return false;
-        }
-
-        const pkgDef = repo.resolvePackage(pkgName);
-        if (!pkgDef) {
-            console.error("PACKAGE NOT FOUND: " + pkgName);
-            return true;
-        }    
-
-        // Deep first navigation - topological order of dependencies
-        let error:boolean = false;
-        if (pkgDef.dependencies) {
-            for (let dep of pkgDef.dependencies) {
-                let myError:boolean = this.resolvePackages(repo, pkgs, dep);
-                error = error || myError;
-            }
-        }
-
-        pkgs.set(pkgName, pkgDef);
-        return error;
     }
 
     private async installPackage(pkg: Package) {
