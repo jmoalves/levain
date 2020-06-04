@@ -1,4 +1,5 @@
 import { existsSync } from "https://deno.land/std/fs/mod.ts";
+import * as path from "https://deno.land/std/path/mod.ts";
 
 import Command from "../lib/command.ts";
 import Config from "../lib/config.ts";
@@ -33,19 +34,20 @@ export default class Install implements Command {
 
         console.log("");
         console.log("=== INSTALL", pkg.name, "-", pkg.version);
-        if (existsSync(`${pkg.baseDir}`)) {
-            console.log("Already installed at", pkg.baseDir);
+        let registry = path.resolve(this.config.levainRegistry, path.basename(pkg.yaml));
+        if (existsSync(registry)) {
+            console.log("Already registered at", registry);
             return;
         }
 
         let actions = pkg.yamlItem("cmd.install")
         if (!actions) {
-            console.log("Nothing to do");
-            return;
+            actions = [];
+        } else {
+            actions.unshift("mkdir ${baseDir}");
         }
 
         // Standard actions - At the head (unshift), this is a STACK! (reverse order)
-        actions.unshift("mkdir ${baseDir}");
         actions.unshift("mkdir " + this.config.levainRegistry);
         actions.unshift("mkdir --compact ${levainHome}"); 
       

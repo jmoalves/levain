@@ -32,15 +32,11 @@ export default class Config {
     return this._pkgManager;
   }
 
-  get levainHome(): string|undefined {
+  get levainHome(): string {
     return this._env["levainHome"];
   }
 
-  get levainRegistry(): string|undefined {
-    if (!this.levainHome) {
-      return undefined;
-    }
-
+  get levainRegistry(): string {
     return path.resolve(this.levainHome, ".levain", "registry");
   }
 
@@ -133,7 +129,7 @@ export default class Config {
   }
 
   // TODO: We must find a standard Deno function for this!
-  private homedir() : string|undefined {
+  private homedir() : string {
     // Common option
     let home = Deno.env.get("home");
     if (home) {
@@ -149,7 +145,7 @@ export default class Config {
     }
 
     // What else?
-    return undefined;
+    throw "No home for levain. Do you have a refrigerator?";
   }
 
   private get levainSrcDir(): string {
