@@ -58,6 +58,7 @@ export default class FileSystemRepository implements Repository {
     let yamlStr:string = Deno.readTextFileSync(yamlFile);
 
     let pkg:Package = new Package(
+      this.config,
       packageName, 
       this.config.replaceVars(`\${levainHome}/${packageName}`), 
       yamlFile, 
