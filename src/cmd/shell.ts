@@ -87,7 +87,7 @@ export default class Shell implements Command {
 
         let cmd = this.concatCmd(
             "cmd /u " + (args.run ? "/c" : "/k"),
-            "cls",
+            (args.run ? undefined : "cls"),
             this.addPath(context),
             (args.run ? undefined : 'prompt [levain]$P$G'),
             (args.run ? args._.join(" ") : undefined)
