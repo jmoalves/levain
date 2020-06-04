@@ -40,31 +40,26 @@ export default class Config {
     return path.resolve(this.levainHome, ".levain", "registry");
   }
 
-  replaceVars(text: string, pkg?: Package|null|undefined): string {
-    let pkgConfig = pkg?.yamlItem("config");
-
-    let myText = text;
-    let vars = myText.match(/\${[^${}]+}/)
+  replaceVars(text: string, pkgName?: string|undefined): string {
+    let myText:string = text;
+    let vars = myText.match(/\${[^${}]+}/);
     while (vars) {
       for (let v of vars) {
         let vName = v.replace("$", "").replace("{", "").replace("}", "");
         let value: string|undefined = undefined;
-        
+
+        if (!value && vName.search(/^pkg\.([^.]+)\.(.*)/) != -1) {
+          let pkgVarPkg = vName.replace(/^pkg\.([^.]+)\.(.*)/, "$1");
+          let pkgVarName = vName.replace(/^pkg\.([^.]+)\.(.*)/, "$2");
+          value = this.packageManager.getVar(pkgVarPkg, pkgVarName);
+        }
+
         if (!value && this._env) {
           value = this._env[vName];
         }
-        
-        if (!value && pkg) {
-          let handler:any = pkg;
-          value = handler[vName];
-        }
 
-        if (!value && pkg) {
-          value = pkg.yamlItem(vName);
-        }
-
-        if (!value && pkgConfig) {
-          value = pkgConfig[vName];
+        if (!value && pkgName) {
+          value = this.packageManager.getVar(pkgName, vName);
         }
 
         if (!value && vName == "home") {
@@ -78,7 +73,7 @@ export default class Config {
         }
       }
  
-      vars = myText.match(/\${[^${}]+}/)
+      vars = myText.match(/\${[^${}]+}/);
     }
 
     return myText;

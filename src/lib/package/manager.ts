@@ -3,12 +3,15 @@ import Package from "./package.ts";
 import Repository from "../repository/repository.ts";
 
 export default class PackageManager {
+    private knownPackages:Map<string, Package> = new Map();
+
     constructor(private config: Config) {
     }
 
     resolvePackages(pkgNames: string[]): Package[]|null {
-        let error:boolean = false;
         let pkgs:Map<string, Package> = new Map();
+
+        let error:boolean = false;
         for (const pkgName of pkgNames) {
             let myError:boolean = this.resolvePkgs(this.config.repository, pkgs, pkgName);
             error = error || myError;
@@ -22,11 +25,47 @@ export default class PackageManager {
         console.log("=== Package list (in order):");
         let result: Package[] = [];
         for (let name of pkgs.keys()) {
-            result.push(pkgs.get(name)!);
+            const pkg = pkgs.get(name)!;
+            this.knownPackages.set(name, pkg);
+            result.push(pkg);
             console.log(name);
         }
 
         return result;
+    }
+
+    package(pkgName: string): Package|undefined {
+        return this.knownPackages.get(pkgName);
+    }
+
+    getVar(pkgName: string, vName: string): string|undefined {
+        let pkg = this.package(pkgName);
+        if (!pkg) {
+            return undefined;
+        }
+
+        let value: string|undefined = undefined;
+
+        if (!value && pkg) {
+            let handler:any = pkg;
+            value = handler[vName];
+        }
+  
+        if (!value && pkg) {
+            value = pkg.yamlItem(vName);
+        }
+
+        let pkgConfig = pkg.yamlItem("config");
+        if (!value && pkgConfig) {
+            value = pkgConfig[vName];
+        }
+  
+        if (!value) {
+            return undefined;
+        }
+
+        value = ""+value; // toString
+        return this.config.replaceVars(value!, pkgName);
     }
 
     private resolvePkgs(repo:Repository, pkgs:Map<string, Package>, pkgName:string):boolean {
