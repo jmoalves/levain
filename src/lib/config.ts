@@ -67,6 +67,10 @@ export default class Config {
           value = pkgConfig[vName];
         }
 
+        if (!value && vName == "home") {
+          value = this.homedir();
+        }
+
         if (value) {
           myText = myText.replace(v, value);  
         } else {
