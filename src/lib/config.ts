@@ -137,9 +137,13 @@ export default class Config {
     }
 
     // Not found - Windows?
+    let userprofile = Deno.env.get("userprofile");
+    if (userprofile) {
+      return userprofile;
+    }
+
     let homedrive = Deno.env.get("homedrive");
     let homepath = Deno.env.get("homepath");
-
     if (homedrive && homepath) {
       return path.resolve(homedrive, homepath);
     }
