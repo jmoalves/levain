@@ -1,7 +1,9 @@
 import * as path from "https://deno.land/std/path/mod.ts";
 import * as yaml from "https://deno.land/std/encoding/yaml.ts";
+import { existsSync } from "https://deno.land/std/fs/mod.ts";
 
 import Repository from '../repository/repository.ts'
+import Config from "../config.ts";
 
 export default class Package {
   private _version: string;
@@ -9,6 +11,7 @@ export default class Package {
   private _yamlStruct: any;
 
   constructor(
+        private config: Config,
         private _name: string,
         private _baseDir: string,
         private _yamlFile: string,
@@ -49,6 +52,11 @@ export default class Package {
 
   get repo(): Repository|undefined {
     return this._repo;
+  }
+
+  get installed(): boolean {
+    let registry = path.resolve(this.config.levainRegistry, path.basename(this.yaml));
+    return existsSync(registry);
   }
 
   yamlItem(key: string): any|undefined {

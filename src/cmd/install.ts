@@ -1,6 +1,3 @@
-import { existsSync } from "https://deno.land/std/fs/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-
 import Command from "../lib/command.ts";
 import Config from "../lib/config.ts";
 import Package from "../lib/package/package.ts";
@@ -34,9 +31,8 @@ export default class Install implements Command {
 
         console.log("");
         console.log("=== INSTALL", pkg.name, "-", pkg.version);
-        let registry = path.resolve(this.config.levainRegistry, path.basename(pkg.yaml));
-        if (existsSync(registry)) {
-            console.log("Already registered at", registry);
+        if (pkg.installed) {
+            console.log("Already registered", this.config.levainRegistry);
             return;
         }
 
