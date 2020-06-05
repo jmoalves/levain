@@ -40,7 +40,9 @@ export default class Install implements Command {
         if (!actions) {
             actions = [];
         } else {
-            actions.unshift("mkdir ${baseDir}");
+            if (!pkg.yamlItem("levain.config.noBaseDir")) {
+                actions.unshift("mkdir ${baseDir}");
+            }
         }
 
         // Standard actions - At the head (unshift), this is a STACK! (reverse order)
