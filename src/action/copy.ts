@@ -1,17 +1,23 @@
-import { parse } from "https://deno.land/std/flags/mod.ts";
 import { copySync } from "https://deno.land/std/fs/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 
 import Action from "../lib/action.ts";
 import Config from "../lib/config.ts";
 import Package from '../lib/package/package.ts';
+import { parseArgs } from "../lib/parseArgs.ts";
 
 export default class Copy implements Action {
     constructor(private config:Config) {
     }
 
     execute(context:any, pkg:Package, parameters:string[]):void {
-        let args = this.parseArgs(parameters);
+        let args = parseArgs(parameters, {
+            string: [
+            ],
+            boolean: [
+                "verbose"
+            ]
+        });
 
         if (args._.length < 2) {
             throw "Action - copy - You should inform the source(s) and the destination";            
@@ -56,24 +62,5 @@ export default class Copy implements Action {
                 throw err;
             }
         }
-    }
-
-    private parseArgs(args: string[]): any {
-        return parse(args, {
-            string: [
-            ],
-            boolean: [
-                "verbose"
-            ],
-            stopEarly: true,
-            unknown: (v) => { 
-                if (v.startsWith("-")) {
-                    console.log("ERROR: Unknown option", v);
-                    return false;
-                } else {
-                    return true;
-                }
-            }
-        });    
     }
 }

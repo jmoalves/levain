@@ -2,11 +2,19 @@ import { parse } from "https://deno.land/std/flags/mod.ts";
 
 import Loader from './lib/loader.ts';
 import Config from './lib/config.ts';
+import { parseArgs } from "./lib/parseArgs.ts";
 
 console.log("levain v0.0.1");
 console.log("");
 
-const myArgs = parseArgs();
+const myArgs = parseArgs(Deno.args, {
+    string: [
+        "levainHome",
+        "addRepo"
+    ],
+    boolean: [
+    ]
+});
 console.log("args", JSON.stringify(myArgs));
 
 // Context
@@ -28,24 +36,3 @@ const loader = new Loader(config);
 loader.command(cmd, myArgs._);
 
 /////////////////////////////////////////////////////////////////////////////////
-function parseArgs(): any {
-    const { args } = Deno;
-
-    return parse(args, {
-        string: [
-            "levainHome",
-            "addRepo"
-        ],
-        boolean: [
-        ],
-        stopEarly: true,
-        unknown: (v) => { 
-            if (v.startsWith("-")) {
-                console.log("ERROR: Unknown option", v);
-                return false;
-            } else {
-                return true;
-            }
-        }
-    });    
-}
