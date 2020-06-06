@@ -11,8 +11,6 @@ export default class Mkdir implements Action {
 
     execute(context:any, pkg:Package, parameters:string[]):void {
         let args = parseArgs(parameters, {
-            string: [
-            ],
             boolean: [
                 "compact"
             ]

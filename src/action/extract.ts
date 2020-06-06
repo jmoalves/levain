@@ -11,8 +11,6 @@ export default class Extract implements Action {
 
     async execute(context:any, pkg:Package, parameters:string[]) {
         let args = parseArgs(parameters, {
-            string: [
-            ],
             boolean: [
                 "strip"
             ]

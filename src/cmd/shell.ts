@@ -12,7 +12,7 @@ export default class Shell implements Command {
 
     async execute(args: string[]) {
         let myArgs = parseArgs(args, {
-            string: [
+            stringMany: [
                 "package"
             ],
             boolean: [
@@ -21,14 +21,7 @@ export default class Shell implements Command {
         });
         console.log("shell " + JSON.stringify(args));
 
-        let pkgNames: string[] = [];
-        if (typeof(myArgs.package) == "string") {
-            pkgNames.push(myArgs.package);
-        } else {
-            pkgNames = myArgs.package;
-        }
-
-        let pkgs:Package[]|null = this.config.packageManager.resolvePackages(pkgNames);
+        let pkgs:Package[]|null = this.config.packageManager.resolvePackages(myArgs.package);
 
         if (!pkgs) {
             console.error("");

@@ -8,8 +8,10 @@ console.log("levain v0.0.1");
 console.log("");
 
 const myArgs = parseArgs(Deno.args, {
-    string: [
-        "levainHome",
+    stringOnce: [
+        "levainHome"
+    ],
+    stringMany: [
         "addRepo"
     ],
     boolean: [
