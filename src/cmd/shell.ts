@@ -154,7 +154,6 @@ export default class Shell implements Command {
 
     private setEnv(context: any, env: any): void {
         if (!context.action?.setEnv?.env) {
-            console.log("sem env");
             return undefined;
         }
 
