@@ -21,8 +21,8 @@ export default class Copy implements Action {
             throw "Action - copy - You should inform the source(s) and the destination";            
         }
 
-        const dst = args._.pop();
-        const src = args._;
+        const dst = path.resolve(pkg.baseDir, args._.pop());
+        const src = args._.map((element:string) => path.resolve(pkg.pkgDir, element));
 
         let copyToDir = false;        
         try {
@@ -31,7 +31,6 @@ export default class Copy implements Action {
                 copyToDir = true;
             }
         } catch (err) {
-            throw err;
         }
 
         if (src.length > 1 && !copyToDir) {
@@ -43,8 +42,7 @@ export default class Copy implements Action {
         }
 
         for (let item of src) {
-            item = path.resolve(pkg.pkgDir, item);
-            let realDst = path.resolve(dst);
+            let realDst = dst;
             if (copyToDir) {
                 realDst = path.resolve(dst, path.basename(item));
             }
