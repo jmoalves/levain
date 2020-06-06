@@ -21,12 +21,13 @@ export default class SetEnv implements Action {
             context.action.setEnv = {};
         }
 
-        if (!context.action.setEnv.path) {
+        if (!context.action.setEnv.env) {
             context.action.setEnv.env = {};
         }
 
         let key = parameters[0];
         let value = parameters[1];
+        console.log("ENV", key, "=", value);
         context.action.setEnv.env[key] = value;
     }
 }
