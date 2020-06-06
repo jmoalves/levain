@@ -1,16 +1,22 @@
-import { parse } from "https://deno.land/std/flags/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 
 import Action from "../lib/action.ts";
 import Config from "../lib/config.ts";
 import Package from '../lib/package/package.ts';
+import { parseArgs } from "../lib/parseArgs.ts";
 
 export default class Mkdir implements Action {
     constructor(private config:Config) {
     }
 
     execute(context:any, pkg:Package, parameters:string[]):void {
-        let args = this.parseArgs(parameters);
+        let args = parseArgs(parameters, {
+            string: [
+            ],
+            boolean: [
+                "compact"
+            ]
+        });
 
         if (args._.length != 1) {
             throw "Action - mkdir - You should inform a single directory";            
@@ -59,24 +65,5 @@ export default class Mkdir implements Action {
         });
         
         await p.status();
-    }
-
-    private parseArgs(args: string[]): any {
-        return parse(args, {
-            string: [
-            ],
-            boolean: [
-                "compact"
-            ],
-            stopEarly: true,
-            unknown: (v) => { 
-                if (v.startsWith("-")) {
-                    console.log("ERROR: Unknown option", v);
-                    return false;
-                } else {
-                    return true;
-                }
-            }
-        });    
     }
 }
