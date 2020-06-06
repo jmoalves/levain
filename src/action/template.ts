@@ -9,7 +9,7 @@ export default class Template implements Action {
     constructor(private config:Config) {
     }
 
-    execute(context: any, pkg:Package, parameters:string[]): void {
+    async execute(context: any, pkg:Package, parameters:string[]) {
         let args = parseArgs(parameters, {
             stringMany: [
                 "replace",
@@ -22,10 +22,24 @@ export default class Template implements Action {
         let src = path.resolve(pkg.pkgDir, args._[0]);
         let dst = path.resolve(pkg.baseDir, args._[1]);
 
-        console.log(`replace @${pkg.name}`, `src=${src}`, `dst=${dst}`);
+        console.log(`READ ${src}`);
+        let data = Deno.readTextFileSync(src);
         for (let x in args.replace) {
-            console.log("REPLACE", args.replace[x], "=>", args.with[x]);
+            if (args.replace[x].search(/^\/(.+)\/([a-z]?)/) != -1) {
+                // É regexp
+                let regexp = args.replace[x].replace(/^\/(.+)\/([a-z]?)/, "$1");
+                let flags = args.replace[x].replace(/^\/(.+)\/([a-z]?)/, "$2");
+
+                console.log(`REPLACE[rxp] /${regexp}/${flags} =>`, args.with[x]);
+                data = data.replace(new RegExp(regexp, flags), args.with[x]);
+            } else {
+                console.log("REPLACE[str]", args.replace[x], "=>", args.with[x]);
+                data = data.replace(args.replace[x], args.with[x]);
+            }
         }
+
+        console.log(`WRITE ${dst}`);
+        await Deno.writeTextFileSync(dst, data);
     }
 
     private verifyArgs(args: any): void {
