@@ -119,6 +119,8 @@ export default class Config {
     this.addLevainRepo(repos);
     this.addRepos(repos, args.addRepo);
 
+    //repos.push(new NullRepository(this));
+
     // CWD
     repos.push(new FileSystemRepository(this, Deno.cwd()));
 
@@ -166,30 +168,24 @@ export default class Config {
     repos.push(new FileSystemRepository(this, this.levainSrcDir));
   }
   
-  private addRepos(repos: Repository[], addRepo: undefined|string|string[]) {
-    if (addRepo) {
-      let newRepos:string[] = [];
-      if (typeof(addRepo) == "string") {
-        newRepos.push(addRepo);
-      } else {
-        newRepos = addRepo;
-      }
-
-      for (let repo of newRepos) {
-        try {
-          const fileInfo = Deno.statSync(repo);
-          if (!fileInfo || !fileInfo.isDirectory) {
-              throw `addRepo - invalid dir ${repo}`;
-          }
-        } catch (err) {
-          if (err.name != "NotFound") {
-              throw err;
-          }
-        }
-
-        repos.push(new FileSystemRepository(this, repo));
-      }
+  private addRepos(repos: Repository[], addRepo: undefined|string[]) {
+    if (!addRepo) {
+      return;
     }
-    repos.push(new NullRepository(this));
+
+    addRepo?.forEach((repo) => {
+      try {
+        const fileInfo = Deno.statSync(repo);
+        if (!fileInfo || !fileInfo.isDirectory) {
+            throw `addRepo - invalid dir ${repo}`;
+        }
+      } catch (err) {
+        if (err.name != "NotFound") {
+            throw err;
+        }
+      }
+
+      repos.push(new FileSystemRepository(this, repo));
+    });
   }
 }

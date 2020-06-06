@@ -29,13 +29,13 @@ export default class Install implements Command {
             return;
         }
 
-        console.log("");
-        console.log("=== INSTALL", pkg.name, "-", pkg.version);
         if (pkg.installed) {
-            console.log("Already registered", this.config.levainRegistry);
+            console.log("=== SKIP installed", pkg.name);
             return;
         }
 
+        console.log("");
+        console.log("=== INSTALL", pkg.name, "-", pkg.version);
         let actions = pkg.yamlItem("cmd.install")
         if (!actions) {
             actions = [];
