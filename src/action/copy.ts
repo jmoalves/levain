@@ -1,4 +1,4 @@
-import { copySync } from "https://deno.land/std/fs/mod.ts";
+import { copySync, walkSync } from "https://deno.land/std/fs/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 
 import Action from "../lib/action.ts";
@@ -13,7 +13,8 @@ export default class Copy implements Action {
     execute(context:any, pkg:Package, parameters:string[]):void {
         let args = parseArgs(parameters, {
             boolean: [
-                "verbose"
+                "verbose",
+                "strip"
             ]
         });
 
@@ -42,21 +43,37 @@ export default class Copy implements Action {
         }
 
         for (let item of src) {
-            let realDst = dst;
-            if (copyToDir) {
-                realDst = path.resolve(dst, path.basename(item));
-            }
+            const fileInfo = Deno.statSync(item);
+            if (args.strip && fileInfo.isDirectory) {
+                for (const entry of walkSync(item)) {
+                    if (entry.path == item) {
+                        continue;
+                    }
 
-            if (args.verbose) {
-                console.log("COPY", item, "=>", realDst);
+                    const writeTo = path.resolve(dst, entry.name)
+                    this.doCopy(args, entry.path, writeTo);
+                }
+            } else {
+                let realDst = dst;
+                if (copyToDir) {
+                    realDst = path.resolve(dst, path.basename(item));
+                }
+    
+                this.doCopy(args, item, realDst);
             }
-            
-            try {
-                copySync(item, realDst, { overwrite: true });
-            } catch (err) {
-                console.error("ERROR: COPY", item, "=>", realDst, err);
-                throw err;
-            }
+        }
+    }
+
+    private doCopy(args:any, src: string, dst: string) {
+        if (args.verbose) {
+            console.log("COPY", src, "=>", dst);
+        }
+        
+        try {
+            copySync(src, dst, { overwrite: true });
+        } catch (err) {
+            console.error("ERROR: COPY", src, "=>", dst, err);
+            throw err;
         }
     }
 }
