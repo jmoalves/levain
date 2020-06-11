@@ -67,7 +67,7 @@ export default class Shell implements Command {
 
         let cmd = this.concatCmd(
             "cmd /u " + (args.run ? "/c" : "/k"),
-            (args.run ? undefined : "cls"),
+            // (args.run ? undefined : "cls"),
             this.addPath(context),
             (args.run ? undefined : 'prompt [levain]$P$G'),
             (args.run ? args._.join(" ") : undefined)
@@ -85,7 +85,11 @@ export default class Shell implements Command {
 
         const p = Deno.run(opt);
         
-        await p.status();
+        let status = await p.status();
+
+        if (!status.success) {
+            throw "CMD terminated with code " + status.code;
+        }
 
         if (!args.run) {
             console.log("");

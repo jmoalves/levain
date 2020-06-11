@@ -113,7 +113,10 @@ class Unzipper extends Extractor {
             cmd: args
         });
         
-        await p.status();
+        let status = await p.status();
+        if (!status.success) {
+            throw "CMD terminated with code " + status.code;
+        }    
     }    
 }
 
@@ -138,6 +141,9 @@ class SevenZip extends Extractor {
             stdout: "null"
         });
         
-        await p.status();
+        let status = await p.status();
+        if (!status.success) {
+            throw "CMD terminated with code " + status.code;
+        }    
     }    
 }
