@@ -40,6 +40,10 @@ export default class Config {
     return path.resolve(this.levainHome, ".levain", "registry");
   }
 
+  setVar(name: string, value: string): void {
+    this._env[name] = value;
+  }
+  
   replaceVars(text: string, pkgName?: string|undefined): string {
     let myText:string = text;
     let vars = myText.match(/\${[^${}]+}/);
@@ -48,10 +52,14 @@ export default class Config {
         let vName = v.replace("$", "").replace("{", "").replace("}", "");
         let value: string|undefined = undefined;
 
-        if (!value && vName.search(/^pkg\.([^.]+)\.(.*)/) != -1) {
-          let pkgVarPkg = vName.replace(/^pkg\.([^.]+)\.(.*)/, "$1");
-          let pkgVarName = vName.replace(/^pkg\.([^.]+)\.(.*)/, "$2");
+        if (!value && vName.search(/^pkg\.(.+)\.([^.]*)/) != -1) {
+          let pkgVarPkg = vName.replace(/^pkg\.(.+)\.([^.]*)/, "$1");
+          let pkgVarName = vName.replace(/^pkg\.(.+)\.([^.]*)/, "$2");
           value = this.packageManager.getVar(pkgVarPkg, pkgVarName);
+        }
+
+        if (!value) {
+          value = Deno.env.get(vName);
         }
 
         if (!value && this._env) {
