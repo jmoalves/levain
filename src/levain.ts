@@ -4,8 +4,8 @@ import Loader from './lib/loader.ts';
 import Config from './lib/config.ts';
 import { parseArgs } from "./lib/parseArgs.ts";
 
-console.log(`deno v${Deno.version.deno}`);
-console.log("levain v0.0.1");
+console.log(`  deno v${Deno.version.deno}`);
+console.log(`levain v0.0.1`);
 console.log("");
 
 const myArgs = parseArgs(Deno.args, {
