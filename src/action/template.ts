@@ -38,9 +38,15 @@ export default class Template implements Action {
             }
         }
 
-        const fileInfo = Deno.statSync(dst);
-        if (fileInfo.isDirectory) {
-            dst = path.resolve(dst, path.basename(src));
+        try {
+            const fileInfo = Deno.statSync(dst);
+            if (fileInfo.isDirectory) {
+                dst = path.resolve(dst, path.basename(src));
+            }    
+        } catch (err) {
+            if (err.name != "NotFound") {
+                throw err;
+            }
         }
 
         console.log(`WRITE ${dst}`);
