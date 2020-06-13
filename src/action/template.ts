@@ -38,6 +38,11 @@ export default class Template implements Action {
             }
         }
 
+        const fileInfo = Deno.statSync(dst);
+        if (fileInfo.isDirectory) {
+            dst = path.resolve(dst, path.basename(src));
+        }
+
         console.log(`WRITE ${dst}`);
         await Deno.writeTextFileSync(dst, data);
     }
