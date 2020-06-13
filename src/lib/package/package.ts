@@ -59,6 +59,10 @@ export default class Package {
     return existsSync(registry);
   }
 
+  get yamlStruct(): any {
+    return this._yamlStruct;
+  }
+
   yamlItem(key: string): any|undefined {
     if (this._yamlStruct) {
       return this._yamlStruct[key];
