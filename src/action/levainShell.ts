@@ -5,7 +5,7 @@ import Config from "../lib/config.ts";
 import Package from '../lib/package/package.ts';
 import Loader from '../lib/loader.ts';
 
-export default class AddPath implements Action {
+export default class LevainShell implements Action {
     constructor(private config:Config) {
     }
 
