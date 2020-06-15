@@ -13,6 +13,7 @@ export default class Config {
   private _pkgManager: PackageManager;
   private _repository: Repository;
   private _env:any = {};
+  private _context:any = {}; // Do we really need two of them (_env and _context)?
 
   constructor(args: any) {
     this.configEnv(args);
@@ -40,6 +41,10 @@ export default class Config {
     return path.resolve(this.levainHome, ".levain", "registry");
   }
 
+  get context(): any {
+    return this._context;
+  }
+  
   setVar(name: string, value: string): void {
     this._env[name] = value;
   }
