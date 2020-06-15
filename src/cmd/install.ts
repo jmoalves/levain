@@ -54,9 +54,8 @@ export default class Install implements Command {
         //
 
         const loader = new Loader(this.config);
-        const context:any = {};
         for (let action of actions) {
-            await loader.action(context, pkg, action);
+            await loader.action(pkg, action);
         }
     }
 }

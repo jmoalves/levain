@@ -10,7 +10,7 @@ export default class Copy implements Action {
     constructor(private config:Config) {
     }
 
-    execute(context:any, pkg:Package, parameters:string[]):void {
+    execute(pkg:Package, parameters:string[]):void {
         let args = parseArgs(parameters, {
             boolean: [
                 "verbose",

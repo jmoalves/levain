@@ -8,23 +8,23 @@ export default class AddPath implements Action {
     constructor(private config:Config) {
     }
 
-    execute(context: any, pkg:Package, parameters:string[]): void {
+    execute(pkg:Package, parameters:string[]): void {
         if (parameters.length != 1) {
             throw "You must inform the path";
         }
 
-        if (!context.action) {
-            context.action = {};
+        if (!this.config.context.action) {
+            this.config.context.action = {};
         }
 
-        if (!context.action.addpath) {
-            context.action.addpath = {};
+        if (!this.config.context.action.addpath) {
+            this.config.context.action.addpath = {};
         }
 
-        if (!context.action.addpath.path) {
-            context.action.addpath.path = [];
+        if (!this.config.context.action.addpath.path) {
+            this.config.context.action.addpath.path = [];
         }
 
-        context.action.addpath.path.push(path.resolve(parameters[0]));
+        this.config.context.action.addpath.path.push(path.resolve(parameters[0]));
     }
 }

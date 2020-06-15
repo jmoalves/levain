@@ -9,7 +9,7 @@ export default class LevainShell implements Action {
     constructor(private config:Config) {
     }
 
-    async execute(context: any, pkg:Package, parameters:string[]) {
+    async execute(pkg:Package, parameters:string[]) {
         // TODO: We should be able to silence the levain logs here
 
         const loader = new Loader(this.config);

@@ -9,7 +9,7 @@ export default class Template implements Action {
     constructor(private config:Config) {
     }
 
-    async execute(context: any, pkg:Package, parameters:string[]) {
+    async execute(pkg:Package, parameters:string[]) {
         let args = parseArgs(parameters, {
             stringMany: [
                 "replace",

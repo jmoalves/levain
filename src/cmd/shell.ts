@@ -30,15 +30,14 @@ export default class Shell implements Command {
 
         console.log("");
         console.log("==================================");
-        const context:any = {};
         for (let pkg of pkgs) {
-            await this.shellActions(context, pkg);
+            await this.shellActions(pkg);
         }
 
-        this.openShell(context, myArgs);
+        this.openShell(myArgs);
     }
 
-    private async shellActions(context:any, pkg: Package) {
+    private async shellActions(pkg: Package) {
         if (!this.config) {
             return;
         }
@@ -55,11 +54,21 @@ export default class Shell implements Command {
         console.log("=== ENV", pkg.name, "-", pkg.version);
         const loader = new Loader(this.config);
         for (let action of actions) {
-            await loader.action(context, pkg, action);
+            if (action.startsWith("levainShell")) { 
+                // Potential infinite loop here!
+                // TODO: REFACTOR THIS!
+                let args:any = {};
+                args._ = this.config.replaceVars(action, pkg.name).split(" ");
+                args._.shift();
+                args.run = true;
+                await this.openShell(args);
+            } else {
+                await loader.action(pkg, action);
+            }
         }
     }
 
-    async openShell(context: any, args: any) {
+    async openShell(args: any) {
         // TODO: Handle other os's
         if (Deno.build.os != "windows") {
             throw `${Deno.build.os} not supported`;
@@ -68,7 +77,7 @@ export default class Shell implements Command {
         let cmd = this.concatCmd(
             "cmd /u " + (args.run ? "/c" : "/k"),
             // (args.run ? undefined : "cls"),
-            this.addPath(context),
+            this.addPath(),
             (args.run ? undefined : 'prompt [levain]$P$G'),
             (args.run ? args._.join(" ") : undefined)
         );
@@ -78,7 +87,7 @@ export default class Shell implements Command {
         opt.cmd = cmd.split(" ");
         opt.env = {}
 
-        this.setEnv(context, opt.env);
+        this.setEnv(opt.env);
         if (this.config.levainHome) {
             opt.env["levainHome"] = this.config.levainHome;
         }
@@ -131,8 +140,8 @@ export default class Shell implements Command {
         return result;
     }
 
-    private addPath(context: any): string|undefined {
-        let myPath:string = context.action?.addpath?.path;
+    private addPath(): string|undefined {
+        let myPath:string = this.config.context.action?.addpath?.path;
         if (!myPath) {
             return "";
         }
@@ -156,13 +165,13 @@ export default class Shell implements Command {
         return pathStr;
     }
 
-    private setEnv(context: any, env: any): void {
-        if (!context.action?.setEnv?.env) {
+    private setEnv(env: any): void {
+        if (!this.config.context.action?.setEnv?.env) {
             return undefined;
         }
 
-        for (let key of Object.keys(context.action.setEnv.env)) {
-            let value = context.action.setEnv.env[key];
+        for (let key of Object.keys(this.config.context.action.setEnv.env)) {
+            let value = this.config.context.action.setEnv.env[key];
             if (value) {
                 env[key] = value;
             }
