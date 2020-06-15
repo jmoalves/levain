@@ -34,7 +34,7 @@ export default class Shell implements Command {
             await this.shellActions(pkg);
         }
 
-        this.openShell(myArgs);
+        await this.openShell(myArgs);
     }
 
     private async shellActions(pkg: Package) {
