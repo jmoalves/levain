@@ -5,6 +5,7 @@ import Config from "../lib/config.ts";
 import Package from '../lib/package/package.ts';
 import { parseArgs } from "../lib/parseArgs.ts";
 
+// TODO: Use native TS/JS implementation instead of extra-bin files.
 export default class Extract implements Action {
     constructor(private config:Config) {
     }
@@ -90,6 +91,10 @@ class ExtractorFactory {
             return new SevenZip(config);
         }
 
+        if (src.endsWith(".tar.gz")) {
+            return new UnTar(config);
+        }
+
         throw `${src} - file not supported.`;
     }
 }
@@ -107,7 +112,7 @@ class Unzipper extends Extractor {
 
         console.log("- UNZIP", src, "=>", dst);
 
-        let args = `cmd /c ${this.config.extraBinDir}\\unzip -qn ${src} -d ${dst}`.split(" ");
+        let args = `cmd /u /c path ${this.config.extraBinDir};%PATH% && ${this.config.extraBinDir}\\unzip -qn ${src} -d ${dst}`.split(" ");
 
         const p = Deno.run({
             cmd: args
@@ -134,11 +139,38 @@ class SevenZip extends Extractor {
 
         console.log("- 7z", src, "=>", dst);
 
-        let args = `cmd /c ${this.config.extraBinDir}\\7z.exe x -bd -o${dst} ${src}`.split(" ");
+        let args = `cmd /u /c path ${this.config.extraBinDir};%PATH% && ${this.config.extraBinDir}\\7z.exe x -bd -o${dst} ${src}`.split(" ");
 
         const p = Deno.run({
             cmd: args,
             stdout: "null"
+        });
+        
+        let status = await p.status();
+        if (!status.success) {
+            throw "CMD terminated with code " + status.code;
+        }    
+    }    
+}
+
+class UnTar extends Extractor {
+    constructor(config:Config) {
+        super(config);
+    }
+
+    async extractImpl(src: string, dst: string) {
+        // TODO: Handle other os's
+        if (Deno.build.os != "windows") {
+            throw `${Deno.build.os} not supported`;
+        }
+
+        console.log("- UNTAR", src, "=>", dst);
+
+        let args = `cmd /u /c path ${this.config.extraBinDir};%PATH% && ( ${this.config.extraBinDir}\\7z.exe x ${src} -bd -so | ${this.config.extraBinDir}\\7z.exe x -si -bd -ttar -o${dst} )`.split(" ");
+
+        const p = Deno.run({
+            stdout: "null",
+            cmd: args
         });
         
         let status = await p.status();
