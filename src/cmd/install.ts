@@ -1,3 +1,5 @@
+import * as log from "https://deno.land/std/log/mod.ts";
+
 import Command from "../lib/command.ts";
 import Config from "../lib/config.ts";
 import Package from "../lib/package/package.ts";
@@ -8,7 +10,7 @@ export default class Install implements Command {
     }
 
     async execute(args: string[]) {
-        console.log("install " + JSON.stringify(args));
+        log.info("install " + JSON.stringify(args));
 
         let pkgs:Package[]|null = this.config.packageManager.resolvePackages(args);
 
@@ -17,8 +19,8 @@ export default class Install implements Command {
             return;
         }
 
-        console.log("");
-        console.log("==================================");
+        log.info("");
+        log.info("==================================");
         for (let pkg of pkgs) {
             await this.installPackage(pkg);
         }
@@ -30,12 +32,12 @@ export default class Install implements Command {
         }
 
         if (pkg.installed) {
-            console.log("=== SKIP installed", pkg.name);
+            log.info("=== SKIP installed", pkg.name);
             return;
         }
 
-        console.log("");
-        console.log("=== INSTALL", pkg.name, "-", pkg.version);
+        log.info("");
+        log.info("=== INSTALL", pkg.name, "-", pkg.version);
         let actions = pkg.yamlItem("cmd.install")
         if (!actions) {
             actions = [];
