@@ -1,3 +1,5 @@
+import * as log from "https://deno.land/std/log/mod.ts";
+
 import * as path from "https://deno.land/std/path/mod.ts";
 import { existsSync } from "https://deno.land/std/fs/mod.ts";
 
@@ -7,7 +9,7 @@ import Config from '../config.ts';
 
 export default class FileSystemRepository implements Repository {
   constructor(private config:Config, private rootDir: string) {
-    console.log("FSRepo: Root=", this.rootDir);
+    log.info("FSRepo: Root=", this.rootDir);
   }
 
   resolvePackage(packageName: string): Package | undefined {
@@ -18,7 +20,7 @@ export default class FileSystemRepository implements Repository {
     let pkg = this.readDir(packageName, this.rootDir);
 
     if (pkg) {
-      console.log("FSRepo:", packageName, "=>", pkg.toString());
+      log.info("FSRepo:", packageName, "=>", pkg.toString());
     }
 
     return pkg;
@@ -54,7 +56,7 @@ export default class FileSystemRepository implements Repository {
       return undefined;
     }
 
-    //console.log(`FSRepo: PKG[${packageName}] => ${yamlFile}`);
+    //log.info(`FSRepo: PKG[${packageName}] => ${yamlFile}`);
     let yamlStr:string = Deno.readTextFileSync(yamlFile);
 
     let pkg:Package = new Package(
