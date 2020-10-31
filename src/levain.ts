@@ -1,12 +1,15 @@
-import { parse } from "https://deno.land/std/flags/mod.ts";
+await Logger.setup();
 
+import * as log from "https://deno.land/std/log/mod.ts";
+
+import Logger from './lib/log.ts'
 import Loader from './lib/loader.ts';
 import Config from './lib/config.ts';
 import { parseArgs } from "./lib/parseArgs.ts";
 
-console.log(`  deno v${Deno.version.deno}`);
-console.log(`levain v0.0.1`);
-console.log("");
+log.info(`  deno v${Deno.version.deno}`);
+log.info(`levain v0.0.1`);
+log.info("");
 
 const myArgs = parseArgs(Deno.args, {
     stringOnce: [
@@ -18,7 +21,7 @@ const myArgs = parseArgs(Deno.args, {
     boolean: [
     ]
 });
-console.log("args", JSON.stringify(myArgs));
+log.info("args " + JSON.stringify(myArgs));
 
 // Context
 const config = new Config(myArgs);
@@ -26,13 +29,13 @@ const config = new Config(myArgs);
 
 // TODO: No parameters? Show Help
 if (myArgs._.length == 0) {
-    console.log("");
-    console.log("Nothing to do. Do you want some help?");
+    log.error("");
+    log.error("Nothing to do. Do you want some help?");
     Deno.exit(1);
 }
 
-console.log("");
-console.log("==================================");
+log.info("");
+log.info("==================================");
 // First parameter is the command
 let cmd:string = myArgs._.shift()!;
 const loader = new Loader(config);
