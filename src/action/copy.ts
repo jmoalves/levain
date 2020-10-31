@@ -39,9 +39,7 @@ export default class Copy implements Action {
             throw "Action - copy - Unable to copy multiple sources to a single file";
         }
 
-        if (!args.verbose) {
-            log.info(`COPY ${src} => ${dst}`);
-        }
+        log.info(`COPY ${src} => ${dst}`);
 
         for (let item of src) {
             const fileInfo = Deno.statSync(item);
@@ -67,7 +65,7 @@ export default class Copy implements Action {
 
     private doCopy(args:any, src: string, dst: string) {
         if (args.verbose) {
-            log.info(`COPY ${src} => ${dst}`);
+            log.debug(`COPY ${src} => ${dst}`);
         }
         
         try {
