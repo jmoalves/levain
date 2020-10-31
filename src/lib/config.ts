@@ -127,12 +127,11 @@ export default class Config {
   private configRepo(args: any): Repository {
     let repos:Repository[] = [];
     
-    this.addLevainRegistry(repos);
+    // TODO: I think we can remove this...
+    // this.addLevainRegistry(repos);
 
     this.addLevainRepo(repos);
     this.addRepos(repos, args.addRepo);
-
-    //repos.push(new NullRepository(this));
 
     // CWD
     repos.push(new FileSystemRepository(this, Deno.cwd()));
