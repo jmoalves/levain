@@ -4,26 +4,30 @@ import { homedir } from './utils.ts';
 
 export default class Logger {
     public static async setup() {
-        await log.setup({
-            handlers: {
-              console: new log.handlers.ConsoleHandler("INFO"),
-          
-              file: new log.handlers.FileHandler("DEBUG", {
-                filename: `${homedir()}/levain-${Logger.logTag(new Date())} .log`,
-                formatter: logRecord => {
-                    return `${Logger.logTag(logRecord.datetime)} ${logRecord.levelName} ${logRecord.msg}`;
-                  }
-              }),
-            },
-          
-            loggers: {
-              // configure default logger available via short-hand methods above
-              default: {
-                level: "DEBUG",
-                handlers: ["console", "file"],
-              }
-            },
-          });
+      const logFile = Deno.makeTempFileSync({ prefix: `levain-${Logger.logTag(new Date())}-`, suffix: ".log"});
+      await log.setup({
+          handlers: {
+            console: new log.handlers.ConsoleHandler("INFO"),
+        
+            file: new log.handlers.FileHandler("DEBUG", {
+              filename: logFile,
+              formatter: logRecord => {
+                  return `${Logger.logTag(logRecord.datetime)} ${logRecord.levelName} ${logRecord.msg}`;
+                }
+            }),
+          },
+        
+          loggers: {
+            // configure default logger available via short-hand methods above
+            default: {
+              level: "DEBUG",
+              handlers: ["console", "file"],
+            }
+          },
+        });
+
+      log.info(`logFile -> ${logFile}`);
+      log.info("")
     }
 
     private static logTag(dt:Date): string {
