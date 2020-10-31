@@ -174,7 +174,8 @@ export default class Config {
         }
       }
 
-      repos.push(new FileSystemRepository(this, repo));
+      let repoPath = path.resolve(repo);
+      repos.push(new FileSystemRepository(this, repoPath));
     });
   }
 }
