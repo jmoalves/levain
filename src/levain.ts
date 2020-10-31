@@ -36,9 +36,14 @@ if (myArgs._.length == 0) {
 
 log.info("");
 log.info("==================================");
+
 // First parameter is the command
 let cmd:string = myArgs._.shift()!;
 const loader = new Loader(config);
-loader.command(cmd, myArgs._);
+await loader.command(cmd, myArgs._);
 
 /////////////////////////////////////////////////////////////////////////////////
+log.info("");
+log.info("==================================");
+log.info("Levain fermentee!");
+log.info("");
