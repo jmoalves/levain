@@ -1,3 +1,4 @@
+import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 
 import Action from "../lib/action.ts";
@@ -27,7 +28,7 @@ export default class SetEnv implements Action {
 
         let key = parameters[0];
         let value = parameters[1];
-        console.log("ENV", key, "=", value);
+        log.info("ENV", key, "=", value);
         this.config.setVar(key, value);
         this.config.context.action.setEnv.env[key] = value;
     }
