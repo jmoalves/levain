@@ -20,7 +20,7 @@ export default class FileSystemRepository implements Repository {
     let pkg = this.readDir(packageName, this.rootDir);
 
     if (pkg) {
-      log.info(`FSRepo: ${packageName} => ${pkg.toString()}`);
+      log.debug(`FSRepo: ${packageName} => ${pkg.toString()}`);
     }
 
     return pkg;
@@ -56,7 +56,6 @@ export default class FileSystemRepository implements Repository {
       return undefined;
     }
 
-    log.debug(`FSRepo: PKG[${packageName}] => ${yamlFile}`);
     let yamlStr:string = Deno.readTextFileSync(yamlFile);
 
     let pkg:Package = new Package(
