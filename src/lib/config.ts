@@ -2,13 +2,11 @@ import * as log from "https://deno.land/std/log/mod.ts";
 
 import * as path from "https://deno.land/std/path/mod.ts";
 
-import Package from './package/package.ts';
 import { homedir } from './utils.ts';
 
 import Repository from './repository/repository.ts'
 import CacheRepository from './repository/cache.ts'
 import ChainRepository from './repository/chain.ts'
-import NullRepository from './repository/null.ts'
 import FileSystemRepository from './repository/fs.ts'
 import PackageManager from "./package/manager.ts";
 
