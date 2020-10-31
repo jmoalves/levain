@@ -1,3 +1,5 @@
+import * as log from "https://deno.land/std/log/mod.ts";
+
 import Config from "../config.ts";
 import Package from "./package.ts";
 import Repository from "../repository/repository.ts";
@@ -21,14 +23,14 @@ export default class PackageManager {
             return null;
         }
 
-        console.log("");
-        console.log("=== Package list (in order):");
+        log.info("");
+        log.info("=== Package list (in order):");
         let result: Package[] = [];
         for (let name of pkgs.keys()) {
             const pkg = pkgs.get(name)!;
             this.knownPackages.set(name, pkg);
             result.push(pkg);
-            console.log(name);
+            log.info(name);
         }
 
         return result;
