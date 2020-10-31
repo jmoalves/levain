@@ -18,7 +18,7 @@ export default class Extract implements Action {
             ]
         });
 
-        // log.info("Args:", JSON.stringify(args));
+        log.debug(`Args: ${JSON.stringify(args)}`);
         if (args._.length != 2) {
             console.error("You must inform the file to extract and the destination directory");
             throw "Illegal arguments";
@@ -27,7 +27,7 @@ export default class Extract implements Action {
         const src = path.resolve(pkg.pkgDir, args._[0]);
         const dst = path.resolve(pkg.baseDir, args._[1]);
 
-        log.info("EXTRACT", src, "=>", dst);
+        log.info(`EXTRACT ${src} => ${dst}`);
         const factory:ExtractorFactory = new ExtractorFactory();
         const extractor:Extractor = factory.createExtractor(this.config, src);
         await extractor.extract(args.strip, src, dst);
@@ -63,7 +63,7 @@ abstract class Extractor {
         // Using temp dir to avoid name clashes
         let tmpRootDir =  Deno.makeTempDirSync({ prefix: 'unzip-strip-' });
         for (let toStrip of children) {
-            log.info("- STRIP", path.resolve(dstDir, toStrip.name));
+            log.info(`- STRIP ${path.resolve(dstDir, toStrip.name)}`);
             let tmpDir = path.resolve(tmpRootDir, toStrip.name);
             Deno.renameSync(
                 path.resolve(dstDir, toStrip.name),
@@ -111,7 +111,7 @@ class Unzipper extends Extractor {
             throw `${Deno.build.os} not supported`;
         }
 
-        log.info("- UNZIP", src, "=>", dst);
+        log.info(`- UNZIP ${src} => ${dst}`);
 
         let args = `cmd /u /c path ${this.config.extraBinDir};%PATH% && ${this.config.extraBinDir}\\unzip -qn ${src} -d ${dst}`.split(" ");
 
@@ -138,7 +138,7 @@ class SevenZip extends Extractor {
             throw `${Deno.build.os} not supported`;
         }
 
-        log.info("- 7z", src, "=>", dst);
+        log.info(`- 7z ${src} => ${dst}`);
 
         let args = `cmd /u /c path ${this.config.extraBinDir};%PATH% && ${this.config.extraBinDir}\\7z.exe x -bd -o${dst} ${src}`.split(" ");
 
@@ -165,7 +165,7 @@ class UnTar extends Extractor {
             throw `${Deno.build.os} not supported`;
         }
 
-        log.info("- UNTAR", src, "=>", dst);
+        log.info(`- UNTAR ${src} => ${dst}`);
 
         let args = `cmd /u /c path ${this.config.extraBinDir};%PATH% && ( ${this.config.extraBinDir}\\7z.exe x ${src} -bd -so | ${this.config.extraBinDir}\\7z.exe x -si -bd -ttar -o${dst} )`.split(" ");
 

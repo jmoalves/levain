@@ -10,7 +10,7 @@ export default class Install implements Command {
     }
 
     async execute(args: string[]) {
-        log.info("install " + JSON.stringify(args));
+        log.info(`install ${JSON.stringify(args)}`);
 
         let pkgs:Package[]|null = this.config.packageManager.resolvePackages(args);
 
@@ -32,12 +32,12 @@ export default class Install implements Command {
         }
 
         if (pkg.installed) {
-            log.info("=== SKIP installed", pkg.name);
+            log.info(`=== SKIP installed ${pkg.name}`);
             return;
         }
 
         log.info("");
-        log.info("=== INSTALL", pkg.name, "-", pkg.version);
+        log.info(`=== INSTALL ${pkg.name} - ${pkg.version}`);
         let actions = pkg.yamlItem("cmd.install")
         if (!actions) {
             actions = [];
