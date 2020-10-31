@@ -1,6 +1,7 @@
 import * as path from "https://deno.land/std/path/mod.ts";
 
 import Package from './package/package.ts';
+import { homedir } from './utils.ts';
 
 import Repository from './repository/repository.ts'
 import CacheRepository from './repository/cache.ts'
@@ -76,7 +77,7 @@ export default class Config {
         }
 
         if (!value && vName == "home") {
-          value = this.homedir();
+          value = homedir();
         }
 
         if (value) {
@@ -117,7 +118,7 @@ export default class Config {
       return;
     }
 
-    let home = this.homedir();
+    let home = homedir();
     if (home) {
       this._env["levainHome"] = path.resolve(home, "levain");
       return;
@@ -140,30 +141,6 @@ export default class Config {
     return new CacheRepository(this, 
       new ChainRepository(this, repos)
     );  
-  }
-
-  // TODO: We must find a standard Deno function for this!
-  private homedir() : string {
-    // Common option
-    let home = Deno.env.get("home");
-    if (home) {
-      return home;
-    }
-
-    // Not found - Windows?
-    let userprofile = Deno.env.get("userprofile");
-    if (userprofile) {
-      return userprofile;
-    }
-
-    let homedrive = Deno.env.get("homedrive");
-    let homepath = Deno.env.get("homepath");
-    if (homedrive && homepath) {
-      return path.resolve(homedrive, homepath);
-    }
-
-    // What else?
-    throw "No home for levain. Do you have a refrigerator?";
   }
 
   private get levainSrcDir(): string {
