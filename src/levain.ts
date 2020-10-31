@@ -8,7 +8,7 @@ import { parseArgs } from "./lib/parseArgs.ts";
 await Logger.setup();
 
 log.info(`  deno v${Deno.version.deno}`);
-log.info(`levain v0.0.1`);
+log.info(`levain v0.0.2`);
 log.info("");
 
 const myArgs = parseArgs(Deno.args, {
