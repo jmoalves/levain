@@ -21,7 +21,7 @@ const myArgs = parseArgs(Deno.args, {
     boolean: [
     ]
 });
-log.info("args " + JSON.stringify(myArgs));
+log.debug("args " + JSON.stringify(myArgs));
 
 // Context
 const config = new Config(myArgs);
