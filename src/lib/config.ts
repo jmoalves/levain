@@ -24,8 +24,7 @@ export default class Config {
     this._repository = this.configRepo(args);
     this._pkgManager = new PackageManager(this);
 
-    log.info("Config:");
-    log.info(JSON.stringify(this._env, null, 3));
+    log.info(`Config: \n${JSON.stringify(this._env, null, 3)}`);
   }
 
   get repository(): Repository {
