@@ -1,11 +1,11 @@
-await Logger.setup();
-
 import * as log from "https://deno.land/std/log/mod.ts";
 
 import Logger from './lib/log.ts'
 import Loader from './lib/loader.ts';
 import Config from './lib/config.ts';
 import { parseArgs } from "./lib/parseArgs.ts";
+
+await Logger.setup();
 
 log.info(`  deno v${Deno.version.deno}`);
 log.info(`levain v0.0.1`);
