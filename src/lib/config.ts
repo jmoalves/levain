@@ -1,3 +1,5 @@
+import * as log from "https://deno.land/std/log/mod.ts";
+
 import * as path from "https://deno.land/std/path/mod.ts";
 
 import Package from './package/package.ts';
@@ -22,8 +24,8 @@ export default class Config {
     this._repository = this.configRepo(args);
     this._pkgManager = new PackageManager(this);
 
-    console.log("Config:");
-    console.log(JSON.stringify(this._env, null, 3));
+    log.info("Config:");
+    log.info(JSON.stringify(this._env, null, 3));
   }
 
   get repository(): Repository {
@@ -112,7 +114,7 @@ export default class Config {
     }
 
     let envDef = Deno.env.get("levainHome");
-    console.log("envDef", envDef);
+    log.info("envDef", envDef);
     if (envDef) {
       this._env["levainHome"] = path.resolve(envDef);
       return;
