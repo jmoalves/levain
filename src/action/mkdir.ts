@@ -1,3 +1,4 @@
+import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 
 import Action from "../lib/action.ts";
@@ -36,7 +37,7 @@ export default class Mkdir implements Action {
             }
         }
 
-        console.log(`MKDIR ${dirname}`);
+        log.info(`MKDIR ${dirname}`);
         Deno.mkdirSync(dirname, { recursive: true });
 
         if (!args.compact) {
@@ -48,12 +49,12 @@ export default class Mkdir implements Action {
 
     private async compactSync(dirname: string) {
         if (Deno.build.os != "windows") {
-            console.log("MKDIR - ignoring --compact - Windows only");
+            log.info("MKDIR - ignoring --compact - Windows only");
             return;
         }
 
         const windir = dirname.replace(/\//g, "\\");
-        console.log(`COMPACT ${windir}`);
+        log.info(`COMPACT ${windir}`);
         let args = `compact /q /c /s:${windir}`.split(" ");
 
         const p = Deno.run({

@@ -1,3 +1,4 @@
+import * as log from "https://deno.land/std/log/mod.ts";
 import { copySync, walkSync } from "https://deno.land/std/fs/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 
@@ -39,7 +40,7 @@ export default class Copy implements Action {
         }
 
         if (!args.verbose) {
-            console.log("COPY", src, "=>", dst);
+            log.info("COPY", src, "=>", dst);
         }
 
         for (let item of src) {
@@ -66,7 +67,7 @@ export default class Copy implements Action {
 
     private doCopy(args:any, src: string, dst: string) {
         if (args.verbose) {
-            console.log("COPY", src, "=>", dst);
+            log.info("COPY", src, "=>", dst);
         }
         
         try {
