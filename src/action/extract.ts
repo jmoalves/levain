@@ -63,7 +63,7 @@ abstract class Extractor {
         // Using temp dir to avoid name clashes
         let tmpRootDir =  Deno.makeTempDirSync({ prefix: 'unzip-strip-' });
         for (let toStrip of children) {
-            log.info(`- STRIP ${path.resolve(dstDir, toStrip.name)}`);
+            log.debug(`- STRIP ${path.resolve(dstDir, toStrip.name)}`);
             let tmpDir = path.resolve(tmpRootDir, toStrip.name);
             Deno.renameSync(
                 path.resolve(dstDir, toStrip.name),
@@ -111,7 +111,7 @@ class Unzipper extends Extractor {
             throw `${Deno.build.os} not supported`;
         }
 
-        log.info(`- UNZIP ${src} => ${dst}`);
+        log.debug(`- UNZIP ${src} => ${dst}`);
 
         let args = `cmd /u /c path ${this.config.extraBinDir};%PATH% && ${this.config.extraBinDir}\\unzip -qn ${src} -d ${dst}`.split(" ");
 
@@ -138,7 +138,7 @@ class SevenZip extends Extractor {
             throw `${Deno.build.os} not supported`;
         }
 
-        log.info(`- 7z ${src} => ${dst}`);
+        log.debug(`- 7z ${src} => ${dst}`);
 
         let args = `cmd /u /c path ${this.config.extraBinDir};%PATH% && ${this.config.extraBinDir}\\7z.exe x -bd -o${dst} ${src}`.split(" ");
 
@@ -165,7 +165,7 @@ class UnTar extends Extractor {
             throw `${Deno.build.os} not supported`;
         }
 
-        log.info(`- UNTAR ${src} => ${dst}`);
+        log.debug(`- UNTAR ${src} => ${dst}`);
 
         let args = `cmd /u /c path ${this.config.extraBinDir};%PATH% && ( ${this.config.extraBinDir}\\7z.exe x ${src} -bd -so | ${this.config.extraBinDir}\\7z.exe x -si -bd -ttar -o${dst} )`.split(" ");
 

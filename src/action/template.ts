@@ -23,7 +23,7 @@ export default class Template implements Action {
         let src = path.resolve(pkg.pkgDir, args._[0]);
         let dst = path.resolve(pkg.baseDir, args._[1]);
 
-        log.info(`READ ${src}`);
+        log.info(`TEMPLATE ${src} => ${dst}`);
         let data = Deno.readTextFileSync(src);
         for (let x in args.replace) {
             if (args.replace[x].search(/^\/(.+)\/([a-z]?)/) != -1) {
@@ -31,10 +31,10 @@ export default class Template implements Action {
                 let regexp = args.replace[x].replace(/^\/(.+)\/([a-z]?)/, "$1");
                 let flags = args.replace[x].replace(/^\/(.+)\/([a-z]?)/, "$2");
 
-                log.info(`REPLACE[rxp] /${regexp}/${flags} => ${args.with[x]}`);
+                log.debug(`- REPLACE[rxp] /${regexp}/${flags} => ${args.with[x]}`);
                 data = data.replace(new RegExp(regexp, flags), args.with[x]);
             } else {
-                log.info(`REPLACE[str] ${args.replace[x]} => ${args.with[x]}`);
+                log.debug(`- REPLACE[str] ${args.replace[x]} => ${args.with[x]}`);
                 data = data.replace(args.replace[x], args.with[x]);
             }
         }
@@ -50,7 +50,7 @@ export default class Template implements Action {
             }
         }
 
-        log.info(`WRITE ${dst}`);
+        log.debug(`- WRITE ${dst}`);
         await Deno.writeTextFileSync(dst, data);
     }
 
