@@ -10,7 +10,7 @@ export default class Install implements Command {
     }
 
     async execute(args: string[]) {
-        log.info(`install ${JSON.stringify(args)}`);
+        log.info(`install ${JSON.stringify(args)} - BEGIN`);
 
         let pkgs:Package[]|null = this.config.packageManager.resolvePackages(args);
 
@@ -20,10 +20,15 @@ export default class Install implements Command {
         }
 
         log.info("");
-        log.info("==================================");
+        log.info("-----------------");
         for (let pkg of pkgs) {
             await this.installPackage(pkg);
         }
+
+        log.info("");
+        log.info("-----------------");
+
+        log.info(`install ${JSON.stringify(args)} - FINISH`);
     }
 
     private async installPackage(pkg: Package) {
