@@ -40,7 +40,7 @@ export default class Copy implements Action {
         }
 
         if (!args.verbose) {
-            log.info("COPY", src, "=>", dst);
+            log.info(`COPY ${src} => ${dst}`);
         }
 
         for (let item of src) {
@@ -67,7 +67,7 @@ export default class Copy implements Action {
 
     private doCopy(args:any, src: string, dst: string) {
         if (args.verbose) {
-            log.info("COPY", src, "=>", dst);
+            log.info(`COPY ${src} => ${dst}`);
         }
         
         try {

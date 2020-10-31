@@ -9,7 +9,7 @@ import Config from '../config.ts';
 
 export default class FileSystemRepository implements Repository {
   constructor(private config:Config, private rootDir: string) {
-    log.info("FSRepo: Root=", this.rootDir);
+    log.info(`FSRepo: Root=${this.rootDir}`);
   }
 
   resolvePackage(packageName: string): Package | undefined {
@@ -20,7 +20,7 @@ export default class FileSystemRepository implements Repository {
     let pkg = this.readDir(packageName, this.rootDir);
 
     if (pkg) {
-      log.info("FSRepo:", packageName, "=>", pkg.toString());
+      log.info(`FSRepo: ${packageName} => ${pkg.toString()}`);
     }
 
     return pkg;
@@ -56,7 +56,7 @@ export default class FileSystemRepository implements Repository {
       return undefined;
     }
 
-    //log.info(`FSRepo: PKG[${packageName}] => ${yamlFile}`);
+    log.debug(`FSRepo: PKG[${packageName}] => ${yamlFile}`);
     let yamlStr:string = Deno.readTextFileSync(yamlFile);
 
     let pkg:Package = new Package(

@@ -49,7 +49,7 @@ export default class Mkdir implements Action {
 
     private async compactSync(dirname: string) {
         if (Deno.build.os != "windows") {
-            log.info("MKDIR - ignoring --compact - Windows only");
+            log.warning(`MKDIR - ignoring --compact - Windows only`);
             return;
         }
 

@@ -28,7 +28,7 @@ export default class SetEnv implements Action {
 
         let key = parameters[0];
         let value = parameters[1];
-        log.info("ENV", key, "=", value);
+        log.info(`ENV ${key} = ${value}`);
         this.config.setVar(key, value);
         this.config.context.action.setEnv.env[key] = value;
     }

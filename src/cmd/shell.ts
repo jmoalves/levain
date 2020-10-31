@@ -21,7 +21,7 @@ export default class Shell implements Command {
                 "run"
             ]
         });
-        log.info("shell " + JSON.stringify(args));
+        log.info(`shell ${JSON.stringify(args)}`);
 
         let pkgs:Package[]|null = this.config.packageManager.resolvePackages(myArgs.package);
 
@@ -53,7 +53,7 @@ export default class Shell implements Command {
             return;
         }
 
-        log.info("=== ENV", pkg.name, "-", pkg.version);
+        log.info(`=== ENV ${pkg.name} - ${pkg.version}`);
         const loader = new Loader(this.config);
         for (let action of actions) {
             if (action.startsWith("levainShell")) { 
@@ -83,7 +83,7 @@ export default class Shell implements Command {
             (args.run ? undefined : 'prompt [levain]$P$G'),
             (args.run ? args._.join(" ") : undefined)
         );
-        log.info("- CMD -", cmd);
+        log.info(`- CMD - ${cmd}`);
 
         let opt:any = {};
         opt.cmd = cmd.split(" ");
