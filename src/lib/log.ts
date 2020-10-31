@@ -8,7 +8,7 @@ export default class Logger {
             handlers: {
               console: new log.handlers.ConsoleHandler("INFO"),
           
-              file: new log.handlers.FileHandler("INFO", {
+              file: new log.handlers.FileHandler("DEBUG", {
                 filename: `${homedir()}/levain-${Logger.logTag(new Date())} .log`,
                 formatter: logRecord => {
                     return `${Logger.logTag(logRecord.datetime)} ${logRecord.levelName} ${logRecord.msg}`;
@@ -19,14 +19,9 @@ export default class Logger {
             loggers: {
               // configure default logger available via short-hand methods above
               default: {
-                level: "INFO",
+                level: "DEBUG",
                 handlers: ["console", "file"],
-              },
-          
-              engine: {
-                level: "ERROR",
-                handlers: ["console"],
-              },
+              }
             },
           });
     }
