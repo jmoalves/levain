@@ -56,15 +56,8 @@ cat src/levain.ts.bkp \
 
 # Commit version
 git add src/levain.ts
-git commit -m "v${version}"
+git commit -m "$tag"
 git tag $tag
-git push
-
-# Restore file
-cp -f src/levain.ts.bkp src/levain.ts
-git add src/levain.ts
-git commit -m "vHEAD"
-rm  src/levain.ts.bkp
 git push
 
 # Release at Github
@@ -76,6 +69,13 @@ curl -ks -X POST -u username:$githubToken \
         \"prerelease\": true \
     }" \
     https://api.github.com/repos/jmoalves/levain/releases
+
+# Restore file
+cp -f src/levain.ts.bkp src/levain.ts
+git add src/levain.ts
+git commit -m "vHEAD"
+rm  src/levain.ts.bkp
+git push
 
 # Done
 echo Release $tag created
