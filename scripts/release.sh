@@ -15,6 +15,12 @@ fi
 
 ## TODO: Check if version matches regexp [0-9]+\.[0-9]+\.[0-9]+
 
+# Check JQ
+if ! $( jq-win64 --help > /dev/null ) ; then
+    echo jq-win64 NOT FOUND
+    exit 1
+fi
+
 myPath="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd $myPath/..
 
