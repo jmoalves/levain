@@ -18,13 +18,15 @@ fi
 myPath="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd $myPath/..
 
+git fetch --all
+
 # Check changes
-# changes=$( git status --porcelain )
-# if [ -n "$changes" ]; then
-#     echo Git repo with changes. Aborting...
-#     echo $changes
-#     exit 1
-# fi
+changes=$( git status --porcelain )
+if [ -n "$changes" ]; then
+    echo Git repo with changes. Aborting...
+    echo $changes
+    exit 1
+fi
 
 # Check tag
 tag=v${version}
@@ -54,9 +56,15 @@ cat src/levain.ts.bkp \
 
 # Commit version
 git add src/levain.ts
-rm  src/levain.ts.bkp
 git commit -m "v${version}"
 git tag $tag
+git push
+
+# Restore file
+cp -f src/levain.ts.bkp src/levain.ts
+git add src/levain.ts
+git commit -m "vHEAD"
+rm  src/levain.ts.bkp
 git push
 
 # Release at Github
