@@ -47,7 +47,7 @@ for r in $releases; do
 done
 
 # Change version at main file
-cp -f src/levain.ts.bkp
+cp -f src/levain.ts src/levain.ts.bkp
 cat src/levain.ts.bkp \
     | sed "s/levain vHEAD/levain ${tag}/g" \
     > src/levain.ts
