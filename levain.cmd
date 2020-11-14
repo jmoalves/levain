@@ -1,6 +1,7 @@
 @echo off
 
 set myPath=%~dp0
+PATH %myPath%;%myPath%bin;%PATH%
 
 set NO_COLOR=true
 
