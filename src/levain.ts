@@ -9,7 +9,7 @@ export async function levainCLI(): Promise<void> {
     await Logger.setup();
 
     log.info(`  deno v${Deno.version.deno}`);
-    log.info(`levain vHEAD`);
+    log.info(`levain v0.0.7`);
 
     const myArgs = parseArgs(Deno.args, {
         stringOnce: [
