@@ -40,8 +40,10 @@ export function parseArgs(args: string[], optsDef?: Opts): any {
 
     if (optsDef?.stringOnce) {
         optsDef.stringOnce.forEach((key) => {
-            if (typeof(myArgs[key]) != "string") {
-                throw `Option ${key} is for single use only`;
+            if (myArgs[key]) {
+                if (typeof(myArgs[key]) != "string") {
+                    throw `Option ${key} is for single use only`;
+                }
             }
         })
     }
