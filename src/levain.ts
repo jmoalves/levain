@@ -10,7 +10,6 @@ export async function levainCLI(): Promise<void> {
 
     log.info(`  deno v${Deno.version.deno}`);
     log.info(`levain vHEAD`);
-    log.info("");
 
     const myArgs = parseArgs(Deno.args, {
         stringOnce: [
@@ -28,15 +27,16 @@ export async function levainCLI(): Promise<void> {
     const config = new Config(myArgs);
     //
 
+    // Time to business!
+    log.info("");
+    log.info("==================================");
+
     // TODO: No parameters? Show Help
     if (myArgs._.length == 0) {
         log.error("");
         log.error("Nothing to do. Do you want some help?");
         Deno.exit(1);
     }
-
-    log.info("");
-    log.info("==================================");
 
     // First parameter is the command
     let cmd:string = myArgs._.shift()!;

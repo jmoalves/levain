@@ -22,7 +22,8 @@ export default class Config {
     this._repository = this.configRepo(args);
     this._pkgManager = new PackageManager(this);
 
-    log.info(`Config: \n${JSON.stringify(this._env, null, 3)}`);
+    log.info("");
+    log.info(`=== Config: \n${JSON.stringify(this._env, null, 3)}`);
   }
 
   get repository(): Repository {
@@ -113,7 +114,7 @@ export default class Config {
     let levainHome = Deno.env.get("levainHome");
     if (levainHome) {
       this._env["levainHome"] = path.resolve(levainHome);
-      log.info(`SET levainHome=${this._env["levainHome"]}`)
+      log.info(`ENV levainHome=${this._env["levainHome"]}`)
       return;
     }
 
@@ -128,11 +129,11 @@ export default class Config {
   private configRepo(args: any): Repository {
     let repos:Repository[] = [];
     
+    log.info("");
+    log.info("=== LevainRepos");
     this.addLevainRepo(repos);
     this.addRepos(repos, args.addRepo);
-
-    // CWD
-    repos.push(new FileSystemRepository(this, Deno.cwd()));
+    this.addCurrentDirRepo(repos);
 
     return new CacheRepository(this, 
       new ChainRepository(this, repos)
@@ -145,9 +146,15 @@ export default class Config {
   }
 
   private addLevainRepo(repos: Repository[]) {
+    log.info(`LevainRepo: DEFAULT ${this.levainSrcDir} --> Levain src dir`);
     repos.push(new FileSystemRepository(this, this.levainSrcDir));
   }
   
+  private addCurrentDirRepo(repos: Repository[]) {
+    log.info(`LevainRepo: DEFAULT ${Deno.cwd()} --> Current working dir`);
+    repos.push(new FileSystemRepository(this, Deno.cwd()));
+  }
+
   private addRepos(repos: Repository[], addRepo: undefined|string[]) {
     if (!addRepo) {
       return;
@@ -166,6 +173,7 @@ export default class Config {
       }
 
       let repoPath = path.resolve(repo);
+      log.info(`LevainRepo: addRepo ${repoPath}`);
       repos.push(new FileSystemRepository(this, repoPath));
     });
   }
