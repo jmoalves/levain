@@ -128,9 +128,6 @@ export default class Config {
   private configRepo(args: any): Repository {
     let repos:Repository[] = [];
     
-    // TODO: I think we can remove this...
-    // this.addLevainRegistry(repos);
-
     this.addLevainRepo(repos);
     this.addRepos(repos, args.addRepo);
 
@@ -145,12 +142,6 @@ export default class Config {
   private get levainSrcDir(): string {
     // https://stackoverflow.com/questions/61829367/node-js-dirname-filename-equivalent-in-deno
     return path.resolve(path.dirname(path.fromFileUrl(import.meta.url)), "../..");
-  }
-
-  private addLevainRegistry(repos: Repository[]) {
-    if (this.levainRegistry) {
-      repos.push(new FileSystemRepository(this, this.levainRegistry));
-    }
   }
 
   private addLevainRepo(repos: Repository[]) {
