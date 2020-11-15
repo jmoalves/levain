@@ -1,3 +1,5 @@
+import * as log from "https://deno.land/std/log/mod.ts";
+
 import Command from "./command.ts";
 import Config from "./config.ts";
 import Action from "./action.ts";
@@ -46,7 +48,8 @@ export default class Loader {
                 return new Shell(this.config);
 
             default:
-                throw `Commmand ${cmd} not found`;
+                log.error(`Command ${cmd} not found - Aborting...`);
+                Deno.exit(1);
         }
     }
 
@@ -79,7 +82,8 @@ export default class Loader {
                 return new Template(this.config);
 
             default:
-                throw `Action ${action} not found`;
+                log.error(`Action ${action} not found - Aborting...`);
+                Deno.exit(1);
         }
     }
 
