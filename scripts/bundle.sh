@@ -1,5 +1,6 @@
 #!/bin/bash
 
+mkdir -p dist
 deno bundle \
     --unstable \
-    src/levain.ts levain.bundle.js
+    src/levain.ts dist/levain.bundle.js
