@@ -110,16 +110,17 @@ export default class Config {
       return;
     }
 
-    let envDef = Deno.env.get("levainHome");
-    log.info(`envDef ${envDef}`);
-    if (envDef) {
-      this._env["levainHome"] = path.resolve(envDef);
+    let levainHome = Deno.env.get("levainHome");
+    if (levainHome) {
+      this._env["levainHome"] = path.resolve(levainHome);
+      log.info(`SET levainHome=${this._env["levainHome"]}`)
       return;
     }
 
     let home = homedir();
     if (home) {
       this._env["levainHome"] = path.resolve(home, "levain");
+      log.info(`DEFAULT levainHome=${this._env["levainHome"]}`)
       return;
     }  
   }

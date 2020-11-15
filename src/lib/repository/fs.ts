@@ -9,7 +9,7 @@ import Config from '../config.ts';
 
 export default class FileSystemRepository implements Repository {
   constructor(private config:Config, private rootDir: string) {
-    log.info(`FSRepo: Root=${this.rootDir}`);
+    log.debug(`FSRepo: Root=${this.rootDir}`);
   }
 
   resolvePackage(packageName: string): Package | undefined {
