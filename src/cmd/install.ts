@@ -10,6 +10,11 @@ export default class Install implements Command {
     }
 
     async execute(args: string[]) {
+        if (!args || args.length == 0) {
+            log.error(`install - Nothing to install. Aborting...`);
+            Deno.exit(1);
+        }
+
         log.info(`install ${JSON.stringify(args)} - BEGIN`);
 
         let pkgs:Package[]|null = this.config.packageManager.resolvePackages(args);
