@@ -5,7 +5,7 @@ import Loader from './lib/loader.ts';
 import Config from './lib/config.ts';
 import { parseArgs } from "./lib/parseArgs.ts";
 
-async function levainCLI(): Promise<void> {
+export async function levainCLI(): Promise<void> {
     await Logger.setup();
 
     log.info(`  deno v${Deno.version.deno}`);
