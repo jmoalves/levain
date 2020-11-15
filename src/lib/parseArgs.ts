@@ -1,3 +1,5 @@
+import * as log from "https://deno.land/std/log/mod.ts";
+
 import { parse } from "https://deno.land/std/flags/mod.ts";
 
 class Opts {
@@ -11,7 +13,8 @@ export function parseArgs(args: string[], optsDef?: Opts): any {
         stopEarly: true,
         unknown: (v:string) => { 
             if (v.startsWith("-")) {
-                throw "ERROR: Unknown option - " + v;
+                log.error("ERROR: Unknown option - " + v);
+                Deno.exit(1);
             }
 
             return true;
@@ -42,7 +45,8 @@ export function parseArgs(args: string[], optsDef?: Opts): any {
         optsDef.stringOnce.forEach((key) => {
             if (myArgs[key]) {
                 if (typeof(myArgs[key]) != "string") {
-                    throw `Option ${key} is for single use only`;
+                    log.error(`Use option ${key} only once`);
+                    Deno.exit(1);
                 }
             }
         })
