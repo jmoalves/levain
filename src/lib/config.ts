@@ -133,10 +133,14 @@ export default class Config {
     }
 
     let config = path.resolve(this.levainSrcDir, "..", ".levain", "config.json");
-    if (Deno.statSync(config)) {
-      this._env["levainHome"] = path.resolve(this.levainSrcDir, "..");
-      log.info(`CFG levainHome=${this._env["levainHome"]}`)
-      return;
+    try {
+      if (Deno.statSync(config)) {
+        this._env["levainHome"] = path.resolve(this.levainSrcDir, "..");
+        log.info(`CFG levainHome=${this._env["levainHome"]}`)
+        return;
+      } 
+    } catch (err) {
+      //ignore
     }
 
     let levainHome = Deno.env.get("levainHome");
