@@ -3,7 +3,7 @@ version: 0.0.1
 cmd.install:
   - copy --verbose src bin levain.cmd levain.sh ${baseDir}
   - saveConfig
-  - levainShell setx PATH ${baseDir};${baseDir}\bin
+  - levainShell ${pkgDir}\src\userPath.cmd ${baseDir}\bin ${baseDir}
 
 cmd.shell:
   - addPath ${baseDir}
