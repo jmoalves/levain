@@ -44,9 +44,7 @@ export async function levainCLI(): Promise<void> {
     await loader.command(cmd, myArgs._);
 
     /////////////////////////////////////////////////////////////////////////////////
-    log.info("");
     log.info("==================================");
-    log.info("Levain fermentee!");
     log.info("");
 }
 
