@@ -16,6 +16,9 @@ export default class Config {
   private _env:any = {};
   private _context:any = {}; // Do we really need two of them (_env and _context)?
 
+  private _extraRepos: string[] = [];
+
+
   constructor(args: any) {
     this.configEnv(args);
     this.configHome();
@@ -36,6 +39,10 @@ export default class Config {
 
   get levainHome(): string {
     return this._env["levainHome"];
+  }
+
+  get levainConfigFile(): string {
+    return path.resolve(this.levainHome, ".levain", "config.json");
   }
 
   get levainRegistry(): string {
@@ -97,6 +104,17 @@ export default class Config {
     return path.resolve(this.levainSrcDir, "extra-bin", Deno.build.os);
   }
 
+  public save(): void {
+    let cfg:any = {};
+    cfg.levainHome = this.levainHome;
+    cfg.repos = this._extraRepos;
+
+    let fileName = this.levainConfigFile;
+
+    log.info(`SAVE ${fileName}`);
+    Deno.writeTextFileSync(fileName, JSON.stringify(cfg, null, 3));
+  }
+
   /////////////////////////////////////////////////////////////////////////////////
   private configEnv(args: any): void {
     Object.keys(args).forEach(key => {
@@ -107,7 +125,17 @@ export default class Config {
   }
 
   private configHome(): void {
+    log.info("");
+
     if (this._env["levainHome"]) {
+      log.info(`ARG levainHome=${this._env["levainHome"]}`)
+      return;
+    }
+
+    let config = path.resolve(this.levainSrcDir, "..", ".levain", "config.json");
+    if (Deno.statSync(config)) {
+      this._env["levainHome"] = path.resolve(this.levainSrcDir, "..");
+      log.info(`CFG levainHome=${this._env["levainHome"]}`)
       return;
     }
 
@@ -180,6 +208,7 @@ export default class Config {
 
       let repoPath = path.resolve(repo);
       log.info(`LevainRepo: addRepo ${repoPath}`);
+      this._extraRepos.push(repoPath);
       repos.push(new FileSystemRepository(this, repoPath));
     });
   }

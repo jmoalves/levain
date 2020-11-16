@@ -15,6 +15,7 @@ import Copy from "../action/copy.ts";
 import Extract from "../action/extract.ts";
 import LevainShell from "../action/levainShell.ts";
 import Mkdir from "../action/mkdir.ts";
+import SaveConfig from "../action/saveConfig.ts";
 import SetEnv from "../action/setEnv.ts";
 import Template from "../action/template.ts";
 
@@ -74,6 +75,9 @@ export default class Loader {
 
             case 'mkdir':
                 return new Mkdir(this.config);
+
+            case 'saveConfig':
+                return new SaveConfig(this.config);
 
             case 'setEnv':
                 return new SetEnv(this.config);
