@@ -71,7 +71,7 @@ export default class Copy implements Action {
         try {
             copySync(src, dst, { overwrite: true });
         } catch (err) {
-            console.error("ERROR: COPY", src, "=>", dst, err);
+            log.error("ERROR: COPY", src, "=>", dst, err);
             throw err;
         }
     }

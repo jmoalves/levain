@@ -20,8 +20,8 @@ export default class Extract implements Action {
 
         log.debug(`Args: ${JSON.stringify(args)}`);
         if (args._.length != 2) {
-            console.error("You must inform the file to extract and the destination directory");
-            throw "Illegal arguments";
+            log.error("You must inform the file to extract and the destination directory");
+            Deno.exit(1);
         }
 
         const src = path.resolve(pkg.pkgDir, args._[0]);

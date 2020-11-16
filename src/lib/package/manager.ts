@@ -13,6 +13,10 @@ export default class PackageManager {
     resolvePackages(pkgNames: string[]): Package[]|null {
         let pkgs:Map<string, Package> = new Map();
 
+        if (!pkgNames || pkgNames.length == 0) {
+            return null;
+        }
+
         let error:boolean = false;
         for (const pkgName of pkgNames) {
             let myError:boolean = this.resolvePkgs(this.config.repository, pkgs, pkgName);
@@ -77,7 +81,7 @@ export default class PackageManager {
 
         const pkgDef = repo.resolvePackage(pkgName);
         if (!pkgDef) {
-            console.error("PACKAGE NOT FOUND: " + pkgName);
+            log.error("PACKAGE NOT FOUND: " + pkgName);
             return true;
         }    
 

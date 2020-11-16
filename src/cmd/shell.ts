@@ -23,11 +23,15 @@ export default class Shell implements Command {
         });
         log.info(`shell ${JSON.stringify(args)}`);
 
-        let pkgs:Package[]|null = this.config.packageManager.resolvePackages(myArgs.package);
+        if (!myArgs.package) {
+            log.error("No package. Use the --package option");
+            Deno.exit(1);
+        }
 
+        let pkgs:Package[]|null = this.config.packageManager.resolvePackages(myArgs.package);
         if (!pkgs) {
-            console.error("");
-            return;
+            log.error("Unable to start a levain shell. Aborting...");
+            Deno.exit(1);
         }
 
         log.info("");
@@ -99,7 +103,8 @@ export default class Shell implements Command {
         let status = await p.status();
 
         if (!status.success) {
-            throw "CMD terminated with code " + status.code;
+            log.error("CMD terminated with code " + status.code);
+            Deno.exit(1);
         }
 
         if (!args.run) {

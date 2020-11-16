@@ -20,8 +20,8 @@ export default class Install implements Command {
         let pkgs:Package[]|null = this.config.packageManager.resolvePackages(args);
 
         if (!pkgs) {
-            console.error("");
-            return;
+            log.error(`install - Nothing to install. Aborting...`);
+            Deno.exit(1);
         }
 
         log.info("");
