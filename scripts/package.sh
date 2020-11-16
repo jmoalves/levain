@@ -99,6 +99,10 @@ unzip ${distDir}/bin/deno.zip -d ${distDir}/bin > /dev/null
 ### deno cleanup
 rm ${distDir}/bin/deno.zip
 
+export DENO_DIR=${distDir}/bin
+${distDir}/bin/deno info
+${distDir}/bin/deno cache --unstable --reload ${distDir}/src/levain.ts
+
 ## Create zip
 zipFile=levain-v$levainVersion-with-deno-v$denoVersion-windows-x86_64.zip
 cd ${distRoot}
