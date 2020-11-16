@@ -132,6 +132,7 @@ export default class Config {
     log.info("");
     log.info("=== LevainRepos");
     this.addLevainRepo(repos);
+    this.addLevainRegistryRepo(repos);
     this.addCurrentDirRepo(repos);
     this.addRepos(repos, args.addRepo);
 
@@ -150,6 +151,11 @@ export default class Config {
     repos.push(new FileSystemRepository(this, this.levainSrcDir));
   }
   
+  private addLevainRegistryRepo(repos: Repository[]) {
+    log.info(`LevainRepo: DEFAULT ${this.levainRegistry} --> Levain registry dir`);
+    repos.push(new FileSystemRepository(this, this.levainRegistry));
+  }
+
   private addCurrentDirRepo(repos: Repository[]) {
     log.info(`LevainRepo: DEFAULT ${Deno.cwd()} --> Current working dir`);
     repos.push(new FileSystemRepository(this, Deno.cwd()));
