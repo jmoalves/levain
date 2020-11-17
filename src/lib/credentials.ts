@@ -3,6 +3,18 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import { promptSecret, envChain } from './utils.ts';
 import Config from './config.ts';
 
+export function askEmail(config: Config): void {
+    let email = prompt("   Email: ", config.email || "");
+
+    if (!email) {
+        log.error("");
+        log.error(`Unable to collect email`);
+        Deno.exit(1);
+    }
+
+    config.email = email;
+}
+
 export function askUsername(config: Config): void {
     let username:string|null = prompt("Username: ", envChain("user", "username") || "");
 

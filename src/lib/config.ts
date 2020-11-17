@@ -18,6 +18,8 @@ export default class Config {
 
   private _extraRepos: string[] = [];
 
+
+  email: string|undefined;
   private _username: string|undefined;
   private _password: string|undefined;
 
