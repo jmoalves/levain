@@ -45,18 +45,20 @@ getRelease() {
 
 clear
 
-githubToken=$1
-levainVersion=$2
-denoVersion=$3
-
-if [ -z "$githubToken" ]; then
-    echo You must inform the github token
-    exit 1
-fi
+levainVersion=$1
+denoVersion=$2
 
 if [ -z "$levainVersion" ]; then
     # We don't have a latest release yet...
     echo You must inform the levain version
+    exit 1
+fi
+
+tokenFile=$HOME/.githubToken
+$githubToken=$( cat $tokenFile )
+
+if [ -z "$githubToken" ]; then
+    echo You must inform the github token
     exit 1
 fi
 

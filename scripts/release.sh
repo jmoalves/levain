@@ -1,12 +1,14 @@
 #!/bin/bash
 
 version=$1
-githubToken=$2
 
 if [ -z "$version" ]; then
     echo You must inform the version number. Aborting...
     exit 1
 fi
+
+tokenFile=$HOME/.githubToken
+$githubToken=$( cat $tokenFile )
 
 if [ -z "$githubToken" ]; then
     echo You must inform the GitHub token. Aborting...
