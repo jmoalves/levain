@@ -70,7 +70,7 @@ cat levain.levain.yaml.bkp \
 rm levain.levain.yaml.bkp
 
 # Commit version
-git add src/levain.ts
+git add src/levain.ts levain.levain.yaml
 git commit -m "$tag"
 git tag $tag
 git push
