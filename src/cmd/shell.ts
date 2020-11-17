@@ -17,6 +17,9 @@ export default class Shell implements Command {
             stringMany: [
                 "package"
             ],
+            stringOnce: [
+                "saveVar"
+            ],
             boolean: [
                 "run"
             ]
@@ -98,6 +101,9 @@ export default class Shell implements Command {
             opt.env["levainHome"] = this.config.levainHome;
         }
 
+        if (args.saveVar) {
+            opt.stdout = 'piped';
+        }
         const p = Deno.run(opt);
         
         let status = await p.status();
@@ -105,6 +111,12 @@ export default class Shell implements Command {
         if (!status.success) {
             log.error("CMD terminated with code " + status.code);
             Deno.exit(1);
+        }
+
+        if (args.saveVar) {
+            const rawOutput = await p.output();
+            const cmdOutput = new TextDecoder().decode(rawOutput);
+            this.config.setVar(args.saveVar, cmdOutput);
         }
 
         if (!args.run) {
