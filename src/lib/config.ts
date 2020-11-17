@@ -60,12 +60,34 @@ export default class Config {
   }
   
   replaceVars(text: string, pkgName?: string|undefined): string {
+    // TODO: Refactor this... Use ChainOfResponsibility Pattern...
+
     let myText:string = text;
     let vars = myText.match(/\${[^${}]+}/);
     while (vars) {
       for (let v of vars) {
         let vName = v.replace("$", "").replace("{", "").replace("}", "");
         let value: string|undefined = undefined;
+
+        if (!value && vName.match(/^levain\./)) {
+          switch (vName) {
+            case "levain.username":
+              value = this.username;
+              break;
+
+            case "levain.password":
+              value = this.password;
+              break;
+
+            default:
+              // nothing
+          }
+
+          if (!value) {
+            log.error(`Global attribute ${vName} is undefined`);
+            Deno.exit(1);
+          }
+        }
 
         if (!value && vName.search(/^pkg\.(.+)\.([^.]*)/) != -1) {
           let pkgVarPkg = vName.replace(/^pkg\.(.+)\.([^.]*)/, "$1");
@@ -92,7 +114,8 @@ export default class Config {
         if (value) {
           myText = myText.replace(v, value);  
         } else {
-          throw `${v} is undefined`;
+          log.error(`${v} is undefined`);
+          Deno.exit(1);
         }
       }
  
