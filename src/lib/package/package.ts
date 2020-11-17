@@ -4,6 +4,7 @@ import { existsSync } from "https://deno.land/std/fs/mod.ts";
 
 import Repository from '../repository/repository.ts'
 import Config from "../config.ts";
+import {FileUtils} from '../fileUtils.ts';
 
 export default class Package {
   private _version: string;
@@ -55,8 +56,28 @@ export default class Package {
   }
 
   get installed(): boolean {
-    let registry = path.resolve(this.config.levainRegistry, path.basename(this.yaml));
+    let registry = this.installedRecipeFilepath();
     return existsSync(registry);
+  }
+
+  private installedRecipeFilepath() {
+    let registry = path.resolve(this.config.levainRegistry, path.basename(this.yaml));
+    return registry;
+  }
+
+  get updateAvailable(): boolean {
+    const recipeTimestamp = this.getRecipeTimestamp();
+    const installedTimestamp = this.getInstalledTimestamp();
+
+    if (recipeTimestamp === undefined) {
+      return false;
+    }
+
+    if (installedTimestamp === undefined) {
+      return true;
+    }
+
+    return recipeTimestamp > installedTimestamp;
   }
 
   get yamlStruct(): any {
@@ -94,5 +115,14 @@ export default class Package {
     }
 
     return [...set];
+  }
+
+  getRecipeTimestamp() {
+    return FileUtils.getModificationTimestamp(this.yaml);
+  }
+
+  getInstalledTimestamp() {
+    let registry = this.installedRecipeFilepath();
+    return FileUtils.getModificationTimestamp(registry);
   }
 }

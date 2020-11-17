@@ -41,13 +41,18 @@ export default class Install implements Command {
             return;
         }
 
+        let verb = 'INSTALL'
         if (pkg.installed) {
-            log.info(`=== SKIP installed ${pkg.name}`);
-            return;
+            if (pkg.updateAvailable) {
+                verb = 'UPDATE';
+            } else {
+                log.info(`=== SKIP installed ${pkg.name}`);
+                return;
+            }
         }
 
         log.info("");
-        log.info(`=== INSTALL ${pkg.name} - ${pkg.version}`);
+        log.info(`=== ${verb} ${pkg.name} - ${pkg.version}`);
         let actions = pkg.yamlItem("cmd.install")
         if (!actions) {
             actions = [];
