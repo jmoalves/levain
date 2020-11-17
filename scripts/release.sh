@@ -96,4 +96,4 @@ git push
 echo Release $tag created
 echo
 
-./scripts/package/sh $version
+./scripts/package.sh $version
