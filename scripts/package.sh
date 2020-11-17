@@ -55,7 +55,7 @@ if [ -z "$levainVersion" ]; then
 fi
 
 tokenFile=$HOME/.githubToken
-$githubToken=$( cat $tokenFile )
+githubToken=$( cat $tokenFile )
 
 if [ -z "$githubToken" ]; then
     echo You must inform the github token
