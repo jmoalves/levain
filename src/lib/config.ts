@@ -18,6 +18,8 @@ export default class Config {
 
   private _extraRepos: string[] = [];
 
+  private _username: string|undefined;
+  private _password: string|undefined;
 
   constructor(args: any) {
     this.configEnv(args);
@@ -113,6 +115,22 @@ export default class Config {
 
     log.info(`SAVE ${fileName}`);
     Deno.writeTextFileSync(fileName, JSON.stringify(cfg, null, 3));
+  }
+
+  set username(username: string|undefined) {
+    this._username = username;
+  }
+
+  get username(): string|undefined {
+    return this._username;
+  }
+
+  set password(password: string|undefined) {
+    this._password = password;
+  }
+
+  get password(): string|undefined {
+    return this._password;
   }
 
   /////////////////////////////////////////////////////////////////////////////////

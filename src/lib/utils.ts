@@ -24,7 +24,7 @@ export var homedir = function(): string {
 }
 
 // https://github.com/caspervonb/deno-prompts/blob/master/mod.ts
-export async function promptSecret(message : string) : Promise<string | null> {
+export async function promptSecret(message : string) : Promise<string | undefined> {
 	Deno.stdout.write(new TextEncoder().encode(message));
 	Deno.setRaw(0, true);
 
@@ -43,7 +43,7 @@ export async function promptSecret(message : string) : Promise<string | null> {
 				case "\u0003":
 				case "\u0004":
 					Deno.setRaw(Deno.stdin.rid, false);
-					return null;
+					return undefined;
 
 				case "\r":
 				case "\n":
@@ -61,5 +61,16 @@ export async function promptSecret(message : string) : Promise<string | null> {
 		}
 	}
 
-	return null;
+	return undefined;
+}
+
+export function envChain(...names: string[]): string|undefined {
+	for (let name of names) {
+		let value = Deno.env.get(name);
+		if (value) {
+			return value;
+		}
+	}
+
+	return undefined;
 }

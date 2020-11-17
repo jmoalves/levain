@@ -4,6 +4,7 @@ import Logger from './lib/log.ts'
 import Loader from './lib/loader.ts';
 import Config from './lib/config.ts';
 import { parseArgs } from "./lib/parseArgs.ts";
+import { askUsername, askPassword } from "./lib/credentials.ts";
 
 export async function levainCLI(): Promise<void> {
     await Logger.setup();
@@ -19,6 +20,7 @@ export async function levainCLI(): Promise<void> {
             "addRepo"
         ],
         boolean: [
+            "askPassword"
         ]
     });
     log.debug("args " + JSON.stringify(myArgs));
@@ -36,6 +38,11 @@ export async function levainCLI(): Promise<void> {
         log.error("");
         log.error("Nothing to do. Do you want some help?");
         Deno.exit(1);
+    }
+
+    if (myArgs.askPassword) {
+        askUsername(config);
+        await askPassword(config);
     }
 
     // First parameter is the command
