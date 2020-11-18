@@ -21,7 +21,8 @@ export default class Shell implements Command {
                 "saveVar"
             ],
             boolean: [
-                "run"
+                "run",
+                "stripCRLF"
             ]
         });
         log.info(`shell ${JSON.stringify(args)}`);
@@ -114,8 +115,14 @@ export default class Shell implements Command {
         }
 
         if (args.saveVar) {
-            const rawOutput = await p.output();
-            const cmdOutput = new TextDecoder().decode(rawOutput);
+            let rawOutput = await p.output();
+            let cmdOutput = new TextDecoder().decode(rawOutput);
+            if (args.stripCRLF) {
+                cmdOutput = cmdOutput
+                                .replace(/\r\n$/, '')
+                                .replace(/\r$/, '')
+                                .replace(/\n$/, '');
+            }
             this.config.setVar(args.saveVar, cmdOutput);
         }
 
