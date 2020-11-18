@@ -38,7 +38,7 @@ export async function askPassword(config: Config) {
     
         if (password == pw2) {
             console.log("");
-            console.log("Got password (but we did NOT validate it!)");
+            console.log("Got password (but we did NOT validate it with the server!)");
             console.log("");
             config.password = password;
             return;
