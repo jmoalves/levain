@@ -84,6 +84,8 @@ export default class Shell implements Command {
             throw `${Deno.build.os} not supported`;
         }
 
+        let detached = !args.run;
+
         let cmd = this.concatCmd(
             "cmd /u " + (args.run ? "/c" : "/k"),
             // (args.run ? undefined : "cls"),
@@ -105,8 +107,16 @@ export default class Shell implements Command {
         if (args.saveVar) {
             opt.stdout = 'piped';
         }
+
+        // if (detached) {
+        //     // FIXME: https://github.com/denoland/deno/issues/5501
+        //     opt.detached = true;
+        //     Deno.run(opt);
+        //     log.info("shell initiated");
+        //     return;
+        // }
+
         const p = Deno.run(opt);
-        
         let status = await p.status();
 
         if (!status.success) {
