@@ -207,9 +207,9 @@ export default class Config {
     log.info("");
     log.info("=== LevainRepos");
     this.addLevainRepo(repos);
-    this.addLevainRegistryRepo(repos);
     this.addCurrentDirRepo(repos);
     this.addRepos(repos, args.addRepo);
+    this.addLevainRegistryRepo(repos);
 
     return new CacheRepository(this, 
       new ChainRepository(this, repos)
