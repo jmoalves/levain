@@ -27,6 +27,7 @@ export async function levainCLI(): Promise<void> {
 
     // Context
     const config = new Config(myArgs);
+    Logger.setConfig(config);
     //
 
     // Time to business!
