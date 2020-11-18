@@ -13,6 +13,7 @@ import Shell from "../cmd/shell.ts";
 import AddPath from "../action/addpath.ts";
 import Copy from "../action/copy.ts";
 import Extract from "../action/extract.ts";
+import Inspect from "../action/inspect.ts";
 import LevainShell from "../action/levainShell.ts";
 import Mkdir from "../action/mkdir.ts";
 import SaveConfig from "../action/saveConfig.ts";
@@ -69,6 +70,9 @@ export default class Loader {
 
             case 'extract':
                 return new Extract(this.config);
+
+            case 'inspect':
+                return new Inspect(this.config);
 
             case 'levainShell':
                 return new LevainShell(this.config);
