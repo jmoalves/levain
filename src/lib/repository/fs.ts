@@ -28,6 +28,12 @@ export default class FileSystemRepository implements Repository {
 
   private readDir(packageName:string, dirname: string): Package | undefined  {
     let pkg:Package|undefined = undefined;
+    log.debug(`readDir ${packageName} ${dirname}`)
+    const ignoreDirs = ['$RECYCLE.BIN', 'node_modules', '.git']
+    if (ignoreDirs.find(ignoreDir => dirname.endsWith(ignoreDir))) {
+      log.info(`ignoring ${dirname}`)
+      return
+    };
 
     for (const entry of Deno.readDirSync(dirname)) {
       if (!pkg && entry.isDirectory) {

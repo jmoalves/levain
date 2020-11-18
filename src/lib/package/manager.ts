@@ -79,11 +79,12 @@ export default class PackageManager {
             return false;
         }
 
+        log.debug(`resolving package ${pkgName}`)
         const pkgDef = repo.resolvePackage(pkgName);
         if (!pkgDef) {
             log.error("PACKAGE NOT FOUND: " + pkgName);
             return true;
-        }    
+        }
 
         // Deep first navigation - topological order of dependencies
         let error:boolean = false;
