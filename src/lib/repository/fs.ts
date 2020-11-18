@@ -31,7 +31,7 @@ export default class FileSystemRepository implements Repository {
     log.debug(`readDir ${packageName} ${dirname}`)
     const ignoreDirs = ['$RECYCLE.BIN', 'node_modules', '.git']
     if (ignoreDirs.find(ignoreDir => dirname.endsWith(ignoreDir))) {
-      log.info(`ignoring ${dirname}`)
+      log.debug(`ignoring ${dirname}`)
       return
     };
 
