@@ -2,7 +2,7 @@ import * as path from "https://deno.land/std/path/mod.ts";
 
 export var homedir = function(): string {
     // Common option
-    let home = Deno.env.get("home");
+    let home = Deno.env.get("HOME");
     if (home) {
         return home;
     }
