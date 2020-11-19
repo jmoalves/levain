@@ -30,7 +30,7 @@ export default class Loader {
     }
 
     async action(pkg:Package, cmdline: string) {
-        let args = this.config.replaceVars(cmdline, pkg.name).split(" ");
+        let args = cmdline.split(" ");
         let action = args.shift();
 
         if (action == undefined) {
@@ -38,6 +38,11 @@ export default class Loader {
         }
 
         const handler:Action = this.loadActionStatic(action);
+
+        for (let index in args) {
+            args[index] = this.config.replaceVars(args[index], pkg.name);
+        }
+
         await handler.execute(pkg, args);
     }
 
