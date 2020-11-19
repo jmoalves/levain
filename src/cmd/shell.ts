@@ -22,7 +22,8 @@ export default class Shell implements Command {
             ],
             boolean: [
                 "run",
-                "stripCRLF"
+                "stripCRLF",
+                "ignoreErrors"
             ]
         });
         log.info(`shell ${JSON.stringify(args)}`);
@@ -119,7 +120,7 @@ export default class Shell implements Command {
         const p = Deno.run(opt);
         let status = await p.status();
 
-        if (!status.success) {
+        if (!args.ignoreErrors && !status.success) {
             log.error("CMD terminated with code " + status.code);
             Deno.exit(1);
         }
