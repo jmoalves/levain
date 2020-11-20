@@ -1,4 +1,4 @@
-const watcher = Deno.watchFs('./src/')
+const watcher = Deno.watchFs('./src')
 
 runTest()
 
@@ -6,18 +6,22 @@ for await (const event of watcher) {
     // console.log('>>>> event', event);
     if (['create', 'modify'].indexOf(event.kind)) {
         event.paths.forEach((file) => {
-            if (file.endsWith('.ts') && (!file.indexOf('$deno$'))) {
+            if (file.endsWith('.ts') && (!file.match('\$deno\$'))) {
                 runTest(file)
             }
         })
     }
 }
 
-function runTest(file?: string): void {
+async function runTest(file?: string): Promise<void> {
     let cmd = ['deno', 'test', '--unstable', '--allow-env'];
-    console.log('runTest', file)
+    const testFile =
+        file?.replace(/(?:.test)?.ts$/, '.test.ts')
+        || 'all tests'
+
     if (file) {
-        cmd.push(file)
+        cmd.push(testFile)
     }
-    Deno.run({cmd})
+    console.log('RUNTEST', testFile, cmd)
+    await Deno.run({cmd})
 }
