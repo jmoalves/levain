@@ -1,7 +1,8 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import Config from "../config.ts";
+import Logger from "./logger.ts";
 
-export default class FileLogger {
+export default class FileLogger implements Logger {
   private static config: Config;
 
   public static async setup() {
@@ -60,4 +61,8 @@ export default class FileLogger {
 
     return msg.replace(FileLogger.config.password, "******");
   }
+
+    info(text: string): void {
+      log.info(text)
+    }
 }

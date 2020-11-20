@@ -14,7 +14,7 @@ for await (const event of watcher) {
 }
 
 async function runTest(file?: string): Promise<void> {
-    let cmd = ['deno', 'test', '--unstable', '--allow-env'];
+    let cmd = ['deno', 'test', '--unstable', '--allow-all'];
     const testFile =
         file?.replace(/(?:.test)?.ts$/, '.test.ts')
         || 'all tests'

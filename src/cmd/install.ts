@@ -1,6 +1,6 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
-import Command from "../lib/command.ts";
+import Command from "./command.ts";
 import Config from "../lib/config.ts";
 import Package from "../lib/package/package.ts";
 import Loader from '../lib/loader.ts';

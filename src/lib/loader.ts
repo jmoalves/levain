@@ -1,6 +1,6 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
-import Command from "./command.ts";
+import Command from "../cmd/command.ts";
 import Config from "./config.ts";
 import Action from "./action.ts";
 import Package from './package/package.ts';
@@ -19,6 +19,7 @@ import Mkdir from "../action/mkdir.ts";
 import SaveConfig from "../action/saveConfig.ts";
 import SetEnv from "../action/setEnv.ts";
 import Template from "../action/template.ts";
+import List from "../cmd/list.ts";
 
 export default class Loader {
     constructor(private config:Config) {
@@ -46,13 +47,16 @@ export default class Loader {
         await handler.execute(pkg, args);
     }
 
-    private loadCommandStatic(cmd: string): Command {
+    loadCommandStatic(cmd: string): Command {
         switch (cmd) {
             case 'install':
                 return new Install(this.config);
 
             case 'shell':
                 return new Shell(this.config);
+
+            case 'list':
+                return new List(this.config);
 
             default:
                 log.error(`Command ${cmd} not found - Aborting...`);
