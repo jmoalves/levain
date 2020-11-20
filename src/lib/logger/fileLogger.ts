@@ -1,25 +1,25 @@
 import * as log from "https://deno.land/std/log/mod.ts";
-import Config from "./config.ts";
+import Config from "../config.ts";
 
-export default class Logger {
+export default class FileLogger {
   private static config: Config;
 
   public static async setup() {
-    const logFile = Deno.makeTempFileSync({ prefix: `levain-${Logger.logTag(new Date())}-`, suffix: ".log"});
+    const logFile = Deno.makeTempFileSync({ prefix: `levain-${FileLogger.logTag(new Date())}-`, suffix: ".log"});
     await log.setup({
         handlers: {
           console: new log.handlers.ConsoleHandler("INFO", {
             formatter: logRecord => {
-              let msg = Logger.hidePassword(logRecord.msg);
-              return `${Logger.logTag(logRecord.datetime)} ${logRecord.levelName} ${msg}`;
+              let msg = FileLogger.hidePassword(logRecord.msg);
+              return `${FileLogger.logTag(logRecord.datetime)} ${logRecord.levelName} ${msg}`;
             }
           }),
 
           file: new log.handlers.FileHandler("DEBUG", {
             filename: logFile,
             formatter: logRecord => {
-                let msg = Logger.hidePassword(logRecord.msg);
-                return `${Logger.logTag(logRecord.datetime)} ${logRecord.levelName} ${msg}`;
+                let msg = FileLogger.hidePassword(logRecord.msg);
+                return `${FileLogger.logTag(logRecord.datetime)} ${logRecord.levelName} ${msg}`;
               }
           }),
         },
@@ -38,7 +38,7 @@ export default class Logger {
   }
 
   public static setConfig(config: Config): void {
-    Logger.config = config;
+    FileLogger.config = config;
   }
 
   private static logTag(dt:Date): string {
@@ -54,10 +54,10 @@ export default class Logger {
   }
 
   private static hidePassword(msg: string): string {
-    if (!Logger.config?.password) {
+    if (!FileLogger.config?.password) {
       return msg;
     }
 
-    return msg.replace(Logger.config.password, "******");
+    return msg.replace(FileLogger.config.password, "******");
   }
 }

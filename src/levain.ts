@@ -1,13 +1,13 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
-import Logger from './lib/log.ts'
+import FileLogger from './lib/logger/fileLogger.ts'
 import Loader from './lib/loader.ts';
 import Config from './lib/config.ts';
 import { parseArgs } from "./lib/parseArgs.ts";
 import { askUsername, askPassword } from "./lib/credentials.ts";
 
 export async function levainCLI(): Promise<void> {
-    await Logger.setup();
+    await FileLogger.setup();
 
     log.info(`  deno v${Deno.version.deno}`);
     log.info(`levain vHEAD`);
@@ -27,7 +27,7 @@ export async function levainCLI(): Promise<void> {
 
     // Context
     const config = new Config(myArgs);
-    Logger.setConfig(config);
+    FileLogger.setConfig(config);
     //
 
     // Time to business!
