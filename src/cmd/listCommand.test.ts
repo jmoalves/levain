@@ -35,7 +35,7 @@ Deno.test('should list packages available in a repo', () => {
         "list - listing repositories and packages",
         "repository mockRepo:",
         "  2 packages found:",
-        "    package: aPackage 1.0.0",
-        "    package: anotherPackage 1.0.0"
+        "    package: aPackage 1.0.1",
+        "    package: anotherPackage 0.1.2"
     ])
 })

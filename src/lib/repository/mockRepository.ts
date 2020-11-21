@@ -7,8 +7,8 @@ export default class MockRepository implements Repository {
     constructor(
         public name: string = 'mockRepo',
         public packages: Array<Package> = [
-            new MockPackage('aPackage'),
-            new MockPackage('anotherPackage'),
+            new MockPackage('aPackage', '1.0.1'),
+            new MockPackage('anotherPackage', '0.1.2'),
         ],
     ) {
     }
