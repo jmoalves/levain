@@ -1,15 +1,15 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
-import { existsSync } from "https://deno.land/std/fs/mod.ts";
+import {existsSync} from "https://deno.land/std/fs/mod.ts";
 
 import Command from "./command.ts";
 import Config from "../lib/config.ts";
-import Package from "../lib/package/package.ts";
+import FileSystemPackage from "../lib/package/fileSystemPackage.ts";
 import Loader from '../lib/loader.ts';
-import { parseArgs } from "../lib/parseArgs.ts";
+import {parseArgs} from "../lib/parseArgs.ts";
 
 export default class Shell implements Command {
-    constructor(private config:Config) {
+    constructor(private config: Config) {
     }
 
     async execute(args: string[]) {
@@ -33,7 +33,7 @@ export default class Shell implements Command {
             Deno.exit(1);
         }
 
-        let pkgs:Package[]|null = this.config.packageManager.resolvePackages(myArgs.package);
+        let pkgs: FileSystemPackage[] | null = this.config.packageManager.resolvePackages(myArgs.package);
         if (!pkgs) {
             log.error("Unable to start a levain shell. Aborting...");
             Deno.exit(1);
@@ -48,7 +48,7 @@ export default class Shell implements Command {
         await this.openShell(myArgs);
     }
 
-    private async shellActions(pkg: Package) {
+    private async shellActions(pkg: FileSystemPackage) {
         if (!this.config) {
             return;
         }
@@ -65,10 +65,10 @@ export default class Shell implements Command {
         log.info(`=== ENV ${pkg.name} - ${pkg.version}`);
         const loader = new Loader(this.config);
         for (let action of actions) {
-            if (action.startsWith("levainShell")) { 
+            if (action.startsWith("levainShell")) {
                 // Potential infinite loop here!
                 // TODO: REFACTOR THIS!
-                let args:any = {};
+                let args: any = {};
                 args._ = this.config.replaceVars(action, pkg.name).split(" ");
                 args._.shift();
                 args.run = true;
@@ -96,7 +96,7 @@ export default class Shell implements Command {
         );
         log.info(`- CMD - ${cmd}`);
 
-        let opt:any = {};
+        let opt: any = {};
         opt.cmd = cmd.split(" ");
         opt.env = {}
 
@@ -130,24 +130,24 @@ export default class Shell implements Command {
             let cmdOutput = new TextDecoder().decode(rawOutput);
             if (args.stripCRLF) {
                 cmdOutput = cmdOutput
-                                .replace(/\r\n$/, '')
-                                .replace(/\r$/, '')
-                                .replace(/\n$/, '');
+                    .replace(/\r\n$/, '')
+                    .replace(/\r$/, '')
+                    .replace(/\n$/, '');
             }
             this.config.setVar(args.saveVar, cmdOutput);
         }
 
         if (!args.run) {
             log.info("");
-            log.info("Levain - Goodbye!");    
+            log.info("Levain - Goodbye!");
         }
     }
 
-    private concatCmd(...parts :(string|undefined)[]) :string {
+    private concatCmd(...parts: (string | undefined)[]): string {
         return this.concatCmdArr(parts);
     }
-    
-    private concatCmdArr(parts :(string|undefined)[]) :string {
+
+    private concatCmdArr(parts: (string | undefined)[]): string {
         if (!parts) {
             return "";
         }
@@ -159,7 +159,7 @@ export default class Shell implements Command {
         // undefine does not count
         let sep = "";
         let idx = 1;
-        let result:string = "";
+        let result: string = "";
         for (let part of parts) {
             if (part) {
                 if (idx == 1) {
@@ -177,8 +177,8 @@ export default class Shell implements Command {
         return result;
     }
 
-    private addPath(): string|undefined {
-        let myPath:string = this.config.context.action?.addpath?.path;
+    private addPath(): string | undefined {
+        let myPath: string = this.config.context.action?.addpath?.path;
         if (!myPath) {
             return "";
         }
@@ -192,7 +192,7 @@ export default class Shell implements Command {
                     pathStr = "";
                 }
                 pathStr += p;
-            }    
+            }
 
             if (pathStr) {
                 pathStr = `path ${pathStr};%PATH%`;

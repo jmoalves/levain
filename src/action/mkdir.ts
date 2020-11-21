@@ -3,14 +3,14 @@ import * as path from "https://deno.land/std/path/mod.ts";
 
 import Action from "../lib/action.ts";
 import Config from "../lib/config.ts";
-import Package from '../lib/package/package.ts';
-import { parseArgs } from "../lib/parseArgs.ts";
+import FileSystemPackage from '../lib/package/fileSystemPackage.ts';
+import {parseArgs} from "../lib/parseArgs.ts";
 
 export default class Mkdir implements Action {
-    constructor(private config:Config) {
+    constructor(private config: Config) {
     }
 
-    execute(pkg:Package, parameters:string[]):void {
+    execute(pkg: FileSystemPackage, parameters: string[]): void {
         let args = parseArgs(parameters, {
             boolean: [
                 "compact"
@@ -18,7 +18,7 @@ export default class Mkdir implements Action {
         });
 
         if (args._.length != 1) {
-            throw "Action - mkdir - You should inform a single directory";            
+            throw "Action - mkdir - You should inform a single directory";
         }
 
         const dirname = path.resolve(pkg.baseDir, args._[0]);
@@ -27,10 +27,10 @@ export default class Mkdir implements Action {
             if (fileInfo.isDirectory) {
                 return;
             }
-    
+
             if (fileInfo) {
                 throw `Action - mkdir - ${dirname} already exists and it is not a directory`;
-            }    
+            }
         } catch (err) {
             if (err.name != "NotFound") {
                 throw err;
@@ -38,7 +38,7 @@ export default class Mkdir implements Action {
         }
 
         log.info(`MKDIR ${dirname}`);
-        Deno.mkdirSync(dirname, { recursive: true });
+        Deno.mkdirSync(dirname, {recursive: true});
 
         if (!args.compact) {
             return;
@@ -59,10 +59,10 @@ export default class Mkdir implements Action {
 
         const p = Deno.run({
             cmd: args,
-            stdout: "null", 
+            stdout: "null",
             stderr: "null"
         });
-        
+
         await p.status();
     }
 }

@@ -3,7 +3,7 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import Command from "../cmd/command.ts";
 import Config from "./config.ts";
 import Action from "./action.ts";
-import Package from './package/package.ts';
+import FileSystemPackage from './package/fileSystemPackage.ts';
 
 // Commands
 import Install from "../cmd/install.ts";
@@ -22,15 +22,15 @@ import Template from "../action/template.ts";
 import ListCommand from "../cmd/listCommand.ts";
 
 export default class Loader {
-    constructor(private config:Config) {
+    constructor(private config: Config) {
     }
 
     async command(cmd: string, args: string[]) {
-        const handler:Command = this.loadCommandStatic(cmd);
+        const handler: Command = this.loadCommandStatic(cmd);
         await handler.execute(args);
     }
 
-    async action(pkg:Package, cmdline: string) {
+    async action(pkg: FileSystemPackage, cmdline: string) {
         let args = cmdline.split(" ");
         let action = args.shift();
 
@@ -38,7 +38,7 @@ export default class Loader {
             throw 'No action to perform';
         }
 
-        const handler:Action = this.loadActionStatic(action);
+        const handler: Action = this.loadActionStatic(action);
 
         for (let index in args) {
             args[index] = this.config.replaceVars(args[index], pkg.name);

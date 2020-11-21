@@ -1,13 +1,19 @@
 import Repository from "./repository.ts";
-import Package from "../package/package.ts";
+import FileSystemPackage from "../package/fileSystemPackage.ts";
+import {MockPackage} from "../package/mockPackage.ts";
+import {Package} from "../package/package.ts";
 
 export class MockRepository implements Repository {
     constructor(
         public name: string = 'mockRepo',
-        public packages: string[] = ['aPackage', 'anotherPackage'],
-    ) {}
+        public packages: Array<Package> = [
+            new MockPackage('aPackage'),
+            new MockPackage('anotherPackage'),
+        ],
+    ) {
+    }
 
-    resolvePackage(packageName: string): Package | undefined {
+    resolvePackage(packageName: string): FileSystemPackage | undefined {
         return undefined;
     }
 }

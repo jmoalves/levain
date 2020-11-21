@@ -1,5 +1,5 @@
-import Package from './package/package.ts';
+import FileSystemPackage from './package/fileSystemPackage.ts';
 
 export default interface Action {
-    execute(pkg:Package, parameters:string[]):void;
+    execute(pkg: FileSystemPackage, parameters: string[]): void;
 }

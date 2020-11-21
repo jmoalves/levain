@@ -3,15 +3,15 @@ import * as path from "https://deno.land/std/path/mod.ts";
 
 import Action from "../lib/action.ts";
 import Config from "../lib/config.ts";
-import Package from '../lib/package/package.ts';
-import { parseArgs } from "../lib/parseArgs.ts";
+import FileSystemPackage from '../lib/package/fileSystemPackage.ts';
+import {parseArgs} from "../lib/parseArgs.ts";
 
 // TODO: Use native TS/JS implementation instead of extra-bin files.
 export default class Extract implements Action {
-    constructor(private config:Config) {
+    constructor(private config: Config) {
     }
 
-    async execute(pkg:Package, parameters:string[]) {
+    async execute(pkg: FileSystemPackage, parameters: string[]) {
         let args = parseArgs(parameters, {
             boolean: [
                 "strip"
@@ -28,19 +28,19 @@ export default class Extract implements Action {
         const dst = path.resolve(pkg.baseDir, args._[1]);
 
         log.info(`EXTRACT ${src} => ${dst}`);
-        const factory:ExtractorFactory = new ExtractorFactory();
-        const extractor:Extractor = factory.createExtractor(this.config, src);
+        const factory: ExtractorFactory = new ExtractorFactory();
+        const extractor: Extractor = factory.createExtractor(this.config, src);
         await extractor.extract(args.strip, src, dst);
     }
 }
 
 abstract class Extractor {
-    constructor(protected config:Config) {
+    constructor(protected config: Config) {
     }
 
     abstract extractImpl(src: string, dst: string): void;
 
-    async extract(strip: boolean|undefined, src: string, dst: string) {
+    async extract(strip: boolean | undefined, src: string, dst: string) {
         await this.extractImpl(src, dst);
 
         if (strip) {
@@ -61,7 +61,7 @@ abstract class Extractor {
         let children = Deno.readDirSync(dstDir);
 
         // Using temp dir to avoid name clashes
-        let tmpRootDir =  Deno.makeTempDirSync({ prefix: 'unzip-strip-' });
+        let tmpRootDir = Deno.makeTempDirSync({prefix: 'unzip-strip-'});
         for (let toStrip of children) {
             log.debug(`- STRIP ${path.resolve(dstDir, toStrip.name)}`);
             let tmpDir = path.resolve(tmpRootDir, toStrip.name);
@@ -83,7 +83,7 @@ abstract class Extractor {
 }
 
 class ExtractorFactory {
-    createExtractor(config:Config, src: string): Extractor {
+    createExtractor(config: Config, src: string): Extractor {
         if (src.endsWith(".zip")) {
             return new Unzipper(config);
         }
@@ -101,7 +101,7 @@ class ExtractorFactory {
 }
 
 class Unzipper extends Extractor {
-    constructor(config:Config) {
+    constructor(config: Config) {
         super(config);
     }
 
@@ -118,17 +118,17 @@ class Unzipper extends Extractor {
         const p = Deno.run({
             cmd: args
         });
-        
+
         let status = await p.status();
         if (!status.success) {
             throw "CMD terminated with code " + status.code;
-        }    
-    }    
+        }
+    }
 }
 
 
 class SevenZip extends Extractor {
-    constructor(config:Config) {
+    constructor(config: Config) {
         super(config);
     }
 
@@ -146,16 +146,16 @@ class SevenZip extends Extractor {
             cmd: args,
             stdout: "null"
         });
-        
+
         let status = await p.status();
         if (!status.success) {
             throw "CMD terminated with code " + status.code;
-        }    
-    }    
+        }
+    }
 }
 
 class UnTar extends Extractor {
-    constructor(config:Config) {
+    constructor(config: Config) {
         super(config);
     }
 
@@ -173,10 +173,10 @@ class UnTar extends Extractor {
             stdout: "null",
             cmd: args
         });
-        
+
         let status = await p.status();
         if (!status.success) {
             throw "CMD terminated with code " + status.code;
-        }    
-    }    
+        }
+    }
 }

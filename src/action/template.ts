@@ -3,14 +3,14 @@ import * as path from "https://deno.land/std/path/mod.ts";
 
 import Action from "../lib/action.ts";
 import Config from "../lib/config.ts";
-import Package from '../lib/package/package.ts';
-import { parseArgs } from "../lib/parseArgs.ts";
+import FileSystemPackage from '../lib/package/fileSystemPackage.ts';
+import {parseArgs} from "../lib/parseArgs.ts";
 
 export default class Template implements Action {
-    constructor(private config:Config) {
+    constructor(private config: Config) {
     }
 
-    async execute(pkg:Package, parameters:string[]) {
+    async execute(pkg: FileSystemPackage, parameters: string[]) {
         let args = parseArgs(parameters, {
             stringMany: [
                 "replace",
@@ -43,7 +43,7 @@ export default class Template implements Action {
             const fileInfo = Deno.statSync(dst);
             if (fileInfo.isDirectory) {
                 dst = path.resolve(dst, path.basename(src));
-            }    
+            }
         } catch (err) {
             if (err.name != "NotFound") {
                 throw err;

@@ -2,11 +2,11 @@ import * as log from "https://deno.land/std/log/mod.ts";
 
 import Command from "./command.ts";
 import Config from "../lib/config.ts";
-import Package from "../lib/package/package.ts";
+import FileSystemPackage from "../lib/package/fileSystemPackage.ts";
 import Loader from '../lib/loader.ts';
 
 export default class Install implements Command {
-    constructor(private config:Config) {
+    constructor(private config: Config) {
     }
 
     async execute(args: string[]) {
@@ -17,7 +17,7 @@ export default class Install implements Command {
 
         log.info(`install ${JSON.stringify(args)} - BEGIN`);
 
-        let pkgs:Package[]|null = this.config.packageManager.resolvePackages(args);
+        let pkgs: FileSystemPackage[] | null = this.config.packageManager.resolvePackages(args);
 
         if (!pkgs) {
             log.error(`install - Nothing to install. Aborting...`);
@@ -36,7 +36,7 @@ export default class Install implements Command {
         log.info(`install ${JSON.stringify(args)} - FINISH`);
     }
 
-    private async installPackage(pkg: Package) {
+    private async installPackage(pkg: FileSystemPackage) {
         if (!this.config) {
             return;
         }
@@ -64,8 +64,8 @@ export default class Install implements Command {
 
         // Standard actions - At the head (unshift), they are in reverse order (like a STACK)
         actions.unshift("mkdir " + this.config.levainRegistry);
-        actions.unshift("mkdir --compact ${levainHome}"); 
-      
+        actions.unshift("mkdir --compact ${levainHome}");
+
         // Standard actions - At the rear (push), they are in normal order (like a QUEUE)
         actions.push("copy --verbose " + pkg.name + ".levain.yaml " + this.config.levainRegistry);
         //

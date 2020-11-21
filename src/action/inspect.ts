@@ -1,17 +1,16 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
-import { DenoStdInternalError } from "https://deno.land/std@0.78.0/_util/assert.ts";
 
 import Action from "../lib/action.ts";
 import Config from "../lib/config.ts";
-import Package from '../lib/package/package.ts';
-import { parseArgs } from "../lib/parseArgs.ts";
+import FileSystemPackage from '../lib/package/fileSystemPackage.ts';
+import {parseArgs} from "../lib/parseArgs.ts";
 
 export default class Inpect implements Action {
-    constructor(private config:Config) {
+    constructor(private config: Config) {
     }
 
-    async execute(pkg:Package, parameters:string[]) {
+    async execute(pkg: FileSystemPackage, parameters: string[]) {
         let args = parseArgs(parameters, {
             stringMany: [
                 "regExp",
