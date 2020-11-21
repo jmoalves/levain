@@ -1,16 +1,20 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
 import * as path from "https://deno.land/std/path/mod.ts";
-import {existsSync} from "https://deno.land/std/fs/mod.ts";
+import {existsSync, expandGlobSync} from "https://deno.land/std/fs/mod.ts";
+
 
 import Repository from './repository.ts'
 import FileSystemPackage from '../package/fileSystemPackage.ts'
 import Config from '../config.ts';
 import {Package} from "../package/package.ts";
+import {MockPackage} from "../package/mockPackage.ts";
 
 export default class FileSystemRepository implements Repository {
     constructor(private config: Config, private rootDir: string) {
         log.debug(`FSRepo: Root=${this.rootDir}`);
+
+        this.packages = this.listPackages();
     }
 
     readonly name = `fileSystemRepo for ${this.rootDir}`;
@@ -20,7 +24,7 @@ export default class FileSystemRepository implements Repository {
             return undefined;
         }
 
-        let pkg = this.readDir(packageName, this.rootDir);
+        let pkg = this.readPackageInDir(packageName, this.rootDir);
 
         if (pkg) {
             log.debug(`FSRepo: ${packageName} => ${pkg.toString()}`);
@@ -29,7 +33,7 @@ export default class FileSystemRepository implements Repository {
         return pkg;
     }
 
-    private readDir(packageName: string, dirname: string): FileSystemPackage | undefined {
+    private readPackageInDir(packageName: string, dirname: string): FileSystemPackage | undefined {
         let pkg: FileSystemPackage | undefined = undefined;
         log.debug(`readDir ${packageName} ${dirname}`)
         const ignoreDirs = ['$RECYCLE.BIN', 'node_modules', '.git']
@@ -37,11 +41,10 @@ export default class FileSystemRepository implements Repository {
             log.debug(`ignoring ${dirname}`)
             return
         }
-        ;
 
         for (const entry of Deno.readDirSync(dirname)) {
             if (!pkg && entry.isDirectory) {
-                pkg = this.readDir(packageName, path.resolve(dirname, entry.name));
+                pkg = this.readPackageInDir(packageName, path.resolve(dirname, entry.name));
             }
 
             if (!pkg && entry.isFile) {
@@ -80,4 +83,21 @@ export default class FileSystemRepository implements Repository {
 
     packages: Array<Package> = [];
 
+    listPackages() {
+        if (!existsSync(`${this.rootDir}`)) {
+            console.log(`# listPackages: rootDir not found ${this.rootDir}`)
+            return [];
+        }
+
+        const packagesGlob = `${this.rootDir}/**/*.yaml`;
+        const packageFiles = expandGlobSync(packagesGlob)
+        console.log(`# listPackages ${packagesGlob}`)
+        const packages: Array<Package> = []
+        for (const file of packageFiles) {
+            console.log('## listPackages file', file)
+            const packageName = file.name.replace('.levain.yaml', '')
+            packages.push(new MockPackage(packageName))
+        }
+        return packages;
+    }
 }

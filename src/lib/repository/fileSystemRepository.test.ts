@@ -7,3 +7,24 @@ Deno.test('should have a name', () => {
 
     assertEquals(repo.name, 'fileSystemRepo for .')
 })
+
+
+// List
+Deno.test('should list packages when root folder does not exist', () => {
+    const repo = getTestRepo('thisFolderDoesNotExist')
+
+    assertEquals(repo.packages, [])
+
+})
+
+Deno.test('should list packages', () => {
+    const repo = getTestRepo()
+
+    const packages = repo.packages
+    const packageNames = packages.map(pkg => pkg.name)
+    assertEquals(packageNames, ['awesomePackage'])
+})
+
+function getTestRepo(rootDir = './test/testRepo') {
+    return new FileSystemRepository(new Config([]), rootDir)
+}
