@@ -1,7 +1,7 @@
 import Command from "./command.ts";
 import Logger from "../lib/logger/logger.ts";
 import Config from "../lib/config.ts";
-import FileLogger from "../lib/logger/fileLogger.ts";
+import ConsoleAndFileLogger from "../lib/logger/consoleAndFileLogger.ts";
 
 export default class ListCommand implements Command {
     constructor(
@@ -9,7 +9,7 @@ export default class ListCommand implements Command {
     ) {
     }
 
-    public logger: Logger = new FileLogger()
+    public logger: Logger = new ConsoleAndFileLogger()
 
     execute(args?: string[]): void {
         const repo = this.config.repository
