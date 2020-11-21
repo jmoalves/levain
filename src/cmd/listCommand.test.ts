@@ -16,8 +16,8 @@ Deno.test('should list nullRepo', () => {
 
     assertEquals(logger.getInfo(), [
         "list - listing repositories and packages",
-        "repository found: nullRepo",
-        "no packages found",
+        "repository nullRepo:",
+        "  no packages found",
     ])
 })
 
@@ -33,9 +33,9 @@ Deno.test('should list packages available in a repo', () => {
 
     assertEquals(logger.getInfo(), [
         "list - listing repositories and packages",
-        "repository found: mockRepo",
-        "2 packages found:",
-        "package: aPackage",
-        "package: anotherPackage"
+        "repository mockRepo:",
+        "  2 packages found:",
+        "    package: aPackage 1.0.0",
+        "    package: anotherPackage 1.0.0"
     ])
 })

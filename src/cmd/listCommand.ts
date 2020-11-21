@@ -14,17 +14,17 @@ export default class ListCommand implements Command {
     execute(args?: string[]): void {
         const repo = this.config.repository
         this.logger.info(`list - listing repositories and packages`)
-        this.logger.info(`repository found: ${repo.name}`)
+        this.logger.info(`repository ${repo.name}:`)
 
         const packages = repo.packages
         let packageCount = packages.length;
         if (packageCount === 0) {
-            this.logger.info(`no packages found`)
+            this.logger.info(`  no packages found`)
         }
         if (packageCount > 0) {
-            this.logger.info(`${packageCount} packages found:`)
+            this.logger.info(`  ${packageCount} packages found:`)
             packages.forEach(pkg => {
-                this.logger.info(`package: ${pkg.name}`)
+                this.logger.info(`    package: ${pkg.name} ${pkg.version}`)
             })
         }
     }
