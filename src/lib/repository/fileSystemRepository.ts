@@ -83,7 +83,7 @@ export default class FileSystemRepository implements Repository {
 
     listPackages() {
         if (!existsSync(`${this.rootDir}`)) {
-            console.log(`# listPackages: rootDir not found ${this.rootDir}`)
+            log.debug(`# listPackages: rootDir not found ${this.rootDir}`)
             return [];
         }
 
@@ -94,10 +94,10 @@ export default class FileSystemRepository implements Repository {
             extended: true,
         }
         const packageFiles = expandGlobSync(packagesGlob, globOptions)
-        console.log(`# listPackages ${packagesGlob} ${JSON.stringify(globOptions)}`)
+        log.debug(`# listPackages ${packagesGlob} ${JSON.stringify(globOptions)}`)
         const packages: Array<Package> = []
         for (const file of packageFiles) {
-            console.log('## listPackages file', file)
+            log.debug('## listPackages file', file)
             const packageName = file.name.replace(/\.levain\.ya?ml/, '')
             packages.push(new MockPackage(packageName))
         }
