@@ -3,7 +3,7 @@ import ListCommand from "./listCommand.ts";
 import MemoryLogger from "../lib/logger/memoryLogger.ts";
 import Config from "../lib/config.ts";
 import NullRepository from "../lib/repository/nullRepository.ts";
-import {MockRepository} from "../lib/repository/mockRepository.ts";
+import MockRepository from "../lib/repository/mockRepository.ts";
 
 Deno.test('should list nullRepo', () => {
     const config = new Config([]);

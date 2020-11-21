@@ -3,7 +3,7 @@ import FileSystemPackage from "../package/fileSystemPackage.ts";
 import {MockPackage} from "../package/mockPackage.ts";
 import {Package} from "../package/package.ts";
 
-export class MockRepository implements Repository {
+export default class MockRepository implements Repository {
     constructor(
         public name: string = 'mockRepo',
         public packages: Array<Package> = [
