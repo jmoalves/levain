@@ -25,6 +25,6 @@ Deno.test('should list yml and yaml packages', () => {
     assertEquals(packageNames, ['amazingYml', 'awesomeYaml', 'insideSubfolder'])
 })
 
-function getTestRepo(rootDir = './test/testRepo') {
+function getTestRepo(rootDir = './testdata/testRepo') {
     return new FileSystemRepository(new Config([]), rootDir)
 }
