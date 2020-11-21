@@ -8,13 +8,13 @@ Deno.test('should have a name', () => {
     assertEquals(repo.name, 'fileSystemRepo for .')
 })
 
-
+//
 // List
+//
 Deno.test('should list packages when root folder does not exist', () => {
     const repo = getTestRepo('thisFolderDoesNotExist')
 
     assertEquals(repo.packages, [])
-
 })
 
 Deno.test('should list yml and yaml packages', () => {
