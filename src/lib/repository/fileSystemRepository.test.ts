@@ -17,12 +17,12 @@ Deno.test('should list packages when root folder does not exist', () => {
 
 })
 
-Deno.test('should list packages', () => {
+Deno.test('should list yml and yaml packages', () => {
     const repo = getTestRepo()
 
     const packages = repo.packages
     const packageNames = packages.map(pkg => pkg.name)
-    assertEquals(packageNames, ['awesomePackage'])
+    assertEquals(packageNames, ['amazingYml', 'awesomeYaml'])
 })
 
 function getTestRepo(rootDir = './test/testRepo') {

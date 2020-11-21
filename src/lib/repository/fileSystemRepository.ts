@@ -89,13 +89,13 @@ export default class FileSystemRepository implements Repository {
             return [];
         }
 
-        const packagesGlob = `${this.rootDir}/**/*.yaml`;
+        const packagesGlob = `${this.rootDir}/**/*.levain.y*ml`;
         const packageFiles = expandGlobSync(packagesGlob)
         console.log(`# listPackages ${packagesGlob}`)
         const packages: Array<Package> = []
         for (const file of packageFiles) {
             console.log('## listPackages file', file)
-            const packageName = file.name.replace('.levain.yaml', '')
+            const packageName = file.name.replace(/\.levain\.ya?ml/, '')
             packages.push(new MockPackage(packageName))
         }
         return packages;
