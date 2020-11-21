@@ -22,9 +22,10 @@ Deno.test('should list yml and yaml packages', () => {
 
     const packages = repo.packages
     const packageNames = packages.map(pkg => pkg.name)
-    assertEquals(packageNames, ['amazingYml', 'awesomeYaml'])
+    assertEquals(packageNames, ['amazingYml', 'awesomeYaml', 'insideSubfolder'])
 })
 
 function getTestRepo(rootDir = './test/testRepo') {
     return new FileSystemRepository(new Config([]), rootDir)
+
 }

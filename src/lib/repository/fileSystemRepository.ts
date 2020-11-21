@@ -1,7 +1,6 @@
 import * as log from "https://deno.land/std/log/mod.ts";
-
 import * as path from "https://deno.land/std/path/mod.ts";
-import {existsSync, expandGlobSync} from "https://deno.land/std/fs/mod.ts";
+import {existsSync, ExpandGlobOptions, expandGlobSync} from "https://deno.land/std/fs/mod.ts";
 
 
 import Repository from './repository.ts'
@@ -25,7 +24,6 @@ export default class FileSystemRepository implements Repository {
         }
 
         let pkg = this.readPackageInDir(packageName, this.rootDir);
-
         if (pkg) {
             log.debug(`FSRepo: ${packageName} => ${pkg.toString()}`);
         }
@@ -89,9 +87,14 @@ export default class FileSystemRepository implements Repository {
             return [];
         }
 
-        const packagesGlob = `${this.rootDir}/**/*.levain.y*ml`;
-        const packageFiles = expandGlobSync(packagesGlob)
-        console.log(`# listPackages ${packagesGlob}`)
+        const packagesGlob = `**/*.levain.{yml,yaml}`;
+        const globOptions: ExpandGlobOptions = {
+            root: this.rootDir,
+            includeDirs: true,
+            extended: true,
+        }
+        const packageFiles = expandGlobSync(packagesGlob, globOptions)
+        console.log(`# listPackages ${packagesGlob} ${JSON.stringify(globOptions)}`)
         const packages: Array<Package> = []
         for (const file of packageFiles) {
             console.log('## listPackages file', file)
