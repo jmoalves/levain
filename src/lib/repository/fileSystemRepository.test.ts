@@ -27,5 +27,4 @@ Deno.test('should list yml and yaml packages', () => {
 
 function getTestRepo(rootDir = './test/testRepo') {
     return new FileSystemRepository(new Config([]), rootDir)
-
 }
