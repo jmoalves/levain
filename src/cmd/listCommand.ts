@@ -3,7 +3,7 @@ import Logger from "../lib/logger/logger.ts";
 import Config from "../lib/config.ts";
 import FileLogger from "../lib/logger/fileLogger.ts";
 
-export default class List implements Command {
+export default class ListCommand implements Command {
     constructor(
         private config: Config,
     ) {}
@@ -11,6 +11,9 @@ export default class List implements Command {
     public logger: Logger = new FileLogger()
 
     execute(args?: string[]): void {
-        this.logger.info("list - no repo found")
+        const repo = this.config.repository
+        this.logger.info(`list - listing repositories and packages`)
+        this.logger.info(`repository found: ${repo.name}`)
+        this.logger.info(`no packages found`)
     }
 }

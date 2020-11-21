@@ -7,7 +7,7 @@ import { homedir } from './utils.ts';
 import Repository from './repository/repository.ts'
 import CacheRepository from './repository/cache.ts'
 import ChainRepository from './repository/chain.ts'
-import FileSystemRepository from './repository/fs.ts'
+import FileSystemRepository from './repository/fileSystemRepository.ts'
 import PackageManager from "./package/manager.ts";
 
 export default class Config {
@@ -35,6 +35,9 @@ export default class Config {
 
   get repository(): Repository {
     return this._repository;
+  }
+  set repository(repository: Repository)  {
+    this._repository = repository;
   }
 
   get packageManager(): PackageManager {

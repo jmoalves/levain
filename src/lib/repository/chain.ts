@@ -6,6 +6,8 @@ export default class ChainRepository implements Repository {
   constructor(private config:Config, private repositories: Repository[]) {
   }
 
+  readonly name = `ChainRepo`;
+
   resolvePackage(packageName: string): Package | undefined {
     if (!this.repositories) {
       return undefined;
@@ -20,4 +22,5 @@ export default class ChainRepository implements Repository {
 
     return undefined;
   }
+
 }

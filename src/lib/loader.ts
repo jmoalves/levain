@@ -19,7 +19,7 @@ import Mkdir from "../action/mkdir.ts";
 import SaveConfig from "../action/saveConfig.ts";
 import SetEnv from "../action/setEnv.ts";
 import Template from "../action/template.ts";
-import List from "../cmd/list.ts";
+import ListCommand from "../cmd/listCommand.ts";
 
 export default class Loader {
     constructor(private config:Config) {
@@ -56,7 +56,7 @@ export default class Loader {
                 return new Shell(this.config);
 
             case 'list':
-                return new List(this.config);
+                return new ListCommand(this.config);
 
             default:
                 log.error(`Command ${cmd} not found - Aborting...`);

@@ -12,6 +12,8 @@ export default class FileSystemRepository implements Repository {
     log.debug(`FSRepo: Root=${this.rootDir}`);
   }
 
+  readonly name = `fileSystemRepo for ${this.rootDir}`;
+
   resolvePackage(packageName: string): Package | undefined {
     if (!existsSync(`${this.rootDir}`)) {
       return undefined;
@@ -73,4 +75,5 @@ export default class FileSystemRepository implements Repository {
       this);
     return pkg;
   }
+
 }

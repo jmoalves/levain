@@ -9,4 +9,6 @@ export default class NullRepository implements Repository {
   resolvePackage(packageName: string): Package | undefined {
     return undefined;
   }
+
+  name = 'nullRepo';
 }
