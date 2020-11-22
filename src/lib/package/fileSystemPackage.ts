@@ -5,7 +5,7 @@ import {existsSync} from "https://deno.land/std/fs/mod.ts";
 import Repository from '../repository/repository.ts'
 import Config from "../config.ts";
 import {FileUtils} from '../fileUtils.ts';
-import {Package} from "./package.ts";
+import Package from "./package.ts";
 
 
 export default class FileSystemPackage implements Package {

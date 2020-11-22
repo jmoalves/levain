@@ -6,7 +6,7 @@ import {existsSync, ExpandGlobOptions, expandGlobSync} from "https://deno.land/s
 import Repository from './repository.ts'
 import FileSystemPackage from '../package/fileSystemPackage.ts'
 import Config from '../config.ts';
-import {Package} from "../package/package.ts";
+import Package from "../package/package.ts";
 import {MockPackage} from "../package/mockPackage.ts";
 
 export default class FileSystemRepository implements Repository {

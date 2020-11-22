@@ -17,7 +17,7 @@ Deno.test('should list packages when root folder does not exist', () => {
     assertEquals(repo.packages, [])
 })
 
-Deno.test('should list yml and yaml packages', () => {
+Deno.test('should list .yml and .yaml packages, and include subfolder', () => {
     const repo = getTestRepo()
 
     const packages = repo.packages

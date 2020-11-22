@@ -14,6 +14,7 @@ for await (const event of watcher) {
 }
 
 async function runTest(file?: string): Promise<void> {
+    clearConsole()
     let cmd = ['deno', 'test', '--unstable', '--allow-all'];
     const testFile =
         file?.replace(/(?:.test)?.ts$/, '.test.ts')
@@ -24,4 +25,8 @@ async function runTest(file?: string): Promise<void> {
     }
     console.log('RUNTEST', testFile, cmd)
     await Deno.run({cmd})
+}
+
+async function clearConsole() {
+    await Deno.run({cmd: ['clear']})
 }

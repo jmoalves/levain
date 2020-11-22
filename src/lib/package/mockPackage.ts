@@ -1,4 +1,4 @@
-import {Package} from "./package.ts";
+import Package from "./package.ts";
 
 export class MockPackage implements Package {
 
@@ -7,5 +7,5 @@ export class MockPackage implements Package {
         public version: string = '1.0.0',
     ) {
     }
-    
+
 }
