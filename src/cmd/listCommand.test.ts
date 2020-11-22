@@ -2,8 +2,8 @@ import {assertEquals,} from "https://deno.land/std@0.78.0/testing/asserts.ts";
 import ListCommand from "./listCommand.ts";
 import MemoryLogger from "../lib/logger/memoryLogger.ts";
 import Config from "../lib/config.ts";
-import NullRepository from "../lib/repository/nullRepository.ts";
-import MockRepository from "../lib/repository/mockRepository.ts";
+import NullRepository from "../lib/repository/null_repository.ts";
+import Mock_repository from "../lib/repository/mock_repository.ts";
 
 Deno.test('should list nullRepo', () => {
     const config = new Config([]);
@@ -23,7 +23,7 @@ Deno.test('should list nullRepo', () => {
 
 Deno.test('should list packages available in a repo', () => {
     const config = new Config([]);
-    const mockRepo = new MockRepository()
+    const mockRepo = new Mock_repository()
     config.repository = mockRepo
     const list = new ListCommand(config)
     const logger = new MemoryLogger()

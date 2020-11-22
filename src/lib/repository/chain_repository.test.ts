@@ -2,7 +2,7 @@ import {assertEquals} from "https://deno.land/std@0.78.0/testing/asserts.ts";
 
 import Config from "../config.ts";
 import ChainRepository from "./chain_repository.ts";
-import MockRepository from "./mockRepository.ts";
+import Mock_repository from "./mock_repository.ts";
 import {MockPackage} from "../package/mockPackage.ts";
 
 Deno.test('should have a name', () => {
@@ -21,11 +21,11 @@ Deno.test('should list packages from repos', () => {
 })
 
 function getTestRepo() {
-    const repoMock1 = new MockRepository('mockRepo1', [
+    const repoMock1 = new Mock_repository('mockRepo1', [
         new MockPackage('package 1', '1.0.0'),
         new MockPackage('package 2', '2.0.0'),
     ])
-    const repoMock2 = new MockRepository('mockRepo2', [
+    const repoMock2 = new Mock_repository('mockRepo2', [
         new MockPackage('package 2', '2.2.2'),
         new MockPackage('package 3', '3.0.0'),
     ])

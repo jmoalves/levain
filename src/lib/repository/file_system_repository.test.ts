@@ -1,6 +1,6 @@
 import {assertEquals} from "https://deno.land/std@0.78.0/testing/asserts.ts";
 import Config from "../config.ts";
-import FileSystemRepository from "./fileSystemRepository.ts";
+import FileSystemRepository from "./file_system_repository.ts";
 
 Deno.test('should have a name', () => {
     const repo = new FileSystemRepository(new Config([]), '.')

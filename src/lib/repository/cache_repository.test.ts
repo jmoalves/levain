@@ -1,7 +1,7 @@
 import {assertEquals} from "https://deno.land/std@0.78.0/testing/asserts.ts";
 import CacheRepository from "./cache_repository.ts";
 import Config from "../config.ts";
-import MockRepository from "./mockRepository.ts";
+import Mock_repository from "./mock_repository.ts";
 
 Deno.test('should have a name', () => {
     const repo = getTestRepo()
@@ -19,5 +19,5 @@ Deno.test('should list packages from cached repo', () => {
 })
 
 function getTestRepo() {
-    return new CacheRepository(new Config([]), new MockRepository())
+    return new CacheRepository(new Config([]), new Mock_repository())
 }
