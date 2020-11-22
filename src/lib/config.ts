@@ -5,7 +5,7 @@ import * as path from "https://deno.land/std/path/mod.ts";
 import {homedir} from './utils.ts';
 
 import Repository from './repository/repository.ts'
-import CacheRepository from './repository/cache.ts'
+import CacheRepository from './repository/cache_repository.ts'
 import ChainRepository from './repository/chain_repository.ts'
 import FileSystemRepository from './repository/fileSystemRepository.ts'
 import PackageManager from "./package/manager.ts";

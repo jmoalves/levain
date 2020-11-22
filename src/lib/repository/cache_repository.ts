@@ -5,7 +5,7 @@ import Package from "../package/package.ts";
 
 export default class CacheRepository implements Repository {
     readonly name = `cacheRepo for ${this.repository?.name}`;
-    packages: Array<Package> = [];
+    packages: Array<Package> = this.repository.packages;
 
     private cache: Map<string, FileSystemPackage> = new Map();
 
