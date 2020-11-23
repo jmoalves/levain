@@ -134,6 +134,7 @@ export DENO_DIR=${distDir}/bin
 
 ${distDir}/bin/deno info
 ${distDir}/bin/deno cache --unstable --reload ${distDir}/src/levain.ts
+rm ${distDir}/bin/deno # remove deno from other OS
 
 ## Create zip
 zipFile=levain-v$levainVersion-with-deno-v$denoVersion-windows-x86_64.zip
