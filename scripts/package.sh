@@ -1,24 +1,5 @@
 #!/bin/bash
 
-# Check JQ
-if $(jq --help >/dev/null); then
-  jqBin='jq'
-elif $(jq-win64 --help >/dev/null); then
-  jqBin='jq-win64'
-else
-  echo jq-win64 and jq NOT FOUND
-  exit 1
-fi
-echo using $jqBin
-
-# Check Zip
-if $(zip -h >/dev/null); then
-  zipBin='zip'
-else
-  zipBin="${myRoot}/extra-bin/windows/7z.exe"
-fi
-echo using $zipBin
-
 getRelease() {
   while getopts "o:r:t:" o; do
     case "${o}" in
@@ -82,6 +63,25 @@ if [ -z "$githubToken" ]; then
   exit 1
 fi
 
+# Check JQ
+if $(jq --help >/dev/null); then
+  jqBin='jq'
+elif $(jq-win64 --help >/dev/null); then
+  jqBin='jq-win64'
+else
+  echo jq-win64 and jq NOT FOUND
+  exit 1
+fi
+echo using $jqBin
+
+# Check Zip
+if $(zip -h >/dev/null); then
+  zipBin='zip'
+else
+  zipBin="${myRoot}/extra-bin/windows/7z.exe"
+fi
+echo using $zipBin
+
 myPath="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 cd $myPath/..
 myRoot=$(pwd)
@@ -93,6 +93,9 @@ distRoot=dist/windows
 mkdir -p ${distRoot}
 
 ## levain
+echo $(getRelease -o jmoalves -r levain -t $githubToken $levainVersion)
+exit 1
+
 levainRelease=$(getRelease -o jmoalves -r levain -t $githubToken $levainVersion)
 levainVersion=$(echo $levainRelease | $jqBin -rc '.tag_name' | sed 's/v//g')
 levainUrl=$(echo $levainRelease | $jqBin -rc '.zipball_url')
