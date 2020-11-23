@@ -1,4 +1,4 @@
-version: 0.1.7a
+version: 0.1.7b
 
 cmd.install:
   - copy --verbose src bin levain.cmd levain.sh ${baseDir}
