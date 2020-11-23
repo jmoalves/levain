@@ -11,6 +11,14 @@ else
 fi
 echo using $jqBin
 
+# Check Zip
+if $(zip -h >/dev/null); then
+  zipBin='zip'
+else
+  zipBin="${myRoot}/extra-bin/windows/7z.exe"
+fi
+echo using $zipBin
+
 getRelease() {
   while getopts "o:r:t:" o; do
     case "${o}" in
@@ -43,6 +51,7 @@ getRelease() {
 
   # Release url
   url=https://api.github.com/repos/$owner/$repo/releases/latest
+  echo releasing to $url
   if [ -n "$version" ]; then
     url=$(
       curl -ks $tokenOpt -X GET https://api.github.com/repos/$owner/$repo/releases |
@@ -119,7 +128,12 @@ ${distDir}/bin/deno cache --unstable --reload ${distDir}/src/levain.ts
 ## Create zip
 zipFile=levain-v$levainVersion-with-deno-v$denoVersion-windows-x86_64.zip
 cd ${distRoot}
-${myRoot}/extra-bin/windows/7z.exe a ${zipFile} $(basename $distDir) >/dev/null
+if [ "$zipBin" == "zip" ]; then
+  $zipBin ${zipFile} $(basename $distDir) >/dev/null
+else
+  $zipBin a ${zipFile} $(basename $distDir) >/dev/null
+fi
+
 cd - >/dev/null
 rm -rf ${distDir}
 
