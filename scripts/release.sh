@@ -54,6 +54,9 @@ releases=$(curl -ks -X GET -u username:$githubToken \
   https://api.github.com/repos/jmoalves/levain/releases |
   $jqBin -r .[].tag_name |
   sed 's/ //g')
+echo releases "$releases"
+exit 1
+
 for r in $releases; do
   if [ $tag = $r ]; then
     echo Git release $r exists. Aborting...
