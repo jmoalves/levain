@@ -130,8 +130,8 @@ curl -ks -o ${distDir}/bin/deno-macos.zip -L $denoMacosUrl
 unzip ${distDir}/bin/deno-macos.zip -d ${distDir}/bin >/dev/null
 rm ${distDir}/bin/deno-macos.zip
 
+# download dependencies
 export DENO_DIR=${distDir}/bin
-
 ${distDir}/bin/deno info
 ${distDir}/bin/deno cache --unstable --reload ${distDir}/src/levain.ts
 rm ${distDir}/bin/deno # remove deno from other OS
