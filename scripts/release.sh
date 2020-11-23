@@ -52,7 +52,6 @@ fi
 # Check release
 releases=$(curl -ks -X GET -u username:$githubToken \
   https://api.github.com/repos/jmoalves/levain/releases |
-  #  jq-win64 -r .[].tag_name |
   $jqBin -r .[].tag_name |
   sed 's/ //g')
 for r in $releases; do
