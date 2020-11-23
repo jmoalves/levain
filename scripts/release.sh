@@ -17,6 +17,8 @@ fi
 
 ## TODO: Check if version matches regexp [0-9]+\.[0-9]+\.[0-9]+
 
+echo Release "$@"
+
 # Check JQ
 if $(jq --help >/dev/null); then
   jqBin='jq'
@@ -54,6 +56,7 @@ releases=$(curl -ks -X GET -u username:$githubToken \
   https://api.github.com/repos/jmoalves/levain/releases |
   $jqBin -r .[].tag_name |
   sed 's/ //g')
+
 for r in $releases; do
   if [ $tag = $r ]; then
     echo Git release $r exists. Aborting...
