@@ -50,11 +50,11 @@ getRelease() {
   fi
 
   # Release url
-  url=https://api.github.com/repos/$owner/$repo/releases/latest
+  url="https://api.github.com/repos/$owner/$repo/releases/latest"
   echo releasing to $url
   if [ -n "$version" ]; then
     url=$(
-      curl -ks $tokenOpt -X GET https://api.github.com/repos/$owner/$repo/releases |
+      curl -ks $tokenOpt -X GET "https://api.github.com/repos/$owner/$repo/releases" |
         $jqBin -rc ".[] | select( .tag_name == \"v${version}\" ) | .url"
     )
   fi
