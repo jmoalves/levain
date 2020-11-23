@@ -2,5 +2,7 @@
 <project version="4">
   <component name="TypeScriptCompiler">
     <option name="recompileOnChanges" value="true" />
+    <option name="enableServiceForProjectsWithoutConfig" value="false" />
+    <option name="nodeInterpreterTextField" value="$PROJECT_DIR$/../../ferramentas/deno-x86_64-pc-windows-msvc/deno" />
   </component>
 </project>
