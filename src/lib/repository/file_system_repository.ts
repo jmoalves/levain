@@ -58,7 +58,6 @@ export default class FileSystemRepository implements Repository {
 
     private readPackage(packageName: string, yamlFile: string): FileSystemPackage | undefined {
         if (!path.basename(yamlFile).match("^" + packageName + ".levain.ya?ml$")) {
-            log.error(`## readPackage - package and filename do not match: ${packageName} with ${path.basename(yamlFile)}`)
             return undefined;
         }
 
