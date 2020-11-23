@@ -174,4 +174,5 @@ curl -ks -X POST -u username:$githubToken \
   -T ${distRoot}/$zipFile \
   ${levainAssetsUploadUrl}?name=${zipFile}
 
-echo Upload bem sucedido
+echo
+echo Upload completed - ${zipFile}
