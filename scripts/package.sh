@@ -152,10 +152,12 @@ echo
 echo $zipFile created
 ls -l "${distRoot}/${zipFile}"
 
-## Asset
+## Upload asset to GitHub
 levainAssetsUploadUrl=$(echo $levainRelease | $jqBin -rc '.upload_url' | sed 's/{.*}//')
 echo Uploading asset $zipFile to $levainAssetsUploadUrl
 curl -ks -X POST -u username:$githubToken \
   -H 'Content-Type: application/zip' \
   -T ${distRoot}/$zipFile \
   ${levainAssetsUploadUrl}?name=${zipFile}
+
+echo Upload bem sucedido
