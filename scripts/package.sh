@@ -149,6 +149,7 @@ rm -rf ${distDir}
 
 echo
 echo $zipFile created
+ls -sh $zipFile
 
 ## Asset
 levainAssetsUploadUrl=$(echo $levainRelease | $jqBin -rc '.upload_url' | sed 's/{.*}//')
