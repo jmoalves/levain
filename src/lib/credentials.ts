@@ -1,6 +1,6 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
-import { promptSecret, envChain } from './utils.ts';
+import {envChain, promptSecret} from './utils.ts';
 import Config from './config.ts';
 
 export function askEmail(config: Config): void {
@@ -16,7 +16,7 @@ export function askEmail(config: Config): void {
 }
 
 export function askUsername(config: Config): void {
-    let username:string|null = prompt("Username: ", envChain("user", "username") || "");
+    let username: string | null = prompt("Username: ", envChain("user", "username") || "");
 
     if (!username) {
         log.error("");
@@ -35,10 +35,10 @@ export async function askPassword(config: Config) {
         console.log("");
         let pw2 = await promptSecret(" Confirm: ");
         console.log("");
-    
+
         if (password == pw2) {
             console.log("");
-            console.log("Got password (but we did NOT validate it with the server!)");
+            console.log("Double checked password, but we did NOT validate it with the server");
             console.log("");
             config.password = password;
             return;
@@ -46,7 +46,7 @@ export async function askPassword(config: Config) {
 
         console.log("Password mismatch... Please, inform again.");
         console.log("");
-    } while(tries < 3);
+    } while (tries < 3);
 
     log.error("");
     log.error(`Unable to collect password after ${tries} attempts`);
