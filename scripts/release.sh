@@ -17,6 +17,8 @@ fi
 
 ## TODO: Check if version matches regexp [0-9]+\.[0-9]+\.[0-9]+
 
+echo Release "$@"
+
 # Check JQ
 if $(jq --help >/dev/null); then
   jqBin='jq'

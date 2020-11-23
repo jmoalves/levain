@@ -63,6 +63,8 @@ if [ -z "$githubToken" ]; then
   exit 1
 fi
 
+echo Packaging "$@"
+
 # Check JQ
 if $(jq --help >/dev/null); then
   jqBin='jq'
