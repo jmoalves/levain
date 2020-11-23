@@ -1,3 +1,5 @@
+import * as log from "https://deno.land/std@0.78.0/log/mod.ts";
+
 import Repository from './repository.ts'
 import FileSystemPackage from '../package/file_system_package.ts'
 import Config from "../config.ts";
@@ -30,7 +32,7 @@ export default class ChainRepository implements Repository {
     }
 
     private listPackages(): Array<Package> {
-        console.debug('listPackages', this.repositories)
+        log.debug('listPackages', this.repositories)
         return this.repositories
             .flatMap(repo => repo.packages)
             .reduce((uniquePkgs, pkg) =>
