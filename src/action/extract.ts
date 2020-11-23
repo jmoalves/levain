@@ -58,10 +58,15 @@ abstract class Extractor {
             }
         }
 
-        let children = Deno.readDirSync(dstDir);
-
         // Using temp dir to avoid name clashes
-        let tmpRootDir = Deno.makeTempDirSync({prefix: 'unzip-strip-'});
+        // Issue 23 - dst and temp must be in the same drive
+        //let tmpRootDir = Deno.makeTempDirSync({prefix: 'unzip-strip-'});
+        let tmpRootDir = Deno.makeTempDirSync({
+            dir: this.config.levainSafeTempDir,
+            prefix: 'unzip-strip-'
+        });
+
+        let children = Deno.readDirSync(dstDir);
         for (let toStrip of children) {
             log.debug(`- STRIP ${path.resolve(dstDir, toStrip.name)}`);
             let tmpDir = path.resolve(tmpRootDir, toStrip.name);

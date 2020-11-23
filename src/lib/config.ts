@@ -57,6 +57,10 @@ export default class Config {
         return path.resolve(this.levainHome, ".levain", "registry");
     }
 
+    get levainSafeTempDir(): string {
+        return path.resolve(this.levainHome, ".levain", "temp");
+    }
+
     get context(): any {
         return this._context;
     }
