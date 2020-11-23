@@ -64,6 +64,10 @@ fi
 
 echo Packaging "$@"
 
+myPath="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+cd $myPath/..
+myRoot=$(pwd)
+
 # Check JQ
 if $(jq --help >/dev/null); then
   jqBin='jq'
@@ -82,10 +86,6 @@ else
   zipBin="${myRoot}/extra-bin/windows/7z.exe"
 fi
 echo using $zipBin
-
-myPath="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
-cd $myPath/..
-myRoot=$(pwd)
 
 tag=v${levainVersion}
 
@@ -117,24 +117,38 @@ denoRelease=$(getRelease -o denoland -r deno $denoVersion)
 denoVersion=$(echo $denoRelease | $jqBin -rc '.tag_name' | sed 's/v//g')
 denoWindowsUrl=$(echo $denoRelease | $jqBin -rc '.assets|.[] | select( .name == "deno-x86_64-pc-windows-msvc.zip" ) | .browser_download_url')
 denoMacosUrl=$(echo $denoRelease | $jqBin -rc '.assets|.[] | select( .name == "deno-x86_64-apple-darwin.zip" ) | .browser_download_url')
-echo Deno $denoVersion at $denoWindowsUrl, $denoMacosUrl
+#echo Deno $denoVersion at $denoWindowsUrl, $denoMacosUrl
 
-mkdir -p ${distDir}/bin
+utilWin=${distRoot}/windows
+utilMac=${distRoot}/macos
 
 # Deno for Windows
-curl -ks -o ${distDir}/bin/deno-windows.zip -L $denoWindowsUrl
-unzip ${distDir}/bin/deno-windows.zip -d ${distDir}/bin >/dev/null
-rm ${distDir}/bin/deno-windows.zip
-# Deno for macos
-curl -ks -o ${distDir}/bin/deno-macos.zip -L $denoMacosUrl
-unzip ${distDir}/bin/deno-macos.zip -d ${distDir}/bin >/dev/null
-rm ${distDir}/bin/deno-macos.zip
+echo Deno $denoVersion for Windows at $denoWindowsUrl
+mkdir -p ${utilWin}
+curl -ks -o ${utilWin}/deno-windows.zip -L $denoWindowsUrl
+unzip ${utilWin}/deno-windows.zip -d ${utilWin} >/dev/null
+
+# Deno for MacOS
+echo Deno $denoVersion for MacOS at $denoMacosUrl
+mkdir -p ${utilMac}
+curl -ks -o ${utilMac}/deno-macos.zip -L $denoMacosUrl
+unzip ${utilMac}/deno-macos.zip -d ${utilMac} >/dev/null
+
+# Deno embedded
+echo Deno embedded
+mkdir -p ${distDir}/bin
+unzip ${utilWin}/deno-windows.zip -d ${distDir}/bin >/dev/null
+
+if [ "$zipBin" == "zip" ]; then
+  myDeno=${utilMac}/deno
+else 
+  myDeno=${utilWin}/deno
+fi
 
 # download dependencies
 export DENO_DIR=${distDir}/bin
-${distDir}/bin/deno info
-${distDir}/bin/deno cache --unstable --reload ${distDir}/src/levain.ts
-rm ${distDir}/bin/deno # remove deno from other OS
+${myDeno} info
+${myDeno} cache --unstable --reload ${distDir}/src/levain.ts
 
 ## Create zip
 zipFile=levain-v$levainVersion-with-deno-v$denoVersion-windows-x86_64.zip
@@ -144,9 +158,9 @@ if [ "$zipBin" == "zip" ]; then
 else
   $zipBin a ${zipFile} $(basename $distDir) >/dev/null
 fi
-
 cd - >/dev/null
-rm -rf ${distDir}
+
+#rm -rf ${distDir}
 
 echo
 echo $zipFile created
