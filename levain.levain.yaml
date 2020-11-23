@@ -1,4 +1,4 @@
-version: 0.1.7-snapshot
+version: 0.1.7-snapshot-a
 
 cmd.install:
   - copy --verbose src bin levain.cmd levain.sh ${baseDir}
