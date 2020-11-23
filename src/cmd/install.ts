@@ -63,6 +63,7 @@ export default class Install implements Command {
         }
 
         // Standard actions - At the head (unshift), they are in reverse order (like a STACK)
+        actions.unshift("mkdir " + this.config.levainSafeTempDir);
         actions.unshift("mkdir " + this.config.levainRegistry);
         actions.unshift("mkdir --compact ${levainHome}");
 
