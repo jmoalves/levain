@@ -67,7 +67,7 @@ export default class Install implements Command {
         actions.unshift("mkdir --compact ${levainHome}");
 
         // Standard actions - At the rear (push), they are in normal order (like a QUEUE)
-        actions.push("copy --verbose " + pkg.name + ".levain.yaml " + this.config.levainRegistry);
+        actions.push(`copy --verbose ${pkg.filePath} ${this.config.levainRegistry}`);
         //
 
         const loader = new Loader(this.config);
