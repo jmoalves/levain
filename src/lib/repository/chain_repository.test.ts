@@ -3,7 +3,7 @@ import {assertEquals} from "https://deno.land/std@0.78.0/testing/asserts.ts";
 import Config from "../config.ts";
 import ChainRepository from "./chain_repository.ts";
 import Mock_repository from "./mock_repository.ts";
-import {MockPackage} from "../package/mockPackage.ts";
+import {MockPackage} from "../package/mock_package.ts";
 
 Deno.test('should have a name', () => {
     const repo = getTestRepo()

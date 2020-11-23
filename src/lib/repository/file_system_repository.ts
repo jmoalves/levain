@@ -1,13 +1,12 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import {existsSync, ExpandGlobOptions, expandGlobSync} from "https://deno.land/std/fs/mod.ts";
+import * as log from "https://deno.land/std@0.78.0/log/mod.ts";
+import * as path from "https://deno.land/std@0.78.0/path/mod.ts";
+import {existsSync, ExpandGlobOptions, expandGlobSync} from "https://deno.land/std@0.78.0/fs/mod.ts";
 
 
 import Repository from './repository.ts'
-import FileSystemPackage from '../package/fileSystemPackage.ts'
+import FileSystemPackage from '../package/file_system_package.ts'
 import Config from '../config.ts';
 import Package from "../package/package.ts";
-import {MockPackage} from "../package/mockPackage.ts";
 
 export default class FileSystemRepository implements Repository {
     constructor(private config: Config, private rootDir: string) {
@@ -58,7 +57,8 @@ export default class FileSystemRepository implements Repository {
     }
 
     private readPackage(packageName: string, yamlFile: string): FileSystemPackage | undefined {
-        if (!path.basename(yamlFile).match("^" + packageName + ".levain.yaml$")) {
+        if (!path.basename(yamlFile).match("^" + packageName + ".levain.ya?ml$")) {
+            log.error(`## readPackage - package and filename do not match: ${packageName} with ${path.basename(yamlFile)}`)
             return undefined;
         }
 
@@ -87,7 +87,7 @@ export default class FileSystemRepository implements Repository {
             return [];
         }
 
-        const packagesGlob = `**/*.levain.{yml,yaml}`;
+        const packagesGlob = `**/*.levain.{yaml,yml}`;
         const globOptions: ExpandGlobOptions = {
             root: this.rootDir,
             includeDirs: true,
@@ -97,9 +97,13 @@ export default class FileSystemRepository implements Repository {
         log.debug(`# listPackages ${packagesGlob} ${JSON.stringify(globOptions)}`)
         const packages: Array<Package> = []
         for (const file of packageFiles) {
-            log.debug('## listPackages file', file)
+            log.debug(`## listPackages file ${JSON.stringify(file)}`)
             const packageName = file.name.replace(/\.levain\.ya?ml/, '')
-            packages.push(new MockPackage(packageName))
+            const pkg = this.readPackage(packageName, file.path)
+            if (pkg) {
+                log.debug(`## listPackages adding package ${pkg}`)
+                packages.push(pkg)
+            }
         }
         return packages;
     }

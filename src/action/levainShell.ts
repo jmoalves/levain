@@ -1,6 +1,6 @@
 import Action from "../lib/action.ts";
 import Config from "../lib/config.ts";
-import FileSystemPackage from '../lib/package/fileSystemPackage.ts';
+import FileSystemPackage from '../lib/package/file_system_package.ts';
 import Loader from '../lib/loader.ts';
 
 export default class LevainShell implements Action {

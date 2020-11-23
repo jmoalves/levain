@@ -2,7 +2,7 @@ import * as log from "https://deno.land/std/log/mod.ts";
 
 import Command from "./command.ts";
 import Config from "../lib/config.ts";
-import FileSystemPackage from "../lib/package/fileSystemPackage.ts";
+import FileSystemPackage from "../lib/package/file_system_package.ts";
 import Loader from '../lib/loader.ts';
 
 export default class Install implements Command {

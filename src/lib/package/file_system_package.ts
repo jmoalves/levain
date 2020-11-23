@@ -15,11 +15,12 @@ export default class FileSystemPackage implements Package {
 
     constructor(
         private config: Config,
-        private _name: string,
+        public readonly name: string,
         private _baseDir: string,
-        private _yamlFile: string,
+        public readonly filePath: string,
         yamlStr: string,
-        private _repo?: Repository) {
+        private _repo?: Repository
+    ) {
         this._yamlStruct = yaml.parse(yamlStr);
 
         this._version = this._yamlStruct.version;
@@ -27,10 +28,6 @@ export default class FileSystemPackage implements Package {
             this._dependencies = this._yamlStruct.dependencies;
         }
         this._dependencies = this.normalizeDeps(this._dependencies);
-    }
-
-    get name(): string {
-        return this._name
     }
 
     get version(): string {
@@ -42,11 +39,7 @@ export default class FileSystemPackage implements Package {
     }
 
     get pkgDir(): string {
-        return path.resolve(path.dirname(this.yaml));
-    }
-
-    get yaml(): string {
-        return this._yamlFile
+        return path.resolve(path.dirname(this.filePath));
     }
 
     get dependencies(): string[] | undefined {
@@ -63,7 +56,7 @@ export default class FileSystemPackage implements Package {
     }
 
     private installedRecipeFilepath() {
-        let registry = path.resolve(this.config.levainRegistry, path.basename(this.yaml));
+        let registry = path.resolve(this.config.levainRegistry, path.basename(this.filePath));
         return registry;
     }
 
@@ -100,12 +93,12 @@ export default class FileSystemPackage implements Package {
             + " v" + this.version
             + ", baseDir=" + this.baseDir
             + (this.dependencies ? ", deps=" + this.dependencies : "")
-            + ", yaml=" + this.yaml
+            + ", yaml=" + this.filePath
             + "]"
     }
 
     private normalizeDeps(deps: string[] | undefined): string[] | undefined {
-        if (this._name == "levain") {
+        if (this.name == "levain") {
             return undefined;
         }
 
@@ -120,7 +113,7 @@ export default class FileSystemPackage implements Package {
     }
 
     getRecipeTimestamp() {
-        return FileUtils.getModificationTimestamp(this.yaml);
+        return FileUtils.getModificationTimestamp(this.filePath);
     }
 
     getInstalledTimestamp() {

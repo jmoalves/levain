@@ -4,7 +4,7 @@ import {existsSync} from "https://deno.land/std/fs/mod.ts";
 
 import Command from "./command.ts";
 import Config from "../lib/config.ts";
-import FileSystemPackage from "../lib/package/fileSystemPackage.ts";
+import FileSystemPackage from "../lib/package/file_system_package.ts";
 import Loader from '../lib/loader.ts';
 import {parseArgs} from "../lib/parseArgs.ts";
 

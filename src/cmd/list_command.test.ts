@@ -1,5 +1,5 @@
 import {assertEquals,} from "https://deno.land/std@0.78.0/testing/asserts.ts";
-import ListCommand from "./listCommand.ts";
+import ListCommand from "./list_command.ts";
 import MemoryLogger from "../lib/logger/memoryLogger.ts";
 import Config from "../lib/config.ts";
 import NullRepository from "../lib/repository/null_repository.ts";
@@ -35,7 +35,7 @@ Deno.test('should list packages available in a repo', () => {
         "list - listing repositories and packages",
         "repository mockRepo:",
         "  2 packages found:",
-        "    package: aPackage 1.0.1",
-        "    package: anotherPackage 0.1.2"
+        "    package: aPackage 1.0.1 (/mock/aPackage-1.0.1.yml)",
+        "    package: anotherPackage 0.1.2 (/mock/anotherPackage-0.1.2.yml)"
     ])
 })

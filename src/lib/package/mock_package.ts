@@ -5,6 +5,7 @@ export class MockPackage implements Package {
     constructor(
         public name: string,
         public version: string = '1.0.0',
+        public filePath: string = `/mock/${name}-${version}.yml`,
     ) {
     }
 

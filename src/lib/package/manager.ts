@@ -1,7 +1,7 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
 import Config from "../config.ts";
-import FileSystemPackage from "./fileSystemPackage.ts";
+import FileSystemPackage from "./file_system_package.ts";
 import Repository from "../repository/repository.ts";
 
 export default class PackageManager {

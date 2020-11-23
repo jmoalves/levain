@@ -1,6 +1,6 @@
 import Repository from "./repository.ts";
-import FileSystemPackage from "../package/fileSystemPackage.ts";
-import {MockPackage} from "../package/mockPackage.ts";
+import FileSystemPackage from "../package/file_system_package.ts";
+import {MockPackage} from "../package/mock_package.ts";
 import Package from "../package/package.ts";
 
 export default class Mock_repository implements Repository {

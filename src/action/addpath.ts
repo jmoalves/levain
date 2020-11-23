@@ -2,7 +2,7 @@ import * as path from "https://deno.land/std/path/mod.ts";
 
 import Action from "../lib/action.ts";
 import Config from "../lib/config.ts";
-import FileSystemPackage from '../lib/package/fileSystemPackage.ts';
+import FileSystemPackage from '../lib/package/file_system_package.ts';
 
 export default class AddPath implements Action {
     constructor(private config: Config) {

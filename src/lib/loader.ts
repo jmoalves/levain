@@ -3,7 +3,7 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import Command from "../cmd/command.ts";
 import Config from "./config.ts";
 import Action from "./action.ts";
-import FileSystemPackage from './package/fileSystemPackage.ts';
+import FileSystemPackage from './package/file_system_package.ts';
 
 // Commands
 import Install from "../cmd/install.ts";
@@ -19,7 +19,7 @@ import Mkdir from "../action/mkdir.ts";
 import SaveConfig from "../action/saveConfig.ts";
 import SetEnv from "../action/setEnv.ts";
 import Template from "../action/template.ts";
-import ListCommand from "../cmd/listCommand.ts";
+import ListCommand from "../cmd/list_command.ts";
 
 export default class Loader {
     constructor(private config: Config) {

@@ -24,7 +24,7 @@ export default class ListCommand implements Command {
         if (packageCount > 0) {
             this.logger.info(`  ${packageCount} packages found:`)
             packages.forEach(pkg => {
-                this.logger.info(`    package: ${pkg.name} ${pkg.version}`)
+                this.logger.info(`    package: ${pkg.name} ${pkg.version} (${pkg.filePath})`)
             })
         }
     }
