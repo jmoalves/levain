@@ -19,7 +19,7 @@ export default class ConsoleAndFileLogger implements Logger {
                     }
                 }),
 
-                file: new log.handlers.FileHandler("DEBUG", {
+                file: new AutoFlushLogFileHandler("DEBUG", {
                     filename: logFile,
                     formatter: logRecord => {
                         let msg = ConsoleAndFileLogger.hidePassword(logRecord.msg);
@@ -67,5 +67,12 @@ export default class ConsoleAndFileLogger implements Logger {
 
     info(text: string): void {
         log.info(text)
+    }
+}
+
+class AutoFlushLogFileHandler extends log.handlers.FileHandler {
+    log(msg: string): void {
+        super.log(msg);
+        super.flush();
     }
 }
