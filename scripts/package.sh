@@ -32,7 +32,6 @@ getRelease() {
 
   # Release url
   url="https://api.github.com/repos/$owner/$repo/releases/latest"
-  echo releasing to $url
   if [ -n "$version" ]; then
     url=$(
       curl -ks $tokenOpt -X GET "https://api.github.com/repos/$owner/$repo/releases" |
@@ -92,12 +91,10 @@ tag=v${levainVersion}
 
 # Windows dist
 distRoot=dist/windows
+rm -rf ${distRoot}
 mkdir -p ${distRoot}
 
 ## levain
-echo $(getRelease -o jmoalves -r levain -t $githubToken $levainVersion)
-exit 1
-
 levainRelease=$(getRelease -o jmoalves -r levain -t $githubToken $levainVersion)
 levainVersion=$(echo $levainRelease | $jqBin -rc '.tag_name' | sed 's/v//g')
 levainUrl=$(echo $levainRelease | $jqBin -rc '.zipball_url')
@@ -109,6 +106,7 @@ echo Levain ${levainVersion} at ${levainUrl}
 curl -ks -u username:$githubToken -o ${distDir}/levain.zip -L $levainUrl
 unzip ${distDir}/levain.zip -d ${distDir} >/dev/null
 mv ${distDir}/jmoalves-levain-*/* ${distDir}
+
 ### levain cleanup
 rm -rf ${distDir}/scripts
 rm ${distDir}/levain.zip
@@ -117,16 +115,23 @@ rm -rf ${distDir}/jmoalves-levain-*
 ## Deno bin
 denoRelease=$(getRelease -o denoland -r deno $denoVersion)
 denoVersion=$(echo $denoRelease | $jqBin -rc '.tag_name' | sed 's/v//g')
-denoUrl=$(echo $denoRelease | $jqBin -rc '.assets|.[] | select( .name == "deno-x86_64-pc-windows-msvc.zip" ) | .browser_download_url')
-echo Deno $denoVersion at $denoUrl
+denoWindowsUrl=$(echo $denoRelease | $jqBin -rc '.assets|.[] | select( .name == "deno-x86_64-pc-windows-msvc.zip" ) | .browser_download_url')
+denoMacosUrl=$(echo $denoRelease | $jqBin -rc '.assets|.[] | select( .name == "deno-x86_64-apple-darwin.zip" ) | .browser_download_url')
+echo Deno $denoVersion at $denoWindowsUrl, $denoMacosUrl
 
 mkdir -p ${distDir}/bin
-curl -ks -o ${distDir}/bin/deno.zip -L $denoUrl
-unzip ${distDir}/bin/deno.zip -d ${distDir}/bin >/dev/null
-### deno cleanup
-rm ${distDir}/bin/deno.zip
+
+# Deno for Windows
+curl -ks -o ${distDir}/bin/deno-windows.zip -L $denoWindowsUrl
+unzip ${distDir}/bin/deno-windows.zip -d ${distDir}/bin >/dev/null
+rm ${distDir}/bin/deno-windows.zip
+# Deno for macos
+curl -ks -o ${distDir}/bin/deno-macos.zip -L $denoMacosUrl
+unzip ${distDir}/bin/deno-macos.zip -d ${distDir}/bin >/dev/null
+rm ${distDir}/bin/deno-macos.zip
 
 export DENO_DIR=${distDir}/bin
+
 ${distDir}/bin/deno info
 ${distDir}/bin/deno cache --unstable --reload ${distDir}/src/levain.ts
 
