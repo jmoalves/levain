@@ -3,70 +3,70 @@
 version=$1
 
 if [ -z "$version" ]; then
-    echo You must inform the version number. Aborting...
-    exit 1
+  echo You must inform the version number. Aborting...
+  exit 1
 fi
 
 tokenFile=$HOME/.githubToken
-githubToken=$( cat $tokenFile )
+githubToken=$(cat $tokenFile)
 
 if [ -z "$githubToken" ]; then
-    echo You must inform the GitHub token. Aborting...
-    exit 1
+  echo You must inform the GitHub Personal access token in $tokenFile. Aborting...
+  exit 1
 fi
 
 ## TODO: Check if version matches regexp [0-9]+\.[0-9]+\.[0-9]+
 
 # Check JQ
-if ! $( jq-win64 --help > /dev/null ) ; then
-    echo jq-win64 NOT FOUND
-    exit 1
+if ! $($(jq --help >/dev/null) || $(jq-win64 --help >/dev/null)); then
+  echo jq-win64 NOT FOUND
+  exit 1
 fi
 
-myPath="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+myPath="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 cd $myPath/..
 
 git fetch --all
 
 # Check changes
-changes=$( git status --porcelain )
+changes=$(git status --porcelain)
 if [ -n "$changes" ]; then
-    echo Git repo with changes. Aborting...
-    echo $changes
-    exit 1
+  echo Git repo with changes. Aborting...
+  echo $changes
+  exit 1
 fi
 
 # Check tag
 tag=v${version}
-tagExists=$( git tag -l $tag )
-if [ -n "$tagExists" ]; then  
-    echo Git tag $tag already exists. Aborting...
-    exit 1
+tagExists=$(git tag -l $tag)
+if [ -n "$tagExists" ]; then
+  echo Git tag $tag already exists. Aborting...
+  exit 1
 fi
 
 # Check release
-releases=$( curl -ks -X GET -u username:$githubToken \
-    https://api.github.com/repos/jmoalves/levain/releases \
-    | jq-win64 -r .[].tag_name \
-    | sed 's/ //g')
+releases=$(curl -ks -X GET -u username:$githubToken \
+  https://api.github.com/repos/jmoalves/levain/releases |
+  jq-win64 -r .[].tag_name |
+  sed 's/ //g')
 for r in $releases; do
-    if [ $tag = $r ]; then
-        echo Git release $r exists. Aborting...
-        exit 1
-    fi
+  if [ $tag = $r ]; then
+    echo Git release $r exists. Aborting...
+    exit 1
+  fi
 done
 
 # Change version at main file
 cp -f src/levain.ts src/levain.ts.bkp
-cat src/levain.ts.bkp \
-    | sed "s/levain vHEAD/levain ${tag}/g" \
-    > src/levain.ts
+cat src/levain.ts.bkp |
+  sed "s/levain vHEAD/levain ${tag}/g" \
+    >src/levain.ts
 
 # Change version at yaml file
 cp -f levain.levain.yaml levain.levain.yaml.bkp
-cat levain.levain.yaml.bkp \
-    | sed "s/version: .*/version: ${version}/g" \
-    > levain.levain.yaml
+cat levain.levain.yaml.bkp |
+  sed "s/version: .*/version: ${version}/g" \
+    >levain.levain.yaml
 rm levain.levain.yaml.bkp
 
 # Commit version
@@ -78,18 +78,18 @@ git push
 # Release at Github
 # TODO: Allow inform: Description, prerelease
 curl -ks -X POST -u username:$githubToken \
-    -d "{ \
+  -d "{ \
         \"tag_name\": \"$tag\", \
         \"name\": \"$tag\", \
         \"prerelease\": true \
     }" \
-    https://api.github.com/repos/jmoalves/levain/releases
+  https://api.github.com/repos/jmoalves/levain/releases
 
 # Restore file
 cp -f src/levain.ts.bkp src/levain.ts
 git add src/levain.ts
 git commit -m "vHEAD"
-rm  src/levain.ts.bkp
+rm src/levain.ts.bkp
 git push
 
 # Done
