@@ -139,7 +139,7 @@ ${distDir}/bin/deno cache --unstable --reload ${distDir}/src/levain.ts
 zipFile=levain-v$levainVersion-with-deno-v$denoVersion-windows-x86_64.zip
 cd ${distRoot}
 if [ "$zipBin" == "zip" ]; then
-  $zipBin ${zipFile} $(basename $distDir) >/dev/null
+  $zipBin -r ${zipFile} $(basename $distDir) >/dev/null
 else
   $zipBin a ${zipFile} $(basename $distDir) >/dev/null
 fi
