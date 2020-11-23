@@ -158,4 +158,4 @@ echo Uploading asset $zipFile to $levainAssetsUploadUrl
 curl -ks -X POST -u username:$githubToken \
   -H 'Content-Type: application/zip' \
   -T ${distRoot}/$zipFile \
-  $levainAssetsUploadUrl?name=$zipFile
+  ${levainAssetsUploadUrl}?name=${zipFile}
