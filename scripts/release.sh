@@ -18,10 +18,15 @@ fi
 ## TODO: Check if version matches regexp [0-9]+\.[0-9]+\.[0-9]+
 
 # Check JQ
-if ! $($(jq --help >/dev/null) || $(jq-win64 --help >/dev/null)); then
-  echo jq-win64 NOT FOUND
+if $(jq --help >/dev/null); then
+  jqBin='jq'
+elif $(jq-win64 --help >/dev/null); then
+  jqBin='jq-win64'
+else
+  echo jq-win64 and jq NOT FOUND
   exit 1
 fi
+echo using $jqBin
 
 myPath="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 cd $myPath/..
@@ -47,7 +52,8 @@ fi
 # Check release
 releases=$(curl -ks -X GET -u username:$githubToken \
   https://api.github.com/repos/jmoalves/levain/releases |
-  jq-win64 -r .[].tag_name |
+  #  jq-win64 -r .[].tag_name |
+  $jqBin -r .[].tag_name |
   sed 's/ //g')
 for r in $releases; do
   if [ $tag = $r ]; then
