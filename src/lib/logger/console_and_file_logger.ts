@@ -87,6 +87,7 @@ export default class ConsoleAndFileLogger implements Logger {
     }
 
     public static destroy() {
+        console.debug(log.getLogger().handlers)
         log.getLogger().handlers
             .forEach(async it => await it.destroy())
     }
