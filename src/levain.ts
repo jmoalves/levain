@@ -59,7 +59,7 @@ export async function levainCLI(): Promise<void> {
 }
 
 export async function runLevinWithLog() {
-    let logFiles: string[] = []
+    let logFiles: string[] = [];
 
     try {
         logFiles = await ConsoleAndFileLogger.setup();
@@ -70,8 +70,6 @@ export async function runLevinWithLog() {
     } finally {
         log.info("");
         log.info(`logFile -> ${logFiles.toString()}`);
-        ConsoleAndFileLogger.destroy();
-        
     }
 }
 

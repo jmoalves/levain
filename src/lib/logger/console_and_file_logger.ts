@@ -5,32 +5,28 @@ import Logger from "./logger.ts";
 export default class ConsoleAndFileLogger implements Logger {
     private static config: Config;
 
-    public static async setup(): Promise<Array<string>> {
+    public static async setup(): Promise<string[]> {
+
         const logFiles = [];
+        const handlers = [];
 
         const logFileWithTimestamp = Deno.makeTempFileSync({
             prefix: `levain-${ConsoleAndFileLogger.logTag(new Date())}-`,
             suffix: ".log",
         });
         logFiles.push(logFileWithTimestamp);
+        const logFileHandler = this.getLogFileHandler(logFileWithTimestamp);
+        handlers.push(logFileHandler)
 
         const fixedLogFile = `levain.log`
         logFiles.push(fixedLogFile)
+        const fileHandler = this.getLogFileHandler(fixedLogFile, {mode: 'w'});
+        handlers.push(logFileHandler)
 
         await log.setup({
             handlers: {
-
-                fileWithTimestamp: new AutoFlushLogFileHandler("DEBUG", {
-                    filename: logFileWithTimestamp,
-                    formatter: this.getFormatter()
-                }),
-
-                fixedFile: new AutoFlushLogFileHandler("DEBUG", {
-                    filename: fixedLogFile,
-                    formatter: this.getFormatter(),
-                    mode: 'w'
-                }),
-
+                fileWithTimestamp: logFileHandler,
+                fixedFile: fileHandler,
                 console: new log.handlers.ConsoleHandler("INFO", {
                     formatter: this.getFormatter()
                 }),
@@ -49,6 +45,15 @@ export default class ConsoleAndFileLogger implements Logger {
         log.info("")
 
         return logFiles
+    }
+
+    private static getLogFileHandler(logFile: string, options = {}) {
+        const fullOptions = {
+            filename: logFile,
+            formatter: this.getFormatter(),
+            ...options
+        }
+        return new AutoFlushLogFileHandler("DEBUG", fullOptions);
     }
 
     private static getFormatter(): (logRecord: any) => string {
@@ -84,12 +89,6 @@ export default class ConsoleAndFileLogger implements Logger {
 
     info(text: string): void {
         log.info(text)
-    }
-
-    public static destroy() {
-        //console.debug(log.getLogger().handlers)
-        log.getLogger().handlers
-            .forEach(async it => await it.destroy())
     }
 }
 

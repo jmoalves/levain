@@ -5,12 +5,11 @@ import {existsSync} from "https://deno.land/std/fs/mod.ts";
 import Config from "../lib/config.ts";
 import FileSystemPackage from "../lib/package/file_system_package.ts";
 import Loader from '../lib/loader.ts';
-import { parseArgs } from "../lib/parseArgs.ts";
 
 export class OsShell {
     private dependencies: FileSystemPackage[];
     private _interactive: boolean = false;
-    private _varName: string|undefined = undefined;
+    private _varName: string | undefined = undefined;
     private _ignoreErrors: boolean = false;
     private _stripCRLF: boolean = false;
 
@@ -21,7 +20,7 @@ export class OsShell {
             Deno.exit(1);
         }
 
-        let pkgs: FileSystemPackage[] | null = this.config.packageManager.resolvePackages([ pkgName ]);
+        let pkgs: FileSystemPackage[] | null = this.config.packageManager.resolvePackages([pkgName]);
         if (!pkgs) {
             log.error("Unable to load dependencies for a levain shell. Aborting...");
             Deno.exit(1);
@@ -38,11 +37,11 @@ export class OsShell {
         return this._interactive;
     }
 
-    set saveVar(varName: string|undefined) {
+    set saveVar(varName: string | undefined) {
         this._varName = varName;
     }
 
-    get saveVar() : string|undefined {
+    get saveVar(): string | undefined {
         return this._varName;
     }
 
