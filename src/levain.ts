@@ -1,6 +1,6 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
-import ConsoleAndFileLogger from './lib/logger/consoleAndFileLogger.ts'
+import ConsoleAndFileLogger from './lib/logger/console_and_file_logger.ts'
 import Loader from './lib/loader.ts';
 import Config from './lib/config.ts';
 import {parseArgs} from "./lib/parseArgs.ts";

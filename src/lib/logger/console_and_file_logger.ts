@@ -1,4 +1,4 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "https://deno.land/std@0.78.0/log/mod.ts";
 import Config from "../config.ts";
 import Logger from "./logger.ts";
 
@@ -8,7 +8,7 @@ export default class ConsoleAndFileLogger implements Logger {
     public static async setup() {
         const logFile = Deno.makeTempFileSync({
             prefix: `levain-${ConsoleAndFileLogger.logTag(new Date())}-`,
-            suffix: ".log"
+            suffix: ".log",
         });
         await log.setup({
             handlers: {
@@ -19,8 +19,16 @@ export default class ConsoleAndFileLogger implements Logger {
                     }
                 }),
 
-                file: new AutoFlushLogFileHandler("DEBUG", {
+                fileWithTimestamp: new AutoFlushLogFileHandler("DEBUG", {
                     filename: logFile,
+                    formatter: logRecord => {
+                        let msg = ConsoleAndFileLogger.hidePassword(logRecord.msg);
+                        return `${ConsoleAndFileLogger.logTag(logRecord.datetime)} ${logRecord.levelName} ${msg}`;
+                    }
+                }),
+
+                fixedFile: new AutoFlushLogFileHandler("DEBUG", {
+                    filename: `levain.log`,
                     formatter: logRecord => {
                         let msg = ConsoleAndFileLogger.hidePassword(logRecord.msg);
                         return `${ConsoleAndFileLogger.logTag(logRecord.datetime)} ${logRecord.levelName} ${msg}`;
@@ -32,7 +40,7 @@ export default class ConsoleAndFileLogger implements Logger {
                 // configure default logger available via short-hand methods above
                 default: {
                     level: "DEBUG",
-                    handlers: ["console", "file"],
+                    handlers: ["console", "file", "fileWithTimestamp"],
                 }
             },
         });
@@ -71,6 +79,7 @@ export default class ConsoleAndFileLogger implements Logger {
 }
 
 class AutoFlushLogFileHandler extends log.handlers.FileHandler {
+
     log(msg: string): void {
         super.log(msg);
         super.flush();

@@ -86,24 +86,25 @@ export default class FileSystemRepository implements Repository {
             return [];
         }
 
-        const packagesGlob = `**/*.levain.{yaml,yml}`;
+        const packagesGlob = `${this.rootDir}/**/*.levain.{yaml,yml}`.replace(/\\/g, '/');
         const globOptions: ExpandGlobOptions = {
-            root: this.rootDir,
+            // root: this.rootDir,
             includeDirs: true,
             extended: true,
         }
+        log.debug(`# listPackages: ${packagesGlob} ${JSON.stringify(globOptions)}`)
         const packageFiles = expandGlobSync(packagesGlob, globOptions)
-        log.debug(`# listPackages ${packagesGlob} ${JSON.stringify(globOptions)}`)
         const packages: Array<Package> = []
         for (const file of packageFiles) {
-            log.debug(`## listPackages file ${JSON.stringify(file)}`)
+            log.debug(`## listPackages: file ${JSON.stringify(file)}`)
             const packageName = file.name.replace(/\.levain\.ya?ml/, '')
             const pkg = this.readPackage(packageName, file.path)
             if (pkg) {
-                log.debug(`## listPackages adding package ${pkg}`)
+                log.debug(`## listPackages: adding package ${pkg}`)
                 packages.push(pkg)
             }
         }
+        log.debug(`# listPackages: added ${packages.length} packages`)
         return packages;
     }
 }
