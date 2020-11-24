@@ -41,31 +41,35 @@ export default class Install implements Command {
             return;
         }
 
+        let shouldInstall = true;
         let verb = 'INSTALL'
         if (pkg.installed) {
             if (pkg.updateAvailable) {
                 verb = 'UPDATE';
             } else {
-                log.info(`=== SKIP installed ${pkg.name}`);
-                return;
+                verb = 'ENV';
+                shouldInstall = false;
             }
         }
 
         log.info("");
         log.info(`=== ${verb} ${pkg.name} - ${pkg.version}`);
-        let actions = pkg.yamlItem("cmd.install")
-        if (actions) {
-            if (!pkg.yamlItem("levain.config.noBaseDir")) {
-                actions.unshift("mkdir ${baseDir}");
-            }
-        } else {
-            actions = [];
-        }
+        let actions = [];
 
-        // Standard actions - At the head (unshift), they are in reverse order (like a STACK)
-        actions.unshift("mkdir " + this.config.levainSafeTempDir);
-        actions.unshift("mkdir " + this.config.levainRegistry);
-        actions.unshift("mkdir --compact ${levainHome}");
+        if (shouldInstall) {
+            let installActions = pkg.yamlItem("cmd.install");
+            if (installActions) {
+                if (!pkg.yamlItem("levain.config.noBaseDir")) {
+                    installActions.unshift("mkdir ${baseDir}");
+                }
+            }
+            // Standard actions - At the head (unshift), they are in reverse order (like a STACK)
+            actions.unshift("mkdir " + this.config.levainSafeTempDir);
+            actions.unshift("mkdir " + this.config.levainRegistry);
+            actions.unshift("mkdir --compact ${levainHome}");
+
+            Array.prototype.push.apply(actions, installActions);
+        }
 
         // Standard actions - Env - At the rear (push), they are in normal order (like a QUEUE)
         let envActions = pkg.yamlItem("cmd.env");
@@ -73,9 +77,10 @@ export default class Install implements Command {
             Array.prototype.push.apply(actions, envActions);
         }
 
-        // Standard actions - At the rear (push), they are in normal order (like a QUEUE)
-        actions.push(`copy --verbose ${pkg.filePath} ${this.config.levainRegistry}`);
-        //
+        if (shouldInstall) {
+            // Standard actions - At the rear (push), they are in normal order (like a QUEUE)
+            actions.push(`copy --verbose ${pkg.filePath} ${this.config.levainRegistry}`);
+        }
 
         const loader = new Loader(this.config);
         for (let action of actions) {
