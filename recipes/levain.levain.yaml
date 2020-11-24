@@ -1,9 +1,15 @@
 version: 0.2.3
 
+shellId: levain-shell
+shellName: Levain Shell
+
 cmd.install:
-  - copy --verbose src bin levain.cmd levain.sh ${baseDir}
+  - copy --verbose ../src ../bin ../levain.cmd ../levain.sh ${baseDir}
   - saveConfig
-  - levainShell ${pkgDir}\src\userPath.cmd ${baseDir}\bin ${baseDir}
+  - levainShell ${baseDir}/src/userPath.cmd ${baseDir}/bin ${baseDir}
+  - template --replace=/@@levain@@/g --with=${baseDir} ${pkgDir}/levain-shell.cmd ${baseDir}/levain-shell.cmd
+  - template --replace=/@@shellID@@/g --with=${shellId} --replace=/@@shellName@@/g --with=${shellName} --replace=/@@shell@@/g --with=${baseDir}\levain-shell.cmd --doubleBackslash ${pkgDir}/levain-shell.reg ${baseDir}/levain-shell.reg
+  - levainShell reg import ${baseDir}/levain-shell.reg
 
 cmd.env:
   - addPath ${baseDir}

@@ -11,10 +11,15 @@ export default class Template implements Action {
     }
 
     async execute(pkg: FileSystemPackage, parameters: string[]) {
+        log.debug(`TEMPLATE ${parameters}`);
+        
         let args = parseArgs(parameters, {
             stringMany: [
                 "replace",
                 "with"
+            ],
+            boolean: [
+                "doubleBackslash"
             ]
         });
 
@@ -26,16 +31,21 @@ export default class Template implements Action {
         log.info(`TEMPLATE ${src} => ${dst}`);
         let data = Deno.readTextFileSync(src);
         for (let x in args.replace) {
+            let replacement = args.with[x];
+            if (args.doubleBackslash) {
+                replacement = replacement.replace(/\//g, '\\\\').replace(/\\([^\\])/g,'\\\\$1')
+            }
+    
             if (args.replace[x].search(/^\/(.+)\/([a-z]?)/) != -1) {
                 // É regexp
                 let regexp = args.replace[x].replace(/^\/(.+)\/([a-z]?)/, "$1");
                 let flags = args.replace[x].replace(/^\/(.+)\/([a-z]?)/, "$2");
 
-                log.debug(`- REPLACE[rxp] /${regexp}/${flags} => ${args.with[x]}`);
-                data = data.replace(new RegExp(regexp, flags), args.with[x]);
+                log.debug(`- REPLACE[rxp] /${regexp}/${flags} => ${replacement}`);
+                data = data.replace(new RegExp(regexp, flags), replacement);
             } else {
-                log.debug(`- REPLACE[str] ${args.replace[x]} => ${args.with[x]}`);
-                data = data.replace(args.replace[x], args.with[x]);
+                log.debug(`- REPLACE[str] ${args.replace[x]} => ${replacement}`);
+                data = data.replace(args.replace[x], replacement);
             }
         }
 
@@ -51,10 +61,13 @@ export default class Template implements Action {
         }
 
         log.debug(`- WRITE ${dst}`);
+        log.debug(`- DATA`);
+        log.debug(data);
         await Deno.writeTextFileSync(dst, data);
     }
 
     private verifyArgs(args: any): void {
+        log.debug
         if (!args.replace || args.replace.length == 0) {
             throw "What do you need to replace?"
         }
@@ -68,7 +81,7 @@ export default class Template implements Action {
         }
 
         if (!args._ || args._.length != 2) {
-            throw "Inform the template file and the destination file"
+            throw `Inform the template file and the destination file. ${args._}`
         }
     }
 }
