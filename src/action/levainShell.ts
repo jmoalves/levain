@@ -23,7 +23,7 @@ export default class LevainShell implements Action {
             ]
         });
 
-        let osShell:OsShell = new OsShell(this.config, pkg.name);
+        let osShell:OsShell = new OsShell(this.config, [ pkg.name ]);
         osShell.saveVar = myArgs.saveVar;
         osShell.interactive = false;
         osShell.stripCRLF = myArgs.stripCRLF;

@@ -14,14 +14,15 @@ export default class Shell implements Command {
         log.info("==================================");
         log.info(`shell ${JSON.stringify(args)}`);
 
-        if (!args || args.length != 1) {
-            // FIXME: We must have a default option
-            log.error("You should inform the package");
-            Deno.exit(1);
+        let pkgNames:string[] = [];
+
+        if (args && args.length > 1) {
+            pkgNames = args;
+        } else {
+            pkgNames = [ this.config.defaultPackage ];
         }
 
-        let pkgName = args[0];
-        let osShell:OsShell = new OsShell(this.config, pkgName);
+        let osShell:OsShell = new OsShell(this.config, pkgNames);
         osShell.interactive = true;
 
         await osShell.execute([]);

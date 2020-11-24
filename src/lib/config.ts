@@ -18,7 +18,6 @@ export default class Config {
 
     private _extraRepos: string[] = [];
 
-
     email: string | undefined;
     private _username: string | undefined;
     private _password: string | undefined;
@@ -63,6 +62,11 @@ export default class Config {
 
     get context(): any {
         return this._context;
+    }
+
+    get defaultPackage(): string {
+        // TODO: Create action to define this
+        return "levain";
     }
 
     setVar(name: string, value: string): void {

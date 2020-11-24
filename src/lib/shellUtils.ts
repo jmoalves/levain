@@ -13,14 +13,13 @@ export class OsShell {
     private _ignoreErrors: boolean = false;
     private _stripCRLF: boolean = false;
 
-    constructor(private config: Config,
-                private pkgName: string) {
-        if (!pkgName) {
-            log.error("SHELL - No package");
+    constructor(private config: Config, private pkgNames: string[]) {
+        if (!pkgNames || pkgNames.length == 0) {
+            log.error("No package");
             Deno.exit(1);
         }
 
-        let pkgs: FileSystemPackage[] | null = this.config.packageManager.resolvePackages([pkgName]);
+        let pkgs: FileSystemPackage[] | null = this.config.packageManager.resolvePackages(pkgNames);
         if (!pkgs) {
             log.error("Unable to load dependencies for a levain shell. Aborting...");
             Deno.exit(1);
@@ -105,13 +104,13 @@ export class OsShell {
             throw `${Deno.build.os} not supported`;
         }
 
-        let cmd = this.concatCmd(
-            "cmd /u " + (this.interactive ? "/k" : "/c"),
-            (this.interactive ? "cls" : undefined),
-            this.addPath(),
-            (this.interactive ? 'prompt [levain]$P$G' : undefined),
-            (this.interactive ?  undefined : args.join(" "))
-        );
+        let cmd = "";
+        if (this.interactive) {
+            cmd = "cmd /c start cmd /u /k prompt [levain]$P$G";
+        } else {
+            cmd = "cmd /u /c " + args.join(" ");    
+        }
+
         log.info(`- CMD - ${cmd}`);
 
         let opt: any = {};
@@ -121,6 +120,12 @@ export class OsShell {
         this.setEnv(opt.env);
         if (this.config.levainHome) {
             opt.env["levainHome"] = this.config.levainHome;
+        }
+
+        let myPath = this.getCmdPath();
+        if (myPath) {
+            log.info(`- PATH - ${myPath}`);
+            opt.env["PATH"] = myPath;
         }
 
         if (this.saveVar) {
@@ -195,13 +200,13 @@ export class OsShell {
         return result;
     }
 
-    private addPath(): string | undefined {
+    private getCmdPath(): string | undefined {
         let myPath: string = this.config.context.action?.addpath?.path;
         if (!myPath) {
             return "";
         }
 
-        let pathStr = undefined;
+        let pathStr = Deno.env.get("PATH");
         if (myPath) {
             for (let p of myPath) {
                 if (pathStr) {
@@ -210,10 +215,6 @@ export class OsShell {
                     pathStr = "";
                 }
                 pathStr += p;
-            }
-
-            if (pathStr) {
-                pathStr = `path ${pathStr};%PATH%`;
             }
         }
 
