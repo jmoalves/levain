@@ -4,7 +4,7 @@ shellId: levain-shell
 shellName: Levain Shell
 
 cmd.install:
-  - copy --verbose ../src ../bin ../levain.cmd ../levain.sh ${baseDir}
+  - copy --verbose ../src ../bin ../levain.cmd ../levain.sh ../recipes ${baseDir}
   - saveConfig
   - levainShell ${baseDir}/src/userPath.cmd ${baseDir}/bin ${baseDir}
   - template --replace=/@@levain@@/g --with=${baseDir} ${pkgDir}/levain-shell.cmd ${baseDir}/levain-shell.cmd
