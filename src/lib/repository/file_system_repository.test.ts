@@ -1,4 +1,4 @@
-import {assert, assertEquals} from "https://deno.land/std@0.78.0/testing/asserts.ts";
+import {assert, assertEquals} from "https://deno.land/std/testing/asserts.ts";
 import Config from "../config.ts";
 import FileSystemRepository from "./file_system_repository.ts";
 import FileSystemPackage from "../package/file_system_package.ts";

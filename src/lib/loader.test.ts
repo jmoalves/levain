@@ -1,4 +1,4 @@
-import {assertNotEquals,} from "https://deno.land/std@0.78.0/testing/asserts.ts";
+import {assertNotEquals,} from "https://deno.land/std/testing/asserts.ts";
 import Loader from "./loader.ts";
 import Config from "./config.ts";
 

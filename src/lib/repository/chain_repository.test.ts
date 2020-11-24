@@ -1,4 +1,4 @@
-import {assertEquals} from "https://deno.land/std@0.78.0/testing/asserts.ts";
+import {assertEquals} from "https://deno.land/std/testing/asserts.ts";
 
 import Config from "../config.ts";
 import ChainRepository from "./chain_repository.ts";

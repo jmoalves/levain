@@ -1,4 +1,4 @@
-import {assertEquals,} from "https://deno.land/std@0.78.0/testing/asserts.ts";
+import {assertEquals,} from "https://deno.land/std/testing/asserts.ts";
 import ListCommand from "./list_command.ts";
 import MemoryLogger from "../lib/logger/memoryLogger.ts";
 import Config from "../lib/config.ts";
