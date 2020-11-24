@@ -47,7 +47,7 @@ export default class Install implements Command {
             if (pkg.updateAvailable) {
                 verb = 'UPDATE';
             } else {
-                verb = 'ENV';
+                verb = 'ENV (already installed)';
                 shouldInstall = false;
             }
         }
