@@ -19,19 +19,20 @@ export default class ConsoleAndFileLogger implements Logger {
 
         await log.setup({
             handlers: {
-                console: new log.handlers.ConsoleHandler("INFO", {
-                    formatter: this.getFormatter(),
-                }),
 
                 fileWithTimestamp: new AutoFlushLogFileHandler("DEBUG", {
                     filename: logFileWithTimestamp,
-                    formatter:  this.getFormatter(),
+                    formatter: this.getFormatter(),
                 }),
 
                 fixedFile: new AutoFlushLogFileHandler("DEBUG", {
                     filename: fixedLogFile,
-                    formatter:  this.getFormatter()
+                    formatter: this.getFormatter(),
                     mode: 'w',
+                }),
+
+                console: new log.handlers.ConsoleHandler("INFO", {
+                    formatter: this.getFormatter(),
                 }),
             },
 
@@ -50,7 +51,7 @@ export default class ConsoleAndFileLogger implements Logger {
         return logFiles
     }
 
-    private static getFormatter() {
+    private static getFormatter(): (logRecord: any) => string {
         return logRecord => {
             let msg = ConsoleAndFileLogger.hidePassword(logRecord.msg);
             return `${ConsoleAndFileLogger.logTag(logRecord.datetime)} ${logRecord.levelName} ${msg}`;
@@ -85,8 +86,7 @@ export default class ConsoleAndFileLogger implements Logger {
         log.info(text)
     }
 
-    static destroy() {
-        console.debug(log.getLogger().handlers)
+    public static destroy() {
         log.getLogger().handlers
             .forEach(async it => await it.destroy())
     }
