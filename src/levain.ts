@@ -69,7 +69,9 @@ export async function runLevinWithLog() {
         log.error(err)
     } finally {
         log.info("");
-        log.info(`logFile -> ${logFiles.toString()}`);
+        logFiles.forEach(logFile => {
+            log.info(`logFile -> ${logFile}`);
+        })
     }
 }
 
