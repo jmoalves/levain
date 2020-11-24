@@ -2,3 +2,4 @@ bin/
 dist/
 /.idea/workspace.xml
 sonarLint
+*.log
