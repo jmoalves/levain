@@ -71,14 +71,14 @@ cat src/levain.ts.bkp |
     >src/levain.ts
 
 # Change version at yaml file
-cp -f levain.levain.yaml levain.levain.yaml.bkp
-cat levain.levain.yaml.bkp |
+cp -f recipes/levain.levain.yaml recipes/levain.levain.yaml.bkp
+cat recipes/levain.levain.yaml.bkp |
   sed "s/version: .*/version: ${version}/g" \
-    >levain.levain.yaml
-rm levain.levain.yaml.bkp
+    > recipes/levain.levain.yaml
+rm recipes/levain.levain.yaml.bkp
 
 # Commit version
-git add src/levain.ts levain.levain.yaml
+git add src/levain.ts recipes/levain.levain.yaml
 git commit -m "$tag"
 git tag $tag
 git push
