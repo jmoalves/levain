@@ -1,12 +1,8 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
-import {existsSync} from "https://deno.land/std/fs/mod.ts";
-
 import Command from "./command.ts";
 import Config from "../lib/config.ts";
 import FileSystemPackage from "../lib/package/file_system_package.ts";
-import Loader from '../lib/loader.ts';
-import {parseArgs} from "../lib/parseArgs.ts";
 import { OsShell } from '../lib/shellUtils.ts';
 
 export default class Shell implements Command {
@@ -14,32 +10,20 @@ export default class Shell implements Command {
     }
 
     async execute(args: string[]) {
-        let myArgs = parseArgs(args, {
-            stringMany: [
-                "package"
-            ],
-            stringOnce: [
-                "saveVar"
-            ],
-            boolean: [
-                "run",
-                "stripCRLF",
-                "ignoreErrors"
-            ]
-        });
+        log.info("");
+        log.info("==================================");
         log.info(`shell ${JSON.stringify(args)}`);
 
-        if (!myArgs.package) {
-            log.error("No package. Use the --package option");
+        if (!args || args.length != 1) {
+            // FIXME: We must have a default option
+            log.error("You should inform the package");
             Deno.exit(1);
         }
 
-        let osShell:OsShell = new OsShell(this.config, myArgs.package);
-        osShell.saveVar = myArgs.saveVar;
-        osShell.interactive = !myArgs.run;
-        osShell.stripCRLF = myArgs.stripCRLF;
-        osShell.ignoreErrors = myArgs.ignoreErrors;
+        let pkgName = args[0];
+        let osShell:OsShell = new OsShell(this.config, pkgName);
+        osShell.interactive = true;
 
-        await osShell.execute(myArgs._);
+        await osShell.execute([]);
     }
 }

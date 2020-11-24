@@ -63,8 +63,6 @@ export class OsShell {
     }
 
     async execute(args: string[]) {
-        log.info("");
-        log.info("==================================");
         for (let pkg of this.dependencies) {
             await this.shellActions(pkg);
         }
@@ -98,21 +96,11 @@ export class OsShell {
         log.info(`=== ENV ${pkg.name} - ${pkg.version}`);
         const loader = new Loader(this.config);
         for (let action of actions) {
-            if (action.startsWith("levainShell")) {
-                // Potential infinite loop here!
-                // TODO: REFACTOR THIS!
-                let args: any = {};
-                args._ = this.config.replaceVars(action, pkg.name).split(" ");
-                args._.shift();
-                args.run = true;
-                await this.openShell(args);
-            } else {
-                await loader.action(pkg, action);
-            }
+            await loader.action(pkg, action);
         }
     }
 
-    async openShell(args: any) {
+    async openShell(args: string[]) {
         // TODO: Handle other os's
         if (Deno.build.os != "windows") {
             throw `${Deno.build.os} not supported`;
@@ -123,7 +111,7 @@ export class OsShell {
             (this.interactive ? "cls" : undefined),
             this.addPath(),
             (this.interactive ? 'prompt [levain]$P$G' : undefined),
-            (this.interactive ?  undefined : args._.join(" "))
+            (this.interactive ?  undefined : args.join(" "))
         );
         log.info(`- CMD - ${cmd}`);
 
