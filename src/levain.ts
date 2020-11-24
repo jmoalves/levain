@@ -8,7 +8,7 @@ import {askPassword, askUsername} from "./lib/credentials.ts";
 
 export async function levainCLI(): Promise<void> {
     log.info(`  deno v${Deno.version.deno}`);
-    log.info(`levain vHEAD`);
+    log.info(`levain v0.2.3`);
 
     const myArgs = parseArgs(Deno.args, {
         stringOnce: [
