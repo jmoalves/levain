@@ -5,34 +5,34 @@ import Logger from "./logger.ts";
 export default class ConsoleAndFileLogger implements Logger {
     private static config: Config;
 
-    public static async setup() {
-        const logFile = Deno.makeTempFileSync({
+    public static async setup(): Promise<Array<string>> {
+        const logFiles = [];
+
+        const logFileWithTimestamp = Deno.makeTempFileSync({
             prefix: `levain-${ConsoleAndFileLogger.logTag(new Date())}-`,
             suffix: ".log",
         });
+        logFiles.push(logFileWithTimestamp);
+
+        const fixedLogFile = `levain.log`
+        logFiles.push(fixedLogFile)
+
         await log.setup({
             handlers: {
-                console: new log.handlers.ConsoleHandler("INFO", {
-                    formatter: logRecord => {
-                        let msg = ConsoleAndFileLogger.hidePassword(logRecord.msg);
-                        return `${ConsoleAndFileLogger.logTag(logRecord.datetime)} ${logRecord.levelName} ${msg}`;
-                    }
-                }),
 
                 fileWithTimestamp: new AutoFlushLogFileHandler("DEBUG", {
-                    filename: logFile,
-                    formatter: logRecord => {
-                        let msg = ConsoleAndFileLogger.hidePassword(logRecord.msg);
-                        return `${ConsoleAndFileLogger.logTag(logRecord.datetime)} ${logRecord.levelName} ${msg}`;
-                    }
+                    filename: logFileWithTimestamp,
+                    formatter: this.getFormatter(),
                 }),
 
                 fixedFile: new AutoFlushLogFileHandler("DEBUG", {
-                    filename: `levain.log`,
-                    formatter: logRecord => {
-                        let msg = ConsoleAndFileLogger.hidePassword(logRecord.msg);
-                        return `${ConsoleAndFileLogger.logTag(logRecord.datetime)} ${logRecord.levelName} ${msg}`;
-                    }
+                    filename: fixedLogFile,
+                    formatter: this.getFormatter(),
+                    mode: 'w',
+                }),
+
+                console: new log.handlers.ConsoleHandler("INFO", {
+                    formatter: this.getFormatter(),
                 }),
             },
 
@@ -40,13 +40,22 @@ export default class ConsoleAndFileLogger implements Logger {
                 // configure default logger available via short-hand methods above
                 default: {
                     level: "DEBUG",
-                    handlers: ["console", "file", "fileWithTimestamp"],
+                    handlers: ["console", "fixedLogFile", "fileWithTimestamp"],
                 }
             },
         });
 
-        log.info(`logFile -> ${logFile}`);
+        log.info(`logFile -> ${logFiles}`);
         log.info("")
+
+        return logFiles
+    }
+
+    private static getFormatter(): (logRecord: any) => string {
+        return logRecord => {
+            let msg = ConsoleAndFileLogger.hidePassword(logRecord.msg);
+            return `${ConsoleAndFileLogger.logTag(logRecord.datetime)} ${logRecord.levelName} ${msg}`;
+        };
     }
 
     public static setConfig(config: Config): void {
@@ -76,10 +85,15 @@ export default class ConsoleAndFileLogger implements Logger {
     info(text: string): void {
         log.info(text)
     }
+
+    public static destroy() {
+        console.debug(log.getLogger().handlers)
+        log.getLogger().handlers
+            .forEach(async it => await it.destroy())
+    }
 }
 
 class AutoFlushLogFileHandler extends log.handlers.FileHandler {
-
     log(msg: string): void {
         super.log(msg);
         super.flush();
