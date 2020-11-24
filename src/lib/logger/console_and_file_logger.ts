@@ -5,11 +5,18 @@ import Logger from "./logger.ts";
 export default class ConsoleAndFileLogger implements Logger {
     private static config: Config;
 
-    public static async setup() {
-        const logFile = Deno.makeTempFileSync({
+    public static async setup(): Promise<Array<string>> {
+        const logFiles = [];
+        
+        const logFileWithTimestamp = Deno.makeTempFileSync({
             prefix: `levain-${ConsoleAndFileLogger.logTag(new Date())}-`,
             suffix: ".log",
         });
+        logFiles.push(logFileWithTimestamp);
+
+        const fixedLogFile = `levain.log`
+        logFiles.push(fixedLogFile)
+
         await log.setup({
             handlers: {
                 console: new log.handlers.ConsoleHandler("INFO", {
@@ -20,7 +27,7 @@ export default class ConsoleAndFileLogger implements Logger {
                 }),
 
                 fileWithTimestamp: new AutoFlushLogFileHandler("DEBUG", {
-                    filename: logFile,
+                    filename: logFileWithTimestamp,
                     formatter: logRecord => {
                         let msg = ConsoleAndFileLogger.hidePassword(logRecord.msg);
                         return `${ConsoleAndFileLogger.logTag(logRecord.datetime)} ${logRecord.levelName} ${msg}`;
@@ -28,7 +35,7 @@ export default class ConsoleAndFileLogger implements Logger {
                 }),
 
                 fixedFile: new AutoFlushLogFileHandler("DEBUG", {
-                    filename: `levain.log`,
+                    filename: fixedLogFile,
                     formatter: logRecord => {
                         let msg = ConsoleAndFileLogger.hidePassword(logRecord.msg);
                         return `${ConsoleAndFileLogger.logTag(logRecord.datetime)} ${logRecord.levelName} ${msg}`;
@@ -40,13 +47,15 @@ export default class ConsoleAndFileLogger implements Logger {
                 // configure default logger available via short-hand methods above
                 default: {
                     level: "DEBUG",
-                    handlers: ["console", "file", "fileWithTimestamp"],
+                    handlers: ["console", "fixedLogFile", "fileWithTimestamp"],
                 }
             },
         });
 
-        log.info(`logFile -> ${logFile}`);
+        log.info(`logFile -> ${logFiles}`);
         log.info("")
+
+        return logFiles
     }
 
     public static setConfig(config: Config): void {
@@ -79,7 +88,6 @@ export default class ConsoleAndFileLogger implements Logger {
 }
 
 class AutoFlushLogFileHandler extends log.handlers.FileHandler {
-
     log(msg: string): void {
         super.log(msg);
         super.flush();
