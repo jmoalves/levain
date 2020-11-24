@@ -63,14 +63,14 @@ export async function runLevinWithLog() {
 
     try {
         logFiles = await ConsoleAndFileLogger.setup();
-        levainCLI();
+        await levainCLI();
 
     } catch (err) {
         log.error(err)
     } finally {
         log.info("");
         log.info(`logFile -> ${logFiles.toString()}`);
-        ConsoleAndFileLogger.destroy()
+        ConsoleAndFileLogger.destroy();
         
     }
 }

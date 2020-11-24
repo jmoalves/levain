@@ -22,17 +22,17 @@ export default class ConsoleAndFileLogger implements Logger {
 
                 fileWithTimestamp: new AutoFlushLogFileHandler("DEBUG", {
                     filename: logFileWithTimestamp,
-                    formatter: this.getFormatter(),
+                    formatter: this.getFormatter()
                 }),
 
                 fixedFile: new AutoFlushLogFileHandler("DEBUG", {
                     filename: fixedLogFile,
                     formatter: this.getFormatter(),
-                    mode: 'w',
+                    mode: 'w'
                 }),
 
                 console: new log.handlers.ConsoleHandler("INFO", {
-                    formatter: this.getFormatter(),
+                    formatter: this.getFormatter()
                 }),
             },
 
@@ -87,7 +87,7 @@ export default class ConsoleAndFileLogger implements Logger {
     }
 
     public static destroy() {
-        console.debug(log.getLogger().handlers)
+        //console.debug(log.getLogger().handlers)
         log.getLogger().handlers
             .forEach(async it => await it.destroy())
     }
