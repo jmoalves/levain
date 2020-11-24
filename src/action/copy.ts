@@ -42,36 +42,42 @@ export default class Copy implements Action {
         log.info(`COPY ${src} => ${dst}`);
 
         for (let item of src) {
-            const fileInfo = Deno.statSync(item);
-            if (args.strip && fileInfo.isDirectory) {
-                for (const entry of walkSync(item)) {
-                    if (entry.path == item) {
-                        continue;
+            log.debug(`- CHECK ${item}`);
+            try {
+                const fileInfo = Deno.statSync(item);
+                if (args.strip && fileInfo.isDirectory) {
+                    for (const entry of walkSync(item)) {
+                        if (entry.path == item) {
+                            continue;
+                        }
+
+                        const writeTo = path.resolve(dst, entry.name)
+                        this.doCopy(args, entry.path, writeTo);
+                    }
+                } else {
+                    let realDst = dst;
+                    if (copyToDir) {
+                        realDst = path.resolve(dst, path.basename(item));
                     }
 
-                    const writeTo = path.resolve(dst, entry.name)
-                    this.doCopy(args, entry.path, writeTo);
+                    this.doCopy(args, item, realDst);
                 }
-            } else {
-                let realDst = dst;
-                if (copyToDir) {
-                    realDst = path.resolve(dst, path.basename(item));
-                }
-
-                this.doCopy(args, item, realDst);
+            } catch (err) {
+                log.error(`Error in ${item}`);
+                throw err;
             }
         }
     }
 
     private doCopy(args: any, src: string, dst: string) {
         if (args.verbose) {
-            log.debug(`COPY ${src} => ${dst}`);
+            log.debug(`- COPY ${src} => ${dst}`);
         }
 
         try {
             copySync(src, dst, {overwrite: true});
         } catch (err) {
-            log.error("ERROR: COPY", src, "=>", dst, err);
+            log.error(`ERROR: COPY ${src} => ${dst} ${JSON.stringify(err)}`);
             throw err;
         }
     }
