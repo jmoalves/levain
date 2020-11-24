@@ -36,7 +36,7 @@ export default class ConsoleAndFileLogger implements Logger {
                 // configure default logger available via short-hand methods above
                 default: {
                     level: "DEBUG",
-                    handlers: ["console", "fixedLogFile", "fileWithTimestamp"],
+                    handlers: ["console", "fixedFile", "fileWithTimestamp"],
                 }
             },
         });
