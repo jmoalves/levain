@@ -1,4 +1,4 @@
-import {BaseHandler} from "https://deno.land/std@0.78.0/log/handlers.ts";
+import {BaseHandler} from "https://deno.land/std/log/handlers.ts";
 
 class TestHandler extends BaseHandler {
     public messages: string[] = [];

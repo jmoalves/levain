@@ -2,7 +2,7 @@ import * as log from "https://deno.land/std/log/mod.ts";
 
 export class FileUtils {
 
-    static getModificationTimestamp(filePath: string): Date|undefined {
+    static getModificationTimestamp(filePath: string): Date | undefined {
         const stat = Deno.statSync(filePath);
         const modificationTimestamp = stat.mtime;
         log.debug(`getModificationTimestamp ${modificationTimestamp} --> ${filePath}`);
