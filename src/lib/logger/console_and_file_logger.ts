@@ -7,7 +7,7 @@ export default class ConsoleAndFileLogger implements Logger {
 
     public static async setup(): Promise<Array<string>> {
         const logFiles = [];
-        
+
         const logFileWithTimestamp = Deno.makeTempFileSync({
             prefix: `levain-${ConsoleAndFileLogger.logTag(new Date())}-`,
             suffix: ".log",
@@ -20,26 +20,18 @@ export default class ConsoleAndFileLogger implements Logger {
         await log.setup({
             handlers: {
                 console: new log.handlers.ConsoleHandler("INFO", {
-                    formatter: logRecord => {
-                        let msg = ConsoleAndFileLogger.hidePassword(logRecord.msg);
-                        return `${ConsoleAndFileLogger.logTag(logRecord.datetime)} ${logRecord.levelName} ${msg}`;
-                    }
+                    formatter: this.getFormatter(),
                 }),
 
                 fileWithTimestamp: new AutoFlushLogFileHandler("DEBUG", {
                     filename: logFileWithTimestamp,
-                    formatter: logRecord => {
-                        let msg = ConsoleAndFileLogger.hidePassword(logRecord.msg);
-                        return `${ConsoleAndFileLogger.logTag(logRecord.datetime)} ${logRecord.levelName} ${msg}`;
-                    }
+                    formatter:  this.getFormatter(),
                 }),
 
                 fixedFile: new AutoFlushLogFileHandler("DEBUG", {
                     filename: fixedLogFile,
-                    formatter: logRecord => {
-                        let msg = ConsoleAndFileLogger.hidePassword(logRecord.msg);
-                        return `${ConsoleAndFileLogger.logTag(logRecord.datetime)} ${logRecord.levelName} ${msg}`;
-                    }
+                    formatter:  this.getFormatter()
+                    mode: 'w',
                 }),
             },
 
@@ -56,6 +48,13 @@ export default class ConsoleAndFileLogger implements Logger {
         log.info("")
 
         return logFiles
+    }
+
+    private static getFormatter() {
+        return logRecord => {
+            let msg = ConsoleAndFileLogger.hidePassword(logRecord.msg);
+            return `${ConsoleAndFileLogger.logTag(logRecord.datetime)} ${logRecord.levelName} ${msg}`;
+        };
     }
 
     public static setConfig(config: Config): void {
@@ -84,6 +83,12 @@ export default class ConsoleAndFileLogger implements Logger {
 
     info(text: string): void {
         log.info(text)
+    }
+
+    static destroy() {
+        console.debug(log.getLogger().handlers)
+        log.getLogger().handlers
+            .forEach(async it => await it.destroy())
     }
 }
 

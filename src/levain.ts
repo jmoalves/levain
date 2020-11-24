@@ -7,8 +7,6 @@ import {parseArgs} from "./lib/parseArgs.ts";
 import {askPassword, askUsername} from "./lib/credentials.ts";
 
 export async function levainCLI(): Promise<void> {
-    await ConsoleAndFileLogger.setup();
-
     log.info(`  deno v${Deno.version.deno}`);
     log.info(`levain vHEAD`);
 
@@ -37,8 +35,12 @@ export async function levainCLI(): Promise<void> {
     // TODO: No parameters? Show Help
     if (myArgs._.length == 0) {
         log.error("");
-        log.error("Nothing to do. Do you want some help?");
-        Deno.exit(1);
+        log.error("Nothing to do. Do you want some help?")
+        log.error("Commands available:")
+        log.error("  list")
+        log.error("  install")
+        log.error("  shell")
+        return
     }
 
     if (myArgs.askPassword) {
@@ -56,7 +58,24 @@ export async function levainCLI(): Promise<void> {
     log.info("");
 }
 
+export async function runLevinWithLog() {
+    let logFiles: string[] = []
+
+    try {
+        logFiles = await ConsoleAndFileLogger.setup();
+        levainCLI();
+
+    } catch (err) {
+        log.error(err)
+    } finally {
+        log.info("");
+        log.info(`logFile -> ${logFiles.toString()}`);
+        ConsoleAndFileLogger.destroy()
+        
+    }
+}
+
 // https://deno.land/manual/tools/script_installer
 if (import.meta.main) {
-    levainCLI();
+    await runLevinWithLog();
 }
