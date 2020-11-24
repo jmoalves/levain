@@ -65,7 +65,26 @@ export default class Config {
     }
 
     get defaultPackage(): string {
-        // TODO: Create action to define this
+        // TODO: Create action to define this?
+
+        // Looking for package at current dir
+        let curDirRepo = new FileSystemRepository(this, Deno.cwd());
+        let pkgs = curDirRepo.listPackages(true);
+        if (pkgs && pkgs.length == 1) {
+            let pkg = curDirRepo.resolvePackage(pkgs[0].name);
+            if (pkg) {
+                if (pkg.installed) {
+                    return pkg.name;
+                } else {
+                    log.warning("");
+                    log.warning("***********************************************************************************");
+                    log.warning(`** Default package "${pkg.name}" found but NOT installed. Use levain install`);
+                    log.warning("***********************************************************************************");
+                    log.warning("");
+                }
+            }
+        }
+        
         return "levain";
     }
 

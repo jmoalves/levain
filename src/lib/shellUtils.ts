@@ -124,7 +124,7 @@ export class OsShell {
 
         let myPath = this.getCmdPath();
         if (myPath) {
-            log.info(`- PATH - ${myPath}`);
+            log.debug(`- PATH - ${myPath}`);
             opt.env["PATH"] = myPath;
         }
 
@@ -158,11 +158,6 @@ export class OsShell {
                     .replace(/\n$/, '');
             }
             this.config.setVar(this.saveVar, cmdOutput);
-        }
-
-        if (this.interactive) {
-            log.info("");
-            log.info("Levain - Goodbye!");
         }
     }
 

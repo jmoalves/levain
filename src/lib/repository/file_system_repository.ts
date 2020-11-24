@@ -80,7 +80,7 @@ export default class FileSystemRepository implements Repository {
 
     packages: Array<Package> = [];
 
-    listPackages() {
+    listPackages(rootDirOnly?:boolean) {
         if (!existsSync(`${this.rootDir}`)) {
             log.debug(`# listPackages: rootDir not found ${this.rootDir}`)
             return [];
