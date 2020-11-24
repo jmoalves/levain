@@ -90,7 +90,7 @@ abstract class Extractor {
 class ExtractorFactory {
     createExtractor(config: Config, src: string): Extractor {
         if (src.endsWith(".zip")) {
-            return new Unzipper(config);
+            return new SevenZip(config); //new Unzipper(config);
         }
 
         if (src.endsWith(".7z.exe")) {
@@ -145,7 +145,7 @@ class SevenZip extends Extractor {
 
         log.debug(`- 7z ${src} => ${dst}`);
 
-        let args = `cmd /u /c path ${this.config.extraBinDir};%PATH% && ${this.config.extraBinDir}\\7z.exe x -bd -o${dst} ${src}`.split(" ");
+        let args = `cmd /u /c path ${this.config.extraBinDir};%PATH% && ${this.config.extraBinDir}\\7z.exe x -bsp2 -o${dst} ${src}`.split(" ");
 
         const p = Deno.run({
             cmd: args,
@@ -172,7 +172,7 @@ class UnTar extends Extractor {
 
         log.debug(`- UNTAR ${src} => ${dst}`);
 
-        let args = `cmd /u /c path ${this.config.extraBinDir};%PATH% && ( ${this.config.extraBinDir}\\7z.exe x ${src} -bd -so | ${this.config.extraBinDir}\\7z.exe x -si -bd -ttar -o${dst} )`.split(" ");
+        let args = `cmd /u /c path ${this.config.extraBinDir};%PATH% && ( ${this.config.extraBinDir}\\7z.exe x ${src} -bsp2 -so | ${this.config.extraBinDir}\\7z.exe x -si -bd -ttar -o${dst} )`.split(" ");
 
         const p = Deno.run({
             stdout: "null",
