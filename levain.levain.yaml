@@ -5,5 +5,5 @@ cmd.install:
   - saveConfig
   - levainShell ${pkgDir}\src\userPath.cmd ${baseDir}\bin ${baseDir}
 
-cmd.shell:
+cmd.env:
   - addPath ${baseDir}

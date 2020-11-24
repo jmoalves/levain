@@ -57,7 +57,16 @@ export default class Shell implements Command {
             return;
         }
 
-        let actions = pkg.yamlItem("cmd.shell")
+        let actions = pkg.yamlItem("cmd.shell");
+        let envActions = pkg.yamlItem("cmd.env");
+        if (envActions) {
+            if (actions) {
+                Array.prototype.push.apply(actions, envActions);
+            } else {
+                actions = envActions;
+            }
+        }
+
         if (!actions) {
             return;
         }

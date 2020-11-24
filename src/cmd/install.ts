@@ -54,18 +54,24 @@ export default class Install implements Command {
         log.info("");
         log.info(`=== ${verb} ${pkg.name} - ${pkg.version}`);
         let actions = pkg.yamlItem("cmd.install")
-        if (!actions) {
-            actions = [];
-        } else {
+        if (actions) {
             if (!pkg.yamlItem("levain.config.noBaseDir")) {
                 actions.unshift("mkdir ${baseDir}");
             }
+        } else {
+            actions = [];
         }
 
         // Standard actions - At the head (unshift), they are in reverse order (like a STACK)
         actions.unshift("mkdir " + this.config.levainSafeTempDir);
         actions.unshift("mkdir " + this.config.levainRegistry);
         actions.unshift("mkdir --compact ${levainHome}");
+
+        // Standard actions - Env - At the rear (push), they are in normal order (like a QUEUE)
+        let envActions = pkg.yamlItem("cmd.env");
+        if (envActions) {
+            Array.prototype.push.apply(actions, envActions);
+        }
 
         // Standard actions - At the rear (push), they are in normal order (like a QUEUE)
         actions.push(`copy --verbose ${pkg.filePath} ${this.config.levainRegistry}`);
