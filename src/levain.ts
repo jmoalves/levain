@@ -8,8 +8,8 @@ import {askPassword, askUsername} from "./lib/credentials.ts";
 import {Timer} from "./lib/timer.ts";
 
 export async function levainCLI(myArgs: any): Promise<void> {
-    log.info(`  deno v${Deno.version.deno}`);
     log.info(`levain vHEAD`);
+    log.info(`deno v${Deno.version.deno}`);
 
     log.debug("args " + JSON.stringify(myArgs));
 
@@ -33,13 +33,17 @@ export async function levainCLI(myArgs: any): Promise<void> {
     log.info("");
     log.info("==================================");
 
-    // TODO: No parameters? Show Help
-    if (myArgs._.length == 0) {
+    this.showCliHelp = function () {
         log.info("");
         log.info("Commands available:")
         log.info("  list")
         log.info("  install")
         log.info("  shell")
+    }
+    
+    // TODO: No parameters? Show Help
+    if (myArgs._.length == 0) {
+        this.showCliHelp()
         return
     }
 
