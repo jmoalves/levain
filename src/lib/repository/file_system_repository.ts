@@ -9,6 +9,7 @@ import Config from '../config.ts';
 
 export default class FileSystemRepository implements Repository {
     packages: Array<FileSystemPackage> = [];
+    readonly excludeDirs = ['$RECYCLE.BIN', 'node_modules', '.git']
 
     constructor(private config: Config, private rootDir: string) {
         log.debug(`FSRepo: Root=${this.rootDir}`);
@@ -35,8 +36,7 @@ export default class FileSystemRepository implements Repository {
     private readPackageInDir(packageName: string, dirname: string): FileSystemPackage | undefined {
         let pkg: FileSystemPackage | undefined = undefined;
         log.debug(`readDir ${packageName} ${dirname}`)
-        const ignoreDirs = ['$RECYCLE.BIN', 'node_modules', '.git']
-        if (ignoreDirs.find(ignoreDir => dirname.endsWith(ignoreDir))) {
+        if (this.excludeDirs.find(ignoreDir => dirname.endsWith(ignoreDir))) {
             log.debug(`ignoring ${dirname}`)
             return
         }
@@ -87,12 +87,13 @@ export default class FileSystemRepository implements Repository {
             log.debug(`# listPackages: rootDir not found ${this.rootDir}`)
             return [];
         }
-
+        
         const packagesGlob = `${this.rootDir}/**/*.levain.{yaml,yml}`.replace(/\\/g, '/');
         const globOptions: ExpandGlobOptions = {
             // root: this.rootDir,
-            includeDirs: true,
             extended: true,
+            includeDirs: true,
+            exclude: this.excludeDirs,
         }
         log.debug(`# listPackages: ${packagesGlob} ${JSON.stringify(globOptions)}`)
         const packageFiles = expandGlobSync(packagesGlob, globOptions)
