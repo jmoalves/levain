@@ -13,11 +13,6 @@ export async function levainCLI(myArgs: any): Promise<void> {
 
     log.debug("args " + JSON.stringify(myArgs));
 
-    // Context
-    const config = new Config(myArgs);
-    ConsoleAndFileLogger.setConfig(config);
-    //
-
     if (myArgs["wait-to-begin"]) {
         console.log("");
         console.log("");
@@ -47,6 +42,11 @@ export async function levainCLI(myArgs: any): Promise<void> {
         return
     }
 
+    // Context
+    const config = new Config(myArgs);
+    ConsoleAndFileLogger.setConfig(config);
+
+    // Ask for credentials
     if (myArgs.askPassword) {
         askUsername(config);
         await askPassword(config);
