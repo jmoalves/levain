@@ -24,7 +24,9 @@ async function runTest(file?: string): Promise<void> {
         cmd.push(testFile)
     }
     console.log('RUNTEST', testFile, cmd)
+    console.time('runtest')
     await Deno.run({cmd})
+    console.timeEnd('runtest')
 }
 
 async function clearConsole() {
