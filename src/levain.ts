@@ -98,7 +98,7 @@ export async function runLevinWithLog() {
         })
 
         log.info("");
-        log.info(`Levain ran in ${timer.measure()}ms`)
+        log.info(`Levain ran in ${timer.humanize()}`)
 
         if (error || (myArgs && myArgs["wait-after-end"])) {
             console.log("");

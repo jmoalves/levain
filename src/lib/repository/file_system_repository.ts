@@ -117,7 +117,7 @@ export default class FileSystemRepository implements Repository {
                 packages.push(pkg)
             }
         }
-        log.info(`added ${packages.length} packages in ${timer.measure()}ms`)
+        log.info(`added ${packages.length} packages in ${timer.humanize()}`)
         log.info("")
         return packages;
     }
