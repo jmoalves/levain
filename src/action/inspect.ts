@@ -35,8 +35,7 @@ export default class Inpect implements Action {
             let matchArray = data.match(new RegExp(pattern, flags));
 
             if (!matchArray) {
-                log.error(`${regexp} not found at ${src}`);
-                Deno.exit(1);
+                throw new Error(`${regexp} not found at ${src}`)
             }
 
             // FIXME: Check if regExp has match group or not...

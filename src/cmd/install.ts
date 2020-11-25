@@ -11,8 +11,7 @@ export default class Install implements Command {
 
     async execute(args: string[]) {
         if (!args || args.length == 0) {
-            log.error(`install - Nothing to install. Aborting...`);
-            Deno.exit(1);
+            throw new Error(`install - Nothing to install. Aborting...`);
         }
 
         log.info(`install ${JSON.stringify(args)} - BEGIN`);
@@ -20,8 +19,7 @@ export default class Install implements Command {
         let pkgs: FileSystemPackage[] | null = this.config.packageManager.resolvePackages(args);
 
         if (!pkgs) {
-            log.error(`install - Nothing to install. Aborting...`);
-            Deno.exit(1);
+            throw new Error(`install - Nothing to install. Aborting...`);
         }
 
         log.info("");

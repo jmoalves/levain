@@ -106,7 +106,7 @@ export default class Config {
             log.warning("***********************************************************************************");
             log.warning("");
         }
-        
+
         return this._defaultPackage || "levain";
     }
 
@@ -139,8 +139,7 @@ export default class Config {
                     }
 
                     if (!value) {
-                        log.error(`Global attribute ${vName} is undefined`);
-                        Deno.exit(1);
+                        throw new Error(`Global attribute ${vName} is undefined`);
                     }
                 }
 
@@ -169,8 +168,7 @@ export default class Config {
                 if (value) {
                     myText = myText.replace(v, value);
                 } else {
-                    log.error(`${v} is undefined`);
-                    Deno.exit(1);
+                    throw new Error(`${v} is undefined`);
                 }
             }
 
@@ -201,15 +199,15 @@ export default class Config {
             log.info(`LOAD ${fileName}`);
             let data = Deno.readTextFileSync(fileName);
             log.debug(`- DATA ${data}`);
-            
+
             let cfg = JSON.parse(data);
             if (cfg.repos) {
                 this._extraRepos.push(cfg.repos);
             }
-    
+
             if (cfg.defaultPackage) {
                 this._defaultPackage = cfg.defaultPackage;
-            }    
+            }
         } catch (err) {
             if (err.name != "NotFound") {
                 log.error(`Error reading config - ${fileName}`);

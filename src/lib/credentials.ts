@@ -1,5 +1,3 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-
 import {envChain, promptSecret} from './utils.ts';
 import Config from './config.ts';
 
@@ -7,9 +5,7 @@ export function askEmail(config: Config): void {
     let email = prompt("   Email: ", config.email || "");
 
     if (!email) {
-        log.error("");
-        log.error(`Unable to collect email`);
-        Deno.exit(1);
+        throw new Error(`Unable to collect email`);
     }
 
     config.email = email;
@@ -19,9 +15,7 @@ export function askUsername(config: Config): void {
     let username: string | null = prompt("Username: ", envChain("user", "username") || "");
 
     if (!username) {
-        log.error("");
-        log.error(`Unable to collect username`);
-        Deno.exit(1);
+        throw new Error(`Unable to collect username`);
     }
 
     config.username = username;
@@ -48,7 +42,5 @@ export async function askPassword(config: Config) {
         console.log("");
     } while (tries < 3);
 
-    log.error("");
-    log.error(`Unable to collect password after ${tries} attempts`);
-    Deno.exit(1);
+    throw new Error(`Unable to collect password after ${tries} attempts`);
 }
