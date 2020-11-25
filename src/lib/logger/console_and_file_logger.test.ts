@@ -8,3 +8,12 @@ Deno.test({
     sanitizeResources: false,
     sanitizeOps: false,
 })
+
+Deno.test({
+    name: 'should have option to skip local file log',
+    async fn() {
+        await ConsoleAndFileLogger.setup(true)
+    },
+    sanitizeResources: false,
+    sanitizeOps: false,
+})

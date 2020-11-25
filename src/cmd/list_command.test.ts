@@ -1,6 +1,6 @@
 import {assertEquals,} from "https://deno.land/std/testing/asserts.ts";
 import ListCommand from "./list_command.ts";
-import MemoryLogger from "../lib/logger/memoryLogger.ts";
+import MemoryLogger from "../lib/logger/memory_logger.ts";
 import Config from "../lib/config.ts";
 import NullRepository from "../lib/repository/null_repository.ts";
 import Mock_repository from "../lib/repository/mock_repository.ts";
