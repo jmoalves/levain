@@ -34,12 +34,13 @@ export async function levainCLI(): Promise<void> {
 
     // TODO: No parameters? Show Help
     if (myArgs._.length == 0) {
-        log.error("");
-        log.error("Nothing to do. Do you want some help?")
-        log.error("Commands available:")
-        log.error("  list")
-        log.error("  install")
-        log.error("  shell")
+        log.info("");
+        log.info("Welcome to Levain")
+        log.info("");
+        log.info("Commands available:")
+        log.info("  list")
+        log.info("  install")
+        log.info("  shell")
         return
     }
 

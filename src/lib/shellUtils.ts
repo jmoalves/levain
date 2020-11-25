@@ -15,14 +15,12 @@ export class OsShell {
 
     constructor(private config: Config, private pkgNames: string[]) {
         if (!pkgNames || pkgNames.length == 0) {
-            log.error("No package");
-            Deno.exit(1);
+            throw new Error("No package");
         }
 
         let pkgs: FileSystemPackage[] | null = this.config.packageManager.resolvePackages(pkgNames);
         if (!pkgs) {
-            log.error("Unable to load dependencies for a levain shell. Aborting...");
-            Deno.exit(1);
+            throw new Error("Unable to load dependencies for a levain shell. Aborting...");
         }
 
         this.dependencies = pkgs;
@@ -108,7 +106,7 @@ export class OsShell {
         if (this.interactive) {
             cmd = "cmd /c start cmd /u /k prompt [levain]$P$G";
         } else {
-            cmd = "cmd /u /c " + args.join(" ");    
+            cmd = "cmd /u /c " + args.join(" ");
         }
 
         log.info(`- CMD - ${cmd}`);
@@ -144,8 +142,7 @@ export class OsShell {
         let status = await p.status();
 
         if (!this.ignoreErrors && !status.success) {
-            log.error("CMD terminated with code " + status.code);
-            Deno.exit(1);
+            throw new Error("CMD terminated with code " + status.code);
         }
 
         if (this.saveVar) {
