@@ -6,6 +6,7 @@ import {existsSync, ExpandGlobOptions, expandGlobSync} from "https://deno.land/s
 import Repository from './repository.ts'
 import FileSystemPackage from '../package/file_system_package.ts'
 import Config from '../config.ts';
+import {Timer} from "../timer.ts";
 
 export default class FileSystemRepository implements Repository {
     packages: Array<FileSystemPackage> = [];
@@ -89,6 +90,7 @@ export default class FileSystemRepository implements Repository {
         }
 
         log.info(`# looking for *.levain.yaml files in ${this.rootDir}. Please wait...`);
+        const timer = new Timer()
 
         const packagesGlob = `${this.rootDir}/**/*.levain.{yaml,yml}`.replace(/\\/g, '/');
         const globOptions: ExpandGlobOptions = {
@@ -101,15 +103,16 @@ export default class FileSystemRepository implements Repository {
         const packageFiles = expandGlobSync(packagesGlob, globOptions)
         const packages: Array<FileSystemPackage> = [];
         for (const file of packageFiles) {
-            log.debug(`## listPackages: file ${JSON.stringify(file)}`)
+            log.debug(`## checking file ${JSON.stringify(file)}`)
             const packageName = file.name.replace(/\.levain\.ya?ml/, '')
             const pkg = this.readPackage(packageName, file.path)
             if (pkg) {
-                log.debug(`## listPackages: adding package ${pkg}`)
+                log.debug(`## adding package ${pkg}`)
                 packages.push(pkg)
             }
         }
-        log.debug(`# listPackages: added ${packages.length} packages`)
+        log.info(`added ${packages.length} packages in ${timer.measure()}ms`)
+        log.info("")
         return packages;
     }
 
