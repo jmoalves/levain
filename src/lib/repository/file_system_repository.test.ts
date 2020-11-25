@@ -22,8 +22,18 @@ Deno.test('should list .yml and .yaml packages, and include subfolder', () => {
     const repo = getTestRepo()
 
     const packages = repo.packages
+
     const packageNames = packages.map(pkg => pkg.name)
     assertEquals(packageNames, ['amazingYml', 'awesomeYaml', 'insideSubfolder'])
+})
+
+Deno.test('should ignore node_modules', () => {
+    const repo = getTestRepo()
+
+    const packages = repo.packages
+
+    const packageNames = packages.map(pkg => pkg.name)
+    assert(!packageNames.includes('hidden-by-folder'))
 })
 
 Deno.test('should list FileSystemPackages', () => {
@@ -33,6 +43,9 @@ Deno.test('should list FileSystemPackages', () => {
     packages.forEach(pkg => assert(pkg instanceof FileSystemPackage))
 })
 
+//
+// resolvePackage
+//
 Deno.test('should resolve package by name', () => {
     const repo = getTestRepo()
 

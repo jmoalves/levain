@@ -98,9 +98,9 @@ export default class FileSystemRepository implements Repository {
         log.info(`# Please wait...`);
         const timer = new Timer()
 
-        const packagesGlob = `${this.rootDir}/**/*.levain.{yaml,yml}`.replace(/\\/g, '/');
+        const packagesGlob = `**/*.levain.{yaml,yml}`.replace(/\\/g, '/');
         const globOptions: ExpandGlobOptions = {
-            // root: this.rootDir,
+            root: this.rootDir,
             extended: true,
             includeDirs: true,
             exclude: this.excludeDirs,
