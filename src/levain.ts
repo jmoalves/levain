@@ -9,7 +9,7 @@ import {Timer} from "./lib/timer.ts";
 
 export async function levainCLI(myArgs: any): Promise<void> {
     log.info(`  deno v${Deno.version.deno}`);
-    log.info(`levain vHEAD`);
+    log.info(`levain v0.3.9`);
 
     log.debug("args " + JSON.stringify(myArgs));
 
