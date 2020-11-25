@@ -55,19 +55,15 @@ export async function levainCLI(myArgs: any): Promise<void> {
     /////////////////////////////////////////////////////////////////////////////////
     log.info("==================================");
     log.info("");
-
-    if (myArgs["wait-after-end"]) {
-        console.log("");
-        console.log("Levain fermentee!");
-        prompt("Hit ENTER to finish");
-    }
 }
 
 export async function runLevinWithLog() {
     let logFiles: string[] = [];
+    let myArgs;
 
+    let error = false;
     try {
-        const myArgs = parseArgs(Deno.args, {
+        myArgs = parseArgs(Deno.args, {
             stringOnce: [
                 "levainHome"
             ],
@@ -87,13 +83,17 @@ export async function runLevinWithLog() {
 
     } catch (err) {
         log.error(err);
-        console.log("");
-        prompt("Hit ENTER to finish");
+        error = true;
     } finally {
         log.info("");
         logFiles.forEach(logFile => {
             log.info(`logFile -> ${logFile}`);
         })
+
+        if (error || (myArgs && myArgs["wait-after-end"]) ) {
+            console.log("");
+            prompt("Hit ENTER to finish");
+        }
     }
 }
 
