@@ -89,7 +89,8 @@ export default class FileSystemRepository implements Repository {
             return [];
         }
 
-        log.info(`# looking for *.levain.yaml files in ${this.rootDir}. Please wait...`);
+        log.info(`# looking for *.levain.yaml files in ${this.rootDir}.`);
+        log.info(`# Please wait...`);
         const timer = new Timer()
 
         const packagesGlob = `${this.rootDir}/**/*.levain.{yaml,yml}`.replace(/\\/g, '/');
