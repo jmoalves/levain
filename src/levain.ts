@@ -86,7 +86,9 @@ export async function runLevinWithLog() {
         await levainCLI();
 
     } catch (err) {
-        log.error(err)
+        log.error(err);
+        console.log("");
+        prompt("Hit ENTER to finish");
     } finally {
         log.info("");
         logFiles.forEach(logFile => {
