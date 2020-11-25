@@ -28,17 +28,9 @@ export async function levainCLI(myArgs: any): Promise<void> {
     log.info("");
     log.info("==================================");
 
-    this.showCliHelp = function () {
-        log.info("");
-        log.info("Commands available:")
-        log.info("  list")
-        log.info("  install")
-        log.info("  shell")
-    }
-    
     // TODO: No parameters? Show Help
     if (myArgs._.length == 0) {
-        this.showCliHelp()
+        showCliHelp()
         return
     }
 
@@ -60,6 +52,14 @@ export async function levainCLI(myArgs: any): Promise<void> {
     /////////////////////////////////////////////////////////////////////////////////
     log.info("==================================");
     log.info("");
+}
+
+function showCliHelp() {
+    log.info("");
+    log.info("Commands available:")
+    log.info("  list")
+    log.info("  install")
+    log.info("  shell")
 }
 
 export async function runLevinWithLog() {
