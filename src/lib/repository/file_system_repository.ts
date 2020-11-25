@@ -9,13 +9,18 @@ import Config from '../config.ts';
 import {Timer} from "../timer.ts";
 
 export default class FileSystemRepository implements Repository {
-    packages: Array<FileSystemPackage> = [];
     readonly excludeDirs = ['$RECYCLE.BIN', 'node_modules', '.git']
 
     constructor(private config: Config, private rootDir: string) {
         log.debug(`FSRepo: Root=${this.rootDir}`);
+    }
 
-        this.packages = this.listPackages();
+    _packages: Array<FileSystemPackage> | undefined;
+    get packages(): Array<FileSystemPackage> {
+        if (!this._packages) {
+            this._packages = this.listPackages();
+        }
+        return this._packages;
     }
 
     readonly name = `fileSystemRepo for ${this.rootDir}`;
