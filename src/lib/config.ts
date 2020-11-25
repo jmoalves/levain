@@ -22,11 +22,15 @@ export default class Config {
     private _username: string | undefined;
     private _password: string | undefined;
 
+    private _defaultPackage: string | undefined;
+
     constructor(args: any) {
         this.configEnv(args);
         this.configHome();
         this._repository = this.configRepo(args);
         this._pkgManager = new PackageManager(this);
+
+        this.load();
 
         log.info("");
         log.info(`=== Config: \n${JSON.stringify(this._env, null, 3)}`);
@@ -64,9 +68,19 @@ export default class Config {
         return this._context;
     }
 
-    get defaultPackage(): string {
-        // TODO: Create action to define this?
+    set defaultPackage(pkgName: string) {
+        if (this._defaultPackage) {
+            log.warning("");
+            log.warning("***********************************************************************************");
+            log.warning(`** Changing default package: ${this._defaultPackage} => ${pkgName}`);
+            log.warning("***********************************************************************************");
+            log.warning("");
+        }
 
+        this._defaultPackage = pkgName;
+    }
+
+    get defaultPackage(): string {
         // Looking for package at current dir
         let curDirRepo = new FileSystemRepository(this, Deno.cwd());
         let pkgs = curDirRepo.listPackages(true);
@@ -85,7 +99,7 @@ export default class Config {
             }
         }
         
-        return "levain";
+        return this._defaultPackage || "levain";
     }
 
     setVar(name: string, value: string): void {
@@ -164,13 +178,36 @@ export default class Config {
 
     public save(): void {
         let cfg: any = {};
-        cfg.levainHome = this.levainHome;
         cfg.repos = this._extraRepos;
+        cfg.defaultPackage = this._defaultPackage;
 
         let fileName = this.levainConfigFile;
 
         log.info(`SAVE ${fileName}`);
         Deno.writeTextFileSync(fileName, JSON.stringify(cfg, null, 3));
+    }
+
+    public load(): void {
+        let fileName = this.levainConfigFile;
+        try {
+            log.info(`LOAD ${fileName}`);
+            let data = Deno.readTextFileSync(fileName);
+            log.debug(`- DATA ${data}`);
+            
+            let cfg = JSON.parse(data);
+            if (cfg.repos) {
+                this._extraRepos.push(cfg.repos);
+            }
+    
+            if (cfg.defaultPackage) {
+                this._defaultPackage = cfg.defaultPackage;
+            }    
+        } catch (err) {
+            if (err.name != "NotFound") {
+                log.error(`Error reading config - ${fileName}`);
+                throw err;
+            }
+        }
     }
 
     set username(username: string | undefined) {

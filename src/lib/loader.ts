@@ -12,6 +12,7 @@ import Shell from "../cmd/shell.ts";
 // Actions
 import AddPath from "../action/addpath.ts";
 import Copy from "../action/copy.ts";
+import DefaultPackage from "../action/defaultPackage.ts";
 import Extract from "../action/extract.ts";
 import Inspect from "../action/inspect.ts";
 import LevainShell from "../action/levainShell.ts";
@@ -76,6 +77,9 @@ export default class Loader {
 
             case 'copy':
                 return new Copy(this.config);
+
+            case 'defaultPackage':
+                return new DefaultPackage(this.config);
 
             case 'extract':
                 return new Extract(this.config);
