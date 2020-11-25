@@ -84,10 +84,12 @@ export default class FileSystemRepository implements Repository {
 
     listPackages(rootDirOnly?: boolean): Array<FileSystemPackage> {
         if (!existsSync(`${this.rootDir}`)) {
-            log.debug(`# listPackages: rootDir not found ${this.rootDir}`)
+            log.debug(`# listPackages: rootDir not found ${this.rootDir}`);
             return [];
         }
-        
+
+        log.info(`# looking for *.levain.yaml files in ${this.rootDir}. Please wait...`);
+
         const packagesGlob = `${this.rootDir}/**/*.levain.{yaml,yml}`.replace(/\\/g, '/');
         const globOptions: ExpandGlobOptions = {
             // root: this.rootDir,
