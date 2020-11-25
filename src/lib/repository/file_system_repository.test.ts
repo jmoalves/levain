@@ -33,6 +33,23 @@ Deno.test('should list FileSystemPackages', () => {
     packages.forEach(pkg => assert(pkg instanceof FileSystemPackage))
 })
 
+Deno.test('should resolve package by name', () => {
+    const repo = getTestRepo()
+
+    const pkg = repo.resolvePackage('amazingYml')
+
+    assert(pkg instanceof FileSystemPackage)
+    assertEquals(pkg.name, 'amazingYml')
+})
+
+Deno.test('should resolve package that does not exists as undefined', () => {
+    const repo = getTestRepo()
+
+    const pkg = repo.resolvePackage('--this-package-does-not-exist--')
+
+    assertEquals(pkg, undefined)
+})
+
 function getTestRepo(rootDir = './testdata/testRepo') {
     return new FileSystemRepository(new Config([]), rootDir)
 }

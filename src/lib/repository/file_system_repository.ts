@@ -6,9 +6,10 @@ import {existsSync, ExpandGlobOptions, expandGlobSync} from "https://deno.land/s
 import Repository from './repository.ts'
 import FileSystemPackage from '../package/file_system_package.ts'
 import Config from '../config.ts';
-import Package from "../package/package.ts";
 
 export default class FileSystemRepository implements Repository {
+    packages: Array<FileSystemPackage> = [];
+
     constructor(private config: Config, private rootDir: string) {
         log.debug(`FSRepo: Root=${this.rootDir}`);
 
@@ -22,7 +23,8 @@ export default class FileSystemRepository implements Repository {
             return undefined;
         }
 
-        let pkg = this.readPackageInDir(packageName, this.rootDir);
+        // let pkg = this.readPackageInDir(packageName, this.rootDir);
+        const pkg = this.readPackageFromList(packageName);
         if (pkg) {
             log.debug(`FSRepo: ${packageName} => ${pkg.toString()}`);
         }
@@ -75,12 +77,12 @@ export default class FileSystemRepository implements Repository {
             yamlFile,
             yamlStr,
             this);
+
         return pkg;
     }
 
-    packages: Array<Package> = [];
 
-    listPackages(rootDirOnly?:boolean) {
+    listPackages(rootDirOnly?: boolean): Array<FileSystemPackage> {
         if (!existsSync(`${this.rootDir}`)) {
             log.debug(`# listPackages: rootDir not found ${this.rootDir}`)
             return [];
@@ -94,7 +96,7 @@ export default class FileSystemRepository implements Repository {
         }
         log.debug(`# listPackages: ${packagesGlob} ${JSON.stringify(globOptions)}`)
         const packageFiles = expandGlobSync(packagesGlob, globOptions)
-        const packages: Array<Package> = []
+        const packages: Array<FileSystemPackage> = [];
         for (const file of packageFiles) {
             log.debug(`## listPackages: file ${JSON.stringify(file)}`)
             const packageName = file.name.replace(/\.levain\.ya?ml/, '')
@@ -106,5 +108,10 @@ export default class FileSystemRepository implements Repository {
         }
         log.debug(`# listPackages: added ${packages.length} packages`)
         return packages;
+    }
+
+    private readPackageFromList(packageName: string): FileSystemPackage | undefined {
+        return this.packages
+            .find(pkg => pkg.name == packageName);
     }
 }
