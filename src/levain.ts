@@ -6,23 +6,10 @@ import Config from './lib/config.ts';
 import {parseArgs} from "./lib/parseArgs.ts";
 import {askPassword, askUsername} from "./lib/credentials.ts";
 
-export async function levainCLI(): Promise<void> {
+export async function levainCLI(myArgs: any): Promise<void> {
     log.info(`  deno v${Deno.version.deno}`);
     log.info(`levain vHEAD`);
 
-    const myArgs = parseArgs(Deno.args, {
-        stringOnce: [
-            "levainHome"
-        ],
-        stringMany: [
-            "addRepo"
-        ],
-        boolean: [
-            "askPassword",
-            "wait-to-begin",
-            "wait-after-end"
-        ]
-    });
     log.debug("args " + JSON.stringify(myArgs));
 
     // Context
@@ -82,8 +69,23 @@ export async function runLevinWithLog() {
     let logFiles: string[] = [];
 
     try {
-        logFiles = await ConsoleAndFileLogger.setup();
-        await levainCLI();
+        const myArgs = parseArgs(Deno.args, {
+            stringOnce: [
+                "levainHome"
+            ],
+            stringMany: [
+                "addRepo"
+            ],
+            boolean: [
+                "askPassword",
+                "wait-to-begin",
+                "wait-after-end",
+                "skip-local-log"
+            ]
+        });
+
+        logFiles = await ConsoleAndFileLogger.setup(myArgs["skip-local-log"]);
+        await levainCLI(myArgs);
 
     } catch (err) {
         log.error(err);
