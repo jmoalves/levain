@@ -141,17 +141,19 @@ else
 fi
 
 # bundle dependencies
-export DENO_DIR=${distRoot}/deno
+# export DENO_DIR=${distRoot}/deno
+export DENO_DIR=${distDir}/bin
 mkdir -p ${DENO_DIR}
 ${myDeno} info
-#${myDeno} cache --unstable --reload ${distDir}/src/levain.ts
-${myDeno} bundle --unstable --reload ${distDir}/src/levain.ts ${distDir}/levain.bundle.js
+${myDeno} cache --unstable --reload ${distDir}/src/levain.ts
+#${myDeno} bundle --unstable --reload ${distDir}/src/levain.ts ${distDir}/levain.bundle.js
+# Bundle issue - https://github.com/denoland/deno/issues/8486
 
 ### levain cleanup
 rm -rf ${distDir}/scripts
 rm ${distDir}/levain.zip
 rm -rf ${distDir}/jmoalves-levain-*
-rm -rf ${distDir}/src
+# rm -rf ${distDir}/src
 rm -rf ${distDir}/testData
 
 ## Create zip
