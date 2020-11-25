@@ -10,6 +10,6 @@ export class Timer {
 
     humanize(): string {
         // return moment().duration(this.measure()).humanize()
-        return `${this.measure()}`
+        return `${this.measure()}ms`
     }
 }
