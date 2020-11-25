@@ -85,18 +85,26 @@ export default class Config {
         let curDirRepo = new FileSystemRepository(this, Deno.cwd());
         let pkgs = curDirRepo.listPackages(true);
         if (pkgs && pkgs.length == 1) {
+            // TODO: Could we provide a default mechanism?
             let pkg = curDirRepo.resolvePackage(pkgs[0].name);
             if (pkg) {
                 if (pkg.installed) {
                     return pkg.name;
                 } else {
+                    // TODO: install package?
                     log.warning("");
                     log.warning("***********************************************************************************");
-                    log.warning(`** Default package "${pkg.name}" found but NOT installed. Use levain install`);
+                    log.warning(`** Default package "${pkg.name}" found but NOT installed. Use levain install ${pkg.name}`);
                     log.warning("***********************************************************************************");
                     log.warning("");
                 }
             }
+        } else {
+            log.warning("");
+            log.warning("***********************************************************************************");
+            log.warning(`** Found more than one .levain.yaml file in this folder. Which one should I use? => ${pkgs}`);
+            log.warning("***********************************************************************************");
+            log.warning("");
         }
         
         return this._defaultPackage || "levain";
