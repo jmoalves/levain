@@ -18,7 +18,9 @@ export async function levainCLI(): Promise<void> {
             "addRepo"
         ],
         boolean: [
-            "askPassword"
+            "askPassword",
+            "wait-to-begin",
+            "wait-after-end"
         ]
     });
     log.debug("args " + JSON.stringify(myArgs));
@@ -27,6 +29,17 @@ export async function levainCLI(): Promise<void> {
     const config = new Config(myArgs);
     ConsoleAndFileLogger.setConfig(config);
     //
+
+    if (myArgs["wait-to-begin"]) {
+        console.log("");
+        console.log("");
+        let answer = prompt("Continue?", "Y");
+        if (!answer || !["Y", "YES"].includes(answer.toUpperCase())) {
+            log.info("");
+            log.info("Ok, aborting...");
+            Deno.exit(1);
+        }
+    }
 
     // Time to business!
     log.info("");
@@ -57,6 +70,12 @@ export async function levainCLI(): Promise<void> {
     /////////////////////////////////////////////////////////////////////////////////
     log.info("==================================");
     log.info("");
+
+    if (myArgs["wait-after-end"]) {
+        console.log("");
+        console.log("Levain fermentee!");
+        prompt("Hit ENTER to finish");
+    }
 }
 
 export async function runLevinWithLog() {
