@@ -107,11 +107,6 @@ curl -ks -u username:$githubToken -o ${distDir}/levain.zip -L $levainUrl
 unzip ${distDir}/levain.zip -d ${distDir} >/dev/null
 mv ${distDir}/jmoalves-levain-*/* ${distDir}
 
-### levain cleanup
-rm -rf ${distDir}/scripts
-rm ${distDir}/levain.zip
-rm -rf ${distDir}/jmoalves-levain-*
-
 ## Deno bin
 denoRelease=$(getRelease -o denoland -r deno $denoVersion)
 denoVersion=$(echo $denoRelease | $jqBin -rc '.tag_name' | sed 's/v//g')
@@ -145,10 +140,19 @@ else
   myDeno=${utilWin}/deno
 fi
 
-# download dependencies
-export DENO_DIR=${distDir}/bin
+# bundle dependencies
+export DENO_DIR=${distRoot}/deno
+mkdir -p ${DENO_DIR}
 ${myDeno} info
-${myDeno} cache --unstable --reload ${distDir}/src/levain.ts
+#${myDeno} cache --unstable --reload ${distDir}/src/levain.ts
+${myDeno} bundle --unstable --reload ${distDir}/src/levain.ts ${distDir}/levain.bundle.js
+
+### levain cleanup
+rm -rf ${distDir}/scripts
+rm ${distDir}/levain.zip
+rm -rf ${distDir}/jmoalves-levain-*
+rm -rf ${distDir}/src
+rm -rf ${distDir}/testData
 
 ## Create zip
 zipFile=levain-v$levainVersion-with-deno-v$denoVersion-windows-x86_64.zip
@@ -169,10 +173,10 @@ ls -l "${distRoot}/${zipFile}"
 ## Upload asset to GitHub
 levainAssetsUploadUrl=$(echo $levainRelease | $jqBin -rc '.upload_url' | sed 's/{.*}//')
 echo Uploading asset $zipFile to $levainAssetsUploadUrl
-curl -ks -X POST -u username:$githubToken \
-  -H 'Content-Type: application/zip' \
-  -T ${distRoot}/$zipFile \
-  ${levainAssetsUploadUrl}?name=${zipFile}
+# curl -ks -X POST -u username:$githubToken \
+#   -H 'Content-Type: application/zip' \
+#   -T ${distRoot}/$zipFile \
+#   ${levainAssetsUploadUrl}?name=${zipFile}
 
-echo
-echo Upload completed - ${zipFile}
+# echo
+# echo Upload completed - ${zipFile}
