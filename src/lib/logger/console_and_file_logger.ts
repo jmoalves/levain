@@ -1,6 +1,7 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import Config from "../config.ts";
 import Logger from "./logger.ts";
+import {AutoFlushLogFileHandler} from "./auto_flush_log_file_handler.ts";
 
 export default class ConsoleAndFileLogger implements Logger {
     private static config: Config;
@@ -100,9 +101,3 @@ export default class ConsoleAndFileLogger implements Logger {
     }
 }
 
-class AutoFlushLogFileHandler extends log.handlers.FileHandler {
-    log(msg: string): void {
-        super.log(msg);
-        super.flush();
-    }
-}
