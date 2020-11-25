@@ -5,6 +5,7 @@ import Loader from './lib/loader.ts';
 import Config from './lib/config.ts';
 import {parseArgs} from "./lib/parseArgs.ts";
 import {askPassword, askUsername} from "./lib/credentials.ts";
+import {Timer} from "./lib/timer.ts";
 
 export async function levainCLI(myArgs: any): Promise<void> {
     log.info(`  deno v${Deno.version.deno}`);
@@ -60,6 +61,7 @@ export async function levainCLI(myArgs: any): Promise<void> {
 export async function runLevinWithLog() {
     let logFiles: string[] = [];
     let myArgs;
+    const timer = new Timer()
 
     let error = false;
     try {
@@ -79,6 +81,7 @@ export async function runLevinWithLog() {
         });
 
         logFiles = await ConsoleAndFileLogger.setup(myArgs["skip-local-log"]);
+
         await levainCLI(myArgs);
 
     } catch (err) {
@@ -90,7 +93,10 @@ export async function runLevinWithLog() {
             log.info(`logFile -> ${logFile}`);
         })
 
-        if (error || (myArgs && myArgs["wait-after-end"]) ) {
+        log.info("");
+        log.info(`Levain ran in ${timer.measure()}ms`)
+
+        if (error || (myArgs && myArgs["wait-after-end"])) {
             console.log("");
             prompt("Hit ENTER to finish");
         }
