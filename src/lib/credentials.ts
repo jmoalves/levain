@@ -21,6 +21,16 @@ export function askUsername(config: Config): void {
     config.username = username;
 }
 
+export function askFullName(config: Config): void {
+    let fullname: string | null = prompt("Whats your full name? ", envChain("user", "fullname") || "");
+
+    if (!fullname) {
+        throw new Error(`Unable to collect full name`);
+    }
+
+    config.fullname = fullname;
+}
+
 export async function askPassword(config: Config) {
     let tries = 0;
     do {
