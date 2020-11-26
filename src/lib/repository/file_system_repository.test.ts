@@ -2,6 +2,8 @@ import {assert, assertEquals} from "https://deno.land/std/testing/asserts.ts";
 import Config from "../config.ts";
 import FileSystemRepository from "./file_system_repository.ts";
 import FileSystemPackage from "../package/file_system_package.ts";
+import {OsShell} from '../shellUtils.ts';
+import {assertArrayIncludesElements} from '../assert_utils.ts';
 
 Deno.test('should have a name', () => {
     const repo = new FileSystemRepository(new Config([]), '.')
@@ -43,6 +45,27 @@ Deno.test('should list FileSystemPackages', () => {
     packages.forEach(pkg => assert(pkg instanceof FileSystemPackage))
 })
 
+if (OsShell.isWindows()) {
+    const networkRootDir: string = '\\\\bndes.net\\bndes\\Grupos\\AmbienteDesenvolvedor\\bnd-levain-pkg';
+    Deno.test('should list network packages', () => {
+        const repo = getTestRepo(networkRootDir)
+
+        const packages = repo.packages
+
+        const packageNames = packages.map(pkg => pkg.name)
+        assertArrayIncludesElements<string>(packageNames, ['bje-config', 'bndes-java-env'])
+    })
+
+    Deno.test('should crawl windows network packages', () => {
+        const repo = getTestRepo(networkRootDir)
+
+        const packages = repo.crawlPackages(networkRootDir, {})
+
+        const packageNames = packages.map(pkg => pkg.name)
+
+        assertArrayIncludesElements(packageNames, ['bje-config', 'bndes-java-env'])
+    })
+}
 //
 // resolvePackage
 //
@@ -63,6 +86,6 @@ Deno.test('should resolve package that does not exists as undefined', () => {
     assertEquals(pkg, undefined)
 })
 
-function getTestRepo(rootDir = './testdata/testRepo') {
+function getTestRepo(rootDir: string = './testdata/testRepo') {
     return new FileSystemRepository(new Config([]), rootDir)
 }

@@ -15,8 +15,10 @@ Deno.test('should list nullRepo', () => {
     list.execute()
 
     assertEquals(logger.getInfo(), [
-        "list - listing repositories and packages",
-        "repository nullRepo:",
+        "",
+        "==================================",
+        "list undefined",
+        "Repository: nullRepo:",
         "  no packages found",
     ])
 })
@@ -32,10 +34,14 @@ Deno.test('should list packages available in a repo', () => {
     list.execute()
 
     assertEquals(logger.getInfo(), [
-        "list - listing repositories and packages",
-        "repository mockRepo:",
+        "",
+        "==================================",
+        "list undefined",
+        "Repository: mockRepo:",
         "  2 packages found:",
-        "    package: aPackage 1.0.1 (/mock/aPackage-1.0.1.yml)",
-        "    package: anotherPackage 0.1.2 (/mock/anotherPackage-0.1.2.yml)"
+        "",
+        "=== Packages",
+        "  aPackage                       1.0.1      => /mock/aPackage-1.0.1.yml",
+        "  anotherPackage                 0.1.2      => /mock/anotherPackage-0.1.2.yml",
     ])
 })

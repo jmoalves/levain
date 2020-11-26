@@ -1,4 +1,4 @@
-const watcher = Deno.watchFs('./src')
+const watcher = Deno.watchFs('src/')
 
 runTest()
 

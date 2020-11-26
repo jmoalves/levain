@@ -145,6 +145,7 @@ class SevenZip extends Extractor {
         log.debug(`- 7z ${src} => ${dst}`);
 
         let args = `cmd /u /c path ${this.config.extraBinDir};%PATH% && ${this.config.extraBinDir}\\7z.exe x -bsp2 -o${dst} ${src}`.split(" ");
+        log.debug(args)
 
         const p = Deno.run({
             cmd: args,

@@ -51,6 +51,10 @@ export default class Config {
         return this._repository;
     }
 
+    set repository(repo: Repository) {
+        this._repository = repo;
+    }
+
     get repositoryInstalled(): Repository {
         if (!this._installedRepository) {
             // Lazy loading
@@ -312,9 +316,11 @@ export default class Config {
         } else {
             let savedRepos = this._extraRepos;
             this._extraRepos = [];
+            log.debug(`savedRepos "${JSON.stringify(savedRepos)}"`)
             this.addRepos(repos, savedRepos);
-            this.addRepos(repos, args.addRepo);    
-        } 
+            log.debug(`args.addRepo "${JSON.stringify(args.addRepo)}"`)
+            this.addRepos(repos, args.addRepo);
+        }
 
         return new CacheRepository(this,
             new ChainRepository(this, repos)
@@ -341,16 +347,22 @@ export default class Config {
         repos.push(new FileSystemRepository(this, Deno.cwd()));
     }
 
-    private addRepos(repos: Repository[], reposPath: undefined | string[]) {
+    addRepos(repos: Repository[], reposPath: undefined | string[]) {
         if (!reposPath) {
             return;
         }
 
-        reposPath?.forEach((repo) => {
+        log.debug(`addRepos "${JSON.stringify(reposPath)}"`)
+        reposPath?.forEach(repoPath => this.addRepo(repos, repoPath));
+    }
+
+    addRepo(repos: Repository[], partialRepoPath: string) {
+        log.debug(`addRepo "${JSON.stringify(partialRepoPath)}"`)
+        if (partialRepoPath.toString() !== "") {
             try {
-                const fileInfo = Deno.statSync(repo);
+                const fileInfo = Deno.statSync(partialRepoPath);
                 if (!fileInfo || !fileInfo.isDirectory) {
-                    throw `addRepo - invalid dir ${repo}`;
+                    throw `addRepo - invalid dir ${partialRepoPath}`;
                 }
             } catch (err) {
                 if (err.name != "NotFound") {
@@ -358,7 +370,7 @@ export default class Config {
                 }
             }
 
-            let repoPath = path.resolve(repo);
+            let repoPath = path.resolve(partialRepoPath);
             if (this._extraRepos?.includes(repoPath)) {
                 log.debug(`addRepo - ignoring repeated ${repoPath}`);
             } else {
@@ -366,6 +378,6 @@ export default class Config {
                 this._extraRepos.push(repoPath);
                 repos.push(new FileSystemRepository(this, repoPath));
             }
-        });
+        }
     }
 }
