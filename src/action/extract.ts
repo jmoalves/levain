@@ -5,6 +5,7 @@ import Action from "../lib/action.ts";
 import Config from "../lib/config.ts";
 import FileSystemPackage from '../lib/package/file_system_package.ts';
 import {parseArgs} from "../lib/parseArgs.ts";
+import {OsShell} from '../lib/os_shell.ts';
 
 // TODO: Use native TS/JS implementation instead of extra-bin files.
 export default class Extract implements Action {
@@ -138,23 +139,31 @@ class SevenZip extends Extractor {
 
     async extractImpl(src: string, dst: string) {
         // TODO: Handle other os's
-        if (Deno.build.os != "windows") {
+        log.debug(`- 7z ${src} => ${dst}`);
+        if (!OsShell.isWindows()) {
             throw `${Deno.build.os} not supported`;
         }
-
-        log.debug(`- 7z ${src} => ${dst}`);
 
         let args = `cmd /u /c path ${this.config.extraBinDir};%PATH% && ${this.config.extraBinDir}\\7z.exe x -bsp2 -o${dst} ${src}`.split(" ");
         log.debug(args)
 
         const p = Deno.run({
             cmd: args,
-            stdout: "null"
+            stdout: "piped",
+            // stderr: "piped",
         });
+        const rawOutput = await p.output();
+        const status = await p.status();
+        log.debug(`7z status ${JSON.stringify(status)}`)
 
-        let status = await p.status();
-        if (!status.success) {
+        if (status.success) {
+            const output = new TextDecoder().decode(rawOutput)
+            log.debug(`7z output ${output}`)
+        } else {
             throw "CMD terminated with code " + status.code;
+            // const rawError = await p.stderrOutput()
+            // const errorString = new TextDecoder().decode(rawError)
+            // log.error(`7z errorString ${errorString}`)
         }
     }
 }

@@ -7,7 +7,7 @@ import Repository from './repository.ts'
 import FileSystemPackage from '../package/file_system_package.ts'
 import Config from '../config.ts';
 import {Timer} from "../timer.ts";
-import {OsShell} from '../shellUtils.ts';
+import {OsShell} from '../os_shell.ts';
 
 export default class FileSystemRepository implements Repository {
     readonly excludeDirs = ['$RECYCLE.BIN', 'node_modules', '.git']

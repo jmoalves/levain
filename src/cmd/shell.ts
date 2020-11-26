@@ -2,8 +2,7 @@ import * as log from "https://deno.land/std/log/mod.ts";
 
 import Command from "./command.ts";
 import Config from "../lib/config.ts";
-import FileSystemPackage from "../lib/package/file_system_package.ts";
-import { OsShell } from '../lib/shellUtils.ts';
+import {OsShell} from '../lib/os_shell.ts';
 
 export default class Shell implements Command {
     constructor(private config: Config) {
@@ -14,15 +13,15 @@ export default class Shell implements Command {
         log.info("==================================");
         log.info(`shell ${JSON.stringify(args)}`);
 
-        let pkgNames:string[] = [];
+        let pkgNames: string[] = [];
 
         if (args && args.length > 0) {
             pkgNames = args;
         } else {
-            pkgNames = [ this.config.defaultPackage ];
+            pkgNames = [this.config.defaultPackage];
         }
 
-        let osShell:OsShell = new OsShell(this.config, pkgNames, true);
+        let osShell: OsShell = new OsShell(this.config, pkgNames, true);
         osShell.interactive = true;
 
         await osShell.execute([]);

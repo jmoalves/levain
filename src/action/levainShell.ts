@@ -3,8 +3,8 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import Action from "../lib/action.ts";
 import Config from "../lib/config.ts";
 import FileSystemPackage from '../lib/package/file_system_package.ts';
-import { parseArgs } from "../lib/parseArgs.ts";
-import { OsShell } from '../lib/shellUtils.ts';
+import {parseArgs} from "../lib/parseArgs.ts";
+import {OsShell} from '../lib/os_shell.ts';
 
 export default class LevainShell implements Action {
     constructor(private config: Config) {
@@ -23,7 +23,7 @@ export default class LevainShell implements Action {
             ]
         });
 
-        let osShell:OsShell = new OsShell(this.config, [ pkg.name ]);
+        let osShell: OsShell = new OsShell(this.config, [pkg.name]);
         osShell.saveVar = myArgs.saveVar;
         osShell.interactive = false;
         osShell.stripCRLF = myArgs.stripCRLF;
