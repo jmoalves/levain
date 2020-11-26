@@ -89,15 +89,15 @@ export default class FileSystemRepository implements Repository {
         log.debug(`crawlPackages ${dirname}`)
         for (const entry of Deno.readDirSync(dirname)) {
             if (entry.isDirectory) {
-                packages.concat(this.crawlPackages(path.resolve(dirname, entry.name), options));
+                Array.prototype.push.apply(packages, this.crawlPackages(path.resolve(dirname, entry.name), options));
             }
 
             if (entry.isFile) {
                 const pkg = this.readPackage(path.resolve(dirname, entry.name));
                 if (pkg) {
                     packages.push(pkg);
+                    log.debug(`added package ${entry.name}`)
                 }
-                log.debug(`adding package ${entry.name} ${packages.length}`)
             }
         }
 
