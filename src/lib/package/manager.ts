@@ -10,7 +10,7 @@ export default class PackageManager {
     constructor(private config: Config) {
     }
 
-    resolvePackages(pkgNames: string[]): FileSystemPackage[] | null {
+    resolvePackages(pkgNames: string[], installedOnly = false): FileSystemPackage[] | null {
         let pkgs: Map<string, FileSystemPackage> = new Map();
 
         if (!pkgNames || pkgNames.length == 0) {
@@ -19,7 +19,8 @@ export default class PackageManager {
 
         let error: boolean = false;
         for (const pkgName of pkgNames) {
-            let myError: boolean = this.resolvePkgs(this.config.repository, pkgs, pkgName);
+            let repo = (installedOnly ? this.config.repositoryInstalled : this.config.repository);
+            let myError: boolean = this.resolvePkgs(repo, pkgs, pkgName);
             error = error || myError;
         }
 

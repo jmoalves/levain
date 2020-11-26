@@ -13,6 +13,7 @@ import PackageManager from "./package/manager.ts";
 export default class Config {
     private _pkgManager: PackageManager;
     private _repository: Repository | undefined;
+    private _installedRepository: Repository | undefined;
     private _env: any = {};
     private _context: any = {}; // Do we really need two of them (_env and _context)?
 
@@ -35,8 +36,6 @@ export default class Config {
 
         this.load();
 
-        // Delay loading...
-        //this._repository = this.configRepo(args);
         this._pkgManager = new PackageManager(this);
 
         log.info("");
@@ -46,15 +45,20 @@ export default class Config {
     get repository(): Repository {
         if (!this._repository) {
             // Lazy loading
-            this._repository = this.configRepo(this.savedArgs);
+            this._repository = this.configRepo(this.savedArgs, false);
         }
 
         return this._repository;
     }
 
-    // set repository(repository: Repository) {
-    //     this._repository = repository;
-    // }
+    get repositoryInstalled(): Repository {
+        if (!this._installedRepository) {
+            // Lazy loading
+            this._installedRepository = this.configRepo(this.savedArgs, true);
+        }
+
+        return this._installedRepository;
+    }
 
     get packageManager(): PackageManager {
         return this._pkgManager;
@@ -295,19 +299,22 @@ export default class Config {
         }
     }
 
-    private configRepo(args: any): Repository {
+    private configRepo(args: any, installedOnly: boolean): Repository {
         let repos: Repository[] = [];
 
         log.info("");
-        log.info("=== LevainRepos");
+        log.info(`=== LevainRepos - installedOnly: ${installedOnly}`);
         this.addLevainRepo(repos);
         this.addCurrentDirRepo(repos);
 
-        let savedRepos = this._extraRepos;
-        this._extraRepos = [];
-        this.addRepos(repos, savedRepos);
-        this.addRepos(repos, args.addRepo);
-        // this.addLevainRegistryRepo(repos);
+        if (installedOnly) {
+            this.addLevainRegistryRepo(repos);
+        } else {
+            let savedRepos = this._extraRepos;
+            this._extraRepos = [];
+            this.addRepos(repos, savedRepos);
+            this.addRepos(repos, args.addRepo);    
+        } 
 
         return new CacheRepository(this,
             new ChainRepository(this, repos)
