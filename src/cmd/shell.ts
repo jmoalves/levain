@@ -16,7 +16,7 @@ export default class Shell implements Command {
 
         let pkgNames:string[] = [];
 
-        if (args && args.length > 1) {
+        if (args && args.length > 0) {
             pkgNames = args;
         } else {
             pkgNames = [ this.config.defaultPackage ];
