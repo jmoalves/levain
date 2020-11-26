@@ -12,7 +12,7 @@ import PackageManager from "./package/manager.ts";
 
 export default class Config {
     private _pkgManager: PackageManager;
-    private _repository: Repository;
+    private _repository: Repository | undefined;
     private _env: any = {};
     private _context: any = {}; // Do we really need two of them (_env and _context)?
 
@@ -25,13 +25,18 @@ export default class Config {
 
     private _defaultPackage: string | undefined;
 
+    private savedArgs: any;
+
     constructor(args: any) {
+        this.savedArgs = args;
+
         this.configEnv(args);
         this.configHome();
 
         this.load();
 
-        this._repository = this.configRepo(args);
+        // Delay loading...
+        //this._repository = this.configRepo(args);
         this._pkgManager = new PackageManager(this);
 
         log.info("");
@@ -39,12 +44,17 @@ export default class Config {
     }
 
     get repository(): Repository {
+        if (!this._repository) {
+            // Lazy loading
+            this._repository = this.configRepo(this.savedArgs);
+        }
+
         return this._repository;
     }
 
-    set repository(repository: Repository) {
-        this._repository = repository;
-    }
+    // set repository(repository: Repository) {
+    //     this._repository = repository;
+    // }
 
     get packageManager(): PackageManager {
         return this._pkgManager;
