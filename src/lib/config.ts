@@ -28,10 +28,11 @@ export default class Config {
     constructor(args: any) {
         this.configEnv(args);
         this.configHome();
-        this._repository = this.configRepo(args);
-        this._pkgManager = new PackageManager(this);
 
         this.load();
+
+        this._repository = this.configRepo(args);
+        this._pkgManager = new PackageManager(this);
 
         log.info("");
         log.info(`=== Config: \n${JSON.stringify(this._env, null, 3)}`);
@@ -195,23 +196,31 @@ export default class Config {
     }
 
     public load(): void {
-        let fileName = this.levainConfigFile;
+        let filename = this.levainConfigFile;
+        if (!filename) {
+            return;
+        }
+
         try {
-            log.info(`LOAD ${fileName}`);
-            let data = Deno.readTextFileSync(fileName);
+            log.info(`LOAD ${filename}`);
+
+            let data = Deno.readTextFileSync(filename);
             log.debug(`- DATA ${data}`);
 
             let cfg = JSON.parse(data);
+            log.debug(`- PARSE ${JSON.stringify(cfg)}`);
             if (cfg.repos) {
-                this._extraRepos.push(cfg.repos);
+                this._extraRepos = cfg.repos;
+                log.debug(`- REPOS ${this._extraRepos}`);
             }
 
             if (cfg.defaultPackage) {
                 this._defaultPackage = cfg.defaultPackage;
+                log.debug(`- DEFAULT-PACKAGE ${this._defaultPackage}`);
             }
         } catch (err) {
             if (err.name != "NotFound") {
-                log.error(`Error reading config - ${fileName}`);
+                log.error(`Error reading config - ${filename}`);
                 throw err;
             }
         }
@@ -283,8 +292,12 @@ export default class Config {
         log.info("=== LevainRepos");
         this.addLevainRepo(repos);
         this.addCurrentDirRepo(repos);
+
+        let savedRepos = this._extraRepos;
+        this._extraRepos = [];
+        this.addRepos(repos, savedRepos);
         this.addRepos(repos, args.addRepo);
-        this.addLevainRegistryRepo(repos);
+        // this.addLevainRegistryRepo(repos);
 
         return new CacheRepository(this,
             new ChainRepository(this, repos)
@@ -311,12 +324,12 @@ export default class Config {
         repos.push(new FileSystemRepository(this, Deno.cwd()));
     }
 
-    private addRepos(repos: Repository[], addRepo: undefined | string[]) {
-        if (!addRepo) {
+    private addRepos(repos: Repository[], reposPath: undefined | string[]) {
+        if (!reposPath) {
             return;
         }
 
-        addRepo?.forEach((repo) => {
+        reposPath?.forEach((repo) => {
             try {
                 const fileInfo = Deno.statSync(repo);
                 if (!fileInfo || !fileInfo.isDirectory) {
@@ -329,9 +342,13 @@ export default class Config {
             }
 
             let repoPath = path.resolve(repo);
-            log.info(`LevainRepo: addRepo ${repoPath}`);
-            this._extraRepos.push(repoPath);
-            repos.push(new FileSystemRepository(this, repoPath));
+            if (this._extraRepos?.includes(repoPath)) {
+                log.debug(`addRepo - ignoring repeated ${repoPath}`);
+            } else {
+                log.info(`LevainRepo: addRepo ${repoPath}`);
+                this._extraRepos.push(repoPath);
+                repos.push(new FileSystemRepository(this, repoPath));
+            }
         });
     }
 }
