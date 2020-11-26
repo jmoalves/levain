@@ -31,8 +31,6 @@ export default class ConsoleAndFileLogger implements Logger {
             },
         });
 
-        ConsoleAndFileLogger.showLogFiles(logFiles);
-
         return logFiles
     }
 

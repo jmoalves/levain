@@ -88,7 +88,9 @@ export async function runLevinWithLog() {
         });
 
         logFiles = await ConsoleAndFileLogger.setup(myArgs["skip-local-log"]);
-
+        ConsoleAndFileLogger.showLogFiles(logFiles);
+        log.info("");
+        
         await levainCLI(myArgs);
 
     } catch (err) {
