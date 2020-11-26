@@ -152,6 +152,11 @@ class SevenZip extends Extractor {
             stdout: "piped",
             // stderr: "piped",
         });
+
+        // https://github.com/denoland/deno/issues/4568
+        // const proc = Deno.run({ cmd, stderr: 'piped', stdout: 'piped' });
+        // const [ stderr, stdout, status ] = await Promise.all([ proc.stderrOutput(), proc.output(), proc.status() ]);
+
         const rawOutput = await p.output();
         const status = await p.status();
         log.debug(`7z status ${JSON.stringify(status)}`)
