@@ -89,29 +89,28 @@ export default class FileSystemRepository implements Repository {
 
 
     listPackages(rootDirOnly?: boolean): Array<FileSystemPackage> {
-        if (!existsSync(`${this.rootDir}`)) {
-            log.debug(`# listPackages: rootDir not found ${this.rootDir}`);
+        let rootDir = this.rootDir.replace(/\\/g, '/');
+        if (!existsSync(`${rootDir}`)) {
+            log.debug(`# listPackages: rootDir not found ${rootDir}`);
             return [];
         }
 
-        log.info(`# looking for *.levain.yaml files in ${this.rootDir}.`);
+        log.info(`# looking for *.levain.yaml files in ${rootDir}.`);
         log.info(`# Please wait...`);
-        const timer = new Timer()
+        const timer = new Timer();
+        let pkgPath:string[] = this.listPackagesInDir(rootDir);
+        // if (rootDir.startsWith("//")) {
+        //     log.warning(`## UNC path ${rootDir}`);
+        //     pkgPath = this.listPackagesInDir(rootDir);
+        // } else {
+        //     pkgPath = this.listPackagesWithGlob(rootDir);
+        // }
 
-        const packagesGlob = `**/*.levain.{yaml,yml}`.replace(/\\/g, '/');
-        const globOptions: ExpandGlobOptions = {
-            root: this.rootDir,
-            extended: true,
-            includeDirs: true,
-            exclude: this.excludeDirs,
-        }
-        log.debug(`# listPackages: ${packagesGlob} ${JSON.stringify(globOptions)}`)
-        const packageFiles = expandGlobSync(packagesGlob, globOptions)
         const packages: Array<FileSystemPackage> = [];
-        for (const file of packageFiles) {
-            log.debug(`## checking file ${JSON.stringify(file)}`)
-            const packageName = file.name.replace(/\.levain\.ya?ml/, '')
-            const pkg = this.readPackage(packageName, file.path)
+        for (const name of pkgPath) {
+            log.debug(`## checking file ${JSON.stringify(name)}`)
+            const packageName = path.basename(name).replace(/\.levain\.ya?ml/, '')
+            const pkg = this.readPackage(packageName, name);
             if (pkg) {
                 log.debug(`## adding package ${pkg}`)
                 packages.push(pkg)
@@ -121,6 +120,54 @@ export default class FileSystemRepository implements Repository {
         log.info("")
         return packages;
     }
+
+    private listPackagesWithGlob(dirname: string): string[] {
+        // FIXME: UNC path does not work
+        const packagesGlob = `**/*.levain.{yaml,yml}`;
+        const globOptions: ExpandGlobOptions = {
+            root: dirname,
+            extended: true,
+            includeDirs: true,
+            exclude: this.excludeDirs,
+        }
+        log.debug(`# listPackages: ${packagesGlob} ${JSON.stringify(globOptions)}`)
+        const packageFiles = expandGlobSync(packagesGlob, globOptions);
+
+        if (!packageFiles) {
+            return [];
+        }
+
+        let pkgNames:string[] = [];
+        for (const file of packageFiles) {
+            pkgNames.push(file.path);
+        }
+
+        return pkgNames;
+    }
+
+    private listPackagesInDir(dirname: string): string[] {
+        log.debug(`listPackagesInDir ${dirname}`)
+        if (this.excludeDirs.find(ignoreDir => dirname.endsWith(ignoreDir))) {
+            log.debug(`ignoring ${dirname}`)
+            return [];
+        }
+
+        let pkgNames:string[] = [];
+        for (const entry of Deno.readDirSync(dirname)) {
+            let name = path.resolve(dirname, entry.name);
+            if (entry.isDirectory) {
+                let newNames = this.listPackagesInDir(name);
+                if (newNames && newNames.length > 0) {
+                    Array.prototype.push.apply(pkgNames, newNames);
+                }
+            } else if (entry.isFile && (name.endsWith(".levain.yaml") || name.endsWith(".levain.yml")) ) {
+                pkgNames.push(name);
+            }
+        }
+
+        return pkgNames;
+    }
+
 
     private readPackageFromList(packageName: string): FileSystemPackage | undefined {
         return this.packages
