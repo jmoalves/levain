@@ -1,4 +1,5 @@
 import * as log from "https://deno.land/std/log/mod.ts";
+import * as path from "https://deno.land/std/path/mod.ts";
 
 import ConsoleAndFileLogger from './lib/logger/console_and_file_logger.ts'
 import Loader from './lib/loader.ts';
@@ -8,7 +9,9 @@ import {askPassword, askUsername} from "./lib/credentials.ts";
 import {Timer} from "./lib/timer.ts";
 
 export async function levainCLI(myArgs: any): Promise<void> {
-    log.info(`levain vHEAD`);
+    const __filename = path.fromFileUrl(import.meta.url);
+
+    log.info(`levain vHEAD (${__filename})`);
     log.info(`  deno v${Deno.version.deno}`);
 
     log.debug("args " + JSON.stringify(myArgs));
