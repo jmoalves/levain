@@ -1,13 +1,11 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="testWatch" type="ShConfigurationType">
-    <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
-    <option name="SCRIPT_PATH" value="$PROJECT_DIR$/scripts/testWatch.sh" />
-    <option name="SCRIPT_OPTIONS" value="" />
-    <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
-    <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-    <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />
-    <option name="INTERPRETER_PATH" value="/bin/zsh" />
+  <configuration default="false" name="testWatch" type="BatchConfigurationType" factoryName="Batch">
+    <module name="levain" />
     <option name="INTERPRETER_OPTIONS" value="" />
+    <option name="WORKING_DIRECTORY" value="" />
+    <option name="PARENT_ENVS" value="true" />
+    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/testWatch.cmd" />
+    <option name="PARAMETERS" value="" />
     <method v="2" />
   </configuration>
 </component>

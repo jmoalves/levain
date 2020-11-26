@@ -7,12 +7,34 @@ import Repository from './repository.ts'
 import FileSystemPackage from '../package/file_system_package.ts'
 import Config from '../config.ts';
 import {Timer} from "../timer.ts";
+import {OsShell} from '../shellUtils.ts';
 
 export default class FileSystemRepository implements Repository {
     readonly excludeDirs = ['$RECYCLE.BIN', 'node_modules', '.git']
 
     constructor(private config: Config, private rootDir: string) {
         log.debug(`FSRepo: Root=${this.rootDir}`);
+    }
+
+
+    readonly name = `fileSystemRepo for ${this.rootDir}`;
+
+    resolvePackage(packageName: string): FileSystemPackage | undefined {
+        if (!existsSync(`${this.rootDir}`)) {
+            return undefined;
+        }
+
+        const pkg = this.readPackageFromList(packageName);
+        if (pkg) {
+            log.debug(`FSRepo: ${packageName} => ${pkg.toString()}`);
+        }
+
+        return pkg;
+    }
+
+    private readPackageFromList(packageName: string): FileSystemPackage | undefined {
+        return this.packages
+            .find(pkg => pkg.name == packageName);
     }
 
     _packages: Array<FileSystemPackage> | undefined;
@@ -23,60 +45,94 @@ export default class FileSystemRepository implements Repository {
         return this._packages;
     }
 
-    readonly name = `fileSystemRepo for ${this.rootDir}`;
-
-    resolvePackage(packageName: string): FileSystemPackage | undefined {
+    listPackages(rootDirOnly?: boolean): Array<FileSystemPackage> {
         if (!existsSync(`${this.rootDir}`)) {
-            return undefined;
+            log.debug(`# listPackages: rootDir not found ${this.rootDir}`);
+            return [];
         }
 
-        // let pkg = this.readPackageInDir(packageName, this.rootDir);
-        const pkg = this.readPackageFromList(packageName);
-        if (pkg) {
-            log.debug(`FSRepo: ${packageName} => ${pkg.toString()}`);
-        }
+        log.info(`# looking for *.levain.yaml files in ${this.rootDir}.`);
+        log.info(`# Please wait...`);
+        const timer = new Timer()
 
-        return pkg;
+        const packagesGlob = `**/*.levain.{yaml,yml}`.replace(/\\/g, '/');
+        const globOptions: ExpandGlobOptions = {
+            root: this.rootDir,
+            extended: true,
+            includeDirs: true,
+            exclude: this.excludeDirs,
+        }
+        log.debug(`# listPackages: ${packagesGlob} ${JSON.stringify(globOptions)}`)
+        const packages: Array<FileSystemPackage> = this.getPackageFiles(packagesGlob, globOptions)
+
+        log.info(`added ${packages.length} packages in ${timer.humanize()}`)
+        log.info("")
+        return packages;
     }
 
-    private readPackageInDir(packageName: string, dirname: string): FileSystemPackage | undefined {
-        let pkg: FileSystemPackage | undefined = undefined;
-        log.debug(`readDir ${packageName} ${dirname}`)
+    private getPackageFiles(packagesGlob: string, globOptions: ExpandGlobOptions): Array<FileSystemPackage> {
+        // FIXME Why, oh my...
+        if (OsShell.isWindows()) {
+            return this.crawlPackages(globOptions['root'] || '.', globOptions)
+        } else {
+            return this.globPackages(packagesGlob, globOptions);
+        }
+    }
+
+    crawlPackages(dirname: string, options: ExpandGlobOptions): Array<FileSystemPackage> {
+        let packages: Array<FileSystemPackage> = [];
         if (this.excludeDirs.find(ignoreDir => dirname.endsWith(ignoreDir))) {
             log.debug(`ignoring ${dirname}`)
-            return
+            return packages;
         }
 
+        log.debug(`crawlPackages ${dirname}`)
         for (const entry of Deno.readDirSync(dirname)) {
-            if (!pkg && entry.isDirectory) {
-                pkg = this.readPackageInDir(packageName, path.resolve(dirname, entry.name));
+            if (entry.isDirectory) {
+                packages.concat(this.crawlPackages(path.resolve(dirname, entry.name), options));
             }
 
-            if (!pkg && entry.isFile) {
-                pkg = this.readPackage(packageName, path.resolve(dirname, entry.name));
-            }
-
-            if (pkg) {
-                return pkg;
+            if (entry.isFile) {
+                const pkg = this.readPackage(path.resolve(dirname, entry.name));
+                if (pkg) {
+                    packages.push(pkg);
+                }
+                log.debug(`adding package ${entry.name} ${packages.length}`)
             }
         }
 
-        return undefined;
+        return packages;
     }
 
-    private readPackage(packageName: string, yamlFile: string): FileSystemPackage | undefined {
-        if (!path.basename(yamlFile).match("^" + packageName + ".levain.ya?ml$")) {
+    globPackages(packagesGlob: string, globOptions: ExpandGlobOptions): Array<FileSystemPackage> {
+        const packages = []
+        const packageFiles = expandGlobSync(packagesGlob, globOptions);
+        for (const file of packageFiles) {
+            console.log(`## checking file ${JSON.stringify(file)}`)
+            const pkg = this.readPackage(file.path)
+            if (pkg) {
+                console.log(`## adding package ${pkg}`)
+                packages.push(pkg)
+            }
+        }
+        return packages
+    }
+
+    private readPackage(yamlFile: string): FileSystemPackage | undefined {
+        if (!yamlFile.match(/\.levain\.ya?ml$/)) {
             return undefined;
         }
 
-        let fileinfo = Deno.lstatSync(yamlFile);
+        const fileinfo = Deno.lstatSync(yamlFile);
         if (!fileinfo.isFile) {
             return undefined;
         }
 
-        let yamlStr: string = Deno.readTextFileSync(yamlFile);
+        const packageName = yamlFile.replace(/.*[\/|\\]/g, '').replace(/\.levain\.ya?ml/, '')
+        log.debug(`readPackage ${packageName} ${yamlFile}`);
+        const yamlStr: string = Deno.readTextFileSync(yamlFile);
 
-        let pkg: FileSystemPackage = new FileSystemPackage(
+        const pkg = new FileSystemPackage(
             this.config,
             packageName,
             this.config.replaceVars(`\${levainHome}/${packageName}`),
@@ -85,92 +141,5 @@ export default class FileSystemRepository implements Repository {
             this);
 
         return pkg;
-    }
-
-
-    listPackages(rootDirOnly?: boolean): Array<FileSystemPackage> {
-        let rootDir = this.rootDir.replace(/\\/g, '/');
-        if (!existsSync(`${rootDir}`)) {
-            log.debug(`# listPackages: rootDir not found ${rootDir}`);
-            return [];
-        }
-
-        log.info(`# looking for *.levain.yaml files in ${rootDir}.`);
-        log.info(`# Please wait...`);
-        const timer = new Timer();
-        let pkgPath:string[] = this.listPackagesInDir(rootDir);
-        // if (rootDir.startsWith("//")) {
-        //     log.warning(`## UNC path ${rootDir}`);
-        //     pkgPath = this.listPackagesInDir(rootDir);
-        // } else {
-        //     pkgPath = this.listPackagesWithGlob(rootDir);
-        // }
-
-        const packages: Array<FileSystemPackage> = [];
-        for (const name of pkgPath) {
-            log.debug(`## checking file ${JSON.stringify(name)}`)
-            const packageName = path.basename(name).replace(/\.levain\.ya?ml/, '')
-            const pkg = this.readPackage(packageName, name);
-            if (pkg) {
-                log.debug(`## adding package ${pkg}`)
-                packages.push(pkg)
-            }
-        }
-        log.info(`added ${packages.length} packages in ${timer.humanize()}`)
-        log.info("")
-        return packages;
-    }
-
-    private listPackagesWithGlob(dirname: string): string[] {
-        // FIXME: UNC path does not work
-        const packagesGlob = `**/*.levain.{yaml,yml}`;
-        const globOptions: ExpandGlobOptions = {
-            root: dirname,
-            extended: true,
-            includeDirs: true,
-            exclude: this.excludeDirs,
-        }
-        log.debug(`# listPackages: ${packagesGlob} ${JSON.stringify(globOptions)}`)
-        const packageFiles = expandGlobSync(packagesGlob, globOptions);
-
-        if (!packageFiles) {
-            return [];
-        }
-
-        let pkgNames:string[] = [];
-        for (const file of packageFiles) {
-            pkgNames.push(file.path);
-        }
-
-        return pkgNames;
-    }
-
-    private listPackagesInDir(dirname: string): string[] {
-        log.debug(`listPackagesInDir ${dirname}`)
-        if (this.excludeDirs.find(ignoreDir => dirname.endsWith(ignoreDir))) {
-            log.debug(`ignoring ${dirname}`)
-            return [];
-        }
-
-        let pkgNames:string[] = [];
-        for (const entry of Deno.readDirSync(dirname)) {
-            let name = path.resolve(dirname, entry.name);
-            if (entry.isDirectory) {
-                let newNames = this.listPackagesInDir(name);
-                if (newNames && newNames.length > 0) {
-                    Array.prototype.push.apply(pkgNames, newNames);
-                }
-            } else if (entry.isFile && (name.endsWith(".levain.yaml") || name.endsWith(".levain.yml")) ) {
-                pkgNames.push(name);
-            }
-        }
-
-        return pkgNames;
-    }
-
-
-    private readPackageFromList(packageName: string): FileSystemPackage | undefined {
-        return this.packages
-            .find(pkg => pkg.name == packageName);
     }
 }

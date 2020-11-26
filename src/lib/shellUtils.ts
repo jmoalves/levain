@@ -98,7 +98,7 @@ export class OsShell {
 
     async openShell(args: string[]) {
         // TODO: Handle other os's
-        if (Deno.build.os != "windows") {
+        if (!OsShell.isWindows()) {
             throw `${Deno.build.os} not supported`;
         }
 
@@ -156,6 +156,10 @@ export class OsShell {
             }
             this.config.setVar(this.saveVar, cmdOutput);
         }
+    }
+
+    public static isWindows() {
+        return Deno.build.os == "windows";
     }
 
     private concatCmd(...parts: (string | undefined)[]): string {
