@@ -1,1 +1,1 @@
-@start /D "%1" /min cmd /c @@levain@@\levain shell --skip-local-log
+@cmd /c cd %1 && @@levain@@\levain --skip-local-log shell
