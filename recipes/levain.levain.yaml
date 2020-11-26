@@ -4,7 +4,7 @@ shellId: levain-shell
 shellName: Levain Shell
 
 cmd.install:
-  - copy --verbose ../src ../bin ../levain.cmd ../levain.sh ../recipes ${baseDir}
+  - copy --verbose ../src ../bin ../extra-bin ../levain.cmd ../levain.sh ../recipes ${baseDir}
   - saveConfig
   - levainShell ${baseDir}/src/userPath.cmd ${baseDir}/bin ${baseDir}
   # Context menu
