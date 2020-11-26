@@ -199,22 +199,25 @@ export class OsShell {
     private getCmdPath(): string | undefined {
         let myPath: string = this.config.context.action?.addpath?.path;
         if (!myPath) {
-            return "";
+            return undefined;
         }
 
-        let pathStr = Deno.env.get("PATH");
-        if (myPath) {
-            for (let p of myPath) {
-                if (pathStr) {
-                    pathStr += ";";
-                } else {
-                    pathStr = "";
-                }
-                pathStr += p;
+        let pathStr = undefined;
+        for (let p of myPath) {
+            if (pathStr) {
+                pathStr += ";";
+            } else {
+                pathStr = "";
             }
+            pathStr += p;
         }
 
-        return pathStr;
+        let envPath = Deno.env.get("PATH");
+        if (!envPath) {
+            return pathStr;
+        }
+
+        return pathStr + ";" + envPath;
     }
 
     private setEnv(env: any): void {
