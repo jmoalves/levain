@@ -131,6 +131,7 @@ unzip ${utilMac}/deno-macos.zip -d ${utilMac} >/dev/null
 
 # Deno embedded
 echo Deno embedded
+rm -rf ${distDir}/bin
 mkdir -p ${distDir}/bin
 unzip ${utilWin}/deno-windows.zip -d ${distDir}/bin >/dev/null
 
