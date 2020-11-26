@@ -1,4 +1,6 @@
 import * as log from "https://deno.land/std/log/mod.ts";
+import * as path from "https://deno.land/std/path/mod.ts";
+
 import Config from "../config.ts";
 import Logger from "./logger.ts";
 import {AutoFlushLogFileHandler} from "./auto_flush_log_file_handler.ts";
@@ -29,10 +31,17 @@ export default class ConsoleAndFileLogger implements Logger {
             },
         });
 
-        log.info(`logFile -> ${logFiles}`);
-        log.info("")
+        ConsoleAndFileLogger.showLogFiles(logFiles);
 
         return logFiles
+    }
+
+
+    public static showLogFiles(logFiles: string[]) {
+        logFiles.forEach(logFile => {
+            const fullPath = path.resolve(logFile);
+            log.info(`logFile -> ${fullPath}`);
+        })
     }
 
     public static getLogFileHandler(logFile: string, options = {}) {

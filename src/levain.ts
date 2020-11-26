@@ -96,9 +96,7 @@ export async function runLevinWithLog() {
         error = true;
     } finally {
         log.info("");
-        logFiles.forEach(logFile => {
-            log.info(`logFile -> ${logFile}`);
-        })
+        ConsoleAndFileLogger.showLogFiles(logFiles);
 
         log.info("");
         log.info(`Levain ran in ${timer.humanize()}`)
