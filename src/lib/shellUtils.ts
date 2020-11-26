@@ -13,12 +13,12 @@ export class OsShell {
     private _ignoreErrors: boolean = false;
     private _stripCRLF: boolean = false;
 
-    constructor(private config: Config, private pkgNames: string[]) {
+    constructor(private config: Config, private pkgNames: string[], installedOnly = false) {
         if (!pkgNames || pkgNames.length == 0) {
             throw new Error("No package");
         }
 
-        let pkgs: FileSystemPackage[] | null = this.config.packageManager.resolvePackages(pkgNames, true);
+        let pkgs: FileSystemPackage[] | null = this.config.packageManager.resolvePackages(pkgNames, installedOnly);
         if (!pkgs) {
             throw new Error("Unable to load dependencies for a levain shell. Aborting...");
         }

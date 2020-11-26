@@ -22,7 +22,7 @@ export default class Shell implements Command {
             pkgNames = [ this.config.defaultPackage ];
         }
 
-        let osShell:OsShell = new OsShell(this.config, pkgNames);
+        let osShell:OsShell = new OsShell(this.config, pkgNames, true);
         osShell.interactive = true;
 
         await osShell.execute([]);
