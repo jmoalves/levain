@@ -1,5 +1,6 @@
 import {envChain, promptSecret} from './utils.ts';
 import Config from './config.ts';
+import StringUtils from './string_utils.ts';
 
 export function askEmail(config: Config): void {
     let email = prompt("   Email: ", config.email || "");
@@ -32,15 +33,29 @@ export function askFullName(config: Config): void {
 }
 
 export async function askPassword(config: Config) {
+    const forbiddenPasswordChars = '^&'
+
     let tries = 0;
     do {
         tries++;
-        let password = await promptSecret("Password: ");
+        console.log('')
+        console.log(' ========================================================================================')
+        console.log(' === ATTENTION PLEASE! The characters below are known to cause problems with passwords')
+        console.log(' === If you use one of them, please change your password and come back.')
+        console.log(' === Do not use:')
+        console.log(` === ${forbiddenPasswordChars}`)
+        console.log(' ========================================================================================')
+        console.log('')
+        const password = await promptSecret("Password: ");
         console.log("");
-        let pw2 = await promptSecret(" Confirm: ");
+        const pw2 = await promptSecret(" Confirm: ");
         console.log("");
 
         if (password == pw2) {
+            if (StringUtils.textContainsAtLeastOneChar(password || '', forbiddenPasswordChars)) {
+                throw '****** INVALID CHAR IN PASSWORD. Please change your password and try again.'
+            }
+
             console.log("");
             console.log("Double checked password, but we did NOT validate it with the server");
             console.log("");
