@@ -4,9 +4,9 @@ import * as path from "https://deno.land/std/path/mod.ts";
 import ConsoleAndFileLogger from './lib/logger/console_and_file_logger.ts'
 import Loader from './lib/loader.ts';
 import Config from './lib/config.ts';
-import {parseArgs} from "./lib/parseArgs.ts";
-import { askPassword, askUsername, askEmail, askFullName } from "./lib/credentials.ts";
-import { Timer } from "./lib/timer.ts";
+import {parseArgs} from "./lib/parse_args.ts";
+import {askEmail, askFullName, askPassword, askUsername} from "./lib/credentials.ts";
+import {Timer} from "./lib/timer.ts";
 
 export async function levainCLI(myArgs: any): Promise<void> {
     const __filename = path.fromFileUrl(import.meta.url);
@@ -54,7 +54,7 @@ export async function levainCLI(myArgs: any): Promise<void> {
     log.info("");
 }
 
-async function askCredentials(config:Config, myArgs: any) {
+async function askCredentials(config: Config, myArgs: any) {
     if (myArgs.askPassword) {
         log.warning("--askPassword is Deprecated. Use --ask-username and --ask-password");
         myArgs["ask-username"] = true;
@@ -116,7 +116,7 @@ export async function runLevinWithLog() {
         logFiles = await ConsoleAndFileLogger.setup(myArgs["skip-local-log"]);
         ConsoleAndFileLogger.showLogFiles(logFiles);
         log.info("");
-        
+
         await levainCLI(myArgs);
 
     } catch (err) {

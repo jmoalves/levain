@@ -4,7 +4,7 @@ import * as path from "https://deno.land/std/path/mod.ts";
 import Action from "../lib/action.ts";
 import Config from "../lib/config.ts";
 import FileSystemPackage from '../lib/package/file_system_package.ts';
-import {parseArgs} from "../lib/parseArgs.ts";
+import {parseArgs} from "../lib/parse_args.ts";
 
 export default class Template implements Action {
     constructor(private config: Config) {
@@ -12,7 +12,7 @@ export default class Template implements Action {
 
     async execute(pkg: FileSystemPackage, parameters: string[]) {
         log.debug(`TEMPLATE ${parameters}`);
-        
+
         let args = parseArgs(parameters, {
             stringMany: [
                 "replace",
@@ -33,9 +33,9 @@ export default class Template implements Action {
         for (let x in args.replace) {
             let replacement = args.with[x];
             if (args.doubleBackslash) {
-                replacement = replacement.replace(/\//g, '\\\\').replace(/\\([^\\])/g,'\\\\$1')
+                replacement = replacement.replace(/\//g, '\\\\').replace(/\\([^\\])/g, '\\\\$1')
             }
-    
+
             if (args.replace[x].search(/^\/(.+)\/([a-z]?)/) != -1) {
                 // É regexp
                 let regexp = args.replace[x].replace(/^\/(.+)\/([a-z]?)/, "$1");

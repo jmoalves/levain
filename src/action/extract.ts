@@ -4,7 +4,7 @@ import * as path from "https://deno.land/std/path/mod.ts";
 import Action from "../lib/action.ts";
 import Config from "../lib/config.ts";
 import FileSystemPackage from '../lib/package/file_system_package.ts';
-import {parseArgs} from "../lib/parseArgs.ts";
+import {parseArgs} from "../lib/parse_args.ts";
 import {OsShell} from '../lib/os_shell.ts';
 
 // TODO: Use native TS/JS implementation instead of extra-bin files.
