@@ -3,21 +3,21 @@ import {envChain, promptSecret} from './utils.ts';
 import Config from './config.ts';
 import StringUtils from './string_utils.ts';
 
-export function askEmail(config: Config, emailDomain:string|undefined = undefined): void {
+export function askEmail(config: Config, emailDomain: string | undefined = undefined): void {
     log.debug(`Asking for email`)
 
     let defaultEmail = config.email;
     if (!defaultEmail) {
-        if (config.username && emailDomain) {
-            defaultEmail = config.username + ( emailDomain.startsWith("@") ? "" : "@" ) + emailDomain;
-            log.debug(`defaultEmail = ${defaultEmail}`);    
+        if (config.login && emailDomain) {
+            defaultEmail = config.login + (emailDomain.startsWith("@") ? "" : "@") + emailDomain;
+            log.debug(`defaultEmail = ${defaultEmail}`);
         } else {
-            if (!config.username) {
+            if (!config.login) {
                 log.debug("No username for defaultEmail");
             }
-    
+
             if (!emailDomain) {
-                log.debug("No emailDomain for defaultEmail");    
+                log.debug("No emailDomain for defaultEmail");
             }
         }
     }
@@ -32,15 +32,15 @@ export function askEmail(config: Config, emailDomain:string|undefined = undefine
     config.email = email;
 }
 
-export function askUsername(config: Config): void {
+export function askLogin(config: Config): void {
     log.debug(`Asking for username`)
 
-    let username: string | null = prompt(" Username: ", envChain("user", "username")?.toLowerCase());
-    if (!username) {
-        throw new Error(`Unable to collect username`);
+    let login: string | null = prompt("    Login: ", envChain("user", "username")?.toLowerCase());
+    if (!login) {
+        throw new Error(`Unable to collect login`);
     }
 
-    config.username = username;
+    config.login = login;
 }
 
 export function askFullName(config: Config): void {

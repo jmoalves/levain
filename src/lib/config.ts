@@ -21,7 +21,7 @@ export default class Config {
 
     public email: string | undefined;
     public fullname: string | undefined;
-    private _username: string | undefined;
+    private _login: string | undefined;
     private _password: string | undefined;
 
     private _defaultPackage: string | undefined;
@@ -146,8 +146,8 @@ export default class Config {
 
                 if (!value && vName.match(/^levain\./)) {
                     switch (vName) {
-                        case "levain.username":
-                            value = this.username;
+                        case "levain.login":
+                            value = this.login;
                             break;
 
                         case "levain.password":
@@ -163,7 +163,7 @@ export default class Config {
                             break;
 
                         default:
-                            // nothing
+                        // nothing
                     }
 
                     if (!value) {
@@ -252,12 +252,12 @@ export default class Config {
         }
     }
 
-    set username(username: string | undefined) {
-        this._username = username;
+    set login(username: string | undefined) {
+        this._login = username;
     }
 
-    get username(): string | undefined {
-        return this._username;
+    get login(): string | undefined {
+        return this._login;
     }
 
     set password(password: string | undefined) {

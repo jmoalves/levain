@@ -5,7 +5,7 @@ import ConsoleAndFileLogger from './lib/logger/console_and_file_logger.ts'
 import Loader from './lib/loader.ts';
 import Config from './lib/config.ts';
 import {parseArgs} from "./lib/parse_args.ts";
-import {askEmail, askFullName, askPassword, askUsername} from "./lib/credentials.ts";
+import {askEmail, askFullName, askLogin, askPassword} from "./lib/credentials.ts";
 import {Timer} from "./lib/timer.ts";
 
 export async function levainCLI(myArgs: any): Promise<void> {
@@ -56,13 +56,13 @@ export async function levainCLI(myArgs: any): Promise<void> {
 
 async function askCredentials(config: Config, myArgs: any) {
     if (myArgs.askPassword) {
-        log.warning("--askPassword is Deprecated. Use --ask-username and --ask-password");
-        myArgs["ask-username"] = true;
+        log.warning("--askPassword is Deprecated. Use --ask-login and --ask-password");
+        myArgs["ask-login"] = true;
         myArgs["ask-password"] = true;
     }
 
-    if (myArgs["ask-username"]) {
-        askUsername(config);
+    if (myArgs["ask-login"]) {
+        askLogin(config);
     }
 
     if (myArgs["ask-password"]) {
@@ -103,7 +103,7 @@ export async function runLevinWithLog() {
             ],
             boolean: [
                 "askPassword", // FIXME: Deprecated
-                "ask-username",
+                "ask-login",
                 "ask-password",
                 "ask-email",
                 "ask-fullname",
