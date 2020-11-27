@@ -5,8 +5,8 @@ import ConsoleAndFileLogger from './lib/logger/console_and_file_logger.ts'
 import Loader from './lib/loader.ts';
 import Config from './lib/config.ts';
 import {parseArgs} from "./lib/parseArgs.ts";
-import {askPassword, askUsername} from "./lib/credentials.ts";
-import {Timer} from "./lib/timer.ts";
+import { askPassword, askUsername, askEmail, askFullName } from "./lib/credentials.ts";
+import { Timer } from "./lib/timer.ts";
 
 export async function levainCLI(myArgs: any): Promise<void> {
     const __filename = path.fromFileUrl(import.meta.url);
@@ -42,10 +42,7 @@ export async function levainCLI(myArgs: any): Promise<void> {
     ConsoleAndFileLogger.setConfig(config);
 
     // Ask for credentials
-    if (myArgs.askPassword) {
-        askUsername(config);
-        await askPassword(config);
-    }
+    await askCredentials(config, myArgs);
 
     // First parameter is the command
     let cmd: string = myArgs._.shift()!;
@@ -55,6 +52,30 @@ export async function levainCLI(myArgs: any): Promise<void> {
     /////////////////////////////////////////////////////////////////////////////////
     log.info("==================================");
     log.info("");
+}
+
+async function askCredentials(config:Config, myArgs: any) {
+    if (myArgs.askPassword) {
+        log.warning("--askPassword is Deprecated. Use --ask-username and --ask-password");
+        myArgs["ask-username"] = true;
+        myArgs["ask-password"] = true;
+    }
+
+    if (myArgs["ask-username"]) {
+        askUsername(config);
+    }
+
+    if (myArgs["ask-password"]) {
+        await askPassword(config);
+    }
+
+    if (myArgs["ask-email"]) {
+        askEmail(config, myArgs["email-domain"]);
+    }
+
+    if (myArgs["ask-fullname"]) {
+        askFullName(config);
+    }
 }
 
 function showCliHelp() {
@@ -74,13 +95,18 @@ export async function runLevinWithLog() {
     try {
         myArgs = parseArgs(Deno.args, {
             stringOnce: [
-                "levainHome"
+                "levainHome",
+                "email-domain"
             ],
             stringMany: [
                 "addRepo"
             ],
             boolean: [
-                "askPassword",
+                "askPassword", // FIXME: Deprecated
+                "ask-username",
+                "ask-password",
+                "ask-email",
+                "ask-fullname",
                 "wait-to-begin",
                 "wait-after-end",
                 "skip-local-log"
