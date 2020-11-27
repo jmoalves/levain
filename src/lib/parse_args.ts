@@ -11,7 +11,7 @@ export function parseArgs(args: string[], optsDef?: Opts): any {
         stopEarly: true,
         unknown: (v: string) => {
             if (v.startsWith("-")) {
-                throw new Error("ERROR: Unknown option - " + v);
+                throw new Error("ERROR: Unknown option " + v);
             }
 
             return true;
