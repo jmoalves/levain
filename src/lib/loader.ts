@@ -1,3 +1,5 @@
+import * as log from "https://deno.land/std/log/mod.ts";
+
 import Command from "../cmd/command.ts";
 import Config from "./config.ts";
 import Action from "../action/action.ts";
@@ -26,11 +28,15 @@ export default class Loader {
     }
 
     async command(cmd: string, args: string[]) {
+        log.debug(`+ COMMAND: ${cmd} ${args}`)
+
         const handler: Command = this.loadCommandStatic(cmd);
         await handler.execute(args);
     }
 
     async action(pkg: FileSystemPackage, cmdline: string) {
+        log.debug(`+ ACTION: ${cmdline}`)
+
         let args = cmdline.split(" ");
         let action = args.shift();
 
