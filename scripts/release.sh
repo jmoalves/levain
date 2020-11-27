@@ -74,7 +74,7 @@ cat src/levain.ts.bkp |
 cp -f recipes/levain.levain.yaml recipes/levain.levain.yaml.bkp
 cat recipes/levain.levain.yaml.bkp |
   sed "s/version: .*/version: ${version}/g" \
-    > recipes/levain.levain.yaml
+    >recipes/levain.levain.yaml
 rm recipes/levain.levain.yaml.bkp
 
 # Commit version
@@ -104,4 +104,4 @@ git push
 echo Release $tag created
 echo
 
-./scripts/package.sh $version
+./scripts/package-after-release.sh $version
