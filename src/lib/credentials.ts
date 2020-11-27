@@ -1,8 +1,11 @@
+import * as log from "https://deno.land/std/log/mod.ts";
 import {envChain, promptSecret} from './utils.ts';
 import Config from './config.ts';
 import StringUtils from './string_utils.ts';
 
 export function askEmail(config: Config): void {
+    log.info(`Asking for email`)
+
     let email = prompt("   Email: ", config.email || "");
 
     if (!email) {
@@ -13,6 +16,8 @@ export function askEmail(config: Config): void {
 }
 
 export function askUsername(config: Config): void {
+    log.info(`Asking for username`)
+
     let username: string | null = prompt("Username: ", envChain("user", "username") || "");
 
     if (!username) {
@@ -23,6 +28,7 @@ export function askUsername(config: Config): void {
 }
 
 export function askFullName(config: Config): void {
+    log.info(`Asking for full name`)
     let fullname: string | null = prompt("Whats your full name? ", envChain("user", "fullname") || "");
 
     if (!fullname) {
@@ -38,6 +44,8 @@ export async function askPassword(config: Config) {
     let tries = 0;
     do {
         tries++;
+        log.info(`Asking for password, try ${tries}`)
+
         console.log('')
         console.log(' ========================================================================================')
         console.log(' === ATTENTION PLEASE! The characters below are known to cause problems with passwords')
