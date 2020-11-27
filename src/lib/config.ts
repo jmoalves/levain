@@ -154,8 +154,16 @@ export default class Config {
                             value = this.password;
                             break;
 
+                        case "levain.email":
+                            value = this.email;
+                            break;
+
+                        case "levain.fullname":
+                            value = this.fullname;
+                            break;
+
                         default:
-                        // nothing
+                            // nothing
                     }
 
                     if (!value) {
