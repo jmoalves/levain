@@ -15,7 +15,7 @@ export default class AssertContainsAction implements Action {
         });
 
         if (args._.length != 2) {
-            throw Error(`Action - assertContains "text" "full text"`);
+            throw Error(`Action - expected two parametrers\nassertContains "text" "full text"`);
         }
 
         const text: string = args._[0]
@@ -23,7 +23,7 @@ export default class AssertContainsAction implements Action {
         const customMessage = args.message;
 
         if (!fulltext.includes(text)) {
-            const defaultMessage = `Cound not find "${text}" in "${fulltext}"`;
+            const defaultMessage = `Could not find "${text}" in "${fulltext}"`;
             const message = customMessage || defaultMessage;
             throw Error(message)
         }

@@ -17,7 +17,7 @@ Deno.test('should throw error when not contained', () => {
             command.execute(pkg, ["abc", "123"])
         },
         Error,
-        'Cound not find "abc" in "123"'
+        'Could not find "abc" in "123"'
     )
 })
 
@@ -27,7 +27,7 @@ Deno.test('should throw Error with help when not enough args were supplied', () 
             command.execute(pkg, [])
         },
         Error,
-        'Action - assertContains "text" "full text"'
+        'Action - expected two parametrers\nassertContains "text" "full text"'
     )
 })
 
