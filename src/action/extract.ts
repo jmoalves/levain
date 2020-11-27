@@ -144,32 +144,8 @@ class SevenZip extends Extractor {
             throw `${Deno.build.os} not supported`;
         }
 
-        let args = `cmd /u /c path ${this.config.extraBinDir};%PATH% && ${this.config.extraBinDir}\\7z.exe x -bsp2 -o${dst} ${src}`.split(" ");
-        log.debug(args)
-
-        const p = Deno.run({
-            cmd: args,
-            stdout: "piped",
-            // stderr: "piped",
-        });
-
-        // https://github.com/denoland/deno/issues/4568
-        // const proc = Deno.run({ cmd, stderr: 'piped', stdout: 'piped' });
-        // const [ stderr, stdout, status ] = await Promise.all([ proc.stderrOutput(), proc.output(), proc.status() ]);
-
-        const rawOutput = await p.output();
-        const status = await p.status();
-        log.debug(`7z status ${JSON.stringify(status)}`)
-
-        if (status.success) {
-            const output = new TextDecoder().decode(rawOutput)
-            log.debug(`7z output ${output}`)
-        } else {
-            throw "CMD terminated with code " + status.code;
-            // const rawError = await p.stderrOutput()
-            // const errorString = new TextDecoder().decode(rawError)
-            // log.error(`7z errorString ${errorString}`)
-        }
+        const command = `cmd /u /c path ${this.config.extraBinDir};%PATH% && ${this.config.extraBinDir}\\7z.exe x -bsp2 -o${dst} ${src}`;
+        await OsShell.runAndLog(command);
     }
 }
 

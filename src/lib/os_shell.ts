@@ -232,4 +232,37 @@ export class OsShell {
             }
         }
     }
+
+    static async runAndLog(command: string) {
+        log.debug(`runAndLog\n${command}`)
+        let args = command.split(" ");
+
+        // https://github.com/denoland/deno/issues/4568
+        const proc = Deno.run({
+            cmd: args,
+            // stderr: 'piped',
+            stdout: 'piped',
+        });
+        const [
+            // stderr,
+            stdout,
+            status
+        ] = await Promise.all([
+            // proc.stderrOutput(),
+            proc.output(),
+            proc.status()
+        ]);
+
+        log.debug(`status ${JSON.stringify(status)}`)
+
+        if (status.success) {
+            const output = new TextDecoder().decode(stdout)
+            log.debug(`stdout ${output}`)
+        } else {
+            // const errorString = new TextDecoder().decode(stderr)
+            // log.error(`stderr ${errorString}`)
+
+            throw `Error ${status.code} running "${command}"`;
+        }
+    }
 }
