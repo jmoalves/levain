@@ -1,6 +1,6 @@
 import Command from "../cmd/command.ts";
 import Config from "./config.ts";
-import Action from "./action.ts";
+import Action from "../action/action.ts";
 import FileSystemPackage from './package/file_system_package.ts';
 
 // Commands
@@ -19,6 +19,7 @@ import SaveConfig from "../action/saveConfig.ts";
 import SetEnv from "../action/setEnv.ts";
 import Template from "../action/template.ts";
 import ListCommand from "../cmd/list_command.ts";
+import AssertContainsAction from "../action/assert_contains_action.ts";
 
 export default class Loader {
     constructor(private config: Config) {
@@ -67,7 +68,7 @@ export default class Loader {
         return new module.default(this.config);
     }
 
-    private loadActionStatic(action: string): Action {
+    loadActionStatic(action: string): Action {
         switch (action) {
             case 'addPath':
                 return new AddPath(this.config);
@@ -98,6 +99,9 @@ export default class Loader {
 
             case 'template':
                 return new Template(this.config);
+
+            case 'assertContains':
+                return new AssertContainsAction(this.config);
 
             default:
                 throw new Error(`Action ${action} not found - Aborting...`);

@@ -1,4 +1,4 @@
-import Action from "../lib/action.ts";
+import Action from "./action.ts";
 import Config from "../lib/config.ts";
 import FileSystemPackage from '../lib/package/file_system_package.ts';
 
