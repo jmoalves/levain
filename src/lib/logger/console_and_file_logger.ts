@@ -1,10 +1,10 @@
 import * as log from "https://deno.land/std/log/mod.ts";
-import {LogRecord} from "https://deno.land/std/log/logger.ts"
 import * as path from "https://deno.land/std/path/mod.ts";
 
 import Config from "../config.ts";
 import Logger from "./logger.ts";
 import {AutoFlushLogFileHandler} from "./auto_flush_log_file_handler.ts";
+import LogFormatterFactory from "./log_formatter_factory.ts";
 
 export default class ConsoleAndFileLogger implements Logger {
     private static config: Config;
@@ -78,7 +78,7 @@ export default class ConsoleAndFileLogger implements Logger {
 
     public static getConsoleHandler() {
         return new log.handlers.ConsoleHandler("INFO", {
-            formatter: this.getHidePasswordFormatter()
+            formatter: LogFormatterFactory.getHidePasswordFormatter()
         })
     }
 
@@ -100,20 +100,10 @@ export default class ConsoleAndFileLogger implements Logger {
     public static getLogFileHandler(logFile: string, options = {}) {
         const fullOptions = {
             filename: logFile,
-            formatter: this.getFormatterWithDatetimeAndLevel(),
+            formatter: LogFormatterFactory.getFormatterWithDatetimeAndLevel(),
             ...options
         }
         return new AutoFlushLogFileHandler("DEBUG", fullOptions);
     }
 
-    static getFormatterWithDatetimeAndLevel(): (logRecord: LogRecord) => string {
-        return logRecord => {
-            let msg = ConsoleAndFileLogger.hidePassword(logRecord.msg);
-            return `${ConsoleAndFileLogger.logTag(logRecord.datetime)} ${logRecord.levelName} ${msg}`;
-        };
-    }
-
-    static getHidePasswordFormatter(): (logRecord: LogRecord) => string {
-        return logRecord => ConsoleAndFileLogger.hidePassword(logRecord.msg)
-    }
 }
