@@ -5,7 +5,7 @@ import ConsoleAndFileLogger from './lib/logger/console_and_file_logger.ts'
 import Loader from './lib/loader.ts';
 import Config from './lib/config.ts';
 import {parseArgs} from "./lib/parse_args.ts";
-import Credentials from "./lib/credentials.ts";
+import {Credentials} from "./lib/credentials.ts";
 import {Timer} from "./lib/timer.ts";
 
 export async function levainCLI(myArgs: any): Promise<void> {

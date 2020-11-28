@@ -1,35 +1,66 @@
 import * as log from "https://deno.land/std/log/mod.ts";
+import {existsSync} from "https://deno.land/std/fs/mod.ts"
+
 import {envChain, promptSecret} from './utils.ts';
 import Config from './config.ts';
 import StringUtils from './string_utils.ts';
 import OsUtils from "./os_utils.ts";
+import {FileUtils} from "./file_utils.ts";
 
-export default class Credentials {
+export interface CredentialsInterface {
+    login: string;
+    email: string;
+    fullName: string;
+}
 
-    email: string = '';
+export class Credentials implements CredentialsInterface {
+
     login: string = '';
+    email: string = '';
     fullName: string = '';
 
-    readonly credentialsFileUri = `${OsUtils.homeFolder}/.levain.yaml`
-
-    constructor() {
-        // this.load(credentialsFileUri);
+    constructor(
+        public readonly credentialsFileUri: string = `${OsUtils.homeFolder}/.levain.yaml`
+    ) {
     }
 
     load() {
-        // TODO
+        log.debug(`loading credentials from ${this.credentialsFileUri}`)
+        if (!existsSync(this.credentialsFileUri)) {
+            log.info(`Credentials not found in ${this.credentialsFileUri}`)
+            this.login = ''
+            this.email = ''
+            this.fullName = ''
+            return
+        }
+        const loadedCredentials = FileUtils.loadYamlAsObjectSync<CredentialsInterface>(this.credentialsFileUri)
+        log.debug(`credentials: ${JSON.stringify(loadedCredentials)}`)
+
+        this.login = loadedCredentials.login
+        this.email = loadedCredentials.email
+        this.fullName = loadedCredentials.fullName
     }
 
     save() {
-        // TODO
+        FileUtils.saveObjectAsYamlSync(this.credentialsFileUri, {
+            login: this.login,
+            email: this.email,
+            fullName: this.fullName,
+        })
     }
 
     askEmail(config: Config, emailDomain: string | undefined = undefined): void {
         log.debug(`Asking for email`)
+        this.load()
+        const loadedEmail = this.email !== ""
+            ? this.email
+            : undefined
 
-        let defaultEmail = config.email;
+
+        let defaultEmail = config.email || loadedEmail;
         if (!defaultEmail) {
             if (config.login && emailDomain) {
+                console.debug(`**** ${this.email}`)
                 defaultEmail = config.login + (emailDomain.startsWith("@") ? "" : "@") + emailDomain;
                 log.debug(`defaultEmail = ${defaultEmail}`);
             } else {
@@ -49,6 +80,11 @@ export default class Credentials {
         }
 
         // TODO: Validate email
+
+        if (this.email != email) {
+            this.email = email
+            this.save()
+        }
 
         config.email = email;
     }
