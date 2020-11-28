@@ -71,8 +71,16 @@ export async function askPassword(config: Config) {
         console.log(` === ${forbiddenPasswordChars}`)
         console.log(' ========================================================================================')
         console.log('')
+
         const password = await promptSecret(" Password: ");
         console.log("");
+
+        if (!password) {
+            console.log("Please, inform your password.");
+            console.log("");
+            continue;
+        }
+
         const pw2 = await promptSecret("  Confirm: ");
         console.log("");
 

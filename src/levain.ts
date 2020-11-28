@@ -55,27 +55,52 @@ export async function levainCLI(myArgs: any): Promise<void> {
 }
 
 async function askCredentials(config: Config, myArgs: any) {
+    // Some nasty tricks... Should we refactor this?
+    let separatorEnd:(() => void) | undefined = () => {};
+    let separatorBegin:(() => void) | undefined = () => {
+        if (separatorEnd) console.log("");
+        log.info("==================================");
+        log.info("");
+        if (separatorBegin) console.log("");
+
+        separatorEnd = separatorBegin;
+        separatorBegin = undefined;
+    };
+    //
+
     if (myArgs.askPassword) {
+        ( separatorBegin ? separatorBegin() : undefined );
+
         log.warning("--askPassword is Deprecated. Use --ask-login and --ask-password");
         myArgs["ask-login"] = true;
         myArgs["ask-password"] = true;
     }
 
     if (myArgs["ask-login"]) {
+        ( separatorBegin ? separatorBegin() : undefined );
+
         askLogin(config);
     }
 
     if (myArgs["ask-password"]) {
+        ( separatorBegin ? separatorBegin() : undefined );
+
         await askPassword(config);
     }
 
     if (myArgs["ask-email"]) {
+        ( separatorBegin ? separatorBegin() : undefined );
+
         askEmail(config, myArgs["email-domain"]);
     }
 
     if (myArgs["ask-fullname"]) {
+        ( separatorBegin ? separatorBegin() : undefined );
+
         askFullName(config);
     }
+
+    ( separatorEnd ? separatorEnd() : undefined );
 }
 
 function showCliHelp() {
