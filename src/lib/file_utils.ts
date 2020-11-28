@@ -1,7 +1,7 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import {parse, stringify} from "https://deno.land/std/encoding/yaml.ts";
 
-export class FileUtils {
+export default class FileUtils {
 
     static getModificationTimestamp(filePath: string): Date | undefined {
         const stat = Deno.statSync(filePath);

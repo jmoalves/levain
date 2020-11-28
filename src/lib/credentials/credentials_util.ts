@@ -1,23 +1,16 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import {existsSync} from "https://deno.land/std/fs/mod.ts"
 
-import {envChain, promptSecret} from './utils.ts';
-import Config from './config.ts';
-import StringUtils from './string_utils.ts';
-import OsUtils from "./os_utils.ts";
-import {FileUtils} from "./file_utils.ts";
+import {envChain, promptSecret} from '../utils.ts';
+import Config from '../config.ts';
+import StringUtils from '../string_utils.ts';
+import OsUtils from "../os_utils.ts";
+import FileUtils from "../file_utils.ts";
+import {Credentials} from "./credentials.ts";
 
-export interface CredentialsInterface {
-    login: string;
-    email: string;
-    fullName: string;
-}
+export default class CredentialsUtil {
 
-export class Credentials implements CredentialsInterface {
-
-    login: string = '';
-    email: string = '';
-    fullName: string = '';
+    credentials: Credentials = new Credentials()
 
     constructor(
         public readonly credentialsFileUri: string = `${OsUtils.homeFolder}/.levain.yaml`
@@ -28,39 +21,29 @@ export class Credentials implements CredentialsInterface {
         log.debug(`loading credentials from ${this.credentialsFileUri}`)
         if (!existsSync(this.credentialsFileUri)) {
             log.info(`Credentials not found in ${this.credentialsFileUri}`)
-            this.login = ''
-            this.email = ''
-            this.fullName = ''
+            this.credentials = new Credentials()
             return
         }
-        const loadedCredentials = FileUtils.loadYamlAsObjectSync<CredentialsInterface>(this.credentialsFileUri)
+        const loadedCredentials = FileUtils.loadYamlAsObjectSync<Credentials>(this.credentialsFileUri)
         log.debug(`credentials: ${JSON.stringify(loadedCredentials)}`)
-
-        this.login = loadedCredentials.login
-        this.email = loadedCredentials.email
-        this.fullName = loadedCredentials.fullName
+        this.credentials = loadedCredentials
     }
 
     save() {
-        FileUtils.saveObjectAsYamlSync(this.credentialsFileUri, {
-            login: this.login,
-            email: this.email,
-            fullName: this.fullName,
-        })
+        FileUtils.saveObjectAsYamlSync(this.credentialsFileUri, this.credentials)
     }
 
-    askEmail(config: Config, emailDomain: string | undefined = undefined): void {
+    askEmail(config: Config, emailDomain: string | undefined = undefined): string {
         log.debug(`Asking for email`)
         this.load()
-        const loadedEmail = this.email !== ""
-            ? this.email
+        const loadedEmail = this.credentials.email !== ""
+            ? this.credentials.email
             : undefined
 
 
         let defaultEmail = config.email || loadedEmail;
         if (!defaultEmail) {
             if (config.login && emailDomain) {
-                console.debug(`**** ${this.email}`)
                 defaultEmail = config.login + (emailDomain.startsWith("@") ? "" : "@") + emailDomain;
                 log.debug(`defaultEmail = ${defaultEmail}`);
             } else {
@@ -81,12 +64,14 @@ export class Credentials implements CredentialsInterface {
 
         // TODO: Validate email
 
-        if (this.email != email) {
-            this.email = email
+        if (this.credentials.email != email) {
+            this.credentials.email = email
             this.save()
         }
 
         config.email = email;
+
+        return email
     }
 
     askLogin(config: Config): void {

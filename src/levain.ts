@@ -5,7 +5,7 @@ import ConsoleAndFileLogger from './lib/logger/console_and_file_logger.ts'
 import Loader from './lib/loader.ts';
 import Config from './lib/config.ts';
 import {parseArgs} from "./lib/parse_args.ts";
-import {Credentials} from "./lib/credentials.ts";
+import CredentialsUtil from "./lib/credentials/credentials_util.ts";
 import {Timer} from "./lib/timer.ts";
 
 export async function levainCLI(myArgs: any): Promise<void> {
@@ -79,7 +79,7 @@ async function askCredentials(config: Config, myArgs: any) {
         myArgs["ask-password"] = true;
     }
 
-    const credentials = new Credentials()
+    const credentials = new CredentialsUtil()
 
     if (myArgs["ask-login"]) {
         (separatorBegin ? separatorBegin() : undefined);
