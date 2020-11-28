@@ -28,16 +28,16 @@ export default class Loader {
     }
 
     async command(cmd: string, args: string[]) {
-        log.info('')
-        log.info(`+ COMMAND: ${cmd} ${args}`)
+        log.debug('')
+        log.debug(`+ COMMAND: ${cmd} ${args}`)
 
         const handler: Command = this.loadCommandStatic(cmd);
         await handler.execute(args);
     }
 
     async action(pkg: FileSystemPackage, cmdline: string) {
-        log.info('')
-        log.info(`+ ACTION: ${cmdline}`)
+        log.debug('')
+        log.debug(`+ ACTION: ${cmdline}`)
 
         let args = cmdline.split(" ");
         let action = args.shift();
