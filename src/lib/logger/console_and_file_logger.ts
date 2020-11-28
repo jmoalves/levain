@@ -1,4 +1,5 @@
 import * as log from "https://deno.land/std/log/mod.ts";
+import {LogRecord} from "https://deno.land/std/log/logger.ts"
 import * as path from "https://deno.land/std/path/mod.ts";
 
 import Config from "../config.ts";
@@ -42,20 +43,9 @@ export default class ConsoleAndFileLogger implements Logger {
         })
     }
 
-    public static getLogFileHandler(logFile: string, options = {}) {
-        const fullOptions = {
-            filename: logFile,
-            formatter: this.getFormatter(),
-            ...options
-        }
-        return new AutoFlushLogFileHandler("DEBUG", fullOptions);
-    }
 
-    public static getFormatter(): (logRecord: any) => string {
-        return logRecord => {
-            let msg = ConsoleAndFileLogger.hidePassword(logRecord.msg);
-            return `${ConsoleAndFileLogger.logTag(logRecord.datetime)} ${logRecord.levelName} ${msg}`;
-        };
+    public static getConfig(): Config {
+        return ConsoleAndFileLogger.config;
     }
 
     public static setConfig(config: Config): void {
@@ -88,7 +78,7 @@ export default class ConsoleAndFileLogger implements Logger {
 
     public static getConsoleHandler() {
         return new log.handlers.ConsoleHandler("INFO", {
-            formatter: this.getFormatter()
+            formatter: this.getHidePasswordFormatter()
         })
     }
 
@@ -106,5 +96,24 @@ export default class ConsoleAndFileLogger implements Logger {
         logFiles.push(localLogFile)
         return this.getLogFileHandler(localLogFile, {mode: 'w'});
     }
-}
 
+    public static getLogFileHandler(logFile: string, options = {}) {
+        const fullOptions = {
+            filename: logFile,
+            formatter: this.getFormatterWithDatetimeAndLevel(),
+            ...options
+        }
+        return new AutoFlushLogFileHandler("DEBUG", fullOptions);
+    }
+
+    static getFormatterWithDatetimeAndLevel(): (logRecord: LogRecord) => string {
+        return logRecord => {
+            let msg = ConsoleAndFileLogger.hidePassword(logRecord.msg);
+            return `${ConsoleAndFileLogger.logTag(logRecord.datetime)} ${logRecord.levelName} ${msg}`;
+        };
+    }
+
+    static getHidePasswordFormatter(): (logRecord: LogRecord) => string {
+        return logRecord => ConsoleAndFileLogger.hidePassword(logRecord.msg)
+    }
+}

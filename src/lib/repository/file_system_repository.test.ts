@@ -3,7 +3,7 @@ import Config from "../config.ts";
 import FileSystemRepository from "./file_system_repository.ts";
 import FileSystemPackage from "../package/file_system_package.ts";
 import {OsShell} from '../os_shell.ts';
-import {assertArrayIncludesElements} from '../assert_utils.ts';
+import {assertArrayIncludesElements} from '../test/more_asserts.ts';
 
 Deno.test('should have a name', () => {
     const repo = new FileSystemRepository(new Config([]), '.')
