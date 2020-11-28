@@ -11,16 +11,16 @@ export default class PackageManager {
     }
 
     resolvePackages(pkgNames: string[], installedOnly = false): FileSystemPackage[] | null {
-        let pkgs: Map<string, FileSystemPackage> = new Map();
-
         if (!pkgNames || pkgNames.length == 0) {
             return null;
         }
 
+        let pkgs: Map<string, FileSystemPackage> = new Map();
+        let names: Set<string> = new Set(); // Solving circular references - Issue #11
         let error: boolean = false;
         for (const pkgName of pkgNames) {
             let repo = (installedOnly ? this.config.repositoryInstalled : this.config.repository);
-            let myError: boolean = this.resolvePkgs(repo, pkgs, pkgName);
+            let myError: boolean = this.resolvePkgs(repo, pkgs, names, pkgName);
             error = error || myError;
         }
 
@@ -75,11 +75,23 @@ export default class PackageManager {
         return this.config.replaceVars(value!, pkgName);
     }
 
-    private resolvePkgs(repo: Repository, pkgs: Map<string, FileSystemPackage>, pkgName: string): boolean {
+    private resolvePkgs(repo: Repository, pkgs: Map<string, FileSystemPackage>, names: Set<String>, pkgName: string): boolean {
         if (pkgs.has(pkgName)) {
             return false;
+        } else if (names.has(pkgName)) {
+            let msg = `Circular dependencies found at ${pkgName}`;
+            log.debug("");
+            log.debug(msg);
+            log.debug("Packages seen:");
+            names.forEach(name => {
+                log.debug(` - ${name}`);                
+            });
+            log.debug("");
+
+            throw msg;
         }
 
+        names.add(pkgName);
         log.debug(`resolving package ${pkgName}`)
         const pkgDef = repo.resolvePackage(pkgName);
         if (!pkgDef) {
@@ -91,7 +103,7 @@ export default class PackageManager {
         let error: boolean = false;
         if (pkgDef.dependencies) {
             for (let dep of pkgDef.dependencies) {
-                let myError: boolean = this.resolvePkgs(repo, pkgs, dep);
+                let myError: boolean = this.resolvePkgs(repo, pkgs, names, dep);
                 error = error || myError;
             }
         }

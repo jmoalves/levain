@@ -147,7 +147,14 @@ export async function runLevinWithLog() {
         await levainCLI(myArgs);
 
     } catch (err) {
+        log.error("");
+        log.error("********************************************************************************");
+        log.error("");
         log.error(err);
+        log.error("");
+        log.error("********************************************************************************");
+        log.error("");
+
         error = true;
     } finally {
         log.info("");
