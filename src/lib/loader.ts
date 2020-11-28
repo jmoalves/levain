@@ -17,7 +17,7 @@ import Extract from "../action/extract.ts";
 import Inspect from "../action/inspect.ts";
 import LevainShell from "../action/levainShell.ts";
 import Mkdir from "../action/mkdir.ts";
-import SaveConfig from "../action/saveConfig.ts";
+import Noop from "../action/noop.ts";
 import SetEnv from "../action/setEnv.ts";
 import Template from "../action/template.ts";
 import ListCommand from "../cmd/list_command.ts";
@@ -100,7 +100,7 @@ export default class Loader {
                 return new Mkdir(this.config);
 
             case 'saveConfig':
-                return new SaveConfig(this.config);
+                return new Noop(this.config, action);
 
             case 'setEnv':
                 return new SetEnv(this.config);

@@ -52,6 +52,8 @@ export async function levainCLI(myArgs: any): Promise<void> {
     /////////////////////////////////////////////////////////////////////////////////
     log.info("==================================");
     log.info("");
+
+    config.save();
 }
 
 async function askCredentials(config: Config, myArgs: any) {
