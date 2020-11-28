@@ -9,6 +9,7 @@ import CacheRepository from './repository/cache_repository.ts'
 import ChainRepository from './repository/chain_repository.ts'
 import FileSystemRepository from './repository/file_system_repository.ts'
 import PackageManager from "./package/manager.ts";
+import FileSystemPackage from "./package/file_system_package.ts";
 
 export default class Config {
     private _pkgManager: PackageManager;
@@ -100,31 +101,39 @@ export default class Config {
         this._defaultPackage = pkgName;
     }
 
-    get defaultPackage(): string {
+    get currentDirPackage(): FileSystemPackage|undefined {
         // Looking for package at current dir
         let curDirRepo = new FileSystemRepository(this, Deno.cwd());
         let pkgs = curDirRepo.listPackages(true);
-        if (pkgs && pkgs.length == 1) {
-            // TODO: Could we provide a default mechanism?
-            let pkg = curDirRepo.resolvePackage(pkgs[0].name);
-            if (pkg) {
-                if (pkg.installed) {
-                    return pkg.name;
-                } else {
-                    // TODO: install package?
-                    log.warning("");
-                    log.warning("***********************************************************************************");
-                    log.warning(`** Default package "${pkg.name}" found but NOT installed. Use levain install ${pkg.name}`);
-                    log.warning("***********************************************************************************");
-                    log.warning("");
-                }
+        if (pkgs) {
+            if (pkgs.length == 1) {
+                // TODO: Could we provide a default mechanism?
+                return curDirRepo.resolvePackage(pkgs[0].name);
+            } else {
+                log.warning("");
+                log.warning("***********************************************************************************");
+                log.warning(`** Found more than one .levain.yaml file in this folder. Which one should I use? => ${pkgs}`);
+                log.warning("***********************************************************************************");
+                log.warning("");
             }
-        } else {
-            log.warning("");
-            log.warning("***********************************************************************************");
-            log.warning(`** Found more than one .levain.yaml file in this folder. Which one should I use? => ${pkgs}`);
-            log.warning("***********************************************************************************");
-            log.warning("");
+        }
+
+        return undefined;
+    }
+
+    get defaultPackage(): string {
+        let pkg = this.currentDirPackage;
+        if (pkg) {
+            if (pkg.installed) {
+                return pkg.name;
+            } else {
+                // TODO: install package?
+                log.warning("");
+                log.warning("***********************************************************************************");
+                log.warning(`** Default package "${pkg.name}" found but NOT installed. Use levain install ${pkg.name}`);
+                log.warning("***********************************************************************************");
+                log.warning("");
+            }
         }
 
         return this._defaultPackage || "levain";
