@@ -2,9 +2,27 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import {envChain, promptSecret} from './utils.ts';
 import Config from './config.ts';
 import StringUtils from './string_utils.ts';
-
+import OsUtils from "./os_utils.ts";
 
 export default class Credentials {
+
+    email: string = '';
+    login: string = '';
+    fullName: string = '';
+
+    readonly credentialsFileUri = `${OsUtils.homeFolder}/.levain.yaml`
+
+    constructor() {
+        // this.load(credentialsFileUri);
+    }
+
+    load() {
+        // TODO
+    }
+
+    save() {
+        // TODO
+    }
 
     askEmail(config: Config, emailDomain: string | undefined = undefined): void {
         log.debug(`Asking for email`)

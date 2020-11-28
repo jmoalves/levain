@@ -2,7 +2,7 @@ import {assertEquals, assertMatch,} from "https://deno.land/std/testing/asserts.
 
 import Config from "../config.ts";
 import ConsoleAndFileLogger from "./console_and_file_logger.ts";
-import FakeHelper from "../test/FakeHelper.ts";
+import Fake_helper from "../test/fake_helper.ts";
 import LogFormatterFactory from "./log_formatter_factory.ts";
 
 Deno.test('should hide passwords', () => {
@@ -10,7 +10,7 @@ Deno.test('should hide passwords', () => {
     config.password = '123456'
     ConsoleAndFileLogger.setConfig(config)
     const formatter = LogFormatterFactory.getHidePasswordFormatter()
-    const logRecord = FakeHelper.logRecord(`My password is ${config.password}.`)
+    const logRecord = Fake_helper.logRecord(`My password is ${config.password}.`)
 
     const logLine = formatter(logRecord)
 
@@ -22,7 +22,7 @@ Deno.test('should add datetime and level, and hide password', () => {
     config.password = '123456'
     ConsoleAndFileLogger.setConfig(config)
     const formatter = LogFormatterFactory.getFormatterWithDatetimeAndLevel()
-    const logRecord = FakeHelper.logRecord(`My password is ${config.password}.`)
+    const logRecord = Fake_helper.logRecord(`My password is ${config.password}.`)
 
     const logLine = formatter(logRecord)
 
