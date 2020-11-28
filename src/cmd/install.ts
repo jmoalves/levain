@@ -2,7 +2,7 @@ import * as log from "https://deno.land/std/log/mod.ts";
 
 import Command from "./command.ts";
 import Config from "../lib/config.ts";
-import FileSystemPackage from "../lib/package/file_system_package.ts";
+import Package from "../lib/package/package.ts";
 import Loader from '../lib/loader.ts';
 
 export default class Install implements Command {
@@ -16,7 +16,7 @@ export default class Install implements Command {
 
         log.info(`install ${JSON.stringify(args)} - BEGIN`);
 
-        let pkgs: FileSystemPackage[] | null = this.config.packageManager.resolvePackages(args);
+        let pkgs: Package[] | null = this.config.packageManager.resolvePackages(args);
 
         if (!pkgs) {
             throw new Error(`install - Nothing to install. Aborting...`);
@@ -34,7 +34,7 @@ export default class Install implements Command {
         log.info(`install ${JSON.stringify(args)} - FINISH`);
     }
 
-    private async installPackage(pkg: FileSystemPackage) {
+    private async installPackage(pkg: Package) {
         if (!this.config) {
             return;
         }

@@ -3,11 +3,11 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import {existsSync} from "https://deno.land/std/fs/mod.ts";
 
 import Config from "../lib/config.ts";
-import FileSystemPackage from "../lib/package/file_system_package.ts";
+import Package from "../lib/package/package.ts";
 import Loader from '../lib/loader.ts';
 
 export class OsShell {
-    private dependencies: FileSystemPackage[];
+    private dependencies: Package[];
     private _interactive: boolean = false;
     private _varName: string | undefined = undefined;
     private _ignoreErrors: boolean = false;
@@ -18,7 +18,7 @@ export class OsShell {
             throw new Error("No package");
         }
 
-        let pkgs: FileSystemPackage[] | null = this.config.packageManager.resolvePackages(pkgNames, installedOnly);
+        let pkgs: Package[] | null = this.config.packageManager.resolvePackages(pkgNames, installedOnly);
         if (!pkgs) {
             throw new Error("Unable to load dependencies for a levain shell. Aborting...");
         }
@@ -66,7 +66,7 @@ export class OsShell {
         await this.openShell(args);
     }
 
-    private async shellActions(pkg: FileSystemPackage) {
+    private async shellActions(pkg: Package) {
         if (!this.config) {
             return;
         }

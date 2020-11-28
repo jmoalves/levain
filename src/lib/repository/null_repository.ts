@@ -4,14 +4,22 @@ import Config from "../config.ts";
 import Package from "../package/package.ts";
 
 export default class NullRepository implements Repository {
+    name = 'nullRepo';
+    packages: Array<Package> = [];
+
     constructor(private config: Config) {
     }
 
+    get absoluteURI(): string {
+        return this.name;
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    resolvePackage(packageName: string): FileSystemPackage | undefined {
+    resolvePackage(packageName: string): Package | undefined {
         return undefined;
     }
 
-    name = 'nullRepo';
-    packages: Array<Package> = [];
+    listPackages(rootDirOnly?: boolean): Array<Package> {
+        return [];
+    }
 }

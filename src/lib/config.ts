@@ -7,8 +7,8 @@ import {homedir} from './utils.ts';
 import Repository from './repository/repository.ts'
 import CacheRepository from './repository/cache_repository.ts'
 import ChainRepository from './repository/chain_repository.ts'
-import FileSystemRepository from './repository/file_system_repository.ts'
 import PackageManager from "./package/manager.ts";
+import RepositoryFactory from "./repository/repository_factory.ts";
 
 export default class Config {
     private _pkgManager: PackageManager;
@@ -28,8 +28,12 @@ export default class Config {
 
     private savedArgs: any;
 
+    private repoFactory: RepositoryFactory;
+
     constructor(args: any) {
         this.savedArgs = args;
+
+        this.repoFactory = new RepositoryFactory(this);
 
         this.configEnv(args);
         this.configHome();
@@ -102,7 +106,7 @@ export default class Config {
 
     get defaultPackage(): string {
         // Looking for package at current dir
-        let curDirRepo = new FileSystemRepository(this, Deno.cwd());
+        let curDirRepo = this.repoFactory.create(Deno.cwd());
         let pkgs = curDirRepo.listPackages(true);
         if (pkgs && pkgs.length == 1) {
             // TODO: Could we provide a default mechanism?
@@ -342,17 +346,17 @@ export default class Config {
 
     private addLevainRepo(repos: Repository[]) {
         log.info(`LevainRepo: DEFAULT ${this.levainSrcDir} --> Levain src dir`);
-        repos.push(new FileSystemRepository(this, this.levainSrcDir));
+        repos.push(this.repoFactory.create(this.levainSrcDir));
     }
 
     private addLevainRegistryRepo(repos: Repository[]) {
         log.info(`LevainRepo: DEFAULT ${this.levainRegistry} --> Levain registry dir`);
-        repos.push(new FileSystemRepository(this, this.levainRegistry));
+        repos.push(this.repoFactory.create(this.levainRegistry));
     }
 
     private addCurrentDirRepo(repos: Repository[]) {
         log.info(`LevainRepo: DEFAULT ${Deno.cwd()} --> Current working dir`);
-        repos.push(new FileSystemRepository(this, Deno.cwd()));
+        repos.push(this.repoFactory.create(Deno.cwd()));
     }
 
     addRepos(repos: Repository[], reposPath: undefined | string[]) {
@@ -364,28 +368,20 @@ export default class Config {
         reposPath?.forEach(repoPath => this.addRepo(repos, repoPath));
     }
 
-    addRepo(repos: Repository[], partialRepoPath: string) {
-        log.debug(`addRepo "${JSON.stringify(partialRepoPath)}"`)
-        if (partialRepoPath.toString() !== "") {
-            try {
-                const fileInfo = Deno.statSync(partialRepoPath);
-                if (!fileInfo || !fileInfo.isDirectory) {
-                    throw `addRepo - invalid dir ${partialRepoPath}`;
-                }
-            } catch (err) {
-                if (err.name != "NotFound") {
-                    throw err;
-                }
-            }
+    addRepo(repos: Repository[], repoPath: string) {
+        log.debug(`addRepo ${repoPath}`);
 
-            let repoPath = path.resolve(partialRepoPath);
-            if (this._extraRepos?.includes(repoPath)) {
-                log.debug(`addRepo - ignoring repeated ${repoPath}`);
-            } else {
-                log.info(`LevainRepo: addRepo ${repoPath}`);
-                this._extraRepos.push(repoPath);
-                repos.push(new FileSystemRepository(this, repoPath));
-            }
+        if (repoPath == "") {
+            return;
+        }
+
+        let repo = this.repoFactory.create(repoPath);
+        if (this._extraRepos?.includes(repo.absoluteURI)) {
+            log.debug(`addRepo - ignoring repeated ${repoPath}`);
+        } else {
+            log.info(`LevainRepo: addRepo ${repo.absoluteURI}`);
+            repos.push(repo);
+            this._extraRepos.push(repo.absoluteURI);
         }
     }
 }

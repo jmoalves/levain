@@ -5,5 +5,8 @@ export default interface Repository {
     packages: Array<Package>;
     name: string;
 
-    resolvePackage(packageName: string): FileSystemPackage | undefined;
+    readonly absoluteURI: string;
+
+    resolvePackage(packageName: string): Package | undefined;
+    listPackages(rootDirOnly?: boolean): Array<Package>;
 }
