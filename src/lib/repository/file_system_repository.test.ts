@@ -2,8 +2,8 @@ import {assert, assertEquals} from "https://deno.land/std/testing/asserts.ts";
 import Config from "../config.ts";
 import FileSystemRepository from "./file_system_repository.ts";
 import FileSystemPackage from "../package/file_system_package.ts";
-import {OsShell} from '../os_shell.ts';
 import {assertArrayIncludesElements} from '../test/more_asserts.ts';
+import OsUtils from "../os_utils.ts";
 
 Deno.test('should have a name', () => {
     const repo = new FileSystemRepository(new Config([]), '.')
@@ -45,7 +45,7 @@ Deno.test('should list FileSystemPackages', () => {
     packages.forEach(pkg => assert(pkg instanceof FileSystemPackage))
 })
 
-if (OsShell.isWindows()) {
+if (OsUtils.isWindows()) {
     const networkRootDir: string = '\\\\bndes.net\\bndes\\Grupos\\AmbienteDesenvolvedor\\bnd-levain-pkg';
     Deno.test('should list network packages', () => {
         const repo = getTestRepo(networkRootDir)

@@ -5,6 +5,7 @@ import {existsSync} from "https://deno.land/std/fs/mod.ts";
 import Config from "../lib/config.ts";
 import Package from "../lib/package/package.ts";
 import Loader from '../lib/loader.ts';
+import OsUtils from "./os_utils.ts";
 
 export class OsShell {
     private dependencies: Package[];
@@ -98,7 +99,7 @@ export class OsShell {
 
     async openShell(args: string[]) {
         // TODO: Handle other os's
-        if (!OsShell.isWindows()) {
+        if (!OsUtils.isWindows()) {
             throw `${Deno.build.os} not supported`;
         }
 
@@ -156,10 +157,6 @@ export class OsShell {
             }
             this.config.setVar(this.saveVar, cmdOutput);
         }
-    }
-
-    public static isWindows() {
-        return Deno.build.os == "windows";
     }
 
     private concatCmd(...parts: (string | undefined)[]): string {

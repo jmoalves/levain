@@ -6,6 +6,7 @@ import Config from "../lib/config.ts";
 import Package from '../lib/package/package.ts';
 import {parseArgs} from "../lib/parse_args.ts";
 import {OsShell} from '../lib/os_shell.ts';
+import OsUtils from "../lib/os_utils.ts";
 
 // TODO: Use native TS/JS implementation instead of extra-bin files.
 export default class Extract implements Action {
@@ -140,7 +141,7 @@ class SevenZip extends Extractor {
     async extractImpl(src: string, dst: string) {
         // TODO: Handle other os's
         log.debug(`- 7z ${src} => ${dst}`);
-        if (!OsShell.isWindows()) {
+        if (!OsUtils.isWindows()) {
             throw `${Deno.build.os} not supported`;
         }
 
