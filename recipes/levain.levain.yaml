@@ -3,7 +3,6 @@ version: 0.5.2
 cmd.install:
   - copy --verbose ../src ../bin ../extra-bin ../levain.cmd ../levain.sh ../recipes ${baseDir}
   - levainShell ${baseDir}/src/userPath.cmd ${baseDir}/bin ${baseDir}
-  - contextMenu folders --id="levain-shell" --name="Levain Shell" --cmd="${baseDir}\levain --skip-local-log shell"
 
 cmd.env:
   - addPath ${baseDir}

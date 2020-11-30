@@ -1,0 +1,9 @@
+version: 0.0.1
+
+levain.config.noBaseDir: true
+
+dependencies:
+  - levain
+
+cmd.install:
+  - contextMenu folders --id="levain-shell" --name="Levain Shell" --cmd="${pkg.levain.baseDir}\levain --skip-local-log shell"
