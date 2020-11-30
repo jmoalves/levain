@@ -13,7 +13,7 @@ import FileUtils from "../file_utils.ts";
 export default class FileSystemRepository implements Repository {
     readonly name = `fileSystemRepo for ${this.rootDir}`;
 
-    readonly excludeDirs = ['$RECYCLE.BIN', 'node_modules', '.git']
+    readonly excludeDirs = ['.git', 'node_modules', 'npm-cache', '$Recycle.Bin', 'temp', 'tmp']
 
     constructor(private config: Config, private rootDir: string) {
         log.debug(`FSRepo: Root=${this.rootDir}`);
@@ -93,29 +93,43 @@ export default class FileSystemRepository implements Repository {
         }
     }
 
-    crawlPackages(dirname: string, options: ExpandGlobOptions): Array<FileSystemPackage> {
+    crawlPackages(dirname: string, options: ExpandGlobOptions, currentLevel = 0): Array<FileSystemPackage> {
+        const maxLevels = 5
+        const nextLevel = currentLevel + 1;
         let packages: Array<FileSystemPackage> = [];
+
         if (this.excludeDirs.find(ignoreDir => dirname.toLowerCase().endsWith(ignoreDir.toLowerCase()))) {
             log.debug(`ignoring ${dirname}`)
             return packages;
         }
 
         log.debug(`crawlPackages ${dirname}`)
-        for (const entry of Deno.readDirSync(dirname)) {
-            const fullUri = path.resolve(dirname, entry.name);
-            if (FileUtils.canRead(fullUri)) {
-                if (entry.isDirectory) {
-                    Array.prototype.push.apply(packages, this.crawlPackages(fullUri, options));
-                }
 
-                if (entry.isFile) {
-                    const pkg = this.readPackage(fullUri);
-                    if (pkg) {
-                        packages.push(pkg);
-                        log.debug(`added package ${entry.name}`)
+        if (FileUtils.canReadSync(dirname)) {
+            for (const entry of Deno.readDirSync(dirname)) {
+                const fullUri = path.resolve(dirname, entry.name);
+                if (FileUtils.canReadSync(fullUri)) {
+                    if (entry.isDirectory) {
+                        if (currentLevel > maxLevels) {
+                            log.debug(`skipping ${fullUri}, more then ${maxLevels} levels deep`)
+                        } else {
+                            Array.prototype.push.apply(packages, this.crawlPackages(fullUri, options, nextLevel));
+                        }
                     }
+
+                    if (entry.isFile) {
+                        const pkg = this.readPackage(fullUri);
+                        if (pkg) {
+                            packages.push(pkg);
+                            log.debug(`added package ${entry.name}`)
+                        }
+                    }
+                } else {
+                    log.debug(`not crawling ${fullUri}`)
                 }
             }
+        } else {
+            log.debug(`not crawling ${dirname}`)
         }
 
         return packages;

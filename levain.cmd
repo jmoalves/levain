@@ -24,9 +24,8 @@ if exist %myPath%\levain.bundle.js (
         %myPath%\levain.bundle.js ^
         %*
 ) else (
-    echo Running %myPath%src\levain.tss
+    echo Running %myPath%src\levain.ts
     %denoPath%deno.exe run ^
-        %cachedOption% ^
         --allow-read --allow-write --allow-env --allow-net --allow-run ^
         --unstable ^
         %myPath%src\levain.ts ^

@@ -1,13 +1,18 @@
 import {assertEquals} from "https://deno.land/std/testing/asserts.ts";
+import {existsSync} from "https://deno.land/std/fs/mod.ts";
 
 //
 // isReadOnly
 //
 import FileUtils from "./file_utils.ts";
+import OsUtils from './os_utils.ts';
 
 function verifyFileReadWrite(fileUri: string, shouldRead: boolean, shouldWrite: boolean = true) {
-    assertEquals(FileUtils.canRead(fileUri), shouldRead, 'shouldRead')
-    assertEquals(FileUtils.canWrite(fileUri), shouldWrite, 'shouldWrite')
+    assertEquals(FileUtils.canReadSync(fileUri), shouldRead, 'shouldRead')
+    // FIXME Will be able to use the assertion below when Deno.statSync.mode is fully implemented for Windows
+    if (!OsUtils.isWindows()) {
+        assertEquals(FileUtils.canWriteSync(fileUri), shouldWrite, 'shouldWrite')
+    }
 }
 
 Deno.test('should detect a RW permission on a folder', () => {
@@ -31,7 +36,13 @@ Deno.test('should detect read only file', () => {
 })
 
 Deno.test('should detect a folder without permissions', () => {
-    const fileUri = './testdata/file_utils/cannot_read_this_folder'
+    // FIXME Will not need the folowing line when Deno.statSync.mode is fully implemented for Windows
+    const fileUri = OsUtils.isWindows()
+        ? 'd:\\Config.Msi'
+        : './testdata/file_utils/cannot_read_this_folder'
+    if (!OsUtils.isWindows() && !existsSync(fileUri)) {
+        throw `Please create the folder ${fileUri} with read permission denied`
+    }
     verifyFileReadWrite(fileUri, false, false);
 })
 
