@@ -10,8 +10,6 @@ export default class Install implements Command {
     }
 
     async execute(args: string[]) {
-        log.info(`install ${JSON.stringify(args)} - BEGIN`);
-
         let pkgNames: string[] = [];
         if (args && args.length > 0) {
             pkgNames = args;
@@ -40,8 +38,7 @@ export default class Install implements Command {
 
         log.info("");
         log.info("-----------------");
-
-        log.info(`install ${JSON.stringify(pkgNames)} - FINISH`);
+        log.info(`install ${JSON.stringify(pkgNames)} - FINISHED`);
     }
 
     private async installPackage(pkg: Package) {

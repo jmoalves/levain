@@ -34,6 +34,10 @@ export default class Loader {
         log.debug('')
         log.debug(`+ COMMAND: ${cmd} ${args}`)
 
+        log.info("");
+        log.info("==================================");
+        log.info(`${cmd} ${JSON.stringify(args)}`);
+
         const handler: Command = this.loadCommandStatic(cmd);
         await handler.execute(args);
     }

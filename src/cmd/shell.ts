@@ -12,10 +12,6 @@ export default class Shell implements Command {
     }
 
     async execute(args: string[]) {
-        log.info("");
-        log.info("==================================");
-        log.info(`shell ${JSON.stringify(args)}`);
-
         let pkgNames: string[] = [];
 
         if (args && args.length > 0) {
