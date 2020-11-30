@@ -165,21 +165,34 @@ if [ "$zipBin" == "zip" ]; then
 else
   $zipBin a ${zipFile} $(basename $distDir) >/dev/null
 fi
+sha256sum ${zipFile} > ${zipFile}.sha256
 cd - >/dev/null
 
 #rm -rf ${distDir}
 
 echo
 echo $zipFile created
-ls -l "${distRoot}/${zipFile}"
+ls -l ${distRoot}/${zipFile}*
+
+echo
+echo SHA256
+cat ${distRoot}/${zipFile}.sha256
 
 ## Upload asset to GitHub
 levainAssetsUploadUrl=$(echo $levainRelease | $jqBin -rc '.upload_url' | sed 's/{.*}//')
+echo
 echo Uploading asset $zipFile to $levainAssetsUploadUrl
 curl -ks -X POST -u username:$githubToken \
   -H 'Content-Type: application/zip' \
   -T ${distRoot}/$zipFile \
   ${levainAssetsUploadUrl}?name=${zipFile}
+
+echo
+echo Uploading asset $zipFile.sha256 to $levainAssetsUploadUrl
+curl -ks -X POST -u username:$githubToken \
+  -H 'Content-Type: text/plain' \
+  -T ${distRoot}/$zipFile.sha256 \
+  ${levainAssetsUploadUrl}?name=${zipFile}.sha256
 
 echo
 echo Upload completed - ${zipFile}
