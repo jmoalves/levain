@@ -16,6 +16,7 @@ if not "a%denoPath%" == "a" (
 set NO_COLOR=true
 set DENO_DIR=%denoPath%
 if exist %myPath%\levain.bundle.js (
+    echo Running %myPath%\levain.bundle.js
     %denoPath%deno.exe run ^
         --cached-only ^
         --allow-read --allow-write --allow-env --allow-net --allow-run ^
@@ -23,6 +24,7 @@ if exist %myPath%\levain.bundle.js (
         %myPath%\levain.bundle.js ^
         %*
 ) else (
+    echo Running %myPath%src\levain.tss
     %denoPath%deno.exe run ^
         %cachedOption% ^
         --allow-read --allow-write --allow-env --allow-net --allow-run ^
