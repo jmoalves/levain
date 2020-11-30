@@ -1,6 +1,6 @@
 import {BaseHandler} from "https://deno.land/std/log/handlers.ts";
 
-class TestHandler extends BaseHandler {
+export default class TestHandler extends BaseHandler {
     public messages: string[] = [];
 
     public log(str: string): void {

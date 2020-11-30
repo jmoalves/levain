@@ -9,6 +9,7 @@ Deno.test('should list nullRepo', () => {
     const config = new Config([]);
     config.repository = new NullRepository(config)
     const list = new ListCommand(config)
+    // TestLogger.setup()
     const logger = new MemoryLogger()
     list.logger = logger
 
