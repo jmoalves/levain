@@ -127,6 +127,12 @@ export class OsShell {
             opt.env["PATH"] = myPath;
         }
 
+        if (this.pkgNames) {
+            let pkgNamesVar = this.pkgNames.join(";");
+            log.debug(`- LEVAIN_PKG_NAMES=${pkgNamesVar}`);
+            opt.env["LEVAIN_PKG_NAMES"] = pkgNamesVar;
+        }
+
         if (this.saveVar) {
             opt.stdout = 'piped';
         }
