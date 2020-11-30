@@ -33,7 +33,10 @@ export default class Template implements Action {
         for (let x in args.replace) {
             let replacement = args.with[x];
             if (args.doubleBackslash) {
-                replacement = replacement.replace(/\//g, '\\\\').replace(/\\([^\\])/g, '\\\\$1')
+                log.debug(`- DOUBLE-BACK ${replacement}`);
+                replacement = replacement
+                    .replace(/\//g, '\\')
+                    .replace(/\\([^\\])/g, '\\\\$1')
             }
 
             if (args.replace[x].search(/^\/(.+)\/([a-z]?)/) != -1) {

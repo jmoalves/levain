@@ -5,6 +5,8 @@ import Config from "./config.ts";
 import Action from "../action/action.ts";
 import Package from './package/package.ts';
 
+import {handleQuotes} from "./parse_args.ts";
+
 // Commands
 import Install from "../cmd/install.ts";
 import Shell from "../cmd/shell.ts";
@@ -12,6 +14,7 @@ import Shell from "../cmd/shell.ts";
 // Actions
 import AddPath from "../action/addpath.ts";
 import Copy from "../action/copy.ts";
+import ContextMenu from "../action/context_menu.ts";
 import DefaultPackage from "../action/defaultPackage.ts";
 import Extract from "../action/extract.ts";
 import Inspect from "../action/inspect.ts";
@@ -46,6 +49,7 @@ export default class Loader {
             throw 'No action to perform';
         }
 
+        args = handleQuotes(args);
         const handler: Action = this.loadActionStatic(action);
 
         for (let index in args) {
@@ -83,6 +87,9 @@ export default class Loader {
 
             case 'copy':
                 return new Copy(this.config);
+
+            case 'contextMenu':
+                return new ContextMenu(this.config);
 
             case 'defaultPackage':
                 return new DefaultPackage(this.config);

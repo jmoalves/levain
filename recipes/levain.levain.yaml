@@ -1,16 +1,11 @@
 version: 0.5.0
 
-shellId: levain-shell
-shellName: Levain Shell
-
 cmd.install:
   - copy --verbose ../src ../bin ../extra-bin ../levain.cmd ../levain.sh ../recipes ${baseDir}
-  - saveConfig
   - levainShell ${baseDir}/src/userPath.cmd ${baseDir}/bin ${baseDir}
   # Context menu
   - template --replace=/@@levain@@/g --with=${baseDir} ${pkgDir}/levain-shell.cmd ${baseDir}/levain-shell.cmd
-  - template --replace=/@@shellID@@/g --with=${shellId} --replace=/@@shellName@@/g --with=${shellName} --replace=/@@shell@@/g --with=${baseDir}\levain-shell.cmd --doubleBackslash ${pkgDir}/levain-shell.reg ${baseDir}/levain-shell.reg
-  - levainShell reg import ${baseDir}/levain-shell.reg
+  - contextMenu folders --id="levain-shell" --name="Levain Shell" --cmd="${baseDir}/levain-shell.cmd"
 
 cmd.env:
   - addPath ${baseDir}
