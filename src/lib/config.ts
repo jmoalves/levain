@@ -1,6 +1,6 @@
 import * as log from "https://deno.land/std/log/mod.ts";
-
 import * as path from "https://deno.land/std/path/mod.ts";
+import {ensureDirSync} from "https://deno.land/std/fs/mod.ts";
 
 import {homedir} from './utils.ts';
 
@@ -77,8 +77,12 @@ export default class Config {
         return this._env["levainHome"];
     }
 
+    get levainConfigDir(): string {
+        return path.resolve(this.levainHome, ".levain");
+    }
+
     get levainConfigFile(): string {
-        return path.resolve(this.levainHome, ".levain", "config.json");
+        return path.resolve(this.levainConfigDir, "config.json");
     }
 
     get levainRegistry(): string {
@@ -105,7 +109,7 @@ export default class Config {
         this._defaultPackage = pkgName;
     }
 
-    get currentDirPackage(): Package|undefined {
+    get currentDirPackage(): Package | undefined {
         // Looking for package at current dir
         let curDirRepo = this.repoFactory.create(Deno.cwd());
         let pkgs = curDirRepo.listPackages(true);
@@ -231,7 +235,10 @@ export default class Config {
         let fileName = this.levainConfigFile;
 
         log.info(`SAVE ${fileName}`);
+
+        ensureDirSync(this.levainConfigDir)
         Deno.writeTextFileSync(fileName, JSON.stringify(cfg, null, 3));
+        log.debug(`saved ${fileName}`);
     }
 
     public load(): void {
