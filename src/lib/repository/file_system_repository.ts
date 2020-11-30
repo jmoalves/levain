@@ -8,6 +8,7 @@ import Package from '../package/package.ts'
 import FileSystemPackage from '../package/file_system_package.ts'
 import {Timer} from "../timer.ts";
 import OsUtils from "../os_utils.ts";
+import FileUtils from "../file_utils.ts";
 
 export default class FileSystemRepository implements Repository {
     readonly name = `fileSystemRepo for ${this.rootDir}`;
@@ -101,15 +102,18 @@ export default class FileSystemRepository implements Repository {
 
         log.debug(`crawlPackages ${dirname}`)
         for (const entry of Deno.readDirSync(dirname)) {
-            if (entry.isDirectory) {
-                Array.prototype.push.apply(packages, this.crawlPackages(path.resolve(dirname, entry.name), options));
-            }
+            const fullUri = path.resolve(dirname, entry.name);
+            if (FileUtils.canRead(fullUri)) {
+                if (entry.isDirectory) {
+                    Array.prototype.push.apply(packages, this.crawlPackages(fullUri, options));
+                }
 
-            if (entry.isFile) {
-                const pkg = this.readPackage(path.resolve(dirname, entry.name));
-                if (pkg) {
-                    packages.push(pkg);
-                    log.debug(`added package ${entry.name}`)
+                if (entry.isFile) {
+                    const pkg = this.readPackage(fullUri);
+                    if (pkg) {
+                        packages.push(pkg);
+                        log.debug(`added package ${entry.name}`)
+                    }
                 }
             }
         }
