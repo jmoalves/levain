@@ -126,7 +126,7 @@ export default class Config {
     }
 
     get defaultPackage(): string {
-        return this.currentDirPackage || this._defaultPackage || "levain";
+        return this.currentDirPackage?.name || this._defaultPackage || "levain";
     }
 
     setVar(name: string, value: string): void {
