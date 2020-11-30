@@ -4,3 +4,5 @@ dist/
 sonarLint
 *.log
 .DS_Store
+
+cannot_read_this_folder
