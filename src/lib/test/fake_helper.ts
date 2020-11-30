@@ -1,13 +1,16 @@
 import {LogRecord} from "https://deno.land/std/log/logger.ts"
 import {LogLevels} from "https://deno.land/std/log/levels.ts"
 
-export default class Fake_helper {
+export default class FakeHelper {
 
-    static logRecord(message: string) {
+    static logRecord(
+        msg: string = 'mock logRecord',
+        level: LogLevels = LogLevels.INFO,
+    ) {
         return new LogRecord({
-            msg: message,
+            msg,
             args: [],
-            level: LogLevels.INFO,
+            level,
             loggerName: 'anyLogger',
         })
     }
