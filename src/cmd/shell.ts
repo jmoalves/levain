@@ -4,6 +4,8 @@ import Command from "./command.ts";
 import Config from "../lib/config.ts";
 import {OsShell} from '../lib/os_shell.ts';
 
+import Loader from '../lib/loader.ts';
+
 export default class Shell implements Command {
     constructor(private config: Config) {
     }
@@ -19,6 +21,12 @@ export default class Shell implements Command {
             pkgNames = args;
         } else {
             pkgNames = [this.config.defaultPackage];
+        }
+
+        let installed = pkgNames.reduce((acc, value) => acc.installed && value.installed);
+        if (!installed) {
+            let loader = new Loader(this.config);
+            await loader.command("install", pkgNames);
         }
 
         let osShell: OsShell = new OsShell(this.config, pkgNames, true);
