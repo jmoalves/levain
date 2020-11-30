@@ -11,7 +11,7 @@ import {Timer} from "./lib/timer.ts";
 export async function levainCLI(myArgs: any): Promise<void> {
     const __filename = path.fromFileUrl(import.meta.url);
 
-    log.info(`levain vHEAD    (${__filename})`);
+    log.info(`levain v0.5.1    (${__filename})`);
     log.info(`  deno v${Deno.version.deno}`);
 
     log.debug("args " + JSON.stringify(myArgs));

@@ -1,4 +1,4 @@
-version: 0.5.0
+version: 0.5.1
 
 cmd.install:
   - copy --verbose ../src ../bin ../extra-bin ../levain.cmd ../levain.sh ../recipes ${baseDir}
