@@ -130,21 +130,7 @@ export default class Config {
     }
 
     get defaultPackage(): string {
-        let pkg = this.currentDirPackage;
-        if (pkg) {
-            if (pkg.installed) {
-                return pkg.name;
-            } else {
-                // TODO: install package?
-                log.warning("");
-                log.warning("***********************************************************************************");
-                log.warning(`** Default package "${pkg.name}" found but NOT installed. Use levain install ${pkg.name}`);
-                log.warning("***********************************************************************************");
-                log.warning("");
-            }
-        }
-
-        return this._defaultPackage || "levain";
+        return this.currentDirPackage?.name || this._defaultPackage || "levain";
     }
 
     setVar(name: string, value: string): void {
