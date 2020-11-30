@@ -7,7 +7,7 @@ import Repository from './repository.ts'
 import Package from '../package/package.ts'
 import FileSystemPackage from '../package/file_system_package.ts'
 import {Timer} from "../timer.ts";
-import {OsShell} from '../os_shell.ts';
+import OsUtils from "../os_utils.ts";
 
 export default class FileSystemRepository implements Repository {
     readonly name = `fileSystemRepo for ${this.rootDir}`;
@@ -85,7 +85,7 @@ export default class FileSystemRepository implements Repository {
 
     private getPackageFiles(packagesGlob: string, globOptions: ExpandGlobOptions): Array<FileSystemPackage> {
         // FIXME Why, oh my...
-        if (OsShell.isWindows()) {
+        if (OsUtils.isWindows()) {
             return this.crawlPackages(globOptions['root'] || '.', globOptions)
         } else {
             return this.globPackages(packagesGlob, globOptions);
