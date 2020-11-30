@@ -291,8 +291,6 @@ export default class Config {
     }
 
     private configHome(): void {
-        log.info("");
-
         if (this._env["levainHome"]) {
             log.info(`ARG levainHome=${this._env["levainHome"]}`)
             return;
@@ -343,6 +341,7 @@ export default class Config {
             this.addRepos(repos, args.addRepo);
         }
 
+        log.info("");
         return new CacheRepository(this,
             new ChainRepository(this, repos)
         );
