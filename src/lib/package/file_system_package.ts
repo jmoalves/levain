@@ -7,7 +7,6 @@ import Config from "../config.ts";
 import FileUtils from '../file_utils.ts';
 import Package from "./package.ts";
 
-
 export default class FileSystemPackage implements Package {
     private _version: string;
     private _dependencies: string[] | undefined = undefined;

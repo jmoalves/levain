@@ -2,24 +2,37 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import {existsSync, ExpandGlobOptions, expandGlobSync} from "https://deno.land/std/fs/mod.ts";
 
-
-import Repository from './repository.ts'
-import FileSystemPackage from '../package/file_system_package.ts'
 import Config from '../config.ts';
-import {Timer} from "../timer.ts";
-import {OsShell} from '../os_shell.ts';
+import Repository from './repository.ts'
+import Package from '../package/package.ts'
+import FileSystemPackage from '../package/file_system_package.ts'
+import { Timer } from "../timer.ts";
+import { OsShell } from '../os_shell.ts';
 
 export default class FileSystemRepository implements Repository {
+    readonly name = `fileSystemRepo for ${this.rootDir}`;
+
     readonly excludeDirs = ['$RECYCLE.BIN', 'node_modules', '.git']
 
     constructor(private config: Config, private rootDir: string) {
         log.debug(`FSRepo: Root=${this.rootDir}`);
+        try {
+            const fileInfo = Deno.statSync(this.rootDir);
+            if (!fileInfo || !fileInfo.isDirectory) {
+                throw `addRepo - invalid dir ${this.rootDir}`;
+            }
+        } catch (err) {
+            if (err.name != "NotFound") {
+                throw err;
+            }
+        }
     }
 
+    get absoluteURI(): string {
+        return this.rootDir;
+    }
 
-    readonly name = `fileSystemRepo for ${this.rootDir}`;
-
-    resolvePackage(packageName: string): FileSystemPackage | undefined {
+    resolvePackage(packageName: string): Package | undefined {
         if (!existsSync(`${this.rootDir}`)) {
             return undefined;
         }
@@ -32,13 +45,13 @@ export default class FileSystemRepository implements Repository {
         return pkg;
     }
 
-    private readPackageFromList(packageName: string): FileSystemPackage | undefined {
+    private readPackageFromList(packageName: string): Package | undefined {
         return this.packages
             .find(pkg => pkg.name == packageName);
     }
 
     _packages: Array<FileSystemPackage> | undefined;
-    get packages(): Array<FileSystemPackage> {
+    get packages(): Array<Package> {
         if (!this._packages) {
             this._packages = this.listPackages();
         }

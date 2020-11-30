@@ -1,21 +1,21 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
 import Config from "../config.ts";
-import FileSystemPackage from "./file_system_package.ts";
+import Package from "./package.ts";
 import Repository from "../repository/repository.ts";
 
 export default class PackageManager {
-    private knownPackages: Map<string, FileSystemPackage> = new Map();
+    private knownPackages: Map<string, Package> = new Map();
 
     constructor(private config: Config) {
     }
 
-    resolvePackages(pkgNames: string[], installedOnly = false): FileSystemPackage[] | null {
+    resolvePackages(pkgNames: string[], installedOnly = false): Package[] | null {
         if (!pkgNames || pkgNames.length == 0) {
             return null;
         }
 
-        let pkgs: Map<string, FileSystemPackage> = new Map();
+        let pkgs: Map<string, Package> = new Map();
         let names: Set<string> = new Set(); // Solving circular references - Issue #11
         let error: boolean = false;
         for (const pkgName of pkgNames) {
@@ -30,7 +30,7 @@ export default class PackageManager {
 
         log.info("");
         log.info("=== Package list (in order):");
-        let result: FileSystemPackage[] = [];
+        let result: Package[] = [];
         for (let name of pkgs.keys()) {
             const pkg = pkgs.get(name)!;
             this.knownPackages.set(name, pkg);
@@ -41,7 +41,7 @@ export default class PackageManager {
         return result;
     }
 
-    package(pkgName: string): FileSystemPackage | undefined {
+    package(pkgName: string): Package | undefined {
         return this.knownPackages.get(pkgName);
     }
 
@@ -75,7 +75,7 @@ export default class PackageManager {
         return this.config.replaceVars(value!, pkgName);
     }
 
-    private resolvePkgs(repo: Repository, pkgs: Map<string, FileSystemPackage>, names: Set<String>, pkgName: string): boolean {
+    private resolvePkgs(repo: Repository, pkgs: Map<string, Package>, names: Set<String>, pkgName: string): boolean {
         if (pkgs.has(pkgName)) {
             return false;
         } else if (names.has(pkgName)) {
