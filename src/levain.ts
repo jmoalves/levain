@@ -5,7 +5,7 @@ import ConsoleAndFileLogger from './lib/logger/console_and_file_logger.ts'
 import Loader from './lib/loader.ts';
 import Config from './lib/config.ts';
 import {parseArgs} from "./lib/parse_args.ts";
-import {askEmail, askFullName, askLogin, askPassword} from "./lib/credentials.ts";
+import CredentialsUtil from "./lib/credentials/credentials_util.ts";
 import {Timer} from "./lib/timer.ts";
 
 export async function levainCLI(myArgs: any): Promise<void> {
@@ -58,8 +58,9 @@ export async function levainCLI(myArgs: any): Promise<void> {
 
 async function askCredentials(config: Config, myArgs: any) {
     // Some nasty tricks... Should we refactor this?
-    let separatorEnd:(() => void) | undefined = () => {};
-    let separatorBegin:(() => void) | undefined = () => {
+    let separatorEnd: (() => void) | undefined = () => {
+    };
+    let separatorBegin: (() => void) | undefined = () => {
         if (separatorEnd) console.log("");
         log.info("==================================");
         log.info("");
@@ -71,38 +72,40 @@ async function askCredentials(config: Config, myArgs: any) {
     //
 
     if (myArgs.askPassword) {
-        ( separatorBegin ? separatorBegin() : undefined );
+        (separatorBegin ? separatorBegin() : undefined);
 
         log.warning("--askPassword is Deprecated. Use --ask-login and --ask-password");
         myArgs["ask-login"] = true;
         myArgs["ask-password"] = true;
     }
 
-    if (myArgs["ask-login"]) {
-        ( separatorBegin ? separatorBegin() : undefined );
+    const credentials = new CredentialsUtil()
 
-        askLogin(config);
+    if (myArgs["ask-login"]) {
+        (separatorBegin ? separatorBegin() : undefined);
+
+        credentials.askLogin(config);
     }
 
     if (myArgs["ask-password"]) {
-        ( separatorBegin ? separatorBegin() : undefined );
+        (separatorBegin ? separatorBegin() : undefined);
 
-        await askPassword(config);
+        await credentials.askPassword(config);
     }
 
     if (myArgs["ask-email"]) {
-        ( separatorBegin ? separatorBegin() : undefined );
+        (separatorBegin ? separatorBegin() : undefined);
 
-        askEmail(config, myArgs["email-domain"]);
+        credentials.askEmail(config, myArgs["email-domain"]);
     }
 
     if (myArgs["ask-fullname"]) {
-        ( separatorBegin ? separatorBegin() : undefined );
+        (separatorBegin ? separatorBegin() : undefined);
 
-        askFullName(config);
+        credentials.askFullName(config);
     }
 
-    ( separatorEnd ? separatorEnd() : undefined );
+    (separatorEnd ? separatorEnd() : undefined);
 }
 
 function showCliHelp() {

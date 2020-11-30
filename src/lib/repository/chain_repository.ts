@@ -1,7 +1,6 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
 import Repository from './repository.ts'
-import FileSystemPackage from '../package/file_system_package.ts'
 import Config from "../config.ts";
 import Package from "../package/package.ts";
 
@@ -16,7 +15,11 @@ export default class ChainRepository implements Repository {
     readonly name = `chainRepo for ${this.repositories.map(repo => repo.name).join(', ')}`;
     packages: Array<Package>;
 
-    resolvePackage(packageName: string): FileSystemPackage | undefined {
+    get absoluteURI(): string {
+        return this.name;
+    }
+
+    resolvePackage(packageName: string): Package | undefined {
         if (!this.repositories) {
             return undefined;
         }
@@ -31,10 +34,10 @@ export default class ChainRepository implements Repository {
         return undefined;
     }
 
-    private listPackages(): Array<Package> {
+    listPackages(rootDirOnly?: boolean): Array<Package> {
         log.debug('listPackages', this.repositories)
         return this.repositories
-            .flatMap(repo => repo.packages)
+            .flatMap(repo => repo.listPackages(rootDirOnly))
             .reduce((uniquePkgs, pkg) =>
                     uniquePkgs.find(includedPkg => includedPkg.name === pkg.name)
                         ? uniquePkgs

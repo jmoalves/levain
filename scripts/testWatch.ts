@@ -1,3 +1,5 @@
+import {exists} from "https://deno.land/std/fs/mod.ts"
+
 const watcher = Deno.watchFs('src/')
 
 runTest()
@@ -21,6 +23,10 @@ async function runTest(file?: string): Promise<void> {
         || 'all tests'
 
     if (file) {
+        if (!exists(file)) {
+            console.error`Cannot find ${file}`
+            return
+        }
         cmd.push(testFile)
     }
     console.log('RUNTEST', testFile, cmd)

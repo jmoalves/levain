@@ -3,7 +3,7 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import Command from "../cmd/command.ts";
 import Config from "./config.ts";
 import Action from "../action/action.ts";
-import FileSystemPackage from './package/file_system_package.ts';
+import Package from './package/package.ts';
 
 // Commands
 import Install from "../cmd/install.ts";
@@ -35,7 +35,7 @@ export default class Loader {
         await handler.execute(args);
     }
 
-    async action(pkg: FileSystemPackage, cmdline: string) {
+    async action(pkg: Package, cmdline: string) {
         log.debug('')
         log.debug(`+ ACTION: ${cmdline}`)
 

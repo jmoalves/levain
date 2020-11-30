@@ -1,4 +1,4 @@
-import {assertEquals} from "https://deno.land/std/testing/asserts.ts";
+import {assert, assertEquals} from "https://deno.land/std/testing/asserts.ts";
 
 export function assertArrayIncludesElements<T>(array: T[], elements: T[]) {
     let notFound: T[] = []
@@ -8,4 +8,8 @@ export function assertArrayIncludesElements<T>(array: T[], elements: T[]) {
         }
     })
     assertEquals(0, notFound.length, `Expected to find elements ${notFound} in ${array}`)
+}
+
+export function assertStringEndsWith(text: string, ending: string) {
+    assert(text.endsWith(ending), `Expected "${text}" to end with "${ending}"`)
 }

@@ -4,9 +4,8 @@ import {existsSync} from "https://deno.land/std/fs/mod.ts";
 
 import Repository from '../repository/repository.ts'
 import Config from "../config.ts";
-import {FileUtils} from '../fileUtils.ts';
+import FileUtils from '../file_utils.ts';
 import Package from "./package.ts";
-
 
 export default class FileSystemPackage implements Package {
     private _version: string;

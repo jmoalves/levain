@@ -4,6 +4,7 @@ import * as path from "https://deno.land/std/path/mod.ts";
 import Config from "../config.ts";
 import Logger from "./logger.ts";
 import {AutoFlushLogFileHandler} from "./auto_flush_log_file_handler.ts";
+import LogFormatterFactory from "./log_formatter_factory.ts";
 
 export default class ConsoleAndFileLogger implements Logger {
     private static config: Config;
@@ -42,20 +43,9 @@ export default class ConsoleAndFileLogger implements Logger {
         })
     }
 
-    public static getLogFileHandler(logFile: string, options = {}) {
-        const fullOptions = {
-            filename: logFile,
-            formatter: this.getFormatter(),
-            ...options
-        }
-        return new AutoFlushLogFileHandler("DEBUG", fullOptions);
-    }
 
-    public static getFormatter(): (logRecord: any) => string {
-        return logRecord => {
-            let msg = ConsoleAndFileLogger.hidePassword(logRecord.msg);
-            return `${ConsoleAndFileLogger.logTag(logRecord.datetime)} ${logRecord.levelName} ${msg}`;
-        };
+    public static getConfig(): Config {
+        return ConsoleAndFileLogger.config;
     }
 
     public static setConfig(config: Config): void {
@@ -88,7 +78,7 @@ export default class ConsoleAndFileLogger implements Logger {
 
     public static getConsoleHandler() {
         return new log.handlers.ConsoleHandler("INFO", {
-            formatter: this.getFormatter()
+            formatter: LogFormatterFactory.getHidePasswordFormatter()
         })
     }
 
@@ -106,5 +96,14 @@ export default class ConsoleAndFileLogger implements Logger {
         logFiles.push(localLogFile)
         return this.getLogFileHandler(localLogFile, {mode: 'w'});
     }
-}
 
+    public static getLogFileHandler(logFile: string, options = {}) {
+        const fullOptions = {
+            filename: logFile,
+            formatter: LogFormatterFactory.getFormatterWithDatetimeAndLevel(),
+            ...options
+        }
+        return new AutoFlushLogFileHandler("DEBUG", fullOptions);
+    }
+
+}
