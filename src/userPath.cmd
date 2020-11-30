@@ -8,7 +8,8 @@ if "a%1" == "a" goto finished
 
 REM IF path not present, add it
 REM https://stackoverflow.com/questions/7005951/batch-file-find-if-substring-is-in-string-not-in-a-file
-set newPath=%1
+if "a%levainUserPath%" == "a" set levainUserPath=%1;
+set newPath=%1;
 CALL SET pathRemoved=%%levainUserPath:%newPath%=%%
 if "a%pathRemoved%" == "a%levainUserPath%" set levainUserPath=%1;%levainUserPath%
 
