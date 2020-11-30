@@ -4,11 +4,11 @@ Windows Registry Editor Version 5.00
 @="@@shellName@@"
 
 [HKEY_CURRENT_USER\Software\Classes\Directory\Background\shell\@@shellID@@\command]
-@="\"@@shell@@\" \"%v\""
+@="cmd /c pushd \"%v\" && @@shellCmd@@"
 
 [HKEY_CURRENT_USER\Software\Classes\Directory\shell\@@shellID@@]
 @="@@shellName@@"
 
 [HKEY_CURRENT_USER\Software\Classes\Directory\shell\@@shellID@@\command]
-@="\"@@shell@@\" \"%1\""
+@="cmd /c pushd \"%1\" && @@shellCmd@@"
 

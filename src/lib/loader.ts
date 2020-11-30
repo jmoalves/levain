@@ -49,7 +49,9 @@ export default class Loader {
             throw 'No action to perform';
         }
 
+        log.debug(`- ARG-ORIG ${args}`);
         args = handleQuotes(args);
+        log.debug(`- ARG-QUOT ${args}`);
         const handler: Action = this.loadActionStatic(action);
 
         for (let index in args) {

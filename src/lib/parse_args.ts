@@ -66,29 +66,45 @@ export function handleQuotes(args: string[]): string[] {
     }
 
     let newArgs: string[] = [];
-    let previous:string|undefined = undefined;
+    let previous:string[]|undefined = undefined;
     for (let element of args) {
         let count = countQuotes(element);
-        if (count == 0 || count % 2 == 0) {
-            if (previous) {
-                addArg(newArgs, previous);
-                previous = undefined;
-            }
+        if (count > 2) {
+            throw `Too many quotes - ${args}`;
+        }
+
+        if (count == 0 && !previous) { // Regular arg
             addArg(newArgs, element);
             continue;
         }
 
-        if (previous == undefined) {
-            previous = element;
+        if (count == 0 && previous) { // element to join
+            previous.push(element);
             continue;
         }
 
-        addArg(newArgs, previous + " " + element);
-        previous = undefined;
+        if (count == 1 && !previous) { // Quote begin
+            previous = [ element ];
+            continue;
+        }
+        
+        if (count == 1 && previous) { // Quote end
+            addArg(newArgs, previous.join(" ") + " " + element);
+            previous = undefined;
+            continue;
+        }
+
+        if (count == 2 && !previous) { // Regular arg with quotes
+            addArg(newArgs, element);
+            continue;
+        }
+
+        // Oops... quote mismatch
+        throw `Quote mismatch - ${args.join(" ")}`;
     }
 
     if (previous) {
-        addArg(newArgs, previous);
+        throw `Quote mismatch - ${args.join(" ")}`;
     }
 
     return newArgs;
