@@ -1,3 +1,4 @@
+import * as log from "https://deno.land/std/log/mod.ts";
 import {parse} from "https://deno.land/std/flags/mod.ts";
 
 class Opts {
@@ -57,4 +58,56 @@ export function parseArgs(args: string[], optsDef?: Opts): any {
     }
 
     return myArgs;
+}
+
+export function handleQuotes(args: string[]): string[] {
+    if (!args || args.length < 2) {
+        return args;
+    }
+
+    let newArgs: string[] = [];
+    let previous:string|undefined = undefined;
+    for (let element of args) {
+        let count = countQuotes(element);
+        if (count == 0 || count % 2 == 0) {
+            if (previous) {
+                addArg(newArgs, previous);
+                previous = undefined;
+            }
+            addArg(newArgs, element);
+            continue;
+        }
+
+        if (previous == undefined) {
+            previous = element;
+            continue;
+        }
+
+        addArg(newArgs, previous + " " + element);
+        previous = undefined;
+    }
+
+    if (previous) {
+        addArg(newArgs, previous);
+    }
+
+    return newArgs;
+}
+
+function countQuotes(text: string): number {
+    let count = 0;
+    let index = 0;
+    do {
+        index = text.indexOf('"', index);
+        if (index != -1) {
+            count++;
+            index++;
+        }
+    } while(index >= 0);
+
+    return count;
+}
+
+function addArg(args: string[], text: string): void {
+    args.push(text.replace(/"/g, ''));
 }
