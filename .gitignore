@@ -3,3 +3,4 @@ dist/
 /.idea/workspace.xml
 sonarLint
 *.log
+.DS_Store
