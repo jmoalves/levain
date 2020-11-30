@@ -6,8 +6,8 @@ import Config from '../config.ts';
 import Repository from './repository.ts'
 import Package from '../package/package.ts'
 import FileSystemPackage from '../package/file_system_package.ts'
-import { Timer } from "../timer.ts";
-import { OsShell } from '../os_shell.ts';
+import {Timer} from "../timer.ts";
+import {OsShell} from '../os_shell.ts';
 
 export default class FileSystemRepository implements Repository {
     readonly name = `fileSystemRepo for ${this.rootDir}`;
@@ -94,7 +94,7 @@ export default class FileSystemRepository implements Repository {
 
     crawlPackages(dirname: string, options: ExpandGlobOptions): Array<FileSystemPackage> {
         let packages: Array<FileSystemPackage> = [];
-        if (this.excludeDirs.find(ignoreDir => dirname.endsWith(ignoreDir))) {
+        if (this.excludeDirs.find(ignoreDir => dirname.toLowerCase().endsWith(ignoreDir.toLowerCase()))) {
             log.debug(`ignoring ${dirname}`)
             return packages;
         }
