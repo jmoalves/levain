@@ -10,14 +10,24 @@ export default class Install implements Command {
     }
 
     async execute(args: string[]) {
-        if (!args || args.length == 0) {
+        log.info(`install ${JSON.stringify(args)} - BEGIN`);
+
+        let pkgNames: string[] = [];
+        if (args && args.length > 0) {
+            pkgNames = args;
+        } else {
+            let curDirPkg = this.config.currentDirPackage;
+            if (curDirPkg) {
+                pkgNames = [ curDirPkg.name ];
+                log.info(`- Default installation package -> ${JSON.stringify(pkgNames)}`);
+            }
+        }
+
+        if (pkgNames.length == 0) {
             throw new Error(`install - Nothing to install. Aborting...`);
         }
 
-        log.info(`install ${JSON.stringify(args)} - BEGIN`);
-
-        let pkgs: Package[] | null = this.config.packageManager.resolvePackages(args);
-
+        let pkgs: Package[] | null = this.config.packageManager.resolvePackages(pkgNames);
         if (!pkgs) {
             throw new Error(`install - Nothing to install. Aborting...`);
         }
@@ -31,7 +41,7 @@ export default class Install implements Command {
         log.info("");
         log.info("-----------------");
 
-        log.info(`install ${JSON.stringify(args)} - FINISH`);
+        log.info(`install ${JSON.stringify(pkgNames)} - FINISH`);
     }
 
     private async installPackage(pkg: Package) {
