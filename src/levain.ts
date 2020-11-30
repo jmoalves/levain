@@ -30,6 +30,8 @@ export async function levainCLI(myArgs: any): Promise<void> {
     // Time to business!
     log.info("");
     log.info("==================================");
+    log.info("");
+    log.info(`CWD ${Deno.cwd()}`);
 
     // TODO: No parameters? Show Help
     if (myArgs._.length == 0) {
