@@ -3,7 +3,7 @@ import ListCommand from "./list_command.ts";
 import MemoryLogger from "../lib/logger/memory_logger.ts";
 import Config from "../lib/config.ts";
 import NullRepository from "../lib/repository/null_repository.ts";
-import Mock_repository from "../lib/repository/mock_repository.ts";
+import MockRepository from "../lib/repository/mock_repository.ts";
 
 Deno.test('should list nullRepo', () => {
     const config = new Config([]);
@@ -25,7 +25,7 @@ Deno.test('should list nullRepo', () => {
 
 Deno.test('should list packages available in a repo', () => {
     const config = new Config([]);
-    const mockRepo = new Mock_repository()
+    const mockRepo = new MockRepository()
     config.repository = mockRepo
     const list = new ListCommand(config)
     const logger = new MemoryLogger()

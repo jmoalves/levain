@@ -68,33 +68,48 @@ export default class CredentialsUtil {
             this.credentials.email = email
             this.save()
         }
-
         config.email = email;
-
         return email
     }
 
-    askLogin(config: Config): void {
+    askLogin(config: Config): string {
         log.debug(`Asking for username`)
+        this.load()
 
-        let login: string | null = prompt("    Login: ", envChain("user", "username")?.toLowerCase());
+        let login: string | null = prompt(
+            "    Login: ",
+            this.credentials.login || envChain("user", "username")?.toLowerCase()
+        );
         if (!login) {
             throw new Error(`Unable to collect login`);
         }
 
+        if (this.credentials.login != login) {
+            this.credentials.login = login
+            this.save()
+        }
         config.login = login;
+        return login
     }
 
-    askFullName(config: Config): void {
+    askFullName(config: Config): string {
         log.debug(`Asking for full name`)
+        this.load()
 
         console.log("What's your full name?");
-        let fullname: string | null = prompt("Full name: ", envChain("user", "fullname") || "");
-        if (!fullname) {
+        let fullName: string | null = prompt(
+            "Full name: ",
+            this.credentials.fullName || envChain("user", "fullname") || "");
+        if (!fullName) {
             throw new Error(`Unable to collect full name`);
         }
 
-        config.fullname = fullname;
+        if (this.credentials.fullName != fullName) {
+            this.credentials.fullName = fullName
+            this.save()
+        }
+        config.fullname = fullName;
+        return fullName
     }
 
     async askPassword(config: Config) {
