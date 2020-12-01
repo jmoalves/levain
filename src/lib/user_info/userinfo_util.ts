@@ -5,8 +5,8 @@ import {envChain, promptSecret} from '../utils.ts';
 import Config from '../config.ts';
 import StringUtils from '../string_utils.ts';
 import OsUtils from "../os_utils.ts";
-import FileUtils from "../file_utils.ts";
 import {UserInfo} from "./user_info.ts";
+import YamlFileUtils from "../yaml_file_utils.ts";
 
 export default class UserInfoUtil {
 
@@ -24,13 +24,13 @@ export default class UserInfoUtil {
             this.userInfo = new UserInfo()
             return
         }
-        const userInfo = FileUtils.loadYamlAsObjectSync<UserInfo>(this.userinfoFileUri)
+        const userInfo = YamlFileUtils.loadFileAsObjectSync<UserInfo>(this.userinfoFileUri)
         log.debug(`User info: ${JSON.stringify(userInfo)}`)
         this.userInfo = userInfo
     }
 
     save() {
-        FileUtils.saveObjectAsYamlSync(this.userinfoFileUri, this.userInfo)
+        YamlFileUtils.saveObjectAsFileSync(this.userinfoFileUri, this.userInfo)
     }
 
     askEmail(config: Config, emailDomain: string | undefined = undefined): string {

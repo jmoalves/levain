@@ -1,5 +1,4 @@
 import * as log from "https://deno.land/std/log/mod.ts";
-import {parse, stringify} from "https://deno.land/std/encoding/yaml.ts";
 import {existsSync} from "https://deno.land/std/fs/mod.ts";
 import OsUtils from './os_utils.ts';
 
@@ -15,18 +14,6 @@ export default class FileUtils {
     static getFileInfoSync(filePath: string): Deno.FileInfo {
         const stat = Deno.statSync(filePath);
         return stat;
-    }
-
-    static loadYamlAsObjectSync<T>(filePath: string): T {
-        log.debug(`loadYamlAsObjectSync ${filePath}`)
-        const yamlStr = Deno.readTextFileSync(filePath)
-        return parse(yamlStr) as T;
-    }
-
-    static saveObjectAsYamlSync(filePath: string, object: any) {
-        log.debug(`saveObjectAsYamlSync ${filePath}`)
-        const yamlStr = stringify(object);
-        Deno.writeTextFileSync(filePath, yamlStr)
     }
 
     static canReadSync(filePath: string) {
