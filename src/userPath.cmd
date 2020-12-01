@@ -1,7 +1,7 @@
 @echo off
 @setlocal enableextensions enabledelayedexpansion
 
-for /f "usebackq tokens=2,*" %%A in (`reg query HKCU\Environment /v PATH`) do set levainUserPath=%%B
+for /f "usebackq tokens=2,*" %%A in (`reg query HKCU\Environment /v PATH 2^>nul`) do set levainUserPath=%%B
 
 :handleParameter
 if "a%1" == "a" goto finished
