@@ -68,4 +68,19 @@ export default class FileUtils {
         const hasPermission = !!(mode & bitwisePermission)
         return hasPermission
     }
+
+    static waitForFilesToClose() {
+        while (this.getFileResources().length > 0) {
+            console.debug(`Waiting for Deno.resources to close ${JSON.stringify(Deno.resources())}`)
+        }
+    }
+
+    static getFileResources(): [string, any][] {
+        const resourceMap = Deno.resources()
+        const resourceArray = Object.entries(resourceMap)
+        const fileResources = resourceArray.filter(
+            it => it[1].toString() === 'fsFile'
+        )
+        return fileResources
+    }
 }

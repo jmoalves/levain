@@ -1,10 +1,11 @@
 import {runLevinWithLog} from "./levain.ts";
+import LogUtils from "./lib/logger/log_utils.ts";
 
-Deno.test({
-    name: 'should show help message when no command was included',
-    async fn() {
+Deno.test('should show help message when no command was included',
+    async () => {
+
         await runLevinWithLog()
-    },
-    sanitizeResources: false,
-    sanitizeOps: false,
-})
+
+        await LogUtils.closeLogFiles()
+    }
+)

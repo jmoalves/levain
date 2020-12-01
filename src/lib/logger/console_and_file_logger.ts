@@ -106,4 +106,8 @@ export default class ConsoleAndFileLogger implements Logger {
         return new AutoFlushLogFileHandler("DEBUG", fullOptions);
     }
 
+    //
+    // flush() {
+    //     handlers.forEach( it => it.flush())
+    // }
 }

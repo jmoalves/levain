@@ -1,48 +1,68 @@
 import {assertEquals,} from "https://deno.land/std/testing/asserts.ts";
 import ListCommand from "./list_command.ts";
-import MemoryLogger from "../lib/logger/memory_logger.ts";
 import Config from "../lib/config.ts";
 import NullRepository from "../lib/repository/null_repository.ts";
 import MockRepository from "../lib/repository/mock_repository.ts";
+import TestLogger from "../lib/logger/test_logger.ts";
 
-Deno.test('should list nullRepo', () => {
+
+const setupLog = [
+    "INFO DEFAULT levainHome=/Users/rafaelwalter/levain",
+    "INFO LOAD /Users/rafaelwalter/levain/.levain/config.json",
+    "INFO ",
+    'INFO === Config: \n{\n   "levainHome": "/Users/rafaelwalter/levain"\n}',
+]
+
+Deno.test('should list nullRepo', async () => {
+
+    const logger = await TestLogger.setup()
+
     const config = new Config([]);
     config.repository = new NullRepository(config)
     const list = new ListCommand(config)
-    // TestLogger.setup()
-    const logger = new MemoryLogger()
-    list.logger = logger
 
     list.execute()
 
-    assertEquals(logger.getInfo(), [
-        "",
-        "==================================",
-        "list undefined",
-        "Repository: nullRepo:",
-        "  no packages found",
-    ])
+    assertEquals(
+        logger.messages,
+        setupLog.concat(
+            [
+                "INFO ",
+                "INFO ==================================",
+                "INFO list undefined",
+                "INFO Repository: nullRepo:",
+                "INFO   no packages found",
+            ]
+        )
+    )
+
 })
 
-Deno.test('should list packages available in a repo', () => {
+Deno.test('should list packages available in a repo', async () => {
+
+    const logger = await TestLogger.setup()
+
     const config = new Config([]);
-    const mockRepo = new MockRepository()
-    config.repository = mockRepo
+    config.repository = new MockRepository()
     const list = new ListCommand(config)
-    const logger = new MemoryLogger()
-    list.logger = logger
 
     list.execute()
 
-    assertEquals(logger.getInfo(), [
-        "",
-        "==================================",
-        "list undefined",
-        "Repository: mockRepo:",
-        "  2 packages found:",
-        "",
-        "=== Packages",
-        "  aPackage                       1.0.1      => /mock/aPackage-1.0.1.yml",
-        "  anotherPackage                 0.1.2      => /mock/anotherPackage-0.1.2.yml",
-    ])
+    assertEquals(
+        logger.messages,
+        setupLog.concat(
+            [
+                "INFO ",
+                "INFO ==================================",
+                "INFO list undefined",
+                "INFO Repository: mockRepo:",
+                "INFO   2 packages found:",
+                "INFO ",
+                "INFO === Packages",
+                "INFO   aPackage                       1.0.1      => /mock/aPackage-1.0.1.yml",
+                "INFO   anotherPackage                 0.1.2      => /mock/anotherPackage-0.1.2.yml",
+            ]
+        )
+    )
+    
 })

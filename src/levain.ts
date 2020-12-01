@@ -118,7 +118,7 @@ function showCliHelp() {
     log.info("  shell")
 }
 
-export async function runLevinWithLog() {
+export async function runLevinWithLog(): Promise<string[]> {
     let logFiles: string[] = [];
     let myArgs;
     const timer = new Timer()
@@ -168,11 +168,14 @@ export async function runLevinWithLog() {
         log.info("");
         log.info(`Levain ran in ${timer.humanize()}`)
 
+        // ConsoleAndFileLogger.flush()
+
         if (error || (myArgs && myArgs["wait-after-end"])) {
             console.log("");
             prompt("Hit ENTER to finish");
         }
     }
+    return logFiles
 }
 
 // https://deno.land/manual/tools/script_installer
