@@ -18,9 +18,9 @@ export default class CredentialsUtil {
     }
 
     load() {
-        log.debug(`loading credentials from ${this.credentialsFileUri}`)
+        log.debug(`loading user info from ${this.credentialsFileUri}`)
         if (!existsSync(this.credentialsFileUri)) {
-            log.debug(`Credentials will be saved in ${this.credentialsFileUri}`)
+            log.debug(`User info will be saved in ${this.credentialsFileUri}`)
             this.credentials = new Credentials()
             return
         }
