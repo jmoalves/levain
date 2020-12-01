@@ -5,6 +5,7 @@ import Config from "../config.ts";
 import Logger from "./logger.ts";
 import {AutoFlushLogFileHandler} from "./auto_flush_log_file_handler.ts";
 import LogFormatterFactory from "./log_formatter_factory.ts";
+import LogUtils from "./log_utils.ts";
 
 export default class ConsoleAndFileLogger implements Logger {
     private static config: Config;
@@ -110,4 +111,7 @@ export default class ConsoleAndFileLogger implements Logger {
     // flush() {
     //     handlers.forEach( it => it.flush())
     // }
+    static async close() {
+        await LogUtils.closeLogFiles()
+    }
 }
