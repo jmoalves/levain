@@ -6,38 +6,38 @@ import Config from '../config.ts';
 import StringUtils from '../string_utils.ts';
 import OsUtils from "../os_utils.ts";
 import FileUtils from "../file_utils.ts";
-import {Credentials} from "./credentials.ts";
+import {UserInfo} from "./user_info.ts";
 
-export default class CredentialsUtil {
+export default class UserInfoUtil {
 
-    credentials: Credentials = new Credentials()
+    userInfo: UserInfo = new UserInfo()
 
     constructor(
-        public readonly credentialsFileUri: string = `${OsUtils.homeFolder}/.levain.yaml`
+        public readonly userinfoFileUri: string = `${OsUtils.homeFolder}/.levain.yaml`
     ) {
     }
 
     load() {
-        log.debug(`loading user info from ${this.credentialsFileUri}`)
-        if (!existsSync(this.credentialsFileUri)) {
-            log.debug(`User info will be saved in ${this.credentialsFileUri}`)
-            this.credentials = new Credentials()
+        log.debug(`loading user info from ${this.userinfoFileUri}`)
+        if (!existsSync(this.userinfoFileUri)) {
+            log.debug(`User info will be saved in ${this.userinfoFileUri}`)
+            this.userInfo = new UserInfo()
             return
         }
-        const loadedCredentials = FileUtils.loadYamlAsObjectSync<Credentials>(this.credentialsFileUri)
-        log.debug(`credentials: ${JSON.stringify(loadedCredentials)}`)
-        this.credentials = loadedCredentials
+        const userInfo = FileUtils.loadYamlAsObjectSync<UserInfo>(this.userinfoFileUri)
+        log.debug(`User info: ${JSON.stringify(userInfo)}`)
+        this.userInfo = userInfo
     }
 
     save() {
-        FileUtils.saveObjectAsYamlSync(this.credentialsFileUri, this.credentials)
+        FileUtils.saveObjectAsYamlSync(this.userinfoFileUri, this.userInfo)
     }
 
     askEmail(config: Config, emailDomain: string | undefined = undefined): string {
         log.debug(`Asking for email`)
         this.load()
-        const loadedEmail = this.credentials.email !== ""
-            ? this.credentials.email
+        const loadedEmail = this.userInfo.email !== ""
+            ? this.userInfo.email
             : undefined
 
 
@@ -64,8 +64,8 @@ export default class CredentialsUtil {
 
         // TODO: Validate email
 
-        if (this.credentials.email != email) {
-            this.credentials.email = email
+        if (this.userInfo.email != email) {
+            this.userInfo.email = email
             this.save()
         }
         config.email = email;
@@ -78,14 +78,14 @@ export default class CredentialsUtil {
 
         let login: string | null = prompt(
             "    Login: ",
-            this.credentials.login || envChain("user", "username")?.toLowerCase()
+            this.userInfo.login || envChain("user", "username")?.toLowerCase()
         );
         if (!login) {
             throw new Error(`Unable to collect login`);
         }
 
-        if (this.credentials.login != login) {
-            this.credentials.login = login
+        if (this.userInfo.login != login) {
+            this.userInfo.login = login
             this.save()
         }
         config.login = login;
@@ -99,13 +99,13 @@ export default class CredentialsUtil {
         console.log("What's your full name?");
         let fullName: string | null = prompt(
             "Full name: ",
-            this.credentials.fullName || envChain("user", "fullname") || "");
+            this.userInfo.fullName || envChain("user", "fullname") || "");
         if (!fullName) {
             throw new Error(`Unable to collect full name`);
         }
 
-        if (this.credentials.fullName != fullName) {
-            this.credentials.fullName = fullName
+        if (this.userInfo.fullName != fullName) {
+            this.userInfo.fullName = fullName
             this.save()
         }
         config.fullname = fullName;

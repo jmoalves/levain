@@ -1,4 +1,4 @@
-export class Credentials {
+export class UserInfo {
     constructor(
         public login: string = "",
         public email: string = "",

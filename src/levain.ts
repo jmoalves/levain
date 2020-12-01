@@ -5,7 +5,7 @@ import ConsoleAndFileLogger from './lib/logger/console_and_file_logger.ts'
 import Loader from './lib/loader.ts';
 import Config from './lib/config.ts';
 import {parseArgs} from "./lib/parse_args.ts";
-import CredentialsUtil from "./lib/credentials/credentials_util.ts";
+import UserInfoUtil from "./lib/user_info/userinfo_util.ts";
 import {Timer} from "./lib/timer.ts";
 
 export async function levainCLI(myArgs: any): Promise<void> {
@@ -43,8 +43,8 @@ export async function levainCLI(myArgs: any): Promise<void> {
     const config = new Config(myArgs);
     ConsoleAndFileLogger.setConfig(config);
 
-    // Ask for credentials
-    await askCredentials(config, myArgs);
+    // Ask for user_info
+    await askUserInfo(config, myArgs);
 
     // First parameter is the command
     let cmd: string = myArgs._.shift()!;
@@ -58,7 +58,7 @@ export async function levainCLI(myArgs: any): Promise<void> {
     config.save();
 }
 
-async function askCredentials(config: Config, myArgs: any) {
+async function askUserInfo(config: Config, myArgs: any) {
     // Some nasty tricks... Should we refactor this?
     let separatorEnd: (() => void) | undefined = () => {
     };
@@ -81,30 +81,30 @@ async function askCredentials(config: Config, myArgs: any) {
         myArgs["ask-password"] = true;
     }
 
-    const credentials = new CredentialsUtil()
+    const userInfoUtil = new UserInfoUtil()
 
     if (myArgs["ask-login"]) {
         (separatorBegin ? separatorBegin() : undefined);
 
-        credentials.askLogin(config);
+        userInfoUtil.askLogin(config);
     }
 
     if (myArgs["ask-password"]) {
         (separatorBegin ? separatorBegin() : undefined);
 
-        await credentials.askPassword(config);
+        await userInfoUtil.askPassword(config);
     }
 
     if (myArgs["ask-email"]) {
         (separatorBegin ? separatorBegin() : undefined);
 
-        credentials.askEmail(config, myArgs["email-domain"]);
+        userInfoUtil.askEmail(config, myArgs["email-domain"]);
     }
 
     if (myArgs["ask-fullname"]) {
         (separatorBegin ? separatorBegin() : undefined);
 
-        credentials.askFullName(config);
+        userInfoUtil.askFullName(config);
     }
 
     (separatorEnd ? separatorEnd() : undefined);
