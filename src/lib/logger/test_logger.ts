@@ -1,24 +1,39 @@
 import * as log from "https://deno.land/std/log/mod.ts";
-import TestHandler from "./test_handler.ts";
+import MemoryHandler from "./memory_handler.ts";
 
 export default class TestLogger {
 
-    static async setup(): Promise<TestHandler> {
-        const testHandler = new TestHandler("INFO");
+    static async setup() {
+        const memoryHandler = new MemoryHandler("INFO");
+        const testLogger = new TestLogger(memoryHandler)
+
         await log.setup({
             handlers: {
-                console: new log.handlers.ConsoleHandler("DEBUG"),
-                test: testHandler,
+                // console: new log.handlers.ConsoleHandler("ERROR"),
+                memory: memoryHandler,
             },
             loggers: {
                 default: {
                     level: "DEBUG",
-                    handlers: ['console', 'test'],
+                    // handlers: ['console', 'memory'],
+                    handlers: ['memory'],
                 }
             },
         });
 
-        return testHandler
+        return testLogger
     }
 
+    constructor(
+        private memoryHandler: MemoryHandler,
+    ) {
+    }
+
+    get messages(): string[] {
+        return this.memoryHandler?.messages || []
+    }
+
+    destroy() {
+        this.memoryHandler.destroy()
+    }
 }
