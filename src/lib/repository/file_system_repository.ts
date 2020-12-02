@@ -53,7 +53,8 @@ export default class FileSystemRepository implements Repository {
     _packages: Array<FileSystemPackage> | undefined;
     get packages(): Array<Package> {
         if (!this._packages) {
-            this._packages = this.listPackages();
+            this._packages = this.listPackages()
+                .sort((a, b) => a.name.localeCompare(b.name));
         }
         return this._packages;
     }

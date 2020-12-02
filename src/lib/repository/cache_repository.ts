@@ -37,6 +37,7 @@ export default class CacheRepository implements Repository {
     }
 
     listPackages(rootDirOnly?: boolean): Array<Package> {
-        return this.repository.listPackages(rootDirOnly);
+        return this.repository.listPackages(rootDirOnly)
+            .sort((a, b) => a.name.localeCompare(b.name));
     }
 }

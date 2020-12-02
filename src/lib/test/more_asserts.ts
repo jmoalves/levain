@@ -33,3 +33,16 @@ export function assertNotFind<T>(
 ) {
     assertEquals(array.find(func), undefined, msg)
 }
+
+export function assertArrayContainsInAnyOrder<T>(
+    actual: Array<T>,
+    expected: Array<T>,
+) {
+    const missedExpectations = expected.filter(it => !actual.includes(it))
+    const missedActualElements = actual.filter(it => !expected.includes(it))
+
+    assert(
+        (missedExpectations.length === 0) && (missedActualElements.length === 0),
+        `expected ${JSON.stringify(actual)} to have the same elements as ${JSON.stringify(expected)}`,
+    )
+}

@@ -1,5 +1,5 @@
 import {AssertionError, assertThrows} from "https://deno.land/std/testing/asserts.ts";
-import {assertFind, assertNotFind, assertStringEndsWith} from "./more_asserts.ts";
+import {assertArrayContainsInAnyOrder, assertFind, assertNotFind, assertStringEndsWith} from "./more_asserts.ts";
 
 //
 // assertsStringEndsWith
@@ -44,5 +44,20 @@ Deno.test('should throw AssertionError when element is found', () => {
         () => assertNotFind([1, 2, 3], it => it === 2),
         AssertionError,
         'Shouldn\'t be able to find element',
+    )
+})
+//
+// assertArrayContainsInAnyOrder
+//
+Deno.test('should assert that elements are equal, even in different order', () => {
+    assertArrayContainsInAnyOrder([1, 2, 3], [2, 3, 1])
+})
+Deno.test('should find out that one element is missing', () => {
+    assertThrows(
+        () => {
+            assertArrayContainsInAnyOrder([1, 2], [1, 2, 3])
+        },
+        AssertionError,
+        `expected [1,2] to have the same elements as [1,2,3]`
     )
 })

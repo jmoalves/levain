@@ -2,7 +2,7 @@ import {assert, assertEquals} from "https://deno.land/std/testing/asserts.ts";
 import Config from "../config.ts";
 import FileSystemRepository from "./file_system_repository.ts";
 import FileSystemPackage from "../package/file_system_package.ts";
-import {assertArrayIncludesElements} from '../test/more_asserts.ts';
+import {assertArrayContainsInAnyOrder, assertArrayIncludesElements} from '../test/more_asserts.ts';
 import OsUtils from "../os_utils.ts";
 
 Deno.test('should have a name', () => {
@@ -26,7 +26,7 @@ Deno.test('should list .yml and .yaml packages, and include subfolder', () => {
     const packages = repo.packages
 
     const packageNames = packages.map(pkg => pkg.name)
-    assertEquals(packageNames, ['amazingYml', 'awesomeYaml', 'insideSubfolder'])
+    assertArrayContainsInAnyOrder(packageNames, ['amazingYml', 'awesomeYaml', 'insideSubfolder'])
 })
 
 Deno.test('should ignore node_modules', () => {
