@@ -113,17 +113,17 @@ export default class Config {
         // Looking for package at current dir
         let curDirRepo = this.repoFactory.create(Deno.cwd());
         let pkgs = curDirRepo.listPackages(true);
-        if (pkgs) {
-            if (pkgs.length == 1) {
-                // TODO: Could we provide a default mechanism?
-                return curDirRepo.resolvePackage(pkgs[0].name);
-            } else {
-                log.warning("");
-                log.warning("***********************************************************************************");
-                log.warning(`** Found more than one .levain.yaml file in this folder. Which one should I use? => ${pkgs}`);
-                log.warning("***********************************************************************************");
-                log.warning("");
-            }
+        if (pkgs && pkgs.length == 1) {
+            return curDirRepo.resolvePackage(pkgs[0].name);
+        }
+
+        // TODO: Could we provide a default mechanism?
+        if (pkgs && pkgs.length > 1) {
+            log.warning("");
+            log.warning("***********************************************************************************");
+            log.warning(`** Found more than one .levain.yaml file in this folder. Which one should I use? => ${pkgs}`);
+            log.warning("***********************************************************************************");
+            log.warning("");
         }
 
         return undefined;
