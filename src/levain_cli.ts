@@ -97,7 +97,7 @@ export default class LevainCli {
         if (myArgs["ask-password"]) {
             (separatorBegin ? separatorBegin() : undefined);
 
-            config.password = await userInfoUtil.askPassword();
+            await userInfoUtil.askPassword(config);
         }
 
         if (myArgs["ask-email"]) {
