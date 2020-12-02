@@ -64,7 +64,6 @@ export default class FileUtils {
         }
 
         const mode = fileInfo.mode || 0;
-        console.log(`checkBitwisePermission ${filePath} ${mode} ${JSON.stringify(fileInfo)}`)
         const hasPermission = !!(mode & bitwisePermission)
         return hasPermission
     }

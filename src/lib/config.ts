@@ -346,17 +346,17 @@ export default class Config {
     }
 
     private addLevainRepo(repos: Repository[]) {
-        log.info(`LevainRepo: DEFAULT ${this.levainSrcDir} --> Levain src dir`);
+        log.info(`addRepo DEFAULT ${this.levainSrcDir} --> Levain src dir`);
         repos.push(this.repoFactory.create(this.levainSrcDir));
     }
 
     private addLevainRegistryRepo(repos: Repository[]) {
-        log.info(`LevainRepo: DEFAULT ${this.levainRegistry} --> Levain registry dir`);
+        log.info(`addRepo DEFAULT ${this.levainRegistry} --> Levain registry dir`);
         repos.push(this.repoFactory.create(this.levainRegistry));
     }
 
     private addCurrentDirRepo(repos: Repository[]) {
-        log.info(`LevainRepo: DEFAULT ${Deno.cwd()} --> Current working dir`);
+        log.info(`addRepo DEFAULT ${Deno.cwd()} --> Current working dir`);
         repos.push(this.repoFactory.create(Deno.cwd()));
     }
 

@@ -1,30 +1,28 @@
 import * as log from "https://deno.land/std/log/mod.ts";
+import {ConsoleHandler, FileHandler} from "https://deno.land/std/log/handlers.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 
 import Config from "../config.ts";
-import Logger from "./logger.ts";
 import {AutoFlushLogFileHandler} from "./auto_flush_log_file_handler.ts";
 import LogFormatterFactory from "./log_formatter_factory.ts";
 import LogUtils from "./log_utils.ts";
+import OsUtils from "../os_utils.ts";
 
-export default class ConsoleAndFileLogger implements Logger {
-    private static config: Config;
+export default class ConsoleAndFileLogger {
+    static config: Config;
+    logFiles: string[] = [];
+    handlers: any = {};
 
-    public static async setup(skipLocalFileLog = false): Promise<string[]> {
+    public static async setup(logFiles: string[] = []): Promise<ConsoleAndFileLogger> {
 
-        const logFiles: string[] = [];
-        const handlers: any = {};
+        const logger = new ConsoleAndFileLogger()
+        logger.handlers['console'] = logger.getConsoleHandler()
+        logFiles.forEach(it => logger.addLogFile(it))
 
-        handlers['console'] = this.getConsoleHandler()
-        handlers['logFileWithTimestamp'] = this.getTimestampFileLogHandler(logFiles)
-        if (!skipLocalFileLog) {
-            handlers['fixedFile'] = this.getLocalFileLogHandler(logFiles)
-        }
-
-        const handlerNames = Object.keys(handlers)
+        const handlerNames = Object.keys(logger.handlers)
 
         await log.setup({
-            handlers,
+            handlers: logger.handlers,
             loggers: {
                 default: {
                     level: "DEBUG",
@@ -33,27 +31,17 @@ export default class ConsoleAndFileLogger implements Logger {
             },
         });
 
-        return logFiles
+        return logger
     }
 
-
-    public static showLogFiles(logFiles: string[]) {
+    showLogFiles(logFiles: string[]) {
         logFiles.forEach(logFile => {
             const fullPath = path.resolve(logFile);
             log.info(`logFile -> ${fullPath}`);
         })
     }
 
-
-    public static getConfig(): Config {
-        return ConsoleAndFileLogger.config;
-    }
-
-    public static setConfig(config: Config): void {
-        ConsoleAndFileLogger.config = config;
-    }
-
-    public static logTag(dt: Date): string {
+    static logTag(dt: Date): string {
         let logTag: string = "";
         logTag += dt.getFullYear() + "";
         logTag += (dt.getMonth() < 10 ? "0" : "") + dt.getMonth();
@@ -65,7 +53,7 @@ export default class ConsoleAndFileLogger implements Logger {
         return logTag;
     }
 
-    public static hidePassword(msg: string): string {
+    static hidePassword(msg: string): string {
         if (!ConsoleAndFileLogger.config?.password) {
             return msg;
         }
@@ -73,32 +61,24 @@ export default class ConsoleAndFileLogger implements Logger {
         return msg.replace(ConsoleAndFileLogger.config.password, "******");
     }
 
-    info(text: string): void {
-        log.info(text)
-    }
-
-    public static getConsoleHandler() {
-        return new log.handlers.ConsoleHandler("INFO", {
+    getConsoleHandler(): ConsoleHandler {
+        return new ConsoleHandler("INFO", {
             formatter: LogFormatterFactory.getHidePasswordFormatter()
         })
     }
 
-    public static getTimestampFileLogHandler(logFiles: string[]) {
-        const logFileWithTimestamp = Deno.makeTempFileSync({
+    static getLogFileInTempFolder(): string {
+        return Deno.makeTempFileSync({
             prefix: `levain-${ConsoleAndFileLogger.logTag(new Date())}-`,
             suffix: ".log",
         });
-        logFiles.push(logFileWithTimestamp);
-        return this.getLogFileHandler(logFileWithTimestamp);
     }
 
-    public static getLocalFileLogHandler(logFiles: string[]) {
-        const localLogFile = `levain.log`
-        logFiles.push(localLogFile)
-        return this.getLogFileHandler(localLogFile, {mode: 'w'});
+    static getLogFileInHomeFolder(): string {
+        return path.join(OsUtils.homeFolder, 'levain.log')
     }
 
-    public static getLogFileHandler(logFile: string, options = {}) {
+    getLogFileHandler(logFile: string, options = {}): FileHandler {
         const fullOptions = {
             filename: logFile,
             formatter: LogFormatterFactory.getFormatterWithDatetimeAndLevel(),
@@ -107,11 +87,21 @@ export default class ConsoleAndFileLogger implements Logger {
         return new AutoFlushLogFileHandler("DEBUG", fullOptions);
     }
 
-    //
-    // flush() {
-    //     handlers.forEach( it => it.flush())
-    // }
-    static async close() {
+    flush() {
+        Object.values(this.handlers)
+            .forEach(handler => {
+                if (handler instanceof FileHandler) {
+                    (handler as FileHandler).flush()
+                }
+            })
+    }
+
+    async close() {
         await LogUtils.closeLogFiles()
+    }
+
+    addLogFile(logFile: string) {
+        this.handlers[logFile] = this.getLogFileHandler(logFile);
+        this.logFiles.push(logFile);
     }
 }

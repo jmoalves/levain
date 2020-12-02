@@ -1,28 +1,16 @@
 import {assertEquals,} from "https://deno.land/std/testing/asserts.ts";
 import ConsoleAndFileLogger from "./console_and_file_logger.ts";
-import {assertFind, assertNotFind} from "../test/more_asserts.ts";
 
-Deno.test('should setup logger',
-    async () => {
-        const logFiles = await ConsoleAndFileLogger.setup()
+Deno.test('should setup logger with logFiles and console', async () => {
+    const logFiles = [
+        Deno.makeTempFileSync(),
+        Deno.makeTempFileSync(),
+    ]
 
-        assertEquals(logFiles.length, 2)
-        assertFind(logFiles, it => it === 'levain.log', 'couldn\'t find home log')
-        assertFind<string>(logFiles, it => !!it.match(/levain-\d{8}-\d{6}-\w{8}.log/))
+    const logger = await ConsoleAndFileLogger.setup(logFiles)
 
-        await ConsoleAndFileLogger.close()
-    }
-)
+    assertEquals(logger?.logFiles, logFiles)
+    assertEquals(Object.keys(logger?.handlers).length, 3)
 
-Deno.test('should have option to skip local file log',
-    async () => {
-        const logFiles = await ConsoleAndFileLogger.setup(true)
-
-        assertEquals(logFiles.length, 1)
-        assertNotFind(logFiles, it => it === 'levain.log', 'should not find home log')
-        assertFind<string>(logFiles, it => !!it.match(/levain-\d{8}-\d{6}-\w{8}.log/))
-
-        await ConsoleAndFileLogger.close()
-    }
-)
-
+    await logger.close()
+})

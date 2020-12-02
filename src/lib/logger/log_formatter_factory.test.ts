@@ -8,7 +8,7 @@ import LogFormatterFactory from "./log_formatter_factory.ts";
 Deno.test('should hide passwords', () => {
     const config = new Config([])
     config.password = '123456'
-    ConsoleAndFileLogger.setConfig(config)
+    ConsoleAndFileLogger.config = config
     const formatter = LogFormatterFactory.getHidePasswordFormatter()
     const logRecord = FakeHelper.logRecord(`My password is ${config.password}.`)
 
@@ -20,7 +20,7 @@ Deno.test('should hide passwords', () => {
 Deno.test('should add datetime and level, and hide password', () => {
     const config = new Config([])
     config.password = '123456'
-    ConsoleAndFileLogger.setConfig(config)
+    ConsoleAndFileLogger.config = config
     const formatter = LogFormatterFactory.getFormatterWithDatetimeAndLevel()
     const logRecord = FakeHelper.logRecord(`My password is ${config.password}.`)
 

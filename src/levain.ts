@@ -40,7 +40,7 @@ export async function levainCLI(myArgs: any): Promise<void> {
 
     // Context
     const config = new Config(myArgs);
-    ConsoleAndFileLogger.setConfig(config);
+    ConsoleAndFileLogger.config = config;
 
     function getCmd() {
         return myArgs._.shift()!;
@@ -124,12 +124,21 @@ function showCliHelp() {
     log.info("  shell <optional package name>")
 }
 
-export async function runLevinWithLog(): Promise<string[]> {
+export async function runLevinWithLog(): Promise<ConsoleAndFileLogger | undefined> {
     let logFiles: string[] = [];
     let myArgs;
     const timer = new Timer()
+    let logger;
 
     let error = false;
+
+    function getLogFiles() {
+        const logFiles = [];
+        logFiles.push(ConsoleAndFileLogger.getLogFileInHomeFolder())
+        logFiles.push(ConsoleAndFileLogger.getLogFileInTempFolder())
+        return logFiles;
+    }
+
     try {
         myArgs = parseArgs(Deno.args, {
             stringOnce: [
@@ -147,12 +156,11 @@ export async function runLevinWithLog(): Promise<string[]> {
                 "ask-fullname",
                 "wait-to-begin",
                 "wait-after-end",
-                "skip-local-log"
             ]
         });
-
-        logFiles = await ConsoleAndFileLogger.setup(myArgs["skip-local-log"]);
-        ConsoleAndFileLogger.showLogFiles(logFiles);
+        logFiles = getLogFiles()
+        logger = await ConsoleAndFileLogger.setup(logFiles);
+        logger.showLogFiles(logFiles);
         log.info("");
 
         await levainCLI(myArgs);
@@ -169,7 +177,7 @@ export async function runLevinWithLog(): Promise<string[]> {
         error = true;
     } finally {
         log.info("");
-        ConsoleAndFileLogger.showLogFiles(logFiles);
+        logger?.showLogFiles(logFiles);
 
         log.info("");
         log.info(`Levain ran in ${timer.humanize()}`)
@@ -181,7 +189,7 @@ export async function runLevinWithLog(): Promise<string[]> {
             prompt("Hit ENTER to finish");
         }
     }
-    return logFiles
+    return logger
 }
 
 // https://deno.land/manual/tools/script_installer

@@ -7,7 +7,6 @@ import Repository from './repository.ts'
 import Package from '../package/package.ts'
 import FileSystemPackage from '../package/file_system_package.ts'
 import {Timer} from "../timer.ts";
-import OsUtils from "../os_utils.ts";
 import FileUtils from "../file_utils.ts";
 
 export default class FileSystemRepository implements Repository {
@@ -86,11 +85,12 @@ export default class FileSystemRepository implements Repository {
 
     private getPackageFiles(packagesGlob: string, globOptions: ExpandGlobOptions): Array<FileSystemPackage> {
         // FIXME Why, oh my...
-        if (OsUtils.isWindows()) {
-            return this.crawlPackages(globOptions['root'] || '.', globOptions)
-        } else {
-            return this.globPackages(packagesGlob, globOptions);
-        }
+        // FIXME globPackages throws error when folder is readonly in Deno 1.5.4
+        // if (OsUtils.isWindows()) {
+        return this.crawlPackages(globOptions['root'] || '.', globOptions)
+        // } else {
+        //     return this.globPackages(packagesGlob, globOptions);
+        // }
     }
 
     crawlPackages(dirname: string, options: ExpandGlobOptions, currentLevel = 0): Array<FileSystemPackage> {
