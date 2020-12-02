@@ -8,7 +8,7 @@ import {parseArgs} from "./lib/parse_args.ts";
 import UserInfoUtil from "./lib/user_info/userinfo_util.ts";
 import {Timer} from "./lib/timer.ts";
 
-export async function levainCLI(myArgs: any): Promise<void> {
+export async function levainCLI(myArgs: any = {}): Promise<void> {
     const __filename = path.fromFileUrl(import.meta.url);
 
     log.info(`levain vHEAD    (${__filename})`);
@@ -33,7 +33,7 @@ export async function levainCLI(myArgs: any): Promise<void> {
     log.info("");
     log.info(`CWD ${Deno.cwd()}`);
 
-    if (myArgs._.length == 0) {
+    if (myArgs?._?.length == 0) {
         showCliHelp()
         return
     }
@@ -124,29 +124,32 @@ function showCliHelp() {
     log.info("  shell <optional package name>")
 }
 
-export async function runLevinWithLog(): Promise<ConsoleAndFileLogger | undefined> {
+export async function runLevinWithLog(cmdArgs: string[] = []): Promise<ConsoleAndFileLogger | undefined> {
     let logFiles: string[] = [];
-    let myArgs;
     const timer = new Timer()
     let logger;
 
+    let myArgs;
     let error = false;
 
-    function getLogFiles() {
-        const logFiles = [];
+    function getLogFiles(extraLogFiles: string[] = []): string[] {
+        let logFiles = []
         logFiles.push(ConsoleAndFileLogger.getLogFileInHomeFolder())
         logFiles.push(ConsoleAndFileLogger.getLogFileInTempFolder())
-        return logFiles;
+        logFiles = logFiles.concat(extraLogFiles)
+        console.debug(`extraLogFiles [${extraLogFiles}] ${logFiles.length}`)
+        return logFiles
     }
 
     try {
-        myArgs = parseArgs(Deno.args, {
+        myArgs = parseArgs(cmdArgs, {
             stringOnce: [
                 "levainHome",
                 "email-domain"
             ],
             stringMany: [
-                "addRepo"
+                "addRepo",
+                "add-log",
             ],
             boolean: [
                 "askPassword", // FIXME: Deprecated
@@ -158,7 +161,9 @@ export async function runLevinWithLog(): Promise<ConsoleAndFileLogger | undefine
                 "wait-after-end",
             ]
         });
-        logFiles = getLogFiles()
+
+        logFiles = getLogFiles(myArgs['add-log'])
+
         logger = await ConsoleAndFileLogger.setup(logFiles);
         logger.showLogFiles(logFiles);
         log.info("");
@@ -181,8 +186,7 @@ export async function runLevinWithLog(): Promise<ConsoleAndFileLogger | undefine
 
         log.info("");
         log.info(`Levain ran in ${timer.humanize()}`)
-
-        // ConsoleAndFileLogger.flush()
+        logger?.flush()
 
         if (error || (myArgs && myArgs["wait-after-end"])) {
             console.log("");
@@ -194,5 +198,5 @@ export async function runLevinWithLog(): Promise<ConsoleAndFileLogger | undefine
 
 // https://deno.land/manual/tools/script_installer
 if (import.meta.main) {
-    await runLevinWithLog();
+    await runLevinWithLog(Deno.args);
 }
