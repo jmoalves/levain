@@ -29,7 +29,7 @@ Deno.test('should list nullRepo', async () => {
             [
                 "INFO ",
                 "INFO ==================================",
-                "INFO list undefined",
+                "INFO list ",
                 "INFO Repository: nullRepo:",
                 "INFO   no packages found",
             ]
@@ -41,7 +41,6 @@ Deno.test('should list nullRepo', async () => {
 Deno.test('should list packages available in a repo', async () => {
 
     const logger = await TestLogger.setup()
-
     const config = new Config([]);
     config.repository = new MockRepository()
     const list = new ListCommand(config)
@@ -54,7 +53,7 @@ Deno.test('should list packages available in a repo', async () => {
             [
                 "INFO ",
                 "INFO ==================================",
-                "INFO list undefined",
+                "INFO list ",
                 "INFO Repository: mockRepo:",
                 "INFO   2 packages found:",
                 "INFO ",
@@ -64,5 +63,32 @@ Deno.test('should list packages available in a repo', async () => {
             ]
         )
     )
-    
 })
+
+Deno.test('should list packages that match a search string', async () => {
+    const searchString = 'another'
+    const logger = await TestLogger.setup()
+    const config = new Config([]);
+    config.repository = new MockRepository()
+    const list = new ListCommand(config)
+
+
+    list.execute([searchString])
+
+    assertEquals(
+        logger.messages,
+        setupLog.concat(
+            [
+                "INFO ",
+                "INFO ==================================",
+                "INFO list another",
+                "INFO Repository: mockRepo:",
+                "INFO   1 package found:",
+                "INFO ",
+                "INFO === Packages",
+                "INFO   anotherPackage                 0.1.2      => /mock/anotherPackage-0.1.2.yml",
+            ]
+        )
+    )
+})
+

@@ -11,20 +11,26 @@ export default class ListCommand implements Command {
         const repo = this.config.repository
         log.info("");
         log.info("==================================");
-        log.info(`list ${JSON.stringify(args)}`);
+        const searchText = args?.join(' ') || '';
+        log.info(`list ${searchText}`);
         log.info(`Repository: ${repo.name}:`)
 
         const packages = repo.packages
-        let packageCount = packages.length;
+        const filteredPackages = args
+            ? packages.filter(it => it.name.includes(searchText))
+            : packages
+
+        let packageCount = filteredPackages.length;
         if (packageCount === 0) {
             log.info(`  no packages found`)
         }
         if (packageCount > 0) {
-            log.info(`  ${packageCount} packages found:`)
+            const pluralChar = packageCount > 1 ? 's' : ''
+            log.info(`  ${packageCount} package${pluralChar} found:`)
             log.info("");
             log.info("=== Packages");
             // TODO: Inform if package is already installed.
-            packages.forEach(pkg => {
+            filteredPackages.forEach(pkg => {
                 log.info(`  ${this.myPad(pkg.name, 30)} ${this.myPad(pkg.version, 10)} => ${pkg.filePath}`)
             })
         }
