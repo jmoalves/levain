@@ -42,11 +42,18 @@ export async function levainCLI(myArgs: any): Promise<void> {
     const config = new Config(myArgs);
     ConsoleAndFileLogger.setConfig(config);
 
-    // Ask for user_info
-    await askUserInfo(config, myArgs);
+    function getCmd() {
+        return myArgs._.shift()!;
+    }
 
     // First parameter is the command
-    let cmd: string = myArgs._.shift()!;
+    let cmd: string = getCmd();
+
+    // Ask for user_info
+    if (cmd === 'install') {
+        await askUserInfo(config, myArgs);
+    }
+
     const loader = new Loader(config);
     await loader.command(cmd, myArgs._);
 
