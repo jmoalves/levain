@@ -5,6 +5,8 @@ import Config from "../lib/config.ts";
 import Package from "../lib/package/package.ts";
 import Loader from '../lib/loader.ts';
 
+import {Timer} from "../lib/timer.ts";
+
 export default class Install implements Command {
     constructor(private config: Config) {
     }
@@ -45,6 +47,8 @@ export default class Install implements Command {
         if (!this.config) {
             return;
         }
+
+        const timer = new Timer();
 
         let shouldInstall = true;
         let verb = 'INSTALL'
@@ -91,5 +95,7 @@ export default class Install implements Command {
         for (let action of actions) {
             await loader.action(pkg, action);
         }
+
+        log.info(`--> ${pkg.name} took ${timer.humanize()}`);
     }
 }
