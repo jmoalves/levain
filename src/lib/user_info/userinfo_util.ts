@@ -78,7 +78,7 @@ export default class UserInfoUtil {
 
         let login: string | null = prompt(
             "    Login: ",
-            this.userInfo.login || envChain("user", "username")?.toLowerCase()
+            this.userInfo.login || OsUtils.login?.toLowerCase()
         );
         if (!login) {
             throw new Error(`Unable to collect login`);

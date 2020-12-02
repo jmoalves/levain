@@ -5,6 +5,10 @@ Deno.test('should know where is the home folder', () => {
     assertNotEquals(OsUtils.homeFolder, undefined)
 })
 
+Deno.test('should know the users login', () => {
+    assertNotEquals(OsUtils.login, undefined)
+})
+
 Deno.test('should know if we are running in Windows', () => {
     const os = Deno.build.os
     const shouldBeWindows = (os === 'windows')
