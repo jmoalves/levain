@@ -13,26 +13,34 @@ export default class ListCommand implements Command {
         log.info("==================================");
         const searchText = args?.join(' ') || '';
         log.info(`list ${searchText}`);
-        log.info(`Repository: ${repo.name}:`)
+        log.info(`= Repository:`)
+        log.info(`  ${repo.name}`)
 
         const packages = repo.packages
         const filteredPackages = args
             ? packages.filter(it => it.name.includes(searchText))
             : packages
 
-        let packageCount = filteredPackages.length;
+        const packageCount = packages.length;
         if (packageCount === 0) {
             log.info(`  no packages found`)
-        }
-        if (packageCount > 0) {
-            const pluralChar = packageCount > 1 ? 's' : ''
-            log.info(`  ${packageCount} package${pluralChar} found:`)
-            log.info("");
-            log.info("=== Packages");
-            // TODO: Inform if package is already installed.
-            filteredPackages.forEach(pkg => {
-                log.info(`  ${this.myPad(pkg.name, 30)} ${this.myPad(pkg.version, 10)} => ${pkg.filePath}`)
-            })
+        } else {
+            const filteredPackageCount = filteredPackages.length;
+            const repoPackageCountText =
+                filteredPackageCount !== packageCount
+                    ? `of ${packageCount} `
+                    : ''
+            if (filteredPackageCount > 0) {
+                const repoPluralChar = packageCount > 1 ? 's' : ''
+                log.info(`  ${filteredPackageCount} ${repoPackageCountText}package${repoPluralChar} found`)
+                log.info("");
+                const filteredPluralChar = filteredPackageCount > 1 ? 's' : ''
+                log.info(`== Package${filteredPluralChar}`);
+                // TODO: Inform if package is already installed.
+                filteredPackages.forEach(pkg => {
+                    log.info(`   ${this.myPad(pkg.name, 30)} ${this.myPad(pkg.version, 10)} => ${pkg.filePath}`)
+                })
+            }
         }
     }
 

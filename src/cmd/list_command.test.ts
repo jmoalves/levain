@@ -30,7 +30,8 @@ Deno.test('should list nullRepo', async () => {
                 "INFO ",
                 "INFO ==================================",
                 "INFO list ",
-                "INFO Repository: nullRepo:",
+                "INFO = Repository:",
+                "INFO   nullRepo",
                 "INFO   no packages found",
             ]
         )
@@ -54,12 +55,13 @@ Deno.test('should list packages available in a repo', async () => {
                 "INFO ",
                 "INFO ==================================",
                 "INFO list ",
-                "INFO Repository: mockRepo:",
-                "INFO   2 packages found:",
+                "INFO = Repository:",
+                "INFO   mockRepo",
+                "INFO   2 packages found",
                 "INFO ",
-                "INFO === Packages",
-                "INFO   aPackage                       1.0.1      => /mock/aPackage-1.0.1.yml",
-                "INFO   anotherPackage                 0.1.2      => /mock/anotherPackage-0.1.2.yml",
+                "INFO == Packages",
+                "INFO    aPackage                       1.0.1      => /mock/aPackage-1.0.1.yml",
+                "INFO    anotherPackage                 0.1.2      => /mock/anotherPackage-0.1.2.yml",
             ]
         )
     )
@@ -82,11 +84,12 @@ Deno.test('should list packages that match a search string', async () => {
                 "INFO ",
                 "INFO ==================================",
                 "INFO list another",
-                "INFO Repository: mockRepo:",
-                "INFO   1 package found:",
+                "INFO = Repository:",
+                "INFO   mockRepo",
+                "INFO   1 of 2 packages found",
                 "INFO ",
-                "INFO === Packages",
-                "INFO   anotherPackage                 0.1.2      => /mock/anotherPackage-0.1.2.yml",
+                "INFO == Package",
+                "INFO    anotherPackage                 0.1.2      => /mock/anotherPackage-0.1.2.yml",
             ]
         )
     )
