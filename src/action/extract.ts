@@ -25,6 +25,7 @@ export default class Extract implements Action {
             throw new Error("You must inform the file to extract and the destination directory");
         }
 
+        // TODO: Check files
         const src = path.resolve(pkg.pkgDir, args._[0]);
         const dst = path.resolve(pkg.baseDir, args._[1]);
 
@@ -39,52 +40,61 @@ abstract class Extractor {
     constructor(protected config: Config) {
     }
 
-    abstract extractImpl(src: string, dst: string): void;
-
-    async extract(strip: boolean | undefined, src: string, dst: string) {
-        await this.extractImpl(src, dst);
-
-        if (strip) {
-            this.strip(dst);
-        }
-    }
-
-    strip(dstDir: string): void {
-        let size = 0;
-        for (let child of Deno.readDirSync(dstDir)) {
-            size++;
-
-            if (size > 1) {
-                throw "You should not ask for --strip with more than one child diretory";
-            }
-        }
-
-        // Using temp dir to avoid name clashes
-        // Issue 23 - dst and temp must be in the same drive
-        //let tmpRootDir = Deno.makeTempDirSync({prefix: 'unzip-strip-'});
+    async extract(strip: boolean, src: string, dst: string) {
+        // TODO: Use download cache instead of temp file
         let tmpRootDir = Deno.makeTempDirSync({
             dir: this.config.levainSafeTempDir,
-            prefix: 'unzip-strip-'
+            prefix: 'extract-'
         });
+        log.debug(`- TEMP ${tmpRootDir}`);
 
-        let children = Deno.readDirSync(dstDir);
-        for (let toStrip of children) {
-            log.debug(`- STRIP ${path.resolve(dstDir, toStrip.name)}`);
-            let tmpDir = path.resolve(tmpRootDir, toStrip.name);
-            Deno.renameSync(
-                path.resolve(dstDir, toStrip.name),
-                tmpDir);
+        let tmpSrc = this.copy(src, tmpRootDir);
 
-            for (let child of Deno.readDirSync(tmpDir)) {
-                var from = path.resolve(tmpDir, child.name);
-                var dst = path.resolve(dstDir, child.name);
-                Deno.renameSync(from, dst);
+        let tmpDstDir = Deno.makeTempDirSync({
+            dir: tmpRootDir,
+            prefix: 'extract-dst-'
+        });
+        log.debug(`- DST ${tmpDstDir}`);
+
+        log.debug(`- EXTRACT ${tmpSrc} => ${tmpDstDir}`);
+        await this.extractImpl(tmpSrc, tmpDstDir);
+
+        this.move(strip, tmpDstDir, dst);
+
+        log.debug(`- DEL ${tmpRootDir}`);
+        Deno.removeSync(tmpRootDir, { recursive: true });
+    }
+
+    copy(src: string, dst: string): string {
+        let dstPath = path.resolve(dst, path.basename(src));
+        log.debug(`- COPY ${src} => ${dstPath}`);
+        Deno.copyFileSync(src, dstPath);
+        return dstPath;
+    }
+
+    abstract extractImpl(src: string, dst: string): void;
+
+    move(strip: boolean, srcDir: string, dstDir: string): void {
+        let count = 0;
+        for (let child of Deno.readDirSync(srcDir)) {
+            count++;
+
+            let from = path.resolve(srcDir, child.name);
+            if (strip) {
+                if (count > 1) { // There can be only one!
+                    throw `You should not for --strip if there are more the one directory`;
+                }
+
+                log.debug(`- STRIP ${from}`);
+                this.move(false, from, dstDir);
+            } else {
+                let dst = path.resolve(dstDir, child.name);
+                log.debug(`- MOVE ${from} => ${dst}`);
+                Deno.renameSync(from, dst);    
             }
-
-            Deno.removeSync(tmpDir);
         }
 
-        Deno.removeSync(tmpRootDir);
+        Deno.removeSync(srcDir);
     }
 }
 
@@ -117,7 +127,7 @@ class Unzipper extends Extractor {
             throw `${Deno.build.os} not supported`;
         }
 
-        log.debug(`- UNZIP ${src} => ${dst}`);
+        log.debug(`-- UNZIP ${src} => ${dst}`);
 
         let args = `cmd /u /c path ${this.config.extraBinDir};%PATH% && ${this.config.extraBinDir}\\unzip -qn ${src} -d ${dst}`.split(" ");
 
@@ -140,7 +150,7 @@ class SevenZip extends Extractor {
 
     async extractImpl(src: string, dst: string) {
         // TODO: Handle other os's
-        log.debug(`- 7z ${src} => ${dst}`);
+        log.debug(`-- 7z ${src} => ${dst}`);
         if (!OsUtils.isWindows()) {
             throw `${Deno.build.os} not supported`;
         }
@@ -161,7 +171,7 @@ class UnTar extends Extractor {
             throw `${Deno.build.os} not supported`;
         }
 
-        log.debug(`- UNTAR ${src} => ${dst}`);
+        log.debug(`-- UNTAR ${src} => ${dst}`);
 
         let args = `cmd /u /c path ${this.config.extraBinDir};%PATH% && ( ${this.config.extraBinDir}\\7z.exe x ${src} -bsp2 -so | ${this.config.extraBinDir}\\7z.exe x -si -bd -ttar -o${dst} )`.split(" ");
 
