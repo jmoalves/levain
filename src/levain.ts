@@ -33,7 +33,6 @@ export async function levainCLI(myArgs: any): Promise<void> {
     log.info("");
     log.info(`CWD ${Deno.cwd()}`);
 
-    // TODO: No parameters? Show Help
     if (myArgs._.length == 0) {
         showCliHelp()
         return
@@ -113,9 +112,9 @@ async function askUserInfo(config: Config, myArgs: any) {
 function showCliHelp() {
     log.info("");
     log.info("Commands available:")
-    log.info("  list")
-    log.info("  install")
-    log.info("  shell")
+    log.info("  list <optional search text>")
+    log.info("  install <package name>")
+    log.info("  shell <optional package name>")
 }
 
 export async function runLevinWithLog(): Promise<string[]> {
