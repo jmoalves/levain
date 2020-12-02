@@ -27,8 +27,26 @@ Deno.test('should add an extra log file', async () => {
     const logger = await runLevinWithLog(params.split(' '))
     const logFiles = logger?.logFiles || []
     assertEquals(logFiles.length, 3)
-    assertFind(logFiles, it => it === extraLogFile, 'couldn\'t find extra log')
+    assertFind(logFiles, it => it === extraLogFile, 'didn\'t use extra log')
 
     await logger?.close()
- 
+
+})
+
+Deno.test('should add an extra log dir', async () => {
+
+    const extraLogDir = Deno.makeTempDirSync();
+    const params = `--add-log-dir ${extraLogDir}`
+
+    const logger = await runLevinWithLog(params.split(' '))
+    const logFiles = logger?.logFiles || []
+    assertEquals(logFiles.length, 3)
+    assertFind(
+        logFiles,
+        it => it.includes(extraLogDir) && !!it.match(/levain-\w+-\d{8}-\w{6}.log$/),
+        'didn\'t use extra log dir'
+    )
+
+    await logger?.close()
+
 })

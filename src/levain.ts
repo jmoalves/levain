@@ -132,12 +132,19 @@ export async function runLevinWithLog(cmdArgs: string[] = []): Promise<ConsoleAn
     let myArgs;
     let error = false;
 
-    function getLogFiles(extraLogFiles: string[] = []): string[] {
+    function getLogFiles(
+        extraLogFiles: string[] = [],
+        extraLogDirs: string[] = [],
+    ): string[] {
         let logFiles = []
         logFiles.push(ConsoleAndFileLogger.getLogFileInHomeFolder())
         logFiles.push(ConsoleAndFileLogger.getLogFileInTempFolder())
         logFiles = logFiles.concat(extraLogFiles)
-        console.debug(`extraLogFiles [${extraLogFiles}] ${logFiles.length}`)
+        log.debug(`extraLogFiles [${extraLogFiles}] ${logFiles.length}`)
+        extraLogDirs.forEach(extraDir => {
+            logFiles.push(ConsoleAndFileLogger.getLogFileInExtraDir(extraDir))
+        })
+        console.debug(`extraLogDirs [${extraLogDirs}] ${logFiles.length}`)
         return logFiles
     }
 
@@ -150,6 +157,7 @@ export async function runLevinWithLog(cmdArgs: string[] = []): Promise<ConsoleAn
             stringMany: [
                 "addRepo",
                 "add-log",
+                "add-log-dir",
             ],
             boolean: [
                 "askPassword", // FIXME: Deprecated
@@ -162,7 +170,7 @@ export async function runLevinWithLog(cmdArgs: string[] = []): Promise<ConsoleAn
             ]
         });
 
-        logFiles = getLogFiles(myArgs['add-log'])
+        logFiles = getLogFiles(myArgs['add-log'], myArgs['add-log-dir'])
 
         logger = await ConsoleAndFileLogger.setup(logFiles);
         logger.showLogFiles(logFiles);

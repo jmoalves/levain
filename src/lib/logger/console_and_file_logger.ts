@@ -41,7 +41,7 @@ export default class ConsoleAndFileLogger {
         })
     }
 
-    static logTag(dt: Date): string {
+    static logTag(dt: Date = new Date()): string {
         let logTag: string = "";
         logTag += dt.getFullYear() + "";
         logTag += (dt.getMonth() < 10 ? "0" : "") + dt.getMonth();
@@ -69,13 +69,18 @@ export default class ConsoleAndFileLogger {
 
     static getLogFileInTempFolder(): string {
         return Deno.makeTempFileSync({
-            prefix: `levain-${ConsoleAndFileLogger.logTag(new Date())}-`,
+            prefix: `levain-${ConsoleAndFileLogger.logTag()}-`,
             suffix: ".log",
         });
     }
 
     static getLogFileInHomeFolder(): string {
         return path.join(OsUtils.homeFolder, 'levain.log')
+    }
+
+    static getLogFileInExtraDir(extraDir: string) {
+        const myFileName = `levain-${OsUtils.login?.toLowerCase()}-${ConsoleAndFileLogger.logTag()}.log`
+        return path.join(extraDir, myFileName)
     }
 
     getLogFileHandler(logFile: string, options = {}): FileHandler {
@@ -104,4 +109,5 @@ export default class ConsoleAndFileLogger {
         this.handlers[logFile] = this.getLogFileHandler(logFile);
         this.logFiles.push(logFile);
     }
+
 }
