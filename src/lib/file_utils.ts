@@ -33,8 +33,8 @@ export default class FileUtils {
                 return true
             } catch (e) {
                 if (e.name != 'PermissionDenied') {
-                    console.error(`e.name ${e.name}`)
-                    console.error(e)
+                    log.warning(`Error scanning ${filePath}`)
+                    log.warning(e)
                 }
                 return false
             }
