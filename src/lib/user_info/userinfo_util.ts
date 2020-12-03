@@ -41,9 +41,11 @@ export default class UserInfoUtil {
             if (separatorEnd) console.log("");
             log.info("==================================");
             log.info("");
-            console.log('Hello! :-)')
 
-            if (separatorBegin) console.log("");
+            if (separatorBegin) {
+                console.log("");
+                console.log('Hello! :-)')
+            }
 
             separatorEnd = separatorBegin;
             separatorBegin = undefined;
