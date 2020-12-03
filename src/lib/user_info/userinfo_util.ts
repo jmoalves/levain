@@ -165,7 +165,7 @@ export default class UserInfoUtil {
         return fullName
     }
 
-    async askPassword(config: Config) {
+    async askPassword(config: Config): Promise<void> {
         const forbiddenPasswordChars = '^&'
 
         let tries = 0;
