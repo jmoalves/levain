@@ -1,4 +1,6 @@
 import * as log from "https://deno.land/std/log/mod.ts";
+import * as path from "https://deno.land/std/path/mod.ts";
+import {existsSync} from "https://deno.land/std/fs/mod.ts";
 
 import Command from "./command.ts";
 import Config from "../lib/config.ts";
@@ -34,16 +36,19 @@ export default class Install implements Command {
 
         log.info("");
         log.info("-----------------");
+        let bkpTag = this.bkpTag();
         for (let pkg of pkgs) {
-            await this.installPackage(pkg);
+            await this.installPackage(bkpTag, pkg);
         }
 
         log.info("");
         log.info("-----------------");
         log.info(`install ${JSON.stringify(pkgNames)} - FINISHED`);
+
+        this.cleanupSaveDir();
     }
 
-    private async installPackage(pkg: Package) {
+    private async installPackage(bkpTag: string, pkg: Package) {
         if (!this.config) {
             return;
         }
@@ -63,6 +68,17 @@ export default class Install implements Command {
 
         log.info("");
         log.info(`=== ${verb} ${pkg.name} - ${pkg.version}`);
+
+        if (shouldInstall) {
+            /* FIXME: 
+             * Move this to another class. Perhaps a class to manage the installed environment
+             * Perhaps the better approach is to install the packages to a temp dir and move upon sucessful installation
+             * However, this "tempDir" change could EASILY break all the recipes
+             */
+
+            shouldInstall = this.savePreviousInstall(bkpTag, pkg);
+        }
+
         let actions = [];
 
         if (shouldInstall) {
@@ -97,5 +113,53 @@ export default class Install implements Command {
         }
 
         log.info(`--> ${pkg.name} took ${timer.humanize()}`);
+    }
+
+    savePreviousInstall(bkpTag: string, pkg: Package): boolean {
+        if (!existsSync(pkg.baseDir)) {
+            log.debug(`Good. We do not need to save ${pkg.baseDir} because it does not exist`);
+            return true;
+        }
+
+        try {
+            let bkpDir = path.resolve(this.config.levainBackupDir, bkpTag);
+            if (!existsSync(bkpDir)) {
+                log.info(`SAVE-MKDIR ${bkpDir}`);
+                Deno.mkdirSync(bkpDir, {recursive: true});
+            }
+
+            let src = pkg.baseDir;
+            let dst = path.resolve(bkpDir, path.basename(src));
+            log.info(`SAVE-MOVE ${src} => ${dst}`);
+            Deno.renameSync(src, dst);
+
+            log.debug(`- MOVED ${src} => ${dst}`);
+            return true;
+
+        } catch (err) {
+            log.error(`Found error saving ${pkg.name}. Aborting upgrade`);
+            log.debug(`SAVE error -> ${err}`);
+            // Upon any error saving, abort installation
+            return false;
+        }
+    }
+
+    bkpTag(dt: Date = new Date()): string {
+        let tag: string = "bkp-";
+        tag += dt.getFullYear() + "";
+        tag += (dt.getMonth() < 10 ? "0" : "") + dt.getMonth();
+        tag += (dt.getDate() < 10 ? "0" : "") + dt.getDate();
+        tag += "-";
+        tag += (dt.getHours() < 10 ? "0" : "") + dt.getHours();
+        tag += (dt.getMinutes() < 10 ? "0" : "") + dt.getMinutes();
+        tag += (dt.getSeconds() < 10 ? "0" : "") + dt.getSeconds();
+        return tag;
+    }
+
+    cleanupSaveDir(): void {
+        // TODO: Implement this!
+        // Keep backup directories create until X days ago
+        // Or a maximum of N directories
+        // Or a combination of both approches
     }
 }

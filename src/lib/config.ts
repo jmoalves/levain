@@ -93,6 +93,10 @@ export default class Config {
         return path.resolve(this.levainHome, ".levain", "temp");
     }
 
+    get levainBackupDir(): string {
+        return path.resolve(this.levainHome, ".levain", "backup");
+    }
+
     get context(): any {
         return this._context;
     }
