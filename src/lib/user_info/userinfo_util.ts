@@ -44,7 +44,7 @@ export default class UserInfoUtil {
 
             if (separatorBegin) {
                 console.log("");
-                console.log('Hello! :-)')
+                console.log('Hello :-)')
             }
 
             separatorEnd = separatorBegin;
@@ -113,7 +113,7 @@ export default class UserInfoUtil {
             }
         }
 
-        let email = prompt("What's your email? (press return to confirm default value) ", defaultEmail);
+        let email = prompt("Do you have an email? (press return to confirm default value) ", defaultEmail);
         if (!email) {
             throw new Error(`Unable to collect email`);
         }
