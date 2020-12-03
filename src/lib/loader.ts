@@ -44,7 +44,7 @@ export default class Loader {
 
     async action(pkg: Package, cmdline: string) {
         log.debug('')
-        log.debug(`+ ACTION: ${cmdline}`)
+        log.debug(`+ ACTION: ${JSON.stringify(cmdline)}`)
 
         let args = cmdline.split(" ");
         let action = args.shift();
