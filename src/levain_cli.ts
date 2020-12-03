@@ -50,7 +50,8 @@ export default class LevainCli {
 
         // Ask for user_info
         if (cmd === 'install') {
-            await this.askUserInfo(config, myArgs);
+            const userInfoUtil = new UserInfoUtil()
+            await userInfoUtil.askUserInfo(config, myArgs);
         }
 
         const loader = new Loader(config);
@@ -63,57 +64,6 @@ export default class LevainCli {
         config.save();
     }
 
-    async askUserInfo(config: Config, myArgs: any) {
-        // Some nasty tricks... Should we refactor this?
-        let separatorEnd: (() => void) | undefined = () => {
-        };
-        let separatorBegin: (() => void) | undefined = () => {
-            if (separatorEnd) console.log("");
-            log.info("==================================");
-            log.info("");
-            if (separatorBegin) console.log("");
-
-            separatorEnd = separatorBegin;
-            separatorBegin = undefined;
-        };
-        //
-
-        if (myArgs.askPassword) {
-            (separatorBegin ? separatorBegin() : undefined);
-
-            log.warning("--askPassword is Deprecated. Use --ask-login and --ask-password");
-            myArgs["ask-login"] = true;
-            myArgs["ask-password"] = true;
-        }
-
-        const userInfoUtil = new UserInfoUtil()
-
-        if (myArgs["ask-login"]) {
-            (separatorBegin ? separatorBegin() : undefined);
-
-            userInfoUtil.askLogin(config);
-        }
-
-        if (myArgs["ask-password"]) {
-            (separatorBegin ? separatorBegin() : undefined);
-
-            await userInfoUtil.askPassword(config);
-        }
-
-        if (myArgs["ask-email"]) {
-            (separatorBegin ? separatorBegin() : undefined);
-
-            userInfoUtil.askEmail(config, myArgs["email-domain"]);
-        }
-
-        if (myArgs["ask-fullname"]) {
-            (separatorBegin ? separatorBegin() : undefined);
-
-            userInfoUtil.askFullName(config);
-        }
-
-        (separatorEnd ? separatorEnd() : undefined);
-    }
 
     showCliHelp() {
         log.info("");

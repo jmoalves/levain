@@ -33,6 +33,60 @@ export default class UserInfoUtil {
         YamlFileUtils.saveObjectAsFileSync(this.userinfoFileUri, this.userInfo)
     }
 
+    async askUserInfo(config: Config, myArgs: any) {
+        // Some nasty tricks... Should we refactor this?
+        let separatorEnd: (() => void) | undefined = () => {
+        };
+        let separatorBegin: (() => void) | undefined = () => {
+            if (separatorEnd) console.log("");
+            log.info("==================================");
+            log.info("");
+            console.log('Hello! :-)')
+
+            if (separatorBegin) console.log("");
+
+            separatorEnd = separatorBegin;
+            separatorBegin = undefined;
+        };
+        //
+
+        if (myArgs.askPassword) {
+            (separatorBegin ? separatorBegin() : undefined);
+
+            log.warning("--askPassword is Deprecated. Use --ask-login and --ask-password");
+            myArgs["ask-login"] = true;
+            myArgs["ask-password"] = true;
+        }
+
+        const userInfoUtil = new UserInfoUtil()
+
+        if (myArgs["ask-email"]) {
+            (separatorBegin ? separatorBegin() : undefined);
+
+            userInfoUtil.askEmail(config, myArgs["email-domain"]);
+        }
+
+        if (myArgs["ask-fullname"]) {
+            (separatorBegin ? separatorBegin() : undefined);
+
+            userInfoUtil.askFullName(config);
+        }
+
+        if (myArgs["ask-login"]) {
+            (separatorBegin ? separatorBegin() : undefined);
+
+            userInfoUtil.askLogin(config);
+        }
+
+        if (myArgs["ask-password"]) {
+            (separatorBegin ? separatorBegin() : undefined);
+
+            await userInfoUtil.askPassword(config);
+        }
+
+        (separatorEnd ? separatorEnd() : undefined);
+    }
+
     askEmail(config: Config, emailDomain: string | undefined = undefined): string {
         log.debug(`Asking for email`)
         this.load()
@@ -57,7 +111,7 @@ export default class UserInfoUtil {
             }
         }
 
-        let email = prompt("    Email: ", defaultEmail);
+        let email = prompt("What's your email? (press return to confirm default value) ", defaultEmail);
         if (!email) {
             throw new Error(`Unable to collect email`);
         }
@@ -77,7 +131,7 @@ export default class UserInfoUtil {
         this.load()
 
         let login: string | null = prompt(
-            "    Login: ",
+            "What's your login? (press return to confirm default value) ",
             this.userInfo.login || OsUtils.login?.toLowerCase()
         );
         if (!login) {
@@ -96,9 +150,8 @@ export default class UserInfoUtil {
         log.debug(`Asking for full name`)
         this.load()
 
-        console.log("What's your full name?");
         let fullName: string | null = prompt(
-            "Full name: ",
+            "What's your full name?  (press return to confirm default value) ",
             this.userInfo.fullName || envChain("user", "fullname") || "");
         if (!fullName) {
             throw new Error(`Unable to collect full name`);
@@ -129,7 +182,7 @@ export default class UserInfoUtil {
             console.log(' ========================================================================================')
             console.log('')
 
-            const password = await promptSecret(" Password: ");
+            const password = await promptSecret("Please, inform your password: ");
             console.log("");
 
             if (!password) {
@@ -138,7 +191,7 @@ export default class UserInfoUtil {
                 continue;
             }
 
-            const pw2 = await promptSecret("  Confirm: ");
+            const pw2 = await promptSecret("Confirm your password: ");
             console.log("");
 
             if (password == pw2) {
