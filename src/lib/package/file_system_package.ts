@@ -60,18 +60,15 @@ export default class FileSystemPackage implements Package {
     }
 
     get updateAvailable(): boolean {
-        const recipeTimestamp = this.getRecipeTimestamp();
-        const installedTimestamp = this.getInstalledTimestamp();
-
-        if (recipeTimestamp === undefined) {
-            return false;
-        }
-
-        if (installedTimestamp === undefined) {
+        if (!existsSync(this.installedRecipeFilepath())) {
             return true;
         }
 
-        return recipeTimestamp > installedTimestamp;
+        let installedRecipe = Deno.readTextFileSync(this.installedRecipeFilepath());
+        installedRecipe = JSON.stringify(yaml.parse(installedRecipe));
+
+        let currentRecipe = JSON.stringify(this._yamlStruct);
+        return currentRecipe !== installedRecipe;
     }
 
     get yamlStruct(): any {
