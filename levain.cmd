@@ -19,6 +19,7 @@ if exist %myPath%\levain.bundle.js (
     echo Running %myPath%\levain.bundle.js
     %denoPath%deno.exe run ^
         --cached-only ^
+        --no-check ^
         --allow-read --allow-write --allow-env --allow-net --allow-run ^
         --unstable ^
         %myPath%\levain.bundle.js ^
@@ -26,6 +27,7 @@ if exist %myPath%\levain.bundle.js (
 ) else (
     echo Running %myPath%src\levain.ts
     %denoPath%deno.exe run ^
+        --no-check ^
         --allow-read --allow-write --allow-env --allow-net --allow-run ^
         --unstable ^
         %myPath%src\levain.ts ^
