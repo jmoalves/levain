@@ -33,7 +33,7 @@ export default class UserInfoUtil {
         YamlFileUtils.saveObjectAsFileSync(this.userinfoFileUri, this.userInfo)
     }
 
-    async askUserInfo(config: Config, myArgs: any) {
+    askUserInfo(config: Config, myArgs: any) {
         // Some nasty tricks... Should we refactor this?
         let separatorEnd: (() => void) | undefined = () => {
         };
@@ -62,6 +62,13 @@ export default class UserInfoUtil {
 
         const userInfoUtil = new UserInfoUtil()
 
+
+        if (myArgs["ask-login"]) {
+            (separatorBegin ? separatorBegin() : undefined);
+
+            userInfoUtil.askLogin(config);
+        }
+
         if (myArgs["ask-email"]) {
             (separatorBegin ? separatorBegin() : undefined);
 
@@ -74,16 +81,10 @@ export default class UserInfoUtil {
             userInfoUtil.askFullName(config);
         }
 
-        if (myArgs["ask-login"]) {
-            (separatorBegin ? separatorBegin() : undefined);
-
-            userInfoUtil.askLogin(config);
-        }
-
         if (myArgs["ask-password"]) {
             (separatorBegin ? separatorBegin() : undefined);
 
-            await userInfoUtil.askPassword(config);
+            userInfoUtil.askPassword(config);
         }
 
         (separatorEnd ? separatorEnd() : undefined);
@@ -167,7 +168,7 @@ export default class UserInfoUtil {
         return fullName
     }
 
-    async askPassword(config: Config): Promise<void> {
+    askPassword(config: Config): void {
         const forbiddenPasswordChars = '^&'
 
         let tries = 0;
@@ -184,7 +185,7 @@ export default class UserInfoUtil {
             console.log(' ========================================================================================')
             console.log('')
 
-            const password = await promptSecret("Please, inform your password: ");
+            const password = promptSecret("Please, inform your password: ");
             console.log("");
 
             if (!password) {
@@ -193,7 +194,7 @@ export default class UserInfoUtil {
                 continue;
             }
 
-            const pw2 = await promptSecret("Confirm your password: ");
+            const pw2 = promptSecret("Confirm your password: ");
             console.log("");
 
             if (password == pw2) {

@@ -10,6 +10,7 @@ import ChainRepository from './repository/chain_repository.ts'
 import PackageManager from "./package/manager.ts";
 import RepositoryFactory from "./repository/repository_factory.ts";
 import Package from "./package/package.ts";
+import UserInfoUtil from './user_info/userinfo_util.ts';
 
 export default class Config {
     private _pkgManager: PackageManager;
@@ -158,6 +159,9 @@ export default class Config {
                             break;
 
                         case "levain.password":
+                            if (!this.password) {
+                                new UserInfoUtil().askPassword(this)
+                            }
                             value = this.password;
                             break;
 
