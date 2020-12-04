@@ -71,13 +71,19 @@ export async function runLevinWithLog(cmdArgs: string[] = []): Promise<ConsoleAn
 
         error = true;
     } finally {
-        
+
         log.info("");
         logger?.showLogFiles(logFiles);
 
         log.info("");
         log.info(`Levain ran in ${timer.humanize()}`)
         logger?.flush()
+
+        if (error) {
+            log.error('execution FAILED')
+        } else {
+            log.info('execution SUCCESS')
+        }
 
         if (error || (myArgs && myArgs["wait-after-end"])) {
             console.log("");
