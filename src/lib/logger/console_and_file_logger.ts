@@ -83,10 +83,16 @@ export default class ConsoleAndFileLogger {
         return path.join(extraDir, myFileName)
     }
 
+    addLogFile(logFile: string) {
+        this.handlers[logFile] = this.getLogFileHandler(logFile);
+        this.logFiles.push(logFile);
+    }
+
     getLogFileHandler(logFile: string, options = {}): FileHandler {
         const fullOptions = {
             filename: logFile,
             formatter: LogFormatterFactory.getFormatterWithDatetimeAndLevel(),
+            mode: 'w',
             ...options
         }
         return new AutoFlushLogFileHandler("DEBUG", fullOptions);
@@ -105,9 +111,5 @@ export default class ConsoleAndFileLogger {
         await LogUtils.closeLogFiles()
     }
 
-    addLogFile(logFile: string) {
-        this.handlers[logFile] = this.getLogFileHandler(logFile);
-        this.logFiles.push(logFile);
-    }
 
 }
