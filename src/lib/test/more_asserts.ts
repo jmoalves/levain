@@ -18,6 +18,17 @@ export function assertStringEndsWith(
     assert(text.endsWith(ending), msg)
 }
 
+export function assertArrayEndsWith<T>(array: T[], expectedEnd: T[]) {
+    const arrayLength = array.length
+    const endLength = expectedEnd.length
+    const ending = array.slice(arrayLength - endLength)
+    assertEquals(
+        ending,
+        expectedEnd,
+        `expected ${JSON.stringify(array)} to end with ${JSON.stringify(expectedEnd)}`
+    )
+}
+
 export function assertFind<T>(
     array: Array<T>,
     func: (it: T) => boolean,

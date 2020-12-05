@@ -1,17 +1,9 @@
-import {assertEquals,} from "https://deno.land/std/testing/asserts.ts";
 import ListCommand from "./list_command.ts";
 import Config from "../lib/config.ts";
 import NullRepository from "../lib/repository/null_repository.ts";
 import MockRepository from "../lib/repository/mock_repository.ts";
 import TestLogger from "../lib/logger/test_logger.ts";
-
-
-const setupLog = [
-    "INFO DEFAULT levainHome=/Users/rafaelwalter/levain",
-    "INFO LOAD /Users/rafaelwalter/levain/.levain/config.json",
-    "INFO ",
-    'INFO === Config: \n{\n   "levainHome": "/Users/rafaelwalter/levain"\n}',
-]
+import {assertArrayEndsWith} from '../lib/test/more_asserts.ts';
 
 Deno.test('should list nullRepo', async () => {
 
@@ -23,18 +15,16 @@ Deno.test('should list nullRepo', async () => {
 
     list.execute()
 
-    assertEquals(
+    assertArrayEndsWith(
         logger.messages,
-        setupLog.concat(
-            [
-                "INFO ",
-                "INFO ==================================",
-                "INFO list ",
-                "INFO = Repository:",
-                "INFO   nullRepo",
-                "INFO   no packages found",
-            ]
-        )
+        [
+            "INFO ",
+            "INFO ==================================",
+            "INFO list \"\"",
+            "INFO = Repository:",
+            "INFO   nullRepo",
+            "INFO   no packages found",
+        ]
     )
 
 })
@@ -48,22 +38,20 @@ Deno.test('should list packages available in a repo', async () => {
 
     list.execute()
 
-    assertEquals(
+    assertArrayEndsWith(
         logger.messages,
-        setupLog.concat(
-            [
-                "INFO ",
-                "INFO ==================================",
-                "INFO list ",
-                "INFO = Repository:",
-                "INFO   mockRepo",
-                "INFO   2 packages found",
-                "INFO ",
-                "INFO == Packages",
-                "INFO    aPackage                       1.0.1      => /mock/aPackage-1.0.1.yml",
-                "INFO    anotherPackage                 0.1.2      => /mock/anotherPackage-0.1.2.yml",
-            ]
-        )
+        [
+            "INFO ",
+            "INFO ==================================",
+            "INFO list \"\"",
+            "INFO = Repository:",
+            "INFO   mockRepo",
+            "INFO   2 packages found",
+            "INFO ",
+            "INFO == Packages",
+            "INFO    aPackage                       1.0.1      => /mock/aPackage-1.0.1.yml",
+            "INFO    anotherPackage                 0.1.2      => /mock/anotherPackage-0.1.2.yml",
+        ]
     )
 })
 
@@ -77,21 +65,19 @@ Deno.test('should list packages that match a search string', async () => {
 
     list.execute([searchString])
 
-    assertEquals(
+    assertArrayEndsWith(
         logger.messages,
-        setupLog.concat(
-            [
-                "INFO ",
-                "INFO ==================================",
-                "INFO list another",
-                "INFO = Repository:",
-                "INFO   mockRepo",
-                "INFO   1 of 2 packages found",
-                "INFO ",
-                "INFO == Package",
-                "INFO    anotherPackage                 0.1.2      => /mock/anotherPackage-0.1.2.yml",
-            ]
-        )
+        [
+            "INFO ",
+            "INFO ==================================",
+            "INFO list \"another\"",
+            "INFO = Repository:",
+            "INFO   mockRepo",
+            "INFO   1 of 2 packages found",
+            "INFO ",
+            "INFO == Package",
+            "INFO    anotherPackage                 0.1.2      => /mock/anotherPackage-0.1.2.yml",
+        ]
     )
 })
 

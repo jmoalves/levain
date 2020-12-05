@@ -1,5 +1,11 @@
 import {AssertionError, assertThrows} from "https://deno.land/std/testing/asserts.ts";
-import {assertArrayContainsInAnyOrder, assertFind, assertNotFind, assertStringEndsWith} from "./more_asserts.ts";
+import {
+    assertArrayContainsInAnyOrder,
+    assertArrayEndsWith,
+    assertFind,
+    assertNotFind,
+    assertStringEndsWith
+} from "./more_asserts.ts";
 
 //
 // assertsStringEndsWith
@@ -17,7 +23,33 @@ Deno.test('should raise error when string doesnt end the expected way', () => {
 Deno.test('should raise error when string doesnt end the expected way', () => {
     assertStringEndsWith('supercalifragilisticexpialidocious', 'docious')
 })
-
+//
+// assertArrayEndsWith
+//
+Deno.test('should raise error when arrays are completly different', () => {
+    assertThrows(
+        () => {
+            assertArrayEndsWith([1, 2, 3], [6, 7, 8])
+        },
+        AssertionError,
+        "expected [1,2,3] to end with [6,7,8]"
+    )
+})
+Deno.test('should detect numeric array ending', () => {
+    assertArrayEndsWith([1, 2, 3], [2, 3])
+})
+Deno.test('should raise error when string array ends are different', () => {
+    assertThrows(
+        () => {
+            assertArrayEndsWith(['abc', 'xyz'], ['abc'])
+        },
+        AssertionError,
+        `expected ["abc","xyz"] to end with ["abc"]`
+    )
+})
+Deno.test('should detect string array ending', () => {
+    assertArrayEndsWith(['abc', '123', 'do re mi'], ['123', 'do re mi'])
+})
 //
 // assertFind
 //

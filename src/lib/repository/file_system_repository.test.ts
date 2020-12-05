@@ -53,7 +53,7 @@ if (OsUtils.isWindows()) {
         const packages = repo.packages
 
         const packageNames = packages.map(pkg => pkg.name)
-        assertArrayIncludesElements<string>(packageNames, ['bje-config', 'bndes-java-env'])
+        assertArrayIncludesElements<string>(packageNames, ['git', 'cntlm'])
     })
 
     Deno.test('should crawl windows network packages', () => {
@@ -63,7 +63,7 @@ if (OsUtils.isWindows()) {
 
         const packageNames = packages.map(pkg => pkg.name)
 
-        assertArrayIncludesElements(packageNames, ['bje-config', 'bndes-java-env'])
+        assertArrayIncludesElements(packageNames, ['vscode', 'cmder'])
     })
 }
 //
