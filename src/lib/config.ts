@@ -44,8 +44,8 @@ export default class Config {
 
         this._pkgManager = new PackageManager(this);
 
-        log.info("");
-        log.info(`=== Config: \n${JSON.stringify(this._env, null, 3)}`);
+        log.debug("");
+        log.debug(`=== Config: \n${JSON.stringify(this._env, null, 3)}`);
     }
 
     get repository(): Repository {
