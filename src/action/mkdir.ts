@@ -5,6 +5,7 @@ import Action from "./action.ts";
 import Config from "../lib/config.ts";
 import Package from '../lib/package/package.ts';
 import {parseArgs} from "../lib/parse_args.ts";
+import OsUtils from "../lib/os_utils";
 
 export default class Mkdir implements Action {
     constructor(private config: Config) {
@@ -48,7 +49,7 @@ export default class Mkdir implements Action {
     }
 
     private async compactSync(dirname: string) {
-        if (Deno.build.os != "windows") {
+        if (!OsUtils.isWindows()) {
             log.warning(`MKDIR - ignoring --compact - Windows only`);
             return;
         }
