@@ -25,7 +25,8 @@ export async function runLevinWithLog(cmdArgs: string[] = []): Promise<ConsoleAn
         extraLogDirs.forEach(extraDir => {
             logFiles.push(ConsoleAndFileLogger.getLogFileInExtraDir(extraDir))
         })
-        console.debug(`extraLogDirs [${extraLogDirs}] ${logFiles.length}`)
+        log.debug(`extraLogDirs ${extraLogDirs} ${logFiles.length}`)
+        log.debug(`logFiles.length ${logFiles.length}`)
         return logFiles
     }
 

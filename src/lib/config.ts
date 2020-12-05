@@ -323,11 +323,11 @@ export default class Config {
         }
     }
 
-    private configRepo(args: any, installedOnly: boolean): Repository {
+    configRepo(args: any, installedOnly: boolean): Repository {
         let repos: Repository[] = [];
 
-        log.info("");
-        log.info(`=== LevainRepos - installedOnly: ${installedOnly}`);
+        log.debug("");
+        log.debug(`=== configRepo - args: ${JSON.stringify(args)} installedOnly: ${installedOnly}`);
         this.addLevainRepo(repos);
         this.addCurrentDirRepo(repos);
 
@@ -336,13 +336,13 @@ export default class Config {
         } else {
             let savedRepos = this._extraRepos;
             this._extraRepos = [];
-            log.debug(`savedRepos "${JSON.stringify(savedRepos)}"`)
+            log.debug(`savedRepos ${JSON.stringify(savedRepos)}`)
             this.addRepos(repos, savedRepos);
-            log.debug(`args.addRepo "${JSON.stringify(args.addRepo)}"`)
+            log.debug(`args.addRepo ${JSON.stringify(args.addRepo)}`)
             this.addRepos(repos, args.addRepo);
         }
 
-        log.info("");
+        log.debug("");
         return new CacheRepository(this,
             new ChainRepository(this, repos)
         );
@@ -373,14 +373,15 @@ export default class Config {
             return;
         }
 
-        log.debug(`addRepos "${JSON.stringify(reposPath)}"`)
+        log.debug(`addRepos ${reposPath.length} ${JSON.stringify(reposPath)}`)
         reposPath?.forEach(repoPath => this.addRepo(repos, repoPath));
+        log.debug(`addRepos after ${reposPath.length}`)
     }
 
-    addRepo(repos: Repository[], repoPath: string) {
+    addRepo(repos: Repository[], repoPath: string | undefined) {
         log.debug(`addRepo ${repoPath}`);
 
-        if (repoPath == "") {
+        if (!repoPath || repoPath === 'undefined') {
             return;
         }
 
@@ -388,7 +389,7 @@ export default class Config {
         if (this._extraRepos?.includes(repo.absoluteURI)) {
             log.debug(`addRepo - ignoring repeated ${repoPath}`);
         } else {
-            log.info(`LevainRepo: addRepo ${repo.absoluteURI}`);
+            log.info(`addRepo ${repo.absoluteURI}`);
             repos.push(repo);
             this._extraRepos.push(repo.absoluteURI);
         }

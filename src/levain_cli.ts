@@ -51,7 +51,7 @@ export default class LevainCli {
         // Ask for user_info
         if (cmd === 'install') {
             const userInfoUtil = new UserInfoUtil()
-            await userInfoUtil.askUserInfo(config, myArgs);
+            userInfoUtil.askUserInfo(config, myArgs);
         }
 
         const loader = new Loader(config);

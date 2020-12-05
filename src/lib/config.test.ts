@@ -1,10 +1,12 @@
-import {assertEquals} from "https://deno.land/std/testing/asserts.ts";
+import {assert, assertEquals} from "https://deno.land/std/testing/asserts.ts";
 
 import Config from './config.ts';
 import Repository from './repository/repository.ts';
+import ChainRepository from './repository/chain_repository.ts';
+import CacheRepository from './repository/cache_repository.ts';
 
 //
-// Add repos
+// addRepos
 //
 Deno.test('should add empty string repos', () => {
     const config = new Config([])
@@ -32,3 +34,53 @@ Deno.test('should not add undefined repos', () => {
 
     assertEquals(0, repos.length)
 })
+//
+// addRepo
+//
+Deno.test('should not add undefined repo', () => {
+    const config = new Config([])
+    let repos: Repository[] = []
+
+    config.addRepo(repos, undefined)
+
+    assertEquals(0, repos.length)
+})
+
+Deno.test('should not add string "undefined" repo', () => {
+    const config = new Config([])
+    let repos: Repository[] = []
+
+    config.addRepo(repos, "undefined")
+
+    assertEquals(0, repos.length)
+})
+//
+// configRepo
+//
+Deno.test('should config default repos', () => {
+    const config = new Config([])
+    const myArgs = {}
+
+    const cacheRepo: Repository = config.configRepo(myArgs, false)
+
+    assert(cacheRepo instanceof CacheRepository)
+    const chainRepo = (cacheRepo as CacheRepository).repository
+    assert(chainRepo instanceof ChainRepository)
+    const repos: Repository[] = (chainRepo as ChainRepository).repositories
+    assertEquals(repos.length, 2)
+})
+Deno.test('should add extra repo', () => {
+    const config = new Config([])
+    const myArgs = {
+        "addRepo": [
+            "D:\\git.repo\\bnd-levain-pkg\\scripts\\.."
+        ],
+    }
+
+    const cacheRepo: Repository = config.configRepo(myArgs, false)
+
+    const chainRepo = (cacheRepo as CacheRepository).repository
+    const repos: Repository[] = (chainRepo as ChainRepository).repositories
+    assertEquals(repos.length, 3)
+})
+

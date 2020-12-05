@@ -6,13 +6,13 @@ import Package from "../package/package.ts";
 
 export default class ChainRepository implements Repository {
     constructor(
-        private config: Config,
-        private repositories: Repository[],
+        public config: Config,
+        public repositories: Repository[],
     ) {
         this.packages = this.listPackages();
     }
 
-    readonly name = `chainRepo for ${this.repositories.map(repo => repo.name).join(', ')}`;
+    readonly name = `chainRepo for ${this.repositories?.map(repo => repo.name).join(', ')}`;
     packages: Array<Package>;
 
     get absoluteURI(): string {

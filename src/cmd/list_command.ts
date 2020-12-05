@@ -12,17 +12,17 @@ export default class ListCommand implements Command {
         log.info("");
         log.info("==================================");
         const searchText = args?.join(' ') || '';
-        log.info(`list ${searchText}`);
+        log.info(`list "${searchText}"`);
         log.info(`= Repository:`)
         log.info(`  ${repo.name}`)
 
         const packages = repo.packages
         const filteredPackages = args
-            ? packages.filter(it => it.name.includes(searchText))
+            ? packages?.filter(it => it.name.includes(searchText))
             : packages
 
-        const packageCount = packages.length;
-        if (packageCount === 0) {
+        const packageCount = packages?.length;
+        if (!packageCount) {
             log.info(`  no packages found`)
         } else {
             const filteredPackageCount = filteredPackages.length;

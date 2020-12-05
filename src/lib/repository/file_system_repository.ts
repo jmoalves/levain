@@ -65,7 +65,7 @@ export default class FileSystemRepository implements Repository {
             return [];
         }
 
-        log.info(`# looking for *.levain.yaml files in ${this.rootDir}.`);
+        log.info(`# Scanning ${this.rootDir}`);
         log.info(`# Please wait...`);
         const timer = new Timer()
 

@@ -4,15 +4,17 @@ import Package from "../package/package.ts";
 
 export default class CacheRepository implements Repository {
     readonly name = `cacheRepo for ${this.repository?.name}`;
-    packages: Array<Package> = this.repository.packages;
+    packages: Array<Package> = this.repository?.packages;
 
     private cache: Map<string, Package> = new Map();
 
     // eslint-disable-next-line no-useless-constructor
     constructor(
-        private config: Config,
-        private repository: Repository
+        public config: Config,
+        public repository: Repository,
     ) {
+        this.name = `cacheRepo for ${this.repository?.name}`;
+        this.packages = this.repository?.packages;
     }
 
     get absoluteURI(): string {
