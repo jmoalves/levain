@@ -13,7 +13,7 @@ export default class LevainShell implements Action {
     async execute(pkg: Package, parameters: string[]) {
         log.info(`LEVAIN-SHELL ${pkg.name} ${JSON.stringify(parameters)}`);
 
-        let myArgs = parseArgs(parameters, {
+        const myArgs = parseArgs(parameters, {
             stringOnce: [
                 "saveVar"
             ],

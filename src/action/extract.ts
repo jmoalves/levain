@@ -5,7 +5,6 @@ import Action from "./action.ts";
 import Config from "../lib/config.ts";
 import Package from '../lib/package/package.ts';
 import {parseArgs} from "../lib/parse_args.ts";
-import {OsShell} from '../lib/os_shell.ts';
 import OsUtils from "../lib/os_utils.ts";
 import {Timer} from "../lib/timer.ts";
 
@@ -67,7 +66,7 @@ abstract class Extractor {
         this.move(strip, tmpDstDir, dst);
 
         log.debug(`- DEL ${tmpRootDir}`);
-        Deno.removeSync(tmpRootDir, { recursive: true });
+        Deno.removeSync(tmpRootDir, {recursive: true});
     }
 
     copy(src: string, dst: string): string {
@@ -96,7 +95,7 @@ abstract class Extractor {
             } else {
                 let dst = path.resolve(dstDir, child.name);
                 log.debug(`- MOVE ${from} => ${dst}`);
-                Deno.renameSync(from, dst);    
+                Deno.renameSync(from, dst);
             }
         }
 
@@ -157,12 +156,10 @@ class SevenZip extends Extractor {
     async extractImpl(src: string, dst: string) {
         // TODO: Handle other os's
         log.debug(`-- 7z ${src} => ${dst}`);
-        if (!OsUtils.isWindows()) {
-            throw `${Deno.build.os} not supported`;
-        }
+        OsUtils.onlyInWindows()
 
         const command = `cmd /u /c path ${this.config.extraBinDir};%PATH% && ${this.config.extraBinDir}\\7z.exe x -bsp2 -o${dst} ${src}`;
-        await OsShell.runAndLog(command);
+        await OsUtils.runAndLog(command);
     }
 }
 

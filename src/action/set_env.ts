@@ -3,13 +3,21 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import Action from "./action.ts";
 import Config from "../lib/config.ts";
 import Package from '../lib/package/package.ts';
+import {parseArgs} from "../lib/parse_args.ts";
+import OsUtils from "../lib/os_utils.ts";
 
 export default class SetEnv implements Action {
     constructor(private config: Config) {
     }
 
-    execute(pkg: Package, parameters: string[]): void {
-        if (parameters.length != 2) {
+    async execute(pkg: Package, parameters: string[]): Promise<void> {
+        const myArgs = parseArgs(parameters, {
+            boolean: [
+                "permanent",
+            ]
+        });
+
+        if (myArgs?._?.length !== 2) {
             throw "You must inform the var and the value";
         }
 
@@ -25,10 +33,14 @@ export default class SetEnv implements Action {
             this.config.context.action.setEnv.env = {};
         }
 
-        let key = parameters[0];
-        let value = parameters[1];
+        let key = myArgs?._[0];
+        let value = myArgs?._[1];
         log.info(`ENV ${key} = ${value}`);
         this.config.setVar(key, value);
         this.config.context.action.setEnv.env[key] = value;
+
+        if (myArgs['permanent']) {
+            await OsUtils.setEnvPermanent(key, value)
+        }
     }
 }
