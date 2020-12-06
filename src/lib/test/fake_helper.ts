@@ -1,7 +1,13 @@
 import {LogRecord} from "https://deno.land/std/log/logger.ts"
 import {LogLevels} from "https://deno.land/std/log/levels.ts"
+import Config from "../config.ts";
+import {MockPackage} from "../package/mock_package.ts";
 
 export default class FakeHelper {
+    static getConfig(): Config {
+        const myArgs = {};
+        return new Config(myArgs)
+    };
 
     static logRecord(
         msg: string = 'mock logRecord',
@@ -15,4 +21,7 @@ export default class FakeHelper {
         })
     }
 
+    static mockPackage() {
+        return new MockPackage()
+    }
 }

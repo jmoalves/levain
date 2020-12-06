@@ -21,7 +21,7 @@ import Inspect from "../action/inspect.ts";
 import LevainShell from "../action/levainShell.ts";
 import Mkdir from "../action/mkdir.ts";
 import Noop from "../action/noop.ts";
-import SetEnv from "../action/setEnv.ts";
+import SetEnv from "../action/set_env.ts";
 import Template from "../action/template.ts";
 import ListCommand from "../cmd/list_command.ts";
 import AssertContainsAction from "../action/assert_contains_action.ts";
