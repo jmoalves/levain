@@ -15,6 +15,7 @@ export default class SetEnv implements Action {
             boolean: [
                 "permanent",
             ]
+            
         });
 
         if (myArgs?._?.length !== 2) {

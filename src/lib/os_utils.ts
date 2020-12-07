@@ -20,12 +20,12 @@ export default class OsUtils {
         }
         return folderFromEnv
     }
- 
+
     static onlyInWindows(isError = true) {
         if (!OsUtils.isWindows()) {
             const message = `${OsUtils.getOs()} not supported`
             if (isError) {
-                throw message
+                throw new Error(message)
             } else {
                 log.warning(message)
             }

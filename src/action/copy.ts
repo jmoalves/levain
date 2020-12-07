@@ -11,7 +11,7 @@ export default class Copy implements Action {
     constructor(private config: Config) {
     }
 
-    execute(pkg: Package, parameters: string[]): void {
+    async execute(pkg: Package, parameters: string[]): Promise<void> {
         let args = parseArgs(parameters, {
             boolean: [
                 "verbose",
