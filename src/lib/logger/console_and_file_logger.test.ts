@@ -18,3 +18,19 @@ Deno.test('should setup logger with logFiles and console', async () => {
         await logger?.close()
     }
 })
+Deno.test('should warn and continue when log file cannot be created', async () => {
+    let logger
+    try {
+        const logFiles = [
+            `/path-that-does-not-exist/log-today.log`
+        ]
+
+        logger = await ConsoleAndFileLogger.setup(logFiles)
+
+        assertEquals(logger?.logFiles, [])
+        assertEquals(Object.keys(logger?.handlers).length, 1)
+
+    } finally {
+        await logger?.close()
+    }
+})

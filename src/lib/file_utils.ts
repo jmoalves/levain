@@ -33,7 +33,7 @@ export default class FileUtils {
                 return true
             } catch (e) {
                 if (e.name != 'PermissionDenied') {
-                    log.warning(`Error scanning ${filePath}`)
+                    log.warning(`Error reading ${filePath}`)
                     log.warning(e)
                 }
                 return false
@@ -45,7 +45,10 @@ export default class FileUtils {
 
     static canWriteSync(filePath: string) {
         if (OsUtils.isWindows()) {
-            throw 'How do I check if a file/folder is writable in Windows?'
+            if (FileUtils.isDir(filePath)) {
+                return FileUtils.canCreateTempFileInDir(filePath)
+            }
+            throw 'How do I check if a file is writable in Windows?'
         }
         const bitwisePermission = 0b010_000_000;
         return this.checkBitwisePermission(filePath, bitwisePermission);
@@ -81,5 +84,26 @@ export default class FileUtils {
             it => it[1].toString() === 'fsFile'
         )
         return fileResources
+    }
+
+    static isDir(filePath: string) {
+        const fileInfo = this.getFileInfoSync(filePath);
+        return fileInfo.isDirectory
+    }
+
+    static canCreateTempFileInDir(dir: string) {
+        try {
+            const options = {
+                dir,
+                prefix: 'test-can-write'
+            };
+            const tempFile = Deno.makeTempFileSync(options);
+            Deno.removeSync(tempFile)
+            return true
+        } catch (error) {
+            log.warning(`Cannot create a file in ${dir}`)
+            log.warning(error)
+            return false
+        }
     }
 }

@@ -7,6 +7,7 @@ import {AutoFlushLogFileHandler} from "./auto_flush_log_file_handler.ts";
 import LogFormatterFactory from "./log_formatter_factory.ts";
 import LogUtils from "./log_utils.ts";
 import OsUtils from "../os_utils.ts";
+import FileUtils from "../file_utils.ts";
 
 export default class ConsoleAndFileLogger {
     static config: Config;
@@ -84,6 +85,11 @@ export default class ConsoleAndFileLogger {
     }
 
     addLogFile(logFile: string) {
+        const logFolder = path.dirname(logFile)
+        if (!FileUtils.canWriteSync(logFolder)) {
+            log.warning(`Could not write to log file ${logFile}`)
+            return
+        }
         this.handlers[logFile] = this.getLogFileHandler(logFile);
         this.logFiles.push(logFile);
     }
