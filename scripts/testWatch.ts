@@ -1,4 +1,5 @@
 import {exists} from "https://deno.land/std/fs/mod.ts"
+import OsUtils from '../src/lib/os_utils.ts';
 
 const watcher = Deno.watchFs('src/')
 
@@ -16,7 +17,7 @@ for await (const event of watcher) {
 }
 
 async function runTest(file?: string): Promise<void> {
-    clearConsole()
+    OsUtils.clearConsole()
     let cmd = ['deno', 'test', '--unstable', '--allow-all'];
     const testFile =
         file?.replace(/(?:.test)?.ts$/, '.test.ts')
@@ -35,6 +36,3 @@ async function runTest(file?: string): Promise<void> {
     console.timeEnd('runtest')
 }
 
-async function clearConsole() {
-    await Deno.run({cmd: ['clear']})
-}

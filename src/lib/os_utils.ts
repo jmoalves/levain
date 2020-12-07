@@ -80,6 +80,9 @@ export default class OsUtils {
         }
     }
 
+    static async clearConsole() {
+        const cmdLine = OsUtils.isWindows() ? 'cmd /c cls' : 'clear';
+        const cmd = cmdLine.split(' ')
+        await Deno.run({cmd})
+    }
 }
-
-
