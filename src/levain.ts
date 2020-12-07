@@ -6,15 +6,89 @@ import {Timer} from "./lib/timer.ts";
 import LevainCli from "./levain_cli.ts";
 import CliUtil from "./lib/cli_util.ts";
 
-export async function runLevinWithLog(cmdArgs: string[] = []): Promise<ConsoleAndFileLogger | undefined> {
-    let logFiles: string[] = [];
-    const timer = new Timer()
-    let logger;
+export default class Levain {
+    logFiles: string[] = [];
+    timer = new Timer()
+    logger: ConsoleAndFileLogger | undefined;
 
-    let myArgs;
-    let error = false;
+    myArgs: any;
+    error = false;
 
-    function getLogFiles(
+    async runLevinWithLog(cmdArgs: string[] = []): Promise<ConsoleAndFileLogger | undefined> {
+        try {
+            this.myArgs = parseArgs(cmdArgs, {
+                stringOnce: [
+                    "levainHome",
+                    "email-domain"
+                ],
+                stringMany: [
+                    "addRepo",
+                    "add-log",
+                    "add-log-dir",
+                ],
+                boolean: [
+                    "askPassword", // FIXME: Deprecated
+                    "ask-login",
+                    "ask-password",
+                    "ask-email",
+                    "ask-fullname",
+                    "wait-to-begin",
+                    "wait-after-end",
+                ]
+            });
+
+            await this.prepareLogs(this.myArgs);
+
+            log.info("");
+            await new LevainCli().execute(this.myArgs);
+
+        } catch (err) {
+
+            log.error("");
+            log.error("********************************************************************************");
+            log.error("");
+            log.error(err);
+            log.error("");
+            log.error("********************************************************************************");
+            log.error("");
+
+            this.error = true;
+        } finally {
+
+            log.info("");
+            this.logger?.showLogFiles(this.logFiles);
+
+            log.info("");
+            log.info(`Levain ran in ${this.timer.humanize()}`)
+            this.logger?.flush()
+
+            if (this.error) {
+                log.error('execution FAILED')
+            } else {
+                log.info('execution SUCCESS')
+            }
+
+            if (this.error || (this.myArgs && this.myArgs["wait-after-end"])) {
+                console.log("");
+                prompt("Hit ENTER to finish");
+            }
+        }
+        return this.logger
+    }
+
+    async prepareLogs(myArgs: any): Promise<ConsoleAndFileLogger> {
+        this.logFiles = this.getLogFiles(myArgs['add-log'], myArgs['add-log-dir'])
+        this.logger = await ConsoleAndFileLogger.setup(this.logFiles);
+        log.info('')
+        log.info('Hi!')
+        this.logger.showLogFiles(this.logFiles);
+        if (myArgs['add-log'] || myArgs['add-log-dir']) {
+            CliUtil.askToContinue()
+        }
+        return this.logger
+    }
+
+    getLogFiles(
         extraLogFiles: string[] = [],
         extraLogDirs: string[] = [],
     ): string[] {
@@ -31,77 +105,9 @@ export async function runLevinWithLog(cmdArgs: string[] = []): Promise<ConsoleAn
         return logFiles
     }
 
-    try {
-        myArgs = parseArgs(cmdArgs, {
-            stringOnce: [
-                "levainHome",
-                "email-domain"
-            ],
-            stringMany: [
-                "addRepo",
-                "add-log",
-                "add-log-dir",
-            ],
-            boolean: [
-                "askPassword", // FIXME: Deprecated
-                "ask-login",
-                "ask-password",
-                "ask-email",
-                "ask-fullname",
-                "wait-to-begin",
-                "wait-after-end",
-            ]
-        });
-
-        logFiles = getLogFiles(myArgs['add-log'], myArgs['add-log-dir'])
-
-        logger = await ConsoleAndFileLogger.setup(logFiles);
-        log.info('')
-        log.info('Hi!')
-        logger.showLogFiles(logFiles);
-        if (myArgs['add-log'] || myArgs['add-log-dir']) {
-            CliUtil.askToContinue()
-        }
-
-        log.info("");
-
-        await new LevainCli().execute(myArgs);
-
-    } catch (err) {
-
-        log.error("");
-        log.error("********************************************************************************");
-        log.error("");
-        log.error(err);
-        log.error("");
-        log.error("********************************************************************************");
-        log.error("");
-
-        error = true;
-    } finally {
-
-        log.info("");
-        logger?.showLogFiles(logFiles);
-
-        log.info("");
-        log.info(`Levain ran in ${timer.humanize()}`)
-        logger?.flush()
-
-        if (error) {
-            log.error('execution FAILED')
-        } else {
-            log.info('execution SUCCESS')
-        }
-
-        if (error || (myArgs && myArgs["wait-after-end"])) {
-            console.log("");
-            prompt("Hit ENTER to finish");
-        }
-    }
-    return logger
 }
 
 // https://deno.land/manual/tools/script_installer
 if (import.meta.main) {
-    await runLevinWithLog(Deno.args);
+    await new Levain().runLevinWithLog(Deno.args);
 }

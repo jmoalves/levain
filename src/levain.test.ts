@@ -1,4 +1,4 @@
-import {runLevinWithLog} from "./levain.ts";
+import Levain from "./levain.ts";
 
 import {assertEquals,} from "https://deno.land/std/testing/asserts.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
@@ -10,7 +10,8 @@ import OsUtils from "./lib/os_utils.ts";
 Deno.test('should create a homeLog and a tempLog by default', async () => {
         let logger
         try {
-            logger = await runLevinWithLog()
+            const levain = new Levain()
+            logger = await levain.runLevinWithLog()
 
             const logFiles = logger?.logFiles || []
             assertEquals(logFiles.length, 2)
@@ -30,7 +31,8 @@ Deno.test('should add an extra log file', async () => {
         const extraLogFile = Deno.makeTempFileSync();
         const params = `--add-log ${extraLogFile}`
 
-        logger = await runLevinWithLog(params.split(' '))
+        const levain = new Levain()
+        logger = await levain.runLevinWithLog(params.split(' '))
         const logFiles = logger?.logFiles || []
         assertEquals(logFiles.length, 3)
         assertFind(logFiles, it => it === extraLogFile, 'didn\'t use extra log')
@@ -45,7 +47,8 @@ Deno.test('should add an extra log dir', async () => {
         const extraLogDir = Deno.makeTempDirSync();
         const params = `--add-log-dir ${extraLogDir}`
 
-        logger = await runLevinWithLog(params.split(' '))
+        const levain = new Levain()
+        logger = await levain.runLevinWithLog(params.split(' '))
         const logFiles = logger?.logFiles || []
         assertEquals(logFiles.length, 3)
         assertFind(
