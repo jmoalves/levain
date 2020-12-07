@@ -98,8 +98,8 @@ export default class ConsoleAndFileLogger {
             this.handlers[logFile] = handler;
             this.logFiles.push(logFile);
         } catch (error) {
-            log.warning(`Cannot create a file in ${logFile}`)
-            log.warning(error)
+            log.debug(`Cannot create a file in ${logFile}`)
+            log.debug(error)
         }
     }
 
