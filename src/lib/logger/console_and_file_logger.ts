@@ -39,7 +39,7 @@ export default class ConsoleAndFileLogger {
         log.info('')
         log.info('Hi!')
         log.info('')
-        log.info('The following LOG FILES will be created. Passwords will be masked out.')
+        log.info('Using the following LOG FILES. Passwords are masked out.')
         logFiles.forEach(logFile => {
             const fullPath = path.resolve(logFile);
             log.info(`- ${fullPath}`);
