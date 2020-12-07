@@ -7,7 +7,7 @@ export default class CliUtil {
         if (!answer || !["Y", "YES"].includes(answer.toUpperCase())) {
             log.info("");
             log.info("Ok, aborting...");
-            Deno.exit(1);
+            throw '== Do not continue =='
         }
     }
 }
