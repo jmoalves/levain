@@ -17,7 +17,7 @@ export default class FileUtils {
     }
 
     static canReadSync(filePath: string) {
-        // FIXME Will not need the folowwing block when Deno.statSync.mode is fully implemented for Windows
+        // FIXME Will not need the following code block when Deno.statSync.mode is fully implemented for Windows
         if (OsUtils.isWindows()) {
             try {
                 if (!existsSync(filePath)) {
