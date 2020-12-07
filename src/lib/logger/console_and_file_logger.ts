@@ -97,7 +97,6 @@ export default class ConsoleAndFileLogger {
             const handler = this.getLogFileHandler(logFile);
             this.handlers[logFile] = handler;
             this.logFiles.push(logFile);
-            console.debug('aqui')
         } catch (error) {
             log.warning(`Cannot create a file in ${logFile}`)
             log.warning(error)
