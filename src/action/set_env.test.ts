@@ -45,7 +45,7 @@ Deno.test('should allow --permanent option', async () => {
     const config = FakeHelper.getConfig();
     const action: Action = new SetEnv(config)
     const mockPackage = FakeHelper.mockPackage()
-    const envKey = 'my_env_var';
+    const envKey = 'levain-test-env-permanent';
     const envValue = 'myValue';
 
     if (OsUtils.isWindows()) {
