@@ -155,6 +155,9 @@ export default class Config {
                 if (!value && vName.match(/^levain\./)) {
                     switch (vName) {
                         case "levain.login":
+                            if (!this.login) {
+                                new UserInfoUtil().askLogin(this)
+                            }
                             value = this.login;
                             break;
 
@@ -166,10 +169,16 @@ export default class Config {
                             break;
 
                         case "levain.email":
+                            if (!this.email) {
+                                new UserInfoUtil().askEmail(this)
+                            }
                             value = this.email;
                             break;
 
                         case "levain.fullname":
+                            if (!this.fullname) {
+                                new UserInfoUtil().askFullName(this)
+                            }
                             value = this.fullname;
                             break;
 
