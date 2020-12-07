@@ -59,7 +59,9 @@ export async function runLevinWithLog(cmdArgs: string[] = []): Promise<ConsoleAn
         log.info('')
         log.info('Hi!')
         logger.showLogFiles(logFiles);
-        CliUtil.askToContinue()
+        if (myArgs['add-log'] || myArgs['add-log-dir']) {
+            CliUtil.askToContinue()
+        }
 
         log.info("");
 
