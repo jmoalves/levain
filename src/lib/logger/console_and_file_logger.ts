@@ -37,8 +37,6 @@ export default class ConsoleAndFileLogger {
 
     showLogFiles(logFiles: string[]) {
         log.info('')
-        log.info('Hi!')
-        log.info('')
         log.info('Using the following LOG FILES. Passwords are masked out.')
         logFiles.forEach(logFile => {
             const fullPath = path.resolve(logFile);

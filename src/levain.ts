@@ -56,6 +56,8 @@ export async function runLevinWithLog(cmdArgs: string[] = []): Promise<ConsoleAn
         logFiles = getLogFiles(myArgs['add-log'], myArgs['add-log-dir'])
 
         logger = await ConsoleAndFileLogger.setup(logFiles);
+        log.info('')
+        log.info('Hi!')
         logger.showLogFiles(logFiles);
         CliUtil.askToContinue()
 
