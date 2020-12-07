@@ -185,11 +185,11 @@ export default class UserInfoUtil {
             console.log(' ========================================================================================')
             console.log('')
 
-            const password = promptSecret("Please, inform your password: ");
+            const password = promptSecret("Please, inform your network password: ");
             console.log("");
 
             if (!password) {
-                console.log("Please, inform your password.");
+                console.log("Please, inform your network password.");
                 console.log("");
                 continue;
             }
