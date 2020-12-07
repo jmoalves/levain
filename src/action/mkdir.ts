@@ -5,7 +5,7 @@ import Action from "./action.ts";
 import Config from "../lib/config.ts";
 import Package from '../lib/package/package.ts';
 import {parseArgs} from "../lib/parse_args.ts";
-import OsUtils from "../lib/os_utils.ts";
+import OsUtils from '../lib/os_utils.ts';
 
 export default class Mkdir implements Action {
     constructor(private config: Config) {
