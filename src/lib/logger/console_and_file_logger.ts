@@ -36,6 +36,8 @@ export default class ConsoleAndFileLogger {
     }
 
     showLogFiles(logFiles: string[]) {
+        log.info('Hi!')
+        log.info('The folowwing log files will be created. Passwords will be masked out.')
         logFiles.forEach(logFile => {
             const fullPath = path.resolve(logFile);
             log.info(`logFile -> ${fullPath}`);

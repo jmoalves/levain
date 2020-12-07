@@ -4,6 +4,7 @@ import Config from "./lib/config.ts";
 import ConsoleAndFileLogger from "./lib/logger/console_and_file_logger.ts";
 import Loader from "./lib/loader.ts";
 import UserInfoUtil from "./lib/user_info/userinfo_util.ts";
+import CliUtil from "./lib/cli_util.ts";
 
 export default class LevainCli {
 
@@ -11,19 +12,15 @@ export default class LevainCli {
         const __filename = path.fromFileUrl(import.meta.url);
 
         log.info(`levain vHEAD    (${__filename})`);
-        log.info(`  deno v${Deno.version.deno}`);
+        log.info(`Deno v${Deno.version.deno}`);
 
         log.debug("args " + JSON.stringify(myArgs));
 
         if (myArgs["wait-to-begin"]) {
             console.log("");
             console.log("");
-            let answer = prompt("Continue?", "Y");
-            if (!answer || !["Y", "YES"].includes(answer.toUpperCase())) {
-                log.info("");
-                log.info("Ok, aborting...");
-                Deno.exit(1);
-            }
+            CliUtil.askToContinue()
+
         }
 
         // Time to business!

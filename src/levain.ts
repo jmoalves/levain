@@ -4,6 +4,7 @@ import ConsoleAndFileLogger from './lib/logger/console_and_file_logger.ts'
 import {parseArgs} from "./lib/parse_args.ts";
 import {Timer} from "./lib/timer.ts";
 import LevainCli from "./levain_cli.ts";
+import CliUtil from "./lib/cli_util.ts";
 
 export async function runLevinWithLog(cmdArgs: string[] = []): Promise<ConsoleAndFileLogger | undefined> {
     let logFiles: string[] = [];
@@ -56,6 +57,8 @@ export async function runLevinWithLog(cmdArgs: string[] = []): Promise<ConsoleAn
 
         logger = await ConsoleAndFileLogger.setup(logFiles);
         logger.showLogFiles(logFiles);
+        CliUtil.askToContinue()
+
         log.info("");
 
         await new LevainCli().execute(myArgs);
