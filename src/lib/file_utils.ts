@@ -91,7 +91,7 @@ export default class FileUtils {
         return fileInfo.isDirectory
     }
 
-    static canCreateTempFileInDir(dir: string) {
+    static canCreateTempFileInDir(dir: string): boolean {
         try {
             const options = {
                 dir,
