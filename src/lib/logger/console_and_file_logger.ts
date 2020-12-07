@@ -87,7 +87,7 @@ export default class ConsoleAndFileLogger {
     }
 
     addLogFile(logFile: string) {
-        console.debug(`addLogFile ${logFile}`)
+        log.debug(`addLogFile ${logFile}`)
         try {
             const logFolder = path.dirname(logFile)
             if (!FileUtils.canWriteSync(logFolder)) {
