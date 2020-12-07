@@ -9,10 +9,11 @@ const folderThatDoesNotExist = './testdata/file_utils/--does_not_exist--';
 const readOnlyFile = './testdata/file_utils/read_only.txt';
 
 
-Deno.test('Should get file permissions in Windows', () => {
+Deno.test('should get file permissions in Windows', () => {
     if (OsUtils.isWindows()) {
-        if (Deno.statSync(readOnlyFile).mode !== 0) {
-            throw 'Now we can check file permissions with Deno in Windows. Please correct permission verifications in FileUtils'
+        const mode = Deno.statSync(readOnlyFile).mode;
+        if (mode) {
+            throw `Now we can check file permissions with Deno in Windows (${mode}). Please correct permission verifications in FileUtils`
         }
     }
 })
