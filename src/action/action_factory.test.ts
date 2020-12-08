@@ -5,30 +5,30 @@ import ActionFactory from "./action_factory.ts";
 import {assertArrayContainsInAnyOrder} from "../lib/test/more_asserts.ts";
 
 Deno.test('should know the assertContains action', () => {
-    const actionFactory = getActionFactory()
+    const factory = getActionFactory()
     const config = TestHelper.getConfig()
 
-    const action = actionFactory.get('assertContains', config)
+    const action = factory.get('assertContains', config)
 
     assert(action instanceof AssertContainsAction)
 })
 Deno.test('should throw exception when Action does not exist', () => {
-    const actionFactory = getActionFactory()
+    const factory = getActionFactory()
     const config = TestHelper.getConfig()
 
     assertThrows(
         () => {
-            actionFactory.get('thisActionDoesNotExist', config)
+            factory.get('thisActionDoesNotExist', config)
         },
         Error,
         'Action thisActionDoesNotExist not found - Aborting...'
     )
 })
 Deno.test('should list actions', () => {
-    const actionFactory = getActionFactory()
+    const factory = getActionFactory()
     const config = TestHelper.getConfig()
 
-    const actions: string[] = actionFactory.list()
+    const actions: string[] = factory.list()
 
     assertArrayContainsInAnyOrder(actions, [
         'addPath',
@@ -46,6 +46,6 @@ Deno.test('should list actions', () => {
     ])
 })
 
-function getActionFactory() {
+function getActionFactory(): ActionFactory {
     return new ActionFactory()
 }

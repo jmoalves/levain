@@ -8,15 +8,14 @@ import Package from './package/package.ts';
 import {handleQuotes} from "./parse_args.ts";
 
 // Commands
-import Install from "../cmd/install.ts";
-import Shell from "../cmd/shell.ts";
-import ListCommand from "../cmd/list_command.ts";
-
 import ActionFactory from "../action/action_factory.ts";
+import CommandFactory from "../cmd/command_factory.ts";
 
 export default class Loader {
     constructor(private config: Config) {
     }
+
+    private commandFactory = new CommandFactory();
 
     async command(cmd: string, args: string[]) {
         log.debug('')
@@ -26,7 +25,7 @@ export default class Loader {
         log.info("==================================");
         log.info(`${cmd} ${JSON.stringify(args)}`);
 
-        const handler: Command = this.loadCommandStatic(cmd);
+        const handler: Command = this.commandFactory.get(cmd, this.config)
         await handler.execute(args);
     }
 
@@ -55,25 +54,5 @@ export default class Loader {
         await handler.execute(pkg, args);
     }
 
-    loadCommandStatic(cmd: string): Command {
-        switch (cmd) {
-            case 'install':
-                return new Install(this.config);
-
-            case 'shell':
-                return new Shell(this.config);
-
-            case 'list':
-                return new ListCommand(this.config);
-
-            default:
-                throw new Error(`Command ${cmd} not found - Aborting...`);
-        }
-    }
-
-    private async loadCommandDynamic(cmd: string): Promise<Command> {
-        const module = await import(`../cmd/${cmd}.ts`);
-        return new module.default(this.config);
-    }
 
 }
