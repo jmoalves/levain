@@ -23,7 +23,7 @@ Deno.test('should list actions', () => {
         'saveConfig',
         'setEnv',
         'template',
-//        'checkFileExists',
+        'checkDirExists',
     ])
 })
 Deno.test('should know the assertContains action', () => {

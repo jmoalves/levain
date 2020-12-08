@@ -78,7 +78,7 @@ export default class ConsoleAndFileLogger {
     }
 
     static getLogFileInHomeFolder(): string {
-        return path.join(OsUtils.homeFolder, 'levain.log')
+        return path.join(OsUtils.homeDir, 'levain.log')
     }
 
     static getLogFileInExtraDir(extraDir: string) {

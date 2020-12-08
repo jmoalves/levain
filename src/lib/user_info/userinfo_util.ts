@@ -13,7 +13,7 @@ export default class UserInfoUtil {
     userInfo: UserInfo = new UserInfo()
 
     constructor(
-        public readonly userinfoFileUri: string = `${OsUtils.homeFolder}/.levain.yaml`
+        public readonly userinfoFileUri: string = `${OsUtils.homeDir}/.levain.yaml`
     ) {
     }
 

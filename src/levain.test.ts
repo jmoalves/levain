@@ -15,7 +15,7 @@ Deno.test('should create a homeLog and a tempLog by default', async () => {
 
             const logFiles = logger?.logFiles || []
             assertEquals(logFiles.length, 2)
-            const expectedHomeLog = path.resolve(OsUtils.homeFolder, 'levain.log')
+            const expectedHomeLog = path.resolve(OsUtils.homeDir, 'levain.log')
             assertFind(logFiles, it => it === expectedHomeLog, `couldn't find home ${expectedHomeLog} log in ${logFiles}`)
             assertFind<string>(logFiles, it => !!it.match(/levain-\d{8}-\d{6}-\w{8}.log/))
 

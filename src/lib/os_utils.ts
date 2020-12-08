@@ -12,7 +12,7 @@ export default class OsUtils {
         return userFromEnv
     }
 
-    static get homeFolder(): string {
+    static get homeDir(): string {
         const homeEnvStrings = ['HOME', 'USERPROFILE'];
         const folderFromEnv = envChain(...homeEnvStrings);
         if (!folderFromEnv) {
