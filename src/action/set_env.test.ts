@@ -1,14 +1,14 @@
 import {assertEquals, assertThrowsAsync, fail} from "https://deno.land/std/testing/asserts.ts";
 import SetEnv from "./set_env.ts";
-import FakeHelper from "../lib/test/fake_helper.ts";
+import TestHelper from "../lib/test/test_helper.ts";
 import Action from "./action.ts";
 import OsUtils from "../lib/os_utils.ts";
 
 Deno.test('should tell you which params are expected', async () => {
     try {
-        const config = FakeHelper.getConfig();
+        const config = TestHelper.getConfig();
         const action: Action = new SetEnv(config)
-        const mockPackage = FakeHelper.mockPackage()
+        const mockPackage = TestHelper.mockPackage()
 
         await action.execute(mockPackage, [])
 
@@ -18,9 +18,9 @@ Deno.test('should tell you which params are expected', async () => {
     }
 })
 Deno.test('should setEnv in config', async () => {
-    const config = FakeHelper.getConfig();
+    const config = TestHelper.getConfig();
     const action: Action = new SetEnv(config)
-    const mockPackage = FakeHelper.mockPackage()
+    const mockPackage = TestHelper.mockPackage()
 
     const envKey = 'my_env_var';
     const envValue = 'value';
@@ -31,9 +31,9 @@ Deno.test('should setEnv in config', async () => {
 Deno.test('should throw exception on unexpected param', async () => {
     await assertThrowsAsync(
         async () => {
-            const config = FakeHelper.getConfig();
+            const config = TestHelper.getConfig();
             const action: Action = new SetEnv(config)
-            const mockPackage = FakeHelper.mockPackage()
+            const mockPackage = TestHelper.mockPackage()
 
             await action.execute(mockPackage, ['--this-option-does-not-exist'])
         },
@@ -42,9 +42,9 @@ Deno.test('should throw exception on unexpected param', async () => {
     )
 })
 Deno.test('should allow --permanent option', async () => {
-    const config = FakeHelper.getConfig();
+    const config = TestHelper.getConfig();
     const action: Action = new SetEnv(config)
-    const mockPackage = FakeHelper.mockPackage()
+    const mockPackage = TestHelper.mockPackage()
     const envKey = 'levain-test-env-permanent';
     const envValue = 'myValue';
 

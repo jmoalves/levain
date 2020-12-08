@@ -3,7 +3,7 @@ import {LogLevels} from "https://deno.land/std/log/levels.ts"
 import Config from "../config.ts";
 import {MockPackage} from "../package/mock_package.ts";
 
-export default class FakeHelper {
+export default class TestHelper {
     static getConfig(): Config {
         const myArgs = {};
         return new Config(myArgs)
