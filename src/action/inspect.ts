@@ -6,7 +6,7 @@ import Config from "../lib/config.ts";
 import Package from '../lib/package/package.ts';
 import {parseArgs} from "../lib/parse_args.ts";
 
-export default class Inpect implements Action {
+export default class Inspect implements Action {
     constructor(private config: Config) {
     }
 
