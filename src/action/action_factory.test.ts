@@ -4,6 +4,28 @@ import TestHelper from "../lib/test/test_helper.ts";
 import ActionFactory from "./action_factory.ts";
 import {assertArrayContainsInAnyOrder} from "../lib/test/more_asserts.ts";
 
+Deno.test('should list actions', () => {
+    const factory = getActionFactory()
+    const config = TestHelper.getConfig()
+
+    const actions: string[] = factory.list()
+
+    assertArrayContainsInAnyOrder(actions, [
+        'addPath',
+        'assertContains',
+        'contextMenu',
+        'copy',
+        'defaultPackage',
+        'extract',
+        'inspect',
+        'levainShell',
+        'mkdir',
+        'saveConfig',
+        'setEnv',
+        'template',
+//        'checkFileExists',
+    ])
+})
 Deno.test('should know the assertContains action', () => {
     const factory = getActionFactory()
     const config = TestHelper.getConfig()
@@ -24,27 +46,7 @@ Deno.test('should throw exception when Action does not exist', () => {
         'Action thisActionDoesNotExist not found - Aborting...'
     )
 })
-Deno.test('should list actions', () => {
-    const factory = getActionFactory()
-    const config = TestHelper.getConfig()
 
-    const actions: string[] = factory.list()
-
-    assertArrayContainsInAnyOrder(actions, [
-        'addPath',
-        'assertContains',
-        'contextMenu',
-        'copy',
-        'defaultPackage',
-        'extract',
-        'inspect',
-        'levainShell',
-        'mkdir',
-        'saveConfig',
-        'setEnv',
-        'template',
-    ])
-})
 
 function getActionFactory(): ActionFactory {
     return new ActionFactory()

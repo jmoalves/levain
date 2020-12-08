@@ -4,6 +4,18 @@ import TestHelper from "../lib/test/test_helper.ts";
 import {assert, assertThrows} from "https://deno.land/std/testing/asserts.ts";
 import {assertArrayContainsInAnyOrder} from "../lib/test/more_asserts.ts";
 
+Deno.test('should list actions', () => {
+    const factory = getCommandFactory()
+    const config = TestHelper.getConfig()
+
+    const actions: string[] = factory.list()
+
+    assertArrayContainsInAnyOrder(actions, [
+        'install',
+        'shell',
+        'list',
+    ])
+})
 Deno.test('loadCommand should know the list command', () => {
     const factory = getCommandFactory()
     const config = TestHelper.getConfig()
@@ -23,18 +35,6 @@ Deno.test('should throw exception when command was not found', () => {
         Error,
         'Command thisCommandDoesNotExist not found - Aborting...'
     )
-})
-Deno.test('should list actions', () => {
-    const factory = getCommandFactory()
-    const config = TestHelper.getConfig()
-
-    const actions: string[] = factory.list()
-
-    assertArrayContainsInAnyOrder(actions, [
-        'install',
-        'shell',
-        'list',
-    ])
 })
 
 function getCommandFactory(): CommandFactory {
