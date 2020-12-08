@@ -18,7 +18,6 @@ Deno.test('should get file permissions in Windows', () => {
     }
 })
 //
-//
 // isReadOnly
 //
 function verifyFileReadWrite(fileUri: string, shouldRead: boolean, shouldWrite: boolean = true) {
