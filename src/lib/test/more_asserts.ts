@@ -52,6 +52,11 @@ export function assertArrayContainsInAnyOrder<T>(
     const missedExpectations = expected.filter(it => !actual.includes(it))
     const missedActualElements = actual.filter(it => !expected.includes(it))
 
+    assertEquals(
+        actual.sort().toString(),
+        expected.sort().toString(),
+    )
+
     assert(
         (missedExpectations.length === 0) && (missedActualElements.length === 0),
         `expected ${JSON.stringify(actual)} to have the same elements as ${JSON.stringify(expected)}`,

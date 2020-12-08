@@ -90,6 +90,5 @@ Deno.test('should find out that one element is missing', () => {
             assertArrayContainsInAnyOrder([1, 2], [1, 2, 3])
         },
         AssertionError,
-        `expected [1,2] to have the same elements as [1,2,3]`
     )
 })
