@@ -1,29 +1,31 @@
 import Install from "./install.ts";
 import Shell from "./shell.ts";
-import ListCommand from "./list_command.ts";
 import Command from "./command.ts";
 import Config from "../lib/config.ts";
+import ListCommand from "./list_command.ts";
 
+const commandMap = new Map<string, (config: Config) => Command>([
+    ['install', (config: Config) => new Install(config)],
+    ['shell', (config: Config) => new Shell(config)],
+    ['list', (config: Config) => new ListCommand(config)],
+])
 export default class CommandFactory {
 
+    list() {
+        return [...commandMap.keys()];
+    }
+
     get(cmd: string, config: Config): Command {
-        switch (cmd) {
-            case 'install':
-                return new Install(config);
-
-            case 'shell':
-                return new Shell(config);
-
-            case 'list':
-                return new ListCommand(config);
-
-            default:
-                throw new Error(`Command ${cmd} not found - Aborting...`);
+        const builder = commandMap.get(cmd)
+        if (!builder) {
+            throw new Error(`Command ${cmd} not found - Aborting...`);
         }
+        return builder(config)
     }
 
     // private async loadCommandDynamic(cmd: string): Promise<Command> {
     //     const module = await import(`../cmd/${cmd}.ts`);
     //     return new module.default(config);
     // }
+
 }
