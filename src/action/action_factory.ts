@@ -13,54 +13,36 @@ import Template from "./template.ts";
 import AssertContainsAction from "./assert_contains_action.ts";
 import Config from "../lib/config.ts";
 
+const actionMap = new Map<string, (config: Config) => Action>([
+    ['addPath', (config: Config) => new AddPath(config)],
+    ['copy', (config: Config) => new Copy(config)],
+    ['contextMenu', (config: Config) => new ContextMenu(config)],
+    ['defaultPackage', (config: Config) => new DefaultPackage(config)],
+    ['extract', (config: Config) => new Extract(config)],
+    ['inspect', (config: Config) => new Inspect(config)],
+    ['levainShell', (config: Config) => new LevainShell(config)],
+    ['mkdir', (config: Config) => new Mkdir(config)],
+    ['saveConfig', (config: Config) => new Noop(config, 'saveConfig')],
+    ['setEnv', (config: Config) => new SetEnv(config)],
+    ['template', (config: Config) => new Template(config)],
+    ['assertContains', (config: Config) => new AssertContainsAction(config)],
+])
 export default class ActionFactory {
 
+    list(): string[] {
+        return [...actionMap.keys()];
+    }
+
     get(action: string, config: Config): Action {
-        switch (action) {
-            case 'addPath':
-                return new AddPath(config);
-
-            case 'copy':
-                return new Copy(config);
-
-            case 'contextMenu':
-                return new ContextMenu(config);
-
-            case 'defaultPackage':
-                return new DefaultPackage(config);
-
-            case 'extract':
-                return new Extract(config);
-
-            case 'inspect':
-                return new Inspect(config);
-
-            case 'levainShell':
-                return new LevainShell(config);
-
-            case 'mkdir':
-                return new Mkdir(config);
-
-            case 'saveConfig':
-                return new Noop(config, action);
-
-            case 'setEnv':
-                return new SetEnv(config);
-
-            case 'template':
-                return new Template(config);
-
-            case 'assertContains':
-                return new AssertContainsAction(config);
-
-            default:
-                throw new Error(`Action ${action} not found - Aborting...`);
+        const builder = actionMap.get(action)
+        if (!builder) {
+            throw new Error(`Action ${action} not found - Aborting...`);
         }
+        return builder(config)
     }
 
     // private async loadActionDynamic(action: string): Promise<Action> {
     //     const module = await import(`../action/${action}.ts`);
     //     return new module.default(config);
     // }
-
 }
