@@ -6,12 +6,12 @@ import Config from "../lib/config.ts";
 import {existsSync} from "https://deno.land/std/fs/mod.ts";
 import {parseArgs} from "../lib/parse_args.ts";
 
-export default class CheckDirExists implements Action {
+export default class CheckChainDirExists implements Action {
     constructor(private config: Config) {
     }
 
     async execute(pkg: Package, parameters: string[]) {
-        log.info(`CHECK FOLDER EXISTS ${parameters.join(', ')}`)
+        log.info(`CHECK CHAIN DIRS EXIST ${parameters.join(', ')}`)
 
         let args = parseArgs(parameters, {
             stringMany: [
@@ -28,7 +28,7 @@ export default class CheckDirExists implements Action {
         if (!found) {
             throw new Error(`dirs not found: ${dirs.join(', ')}`)
         }
-        
+
         this.config.setVar(args.saveVar, found);
     }
 

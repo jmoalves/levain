@@ -22,7 +22,7 @@ Deno.test('should list actions', () => {
         'saveConfig',
         'setEnv',
         'template',
-        'checkDirExists',
+        'checkChainDirExists',
         'echo',
     ])
 })
