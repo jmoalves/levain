@@ -102,6 +102,10 @@ export default class Config {
         return this._context;
     }
 
+    get defaultPackage(): string {
+        return this.currentDirPackage?.name || this._defaultPackage || "levain";
+    }
+
     set defaultPackage(pkgName: string) {
         if (this._defaultPackage) {
             log.warning("");
@@ -132,10 +136,6 @@ export default class Config {
         }
 
         return undefined;
-    }
-
-    get defaultPackage(): string {
-        return this.currentDirPackage?.name || this._defaultPackage || "levain";
     }
 
     setVar(name: string, value: string): void {
