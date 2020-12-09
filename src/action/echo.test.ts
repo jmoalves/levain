@@ -1,7 +1,7 @@
 import Echo from "./echo.ts";
 import TestHelper from "../lib/test/test_helper.ts";
 import TestLogger from "../lib/logger/test_logger.ts";
-import {assertEquals} from "https://deno.land/std/testing/asserts.ts";
+import {assertArrayEndsWith} from "../lib/test/more_asserts.ts";
 
 Deno.test('should show a text', async () => {
     const testLogger = await TestLogger.setup()
@@ -10,11 +10,7 @@ Deno.test('should show a text', async () => {
 
     await action.execute(TestHelper.mockPackage(), ['Hello', 'world!'])
 
-    assertEquals(testLogger.messages, [
-        // TODO Remove the fist two lines?
-        "INFO DEFAULT levainHome=/Users/rafaelwalter/levain",
-        "INFO LOAD /Users/rafaelwalter/levain/.levain/config.json",
-        // This is what I expected...
+    assertArrayEndsWith<string>(testLogger.messages, [
         'INFO ECHO Hello, world!'
     ])
 })
