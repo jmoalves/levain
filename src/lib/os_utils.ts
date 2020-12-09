@@ -43,7 +43,7 @@ export default class OsUtils {
     static async setEnvPermanent(key: string, value: string) {
         OsUtils.onlyInWindows()
         Deno.env.set(key, value)
-        
+
         await this.runAndLog(`setx ${key} ${value}`)
     }
 
@@ -86,5 +86,13 @@ export default class OsUtils {
         const cmdLine = OsUtils.isWindows() ? 'cmd /c cls' : 'clear';
         const cmd = cmdLine.split(' ')
         await Deno.run({cmd})
+    }
+
+    static makeReadOnly(path: string) {
+        Deno.chmodSync(path, 0o444)
+    }
+
+    static makeReadWrite(path: string) {
+        Deno.chmodSync(path, 0o777)
     }
 }

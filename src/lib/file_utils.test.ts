@@ -38,17 +38,18 @@ Deno.test('should detect a RW permission on a file', () => {
     const fileUri = './testdata/file_utils/can_read_and_write_this_file.txt'
     verifyFileReadWrite(fileUri, true, true);
 })
-
-Deno.test('should detect read only folder', () => {
-    const fileUri = readOnlyFolder
-    verifyFileReadWrite(fileUri, true, false);
-})
-
-Deno.test('should detect read only file', () => {
-    const fileUri = readOnlyFile
-    verifyFileReadWrite(fileUri, true, false);
-})
-
+if (!OsUtils.isWindows()) {
+    Deno.test('should detect read only folder', () => {
+        const path = readOnlyFolder
+        OsUtils.makeReadOnly(path)
+        verifyFileReadWrite(path, true, false);
+    })
+    Deno.test('should detect read only file', () => {
+        const path = readOnlyFile
+        OsUtils.makeReadOnly(path)
+        verifyFileReadWrite(path, true, false);
+    })
+}
 Deno.test('should detect a folder without permissions', () => {
     // FIXME Will not need the folowing line when Deno.statSync.mode is fully implemented for Windows
     const fileUri = OsUtils.isWindows()
