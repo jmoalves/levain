@@ -5,14 +5,9 @@ import Config from "../lib/config.ts";
 
 export default class Echo implements Action {
     constructor(config: Config) {
-
     }
 
-
-    execute(pkg: Package, parameters: string[]): Promise<void> {
-        log.info(`ECHO ${parameters.join(', ')}`)
-
-        return Promise.resolve(undefined);
+    async execute(pkg: Package, parameters: string[]) {
+        log.info(`ECHO ${parameters.join(', ')}`);
     }
-
 }

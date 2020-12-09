@@ -7,11 +7,10 @@ import {existsSync} from "https://deno.land/std/fs/mod.ts";
 import {parseArgs} from "../lib/parse_args.ts";
 
 export default class CheckDirExists implements Action {
-
     constructor(private config: Config) {
     }
 
-    async execute(pkg: Package, parameters: string[]): Promise<void> {
+    async execute(pkg: Package, parameters: string[]) {
         log.info(`CHECK FOLDER EXISTS ${parameters.join(', ')}`)
 
         let args = parseArgs(parameters, {
@@ -29,27 +28,11 @@ export default class CheckDirExists implements Action {
         if (!found) {
             throw new Error(`dirs not found: ${dirs.join(', ')}`)
         }
-
-        if (!this.config.context.action) {
-            this.config.context.action = {};
-        }
-
-        if (!this.config.context.action.checkFolderExists) {
-            this.config.context.action.checkFolderExists = {};
-        }
-
-        if (!this.config.context.action.checkFolderExists.env) {
-            this.config.context.action.checkFolderExists.env = {};
-        }
         
         this.config.setVar(args.saveVar, found);
-        this.config.context.action.checkFolderExists.env[args.saveVar] = found;
-
-        return Promise.resolve(undefined);
     }
 
     verifyArgs(args: any) {
-
         if (!args._ || args._.length === 0) {
             throw "Inform the dirs that at least one should exist"
         }
