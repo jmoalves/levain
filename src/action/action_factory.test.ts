@@ -23,6 +23,7 @@ Deno.test('should list actions', () => {
         'setEnv',
         'template',
         'checkDirExists',
+        'echo',
     ])
 })
 Deno.test('should know the assertContains action', () => {
@@ -45,7 +46,6 @@ Deno.test('should throw exception when Action does not exist', () => {
         'Action thisActionDoesNotExist not found - Aborting...'
     )
 })
-
 
 function getActionFactory(): ActionFactory {
     return new ActionFactory()

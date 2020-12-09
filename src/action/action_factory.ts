@@ -13,6 +13,7 @@ import Template from "./template.ts";
 import AssertContainsAction from "./assert_contains_action.ts";
 import Config from "../lib/config.ts";
 import CheckDirExists from "./check_folder_exists.ts";
+import Echo from "./echo.ts";
 
 const actionMap = new Map<string, (config: Config) => Action>([
     ['addPath', (config: Config) => new AddPath(config)],
@@ -28,6 +29,7 @@ const actionMap = new Map<string, (config: Config) => Action>([
     ['template', (config: Config) => new Template(config)],
     ['assertContains', (config: Config) => new AssertContainsAction(config)],
     ['checkDirExists', (config: Config) => new CheckDirExists(config)],
+    ['echo', (config: Config) => new Echo(config)],
 ])
 export default class ActionFactory {
 
