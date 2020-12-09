@@ -36,10 +36,17 @@ Deno.test('should save first found in saveVar', async () => {
 
     await action.execute(TestHelper.mockPackage(), params)
 
-    // const envFoundFolder = Deno.env.get('foundFolder')
-    // assertEquals(envFoundFolder, OsUtils.homeDir)
     const foundFolder = config.getVar('foundFolder')
     assertEquals(foundFolder, OsUtils.homeDir)
-    const actionFoundFolder = config.context?.action?.checkFolderExists?.env['foundFolder']
-    assertEquals(actionFoundFolder, OsUtils.homeDir)
+})
+Deno.test('should accept a default value', async () => {
+    const config = TestHelper.getConfig();
+    const action = new CheckChainDirExists(config)
+    const defaultValue = 'defaultFolder'
+    const params = ['--saveVar=foundFolder', `--default=${defaultValue}`, thisFolderDoesNotExist]
+
+    await action.execute(TestHelper.mockPackage(), params)
+
+    const foundFolder = config.getVar('foundFolder')
+    assertEquals(foundFolder, defaultValue)
 })

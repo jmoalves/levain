@@ -11,19 +11,26 @@ export default class CheckChainDirExists implements Action {
     }
 
     async execute(pkg: Package, parameters: string[]) {
-        log.info(`CHECK CHAIN DIRS EXIST ${parameters.join(', ')}`)
+        log.info(`CHECK CHAIN DIRS EXIST ${parameters.join(' ')}`)
 
         let args = parseArgs(parameters, {
-            stringMany: [
-                "saveVar"
+            stringOnce: [
+                "saveVar",
+                "default",
             ]
         });
 
         this.verifyArgs(args); // throws
 
-        const dirs = parameters;
-        const found = dirs
-            .find(it => existsSync(it))
+        const dirs: string[] = args._;
+        const defaultValue = args.default
+
+        let found = dirs
+                .find(it => {
+                    console.debug(`checking dir ${it}`)
+                    return existsSync(it)
+                })
+            || defaultValue
 
         if (!found) {
             throw new Error(`dirs not found: ${dirs.join(', ')}`)
