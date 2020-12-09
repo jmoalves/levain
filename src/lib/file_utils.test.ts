@@ -1,8 +1,9 @@
-import {assertEquals} from "https://deno.land/std/testing/asserts.ts";
+import {assertEquals, assertThrows,} from "https://deno.land/std/testing/asserts.ts";
 import {existsSync} from "https://deno.land/std/fs/mod.ts";
 
 import FileUtils from "./file_utils.ts";
 import OsUtils from './os_utils.ts';
+import TestHelper from './test/test_helper.ts';
 
 const readOnlyFolder = './testdata/file_utils/read_only_folder';
 const folderThatDoesNotExist = './testdata/file_utils/--does_not_exist--';
@@ -90,17 +91,27 @@ Deno.test('should be able to write in a temp dir', () => {
 
     assertEquals(canWrite, true)
 })
-Deno.test('should not be able to write in a read only dir', () => {
-    const readOnlyDir = readOnlyFolder
+if (OsUtils.isWindows()) {
+    Deno.test('adjust test when chmodSync is implemented in Windows', () => {
+        assertThrows(
+            () => {
+                Deno.chmodSync(readOnlyFolder, 0o000);
+            },
+            Error,
+            'Not implemented'
+        )
+    })
+} else {
+    Deno.test('should not be able to write in a read only dir', () => {
+        Deno.chmodSync(readOnlyFolder, 0o000);
+        const canWrite = FileUtils.canCreateTempFileInDir(readOnlyFolder)
 
-    const canWrite = FileUtils.canCreateTempFileInDir(readOnlyDir)
+        assertEquals(canWrite, false)
+    })
+}
 
-    assertEquals(canWrite, false)
-})
 Deno.test('should not be able to write in a dir that does not exist', () => {
-    const readOnlyDir = readOnlyFolder
-
-    const canWrite = FileUtils.canCreateTempFileInDir(readOnlyDir)
+    const canWrite = FileUtils.canCreateTempFileInDir(TestHelper.thisFolderDoesNotExist)
 
     assertEquals(canWrite, false)
 })

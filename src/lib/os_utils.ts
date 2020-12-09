@@ -42,7 +42,8 @@ export default class OsUtils {
 
     static async setEnvPermanent(key: string, value: string) {
         OsUtils.onlyInWindows()
-        await this.runAndLog(`set ${key}=${value}`)
+        Deno.env.set(key, value)
+        
         await this.runAndLog(`setx ${key} ${value}`)
     }
 
