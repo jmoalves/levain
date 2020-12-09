@@ -101,8 +101,8 @@ export default class FileUtils {
             Deno.removeSync(tempFile)
             return true
         } catch (error) {
-            log.warning(`Cannot create a file in ${dir}`)
-            log.warning(error)
+            log.debug(`Cannot create a file in ${dir}`)
+            log.debug(error)
             return false
         }
     }
