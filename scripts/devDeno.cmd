@@ -16,7 +16,7 @@ if not exist %levainRoot%\bin\deno.exe (
 set DENO_DIR=%levainRoot%\bin
 %levainRoot%\bin\deno.exe -V info
 %levainRoot%\bin\deno.exe cache --unstable --reload %levainRoot%\src\levain.ts
-rmdir /q/s %levainRoot%\dist
+if exist %levainRoot%\dist rmdir /q/s %levainRoot%\dist
 
 echo.
 echo.
