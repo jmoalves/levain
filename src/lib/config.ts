@@ -142,6 +142,10 @@ export default class Config {
         this._env[name] = value;
     }
 
+    getVar(name: string): string {
+        return this._env[name];
+    }
+
     replaceVars(text: string, pkgName?: string | undefined): string {
         // TODO: Refactor this... Use ChainOfResponsibility Pattern...
 

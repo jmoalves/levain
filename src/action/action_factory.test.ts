@@ -6,7 +6,6 @@ import {assertArrayContainsInAnyOrder} from "../lib/test/more_asserts.ts";
 
 Deno.test('should list actions', () => {
     const factory = getActionFactory()
-    const config = TestHelper.getConfig()
 
     const actions: string[] = factory.list()
 
