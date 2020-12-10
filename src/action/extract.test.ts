@@ -1,7 +1,7 @@
 import Extract from "./extract.ts";
 import TestHelper from "../lib/test/test_helper.ts";
-import {assertEquals, assertMatch,} from "https://deno.land/std/testing/asserts.ts";
-import OsUtils from "../lib/os_utils.ts";
+import {assertArrayIncludes, assertMatch,} from "https://deno.land/std/testing/asserts.ts";
+import DirUtils from "../lib/dir_utils.ts";
 
 Deno.test('should check if source exists', async () => {
     const src = TestHelper.fileThatDoesNotExist
@@ -17,8 +17,10 @@ Deno.test('should check if source exists', async () => {
         assertMatch(err.message, pattern)
     }
 })
-if (OsUtils.isWindows()) {
-    Deno.test('should extract src to dst', async () => {
+
+Deno.test({
+    name: 'should extract src to dst',
+    fn: async () => {
         const src = TestHelper.validZipFile
         const dst = Deno.makeTempDirSync()
 
@@ -28,11 +30,14 @@ if (OsUtils.isWindows()) {
 
         await action.execute(pkg, [src, dst])
 
-        const dstFiles = [...Deno.readDirSync(dst)]
+        const dstFiles = DirUtils.listFileNames(dst)
 
-        assertEquals(dstFiles, [
-            'abc123youandme',
+        assertArrayIncludes(dstFiles, [
+            `${dst}/test`,
+            `${dst}/test/abc.txt`,
+            `${dst}/test/hello.txt`,
         ])
-    })
-}
-
+    },
+    sanitizeResources: false,
+    sanitizeOps: false,
+})

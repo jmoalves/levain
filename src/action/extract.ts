@@ -1,6 +1,7 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import {existsSync} from "https://deno.land/std/fs/mod.ts";
+import {unZipFromFile} from 'https://deno.land/x/zip@v1.1.0/mod.ts'
 
 import Action from "./action.ts";
 import Config from "../lib/config.ts";
@@ -46,7 +47,7 @@ abstract class Extractor {
     async extract(strip: boolean, src: string, dst: string) {
         // TODO: Use download cache instead of temp file
         const safeTempDir = this.config.levainSafeTempDir
-        console.debug(`>>>> safeTempDir ${safeTempDir}`)
+        log.debug(`safeTempDir ${safeTempDir}`)
         let tmpRootDir = Deno.makeTempDirSync({
             dir: safeTempDir,
             prefix: 'extract-'
@@ -111,7 +112,11 @@ abstract class Extractor {
 class ExtractorFactory {
     createExtractor(config: Config, src: string): Extractor {
         if (src.endsWith(".zip")) {
-            return new SevenZip(config); //new Unzipper(config);
+            if (OsUtils.isWindows()) {
+                return new SevenZip(config); //new Unzipper(config);
+            } else {
+                return new DenoZip(config)
+            }
         }
 
         if (src.endsWith(".7z.exe")) {
@@ -123,6 +128,22 @@ class ExtractorFactory {
         }
 
         throw `${src} - file not supported.`;
+    }
+}
+
+class DenoZip extends Extractor {
+    constructor(config: Config) {
+        super(config);
+    }
+
+    async extractImpl(src: string, dst: string) {
+        log.debug(`-- Deno unZIP ${src} => ${dst}`);
+
+        console.log(await unZipFromFile(
+            src,
+            dst,
+            {includeFileName: false}
+        ))
     }
 }
 
