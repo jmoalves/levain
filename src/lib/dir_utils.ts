@@ -10,4 +10,12 @@ export default class DirUtils {
     static listFiles(path: string): WalkEntry[] {
         return [...walkSync(path)];
     }
+
+    static normalizePaths(paths: string[]): string[] {
+        return paths.map<string>(it => this.normalizePath(it))
+    }
+
+    static normalizePath(path: string): string {
+        return path.replace(/\\/g, '/');
+    }
 }

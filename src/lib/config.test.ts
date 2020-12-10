@@ -98,19 +98,20 @@ Deno.test('should have levainConfigDir', () => {
 
     const dir = config.levainConfigDir
 
-    assertMatch(dir, /\/\.levain$/)
+    assertMatch(dir, /(?:\/|\\)\.levain$/)
+
 })
 Deno.test('should have levainSafeTempDir', () => {
     const config = new Config([])
 
     const dir = config.levainSafeTempDir
 
-    assertMatch(dir, /\/\.levain\/temp$/)
+    assertMatch(dir, /(?:\/|\\)\.levain(?:\/|\\)temp$/)
 })
 Deno.test('should have levainBackupDir', () => {
     const config = new Config([])
 
     const dir = config.levainBackupDir
 
-    assertMatch(dir, /\/\.levain\/backup$/)
+    assertMatch(dir, /(?:\/|\\)\.levain(?:\/|\\)backup$/)
 })
