@@ -1,4 +1,4 @@
-import {assert, assertEquals} from "https://deno.land/std/testing/asserts.ts";
+import {assert, assertEquals, assertMatch} from "https://deno.land/std/testing/asserts.ts";
 
 import Config from './config.ts';
 import Repository from './repository/repository.ts';
@@ -83,4 +83,34 @@ Deno.test('should add extra repo', () => {
     const repos: Repository[] = (chainRepo as ChainRepository).repositories
     assertEquals(repos.length, 3)
 })
+//
+// dirs
+//
+Deno.test('should have levainHome', () => {
+    const config = new Config([])
 
+    const dir = config.levainHome
+
+    assertMatch(dir, /levain$/)
+})
+Deno.test('should have levainConfigDir', () => {
+    const config = new Config([])
+
+    const dir = config.levainConfigDir
+
+    assertMatch(dir, /\/\.levain$/)
+})
+Deno.test('should have levainSafeTempDir', () => {
+    const config = new Config([])
+
+    const dir = config.levainSafeTempDir
+
+    assertMatch(dir, /\/\.levain\/temp$/)
+})
+Deno.test('should have levainBackupDir', () => {
+    const config = new Config([])
+
+    const dir = config.levainBackupDir
+
+    assertMatch(dir, /\/\.levain\/backup$/)
+})

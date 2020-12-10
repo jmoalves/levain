@@ -1,5 +1,6 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
+import {existsSync} from "https://deno.land/std/fs/mod.ts";
 
 import Action from "./action.ts";
 import Config from "../lib/config.ts";
@@ -25,8 +26,10 @@ export default class Extract implements Action {
             throw new Error("You must inform the file to extract and the destination directory");
         }
 
-        // TODO: Check files
         const src = path.resolve(pkg.pkgDir, args._[0]);
+        if (!existsSync(src)) {
+            throw Error(`Cannot find source file "${src}"`)
+        }
         const dst = path.resolve(pkg.baseDir, args._[1]);
 
         log.info(`EXTRACT ${src} => ${dst}`);
@@ -42,8 +45,10 @@ abstract class Extractor {
 
     async extract(strip: boolean, src: string, dst: string) {
         // TODO: Use download cache instead of temp file
+        const safeTempDir = this.config.levainSafeTempDir
+        console.debug(`>>>> safeTempDir ${safeTempDir}`)
         let tmpRootDir = Deno.makeTempDirSync({
-            dir: this.config.levainSafeTempDir,
+            dir: safeTempDir,
             prefix: 'extract-'
         });
         log.debug(`- TEMP ${tmpRootDir}`);

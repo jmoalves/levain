@@ -112,7 +112,7 @@ if (OsUtils.isWindows()) {
 }
 
 Deno.test('should not be able to write in a dir that does not exist', () => {
-    const canWrite = FileUtils.canCreateTempFileInDir(TestHelper.thisFolderDoesNotExist)
+    const canWrite = FileUtils.canCreateTempFileInDir(TestHelper.folderThatDoesNotExist)
 
     assertEquals(canWrite, false)
 })

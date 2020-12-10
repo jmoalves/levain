@@ -87,15 +87,17 @@ export default class Config {
     }
 
     get levainRegistry(): string {
-        return path.resolve(this.levainHome, ".levain", "registry");
+        return path.resolve(this.levainConfigDir, "registry");
     }
 
     get levainSafeTempDir(): string {
-        return path.resolve(this.levainHome, ".levain", "temp");
+        const dir = path.resolve(this.levainConfigDir, "temp");
+        ensureDirSync(dir)
+        return dir;
     }
 
     get levainBackupDir(): string {
-        return path.resolve(this.levainHome, ".levain", "backup");
+        return path.resolve(this.levainConfigDir, "backup");
     }
 
     get context(): any {

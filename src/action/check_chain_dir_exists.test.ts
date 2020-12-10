@@ -10,7 +10,7 @@ Deno.test('should check if folder exists', async () => {
 })
 Deno.test('should throw error if dirs do not exist', async () => {
     const action = new CheckChainDirExists(TestHelper.getConfig())
-    const params = [TestHelper.thisFolderDoesNotExist, '123']
+    const params = [TestHelper.folderThatDoesNotExist, '123']
 
     await assertThrowsAsync(
         async () => {
@@ -22,14 +22,14 @@ Deno.test('should throw error if dirs do not exist', async () => {
 })
 Deno.test('should check if at least one folder exists', async () => {
     const action = new CheckChainDirExists(TestHelper.getConfig())
-    const params = [TestHelper.thisFolderDoesNotExist, TestHelper.folderThatAlwaysExists]
+    const params = [TestHelper.folderThatDoesNotExist, TestHelper.folderThatAlwaysExists]
 
     await action.execute(TestHelper.mockPackage(), params)
 })
 Deno.test('should save first found in saveVar', async () => {
     const config = TestHelper.getConfig();
     const action = new CheckChainDirExists(config)
-    const params = ['--saveVar=foundFolder', TestHelper.thisFolderDoesNotExist, TestHelper.folderThatAlwaysExists]
+    const params = ['--saveVar=foundFolder', TestHelper.folderThatDoesNotExist, TestHelper.folderThatAlwaysExists]
 
     await action.execute(TestHelper.mockPackage(), params)
 
@@ -43,7 +43,7 @@ Deno.test('should accept a default value', async () => {
     const params = [
         '--saveVar=foundFolder',
         `--default=${defaultValue}`,
-        TestHelper.thisFolderDoesNotExist,
+        TestHelper.folderThatDoesNotExist,
         TestHelper.anotherFolderThatDoesNotExist,
     ]
 
@@ -59,7 +59,7 @@ Deno.test('should find dir even with a default value', async () => {
     const params = [
         '--saveVar=foundFolder',
         `--default=${defaultValue}`,
-        TestHelper.thisFolderDoesNotExist,
+        TestHelper.folderThatDoesNotExist,
         TestHelper.folderThatAlwaysExists,
         TestHelper.anotherFolderThatDoesNotExist,
     ]

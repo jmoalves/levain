@@ -5,6 +5,7 @@ import {MockPackage} from "../package/mock_package.ts";
 import OsUtils from '../os_utils.ts';
 
 export default class TestHelper {
+
     static getConfig(): Config {
         const myArgs = {};
         return new Config(myArgs)
@@ -26,8 +27,10 @@ export default class TestHelper {
         return new MockPackage()
     }
 
-    static thisFolderDoesNotExist = 'this-folder-does-not-exist';
-    static anotherFolderThatDoesNotExist = 'another-folder-that-does-not-exist';
-    static folderThatAlwaysExists = OsUtils.homeDir;
+    static readonly folderThatAlwaysExists = OsUtils.homeDir;
+    static readonly folderThatDoesNotExist = 'this-folder-does-not-exist';
+    static readonly anotherFolderThatDoesNotExist = 'another-folder-that-does-not-exist';
+    static readonly fileThatDoesNotExist = `${TestHelper.folderThatAlwaysExists}/this-file-does-not-exist.txt`;
+    static readonly validZipFile = '../testdata/extract/test.zip'
 
 }
