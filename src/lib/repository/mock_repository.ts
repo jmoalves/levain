@@ -1,8 +1,8 @@
-import Repository from "./repository.ts";
 import {MockPackage} from "../package/mock_package.ts";
 import Package from "../package/package.ts";
+import AbstractRepository from './abstract_repository.ts';
 
-export default class MockRepository implements Repository {
+export default class MockRepository extends AbstractRepository {
     constructor(
         public name: string = 'mockRepo',
         public packages: Array<Package> = [
@@ -10,6 +10,7 @@ export default class MockRepository implements Repository {
             new MockPackage('anotherPackage', '0.1.2'),
         ],
     ) {
+        super();
     }
 
     resolvePackage(packageName: string): Package | undefined {

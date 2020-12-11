@@ -44,4 +44,14 @@ export default class TestHelper {
             yamlStr,
         )
     }
+
+    static getTestFilePackage(filePath = 'awesomeYaml.levain.yaml'): FileSystemPackage {
+        return new FileSystemPackage(
+            TestHelper.getConfig(),
+            'awesomeYaml',
+            './testdata/testRepo',
+            filePath,
+            '',
+        )
+    }
 }

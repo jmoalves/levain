@@ -3,12 +3,14 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import Repository from './repository.ts'
 import Config from "../config.ts";
 import Package from "../package/package.ts";
+import AbstractRepository from './abstract_repository.ts';
 
-export default class ChainRepository implements Repository {
+export default class ChainRepository extends AbstractRepository {
     constructor(
         public config: Config,
         public repositories: Repository[],
     ) {
+        super();
         this.name = `chainRepo for ${this.repositories?.map(repo => repo.name).join(', ')}`;
         this.packages = this.listPackages();
     }

@@ -3,18 +3,22 @@ import * as path from "https://deno.land/std/path/mod.ts";
 import {existsSync, ExpandGlobOptions, expandGlobSync} from "https://deno.land/std/fs/mod.ts";
 
 import Config from '../config.ts';
-import Repository from './repository.ts'
 import Package from '../package/package.ts'
 import FileSystemPackage from '../package/file_system_package.ts'
 import {Timer} from "../timer.ts";
 import FileUtils from "../file_utils.ts";
+import AbstractRepository from './abstract_repository.ts';
 
-export default class FileSystemRepository implements Repository {
+export default class FileSystemRepository extends AbstractRepository {
     readonly name;
 
     readonly excludeDirs = ['.git', 'node_modules', 'npm-cache', '$Recycle.Bin', 'temp', 'tmp']
 
-    constructor(private config: Config, private rootDir: string) {
+    constructor(
+        private config: Config,
+        private rootDir: string,
+        ) {
+        super();
         this.name = `fileSystemRepo for ${this.rootDir}`;
 
         log.debug(`FSRepo: Root=${this.rootDir}`);
@@ -60,14 +64,18 @@ export default class FileSystemRepository implements Repository {
             this._packages = this.listPackages()
                 .sort((a, b) => a.name.localeCompare(b.name));
         }
+
         return this._packages;
+    }
+
+    invalidatePackages() {
+        this._packages = undefined
     }
 
     listPackages(rootDirOnly: boolean = false): Array<FileSystemPackage> {
         if (!rootDirOnly && this._packages) {
             return this._packages;
         }
-
         if (!existsSync(`${this.rootDir}`)) {
             log.debug(`# listPackages: rootDir not found ${this.rootDir}`);
             return [];

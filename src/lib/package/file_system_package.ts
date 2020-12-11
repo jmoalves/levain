@@ -8,9 +8,9 @@ import FileUtils from '../file_utils.ts';
 import AbstractPackage from './abstract_package.ts';
 
 export default class FileSystemPackage extends AbstractPackage {
-    private _version: string;
-    private _dependencies: string[] | undefined = undefined;
-    private _yamlStruct: any;
+    private readonly _version: string;
+    private readonly _dependencies: string[] | undefined = undefined;
+    private readonly _yamlStruct: any;
 
     constructor(
         private config: Config,
@@ -40,6 +40,14 @@ export default class FileSystemPackage extends AbstractPackage {
 
     get pkgDir(): string {
         return path.resolve(path.dirname(this.filePath));
+    }
+
+    get fileName(): string {
+        return path.basename(this.filePath)
+    }
+
+    get fullPath(): string {
+        return path.resolve(path.join(this.baseDir, this.filePath));
     }
 
     get dependencies(): string[] | undefined {

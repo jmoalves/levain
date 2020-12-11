@@ -8,9 +8,13 @@ import Package from "../lib/package/package.ts";
 import Loader from '../lib/loader.ts';
 
 import {Timer} from "../lib/timer.ts";
+import Registry from '../lib/repository/registry.ts';
 
 export default class Install implements Command {
+    private registry: Registry;
+
     constructor(private config: Config) {
+        this.registry = new Registry(config, config.levainRegistry)
     }
 
     async execute(args: string[]) {
@@ -105,6 +109,7 @@ export default class Install implements Command {
         if (shouldInstall) {
             // Standard actions - At the rear (push), they are in normal order (like a QUEUE)
             if (!pkg.skipRegistry()) {
+                // TODO this.registry.add(pkg)
                 actions.push(`copy --verbose ${pkg.filePath} ${this.config.levainRegistry}`);
             }
         }
