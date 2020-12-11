@@ -43,10 +43,24 @@ Deno.test('should add package', () => {
         assertEquals(registry.length, 0)
 
         registry.add(pkg)
- 
+
         const pkgNames = registry.packages
             .map(it => (it as FileSystemPackage).fileName);
         assertEquals(pkgNames, [pkg.fileName])
+    } finally {
+        Deno.removeSync(registry.rootDir, {recursive: true})
+    }
+})
+Deno.test('should remove package', () => {
+    const registry = getNewTempRegistry()
+    try {
+        ensureDirSync(registry.rootDir)
+        const pkg = TestHelper.getTestFilePackage()
+        registry.add(pkg)
+        assertEquals(registry.length, 1)
+
+        registry.remove(pkg.name)
+        assertEquals(registry.length, 0)
     } finally {
         Deno.removeSync(registry.rootDir, {recursive: true})
     }
