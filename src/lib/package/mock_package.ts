@@ -21,4 +21,12 @@ export class MockPackage implements Package {
     yamlItem(key: string): any {
     }
 
+    shouldSkipRegistry(): Boolean {
+        return true;
+    }
+
+    skipInstallDir(): Boolean {
+        return true;
+    }
+
 }

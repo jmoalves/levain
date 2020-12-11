@@ -11,5 +11,10 @@ export default interface Package {
     readonly installed: boolean;
     readonly updateAvailable: boolean;
     readonly yamlStruct: any;
+
     yamlItem(key: string): any | undefined;
+
+    shouldSkipRegistry(): Boolean;
+
+    skipInstallDir(): Boolean;
 }

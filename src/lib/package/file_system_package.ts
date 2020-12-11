@@ -5,9 +5,9 @@ import {existsSync} from "https://deno.land/std/fs/mod.ts";
 import Repository from '../repository/repository.ts'
 import Config from "../config.ts";
 import FileUtils from '../file_utils.ts';
-import Package from "./package.ts";
+import AbstractPackage from './abstract_package.ts';
 
-export default class FileSystemPackage implements Package {
+export default class FileSystemPackage extends AbstractPackage {
     private _version: string;
     private _dependencies: string[] | undefined = undefined;
     private _yamlStruct: any;
@@ -20,6 +20,7 @@ export default class FileSystemPackage implements Package {
         yamlStr: string,
         private _repo?: Repository
     ) {
+        super();
         this._yamlStruct = yaml.parse(yamlStr);
 
         this._version = this._yamlStruct.version;
@@ -116,6 +117,6 @@ export default class FileSystemPackage implements Package {
         let registry = this.installedRecipeFilepath();
         return FileUtils.getModificationTimestamp(registry);
     }
-    
+
 
 }

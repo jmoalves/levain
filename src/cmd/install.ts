@@ -20,7 +20,7 @@ export default class Install implements Command {
         } else {
             let curDirPkg = this.config.currentDirPackage;
             if (curDirPkg) {
-                pkgNames = [ curDirPkg.name ];
+                pkgNames = [curDirPkg.name];
                 log.info(`- Default installation package -> ${JSON.stringify(pkgNames)}`);
             }
         }
@@ -84,7 +84,7 @@ export default class Install implements Command {
         if (shouldInstall) {
             let installActions = pkg.yamlItem("cmd.install");
             if (installActions) {
-                if (!pkg.yamlItem("levain.config.noBaseDir")) {
+                if (pkg.skipInstallDir()) {
                     installActions.unshift("mkdir ${baseDir}");
                 }
             }
@@ -104,7 +104,9 @@ export default class Install implements Command {
 
         if (shouldInstall) {
             // Standard actions - At the rear (push), they are in normal order (like a QUEUE)
-            actions.push(`copy --verbose ${pkg.filePath} ${this.config.levainRegistry}`);
+            if (!pkg.shouldSkipRegistry()) {
+                actions.push(`copy --verbose ${pkg.filePath} ${this.config.levainRegistry}`);
+            }
         }
 
         const loader = new Loader(this.config);
