@@ -65,10 +65,10 @@ for r in $releases; do
 done
 
 # Change version at main file
-cp -f src/levain.ts src/levain.ts.bkp
-cat src/levain.ts.bkp |
+cp -f src/levain_cli.ts src/levain_cli.ts.bkp
+cat src/levain_cli.ts.bkp |
   sed "s/levain vHEAD/levain ${tag}/g" \
-    >src/levain.ts
+    >src/levain_cli.ts
 
 # Change version at yaml file
 cp -f recipes/levain.levain.yaml recipes/levain.levain.yaml.bkp
@@ -78,7 +78,7 @@ cat recipes/levain.levain.yaml.bkp |
 rm recipes/levain.levain.yaml.bkp
 
 # Commit version
-git add src/levain.ts recipes/levain.levain.yaml
+git add src/levain_cli.ts recipes/levain.levain.yaml
 git commit -m "$tag"
 git tag $tag
 git push
@@ -94,10 +94,10 @@ curl -ks -X POST -u username:$githubToken \
   https://api.github.com/repos/jmoalves/levain/releases
 
 # Restore file
-cp -f src/levain.ts.bkp src/levain.ts
-git add src/levain.ts
+cp -f src/levain_cli.ts.bkp src/levain_cli.ts
+git add src/levain_cli.ts
 git commit -m "vHEAD"
-rm src/levain.ts.bkp
+rm src/levain_cli.ts.bkp
 git push
 
 # Done
