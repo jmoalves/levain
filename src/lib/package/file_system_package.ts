@@ -23,9 +23,9 @@ export default class FileSystemPackage extends AbstractPackage {
         super();
         this._yamlStruct = yaml.parse(yamlStr);
 
-        this._version = this._yamlStruct.version;
-        if (this._yamlStruct.dependencies) {
-            this._dependencies = this._yamlStruct.dependencies;
+        this._version = this._yamlStruct?.version;
+        if (this._yamlStruct?.dependencies) {
+            this._dependencies = this._yamlStruct?.dependencies;
         }
         this._dependencies = this.normalizeDeps(this._dependencies);
     }

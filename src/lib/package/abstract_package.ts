@@ -17,12 +17,11 @@ export default abstract class AbstractPackage implements Package {
 
     abstract yamlItem(key: string): any;
 
-    shouldSkipRegistry(): Boolean {
-        return StringUtils.parseBoolean(this.yamlItem("levain.config.skipRegistry"));
+    skipRegistry(): Boolean {
+        return StringUtils.parseBoolean(this.yamlItem("levain.pkg.skipRegistry"))
     }
 
     skipInstallDir(): Boolean {
-        return StringUtils.parseBoolean(this.yamlItem('levain.config.skipInstallDir'))
-            || !StringUtils.parseBoolean(this.yamlItem("levain.config.noBaseDir"))
+        return StringUtils.parseBoolean(this.yamlItem('levain.pkg.skipInstallDir'))
     }
 }

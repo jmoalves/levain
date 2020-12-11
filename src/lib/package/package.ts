@@ -14,7 +14,7 @@ export default interface Package {
 
     yamlItem(key: string): any | undefined;
 
-    shouldSkipRegistry(): Boolean;
+    skipRegistry(): Boolean;
 
     skipInstallDir(): Boolean;
 }

@@ -84,7 +84,7 @@ export default class Install implements Command {
         if (shouldInstall) {
             let installActions = pkg.yamlItem("cmd.install");
             if (installActions) {
-                if (pkg.skipInstallDir()) {
+                if (!pkg.skipInstallDir()) {
                     installActions.unshift("mkdir ${baseDir}");
                 }
             }
@@ -104,7 +104,7 @@ export default class Install implements Command {
 
         if (shouldInstall) {
             // Standard actions - At the rear (push), they are in normal order (like a QUEUE)
-            if (!pkg.shouldSkipRegistry()) {
+            if (!pkg.skipRegistry()) {
                 actions.push(`copy --verbose ${pkg.filePath} ${this.config.levainRegistry}`);
             }
         }

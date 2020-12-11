@@ -21,7 +21,7 @@ export class MockPackage implements Package {
     yamlItem(key: string): any {
     }
 
-    shouldSkipRegistry(): Boolean {
+    skipRegistry(): Boolean {
         return true;
     }
 

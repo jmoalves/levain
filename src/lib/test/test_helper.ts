@@ -4,6 +4,7 @@ import * as path from "https://deno.land/std/path/mod.ts"
 import Config from "../config.ts";
 import {MockPackage} from "../package/mock_package.ts";
 import OsUtils from '../os_utils.ts';
+import FileSystemPackage from '../package/file_system_package.ts';
 
 export default class TestHelper {
 
@@ -33,4 +34,14 @@ export default class TestHelper {
     static readonly anotherFolderThatDoesNotExist = 'another-folder-that-does-not-exist';
     static readonly fileThatDoesNotExist = path.join(TestHelper.folderThatAlwaysExists, 'this-file-does-not-exist.txt');
     static readonly validZipFile = '../testdata/extract/test.zip'
+
+    static getTestPkg(yamlStr: string) {
+        return new FileSystemPackage(
+            TestHelper.getConfig(),
+            'testPackage',
+            'baseDir',
+            'filePath',
+            yamlStr,
+        )
+    }
 }
