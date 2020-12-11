@@ -21,22 +21,21 @@ export default class Registry extends FileSystemRepository {
         }
         ensureDirSync(this.rootDir)
 
-        console.debug(`COPY ${pkg.fullPath} ${path.join(this.rootDir, pkg.filePath)}`)
-        // Deno.copyFileSync(pkg.fullPath, path.join(this.rootDir, pkg.filePath))
+        log.debug(`COPY ${pkg.fullPath} ${path.join(this.rootDir, pkg.filePath)}`)
         copySync(pkg.fullPath, path.join(this.rootDir, pkg.filePath))
 
         this.invalidatePackages()
     }
 
     remove(name: string) {
-        console.debug(`Registry.remove ${name} ${this.rootDir}`)
+        log.debug(`Registry.remove ${name} ${this.rootDir}`)
         let shouldInvalidate = false
         const possibleFiles = [
             path.join(this.rootDir, `${name}.levain.yaml`),
             path.join(this.rootDir, `${name}.levain.yml`),
         ]
         possibleFiles.forEach(it => {
-            console.debug(`Trying to remove ${it}`)
+            log.debug(`Trying to remove ${it}`)
             if (existsSync(it)) {
                 Deno.removeSync(it)
                 shouldInvalidate = true

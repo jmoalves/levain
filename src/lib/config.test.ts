@@ -1,9 +1,11 @@
-import {assert, assertEquals, assertMatch} from "https://deno.land/std/testing/asserts.ts";
+import {assert, assertEquals, assertMatch, assertNotEquals} from "https://deno.land/std/testing/asserts.ts";
+import * as path from "https://deno.land/std/path/mod.ts";
 
 import Config from './config.ts';
 import Repository from './repository/repository.ts';
 import ChainRepository from './repository/chain_repository.ts';
 import CacheRepository from './repository/cache_repository.ts';
+import {assertStringEndsWith} from './test/more_asserts.ts';
 
 //
 // addRepos
@@ -98,20 +100,33 @@ Deno.test('should have levainConfigDir', () => {
 
     const dir = config.levainConfigDir
 
-    assertMatch(dir, /(?:\/|\\)\.levain$/)
-
+    assertStringEndsWith(dir, '.levain')
 })
 Deno.test('should have levainSafeTempDir', () => {
     const config = new Config([])
 
     const dir = config.levainSafeTempDir
 
-    assertMatch(dir, /(?:\/|\\)\.levain(?:\/|\\)temp$/)
+    assertStringEndsWith(dir, path.join('.levain', 'temp'))
 })
 Deno.test('should have levainBackupDir', () => {
     const config = new Config([])
 
     const dir = config.levainBackupDir
 
-    assertMatch(dir, /(?:\/|\\)\.levain(?:\/|\\)backup$/)
+    assertStringEndsWith(dir, path.join('.levain', 'backup'))
+})
+Deno.test('should have levainRegistryDir', () => {
+    const config = new Config([])
+
+    const dir = config.levainRegistryDir
+
+    assertStringEndsWith(dir, path.join('.levain', 'registry'))
+})
+Deno.test('should have a registry', () => {
+    const config = new Config([])
+
+    const registry = config.levainRegistry
+
+    assertNotEquals(registry, undefined)
 })

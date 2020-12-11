@@ -64,7 +64,7 @@ export default class FileSystemPackage extends AbstractPackage {
     }
 
     private installedRecipeFilepath() {
-        let registry = path.resolve(this.config.levainRegistry, path.basename(this.filePath));
+        let registry = path.resolve(this.config.levainRegistryDir, path.basename(this.filePath));
         return registry;
     }
 

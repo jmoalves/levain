@@ -31,7 +31,7 @@ const actionMap = new Map<string, (config: Config) => Action>([
     ['assertContains', (config: Config) => new AssertContainsAction(config)],
     ['checkChainDirExists', (config: Config) => new CheckChainDirExists(config)],
     ['echo', (config: Config) => new Echo(config)],
-    ['removeFromRegistry', (config: Config) => new RemoveFromRegistry(config)],
+    ['removeFromRegistry', (config: Config) => new RemoveFromRegistry(config.levainRegistry)],
 ])
 export default class ActionFactory {
 

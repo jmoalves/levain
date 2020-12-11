@@ -14,7 +14,7 @@ export default class Install implements Command {
     private registry: Registry;
 
     constructor(private config: Config) {
-        this.registry = new Registry(config, config.levainRegistry)
+        this.registry = new Registry(config, config.levainRegistryDir)
     }
 
     async execute(args: string[]) {
@@ -94,7 +94,7 @@ export default class Install implements Command {
             }
             // Standard actions - At the head (unshift), they are in reverse order (like a STACK)
             actions.unshift("mkdir " + this.config.levainSafeTempDir);
-            actions.unshift("mkdir " + this.config.levainRegistry);
+            actions.unshift("mkdir " + this.config.levainRegistryDir);
             actions.unshift("mkdir --compact ${levainHome}");
 
             Array.prototype.push.apply(actions, installActions);
@@ -110,7 +110,7 @@ export default class Install implements Command {
             // Standard actions - At the rear (push), they are in normal order (like a QUEUE)
             if (!pkg.skipRegistry()) {
                 // TODO this.registry.add(pkg)
-                actions.push(`copy --verbose ${pkg.filePath} ${this.config.levainRegistry}`);
+                actions.push(`copy --verbose ${pkg.filePath} ${this.config.levainRegistryDir}`);
             }
         }
 

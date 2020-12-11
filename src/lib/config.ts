@@ -11,6 +11,7 @@ import PackageManager from "./package/manager.ts";
 import RepositoryFactory from "./repository/repository_factory.ts";
 import Package from "./package/package.ts";
 import UserInfoUtil from './user_info/userinfo_util.ts';
+import Registry from './repository/registry.ts';
 
 export default class Config {
     private _pkgManager: PackageManager;
@@ -31,6 +32,7 @@ export default class Config {
     private savedArgs: any;
 
     private repoFactory: RepositoryFactory;
+    private _registry: Registry | undefined;
 
     constructor(args: any) {
         this.savedArgs = args;
@@ -86,8 +88,17 @@ export default class Config {
         return path.resolve(this.levainConfigDir, "config.json");
     }
 
-    get levainRegistry(): string {
-        return path.resolve(this.levainConfigDir, "registry");
+    get levainRegistryDir(): string {
+        const dir = path.resolve(this.levainConfigDir, "registry");
+        ensureDirSync(dir)
+        return dir;
+    }
+
+    get levainRegistry(): Registry {
+        if (this._registry?.rootDir !== this.levainRegistryDir) {
+            this._registry = new Registry(this, this.levainRegistryDir)
+        }
+        return this._registry
     }
 
     get levainSafeTempDir(): string {
@@ -374,8 +385,8 @@ export default class Config {
     }
 
     private addLevainRegistryRepo(repos: Repository[]) {
-        log.info(`addRepo DEFAULT ${this.levainRegistry} --> Levain registry dir`);
-        repos.push(this.repoFactory.create(this.levainRegistry));
+        log.info(`addRepo DEFAULT ${this.levainRegistryDir} --> Levain registry dir`);
+        repos.push(this.repoFactory.create(this.levainRegistryDir));
     }
 
     private addCurrentDirRepo(repos: Repository[]) {
