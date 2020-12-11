@@ -24,6 +24,7 @@ Deno.test('should list actions', () => {
         'template',
         'checkChainDirExists',
         'echo',
+        'removeFromRegistry',
     ])
 })
 Deno.test('should know the assertContains action', () => {
