@@ -1,10 +1,12 @@
+import * as log from "https://deno.land/std/log/mod.ts";
+
 import Repository from './repository.ts'
 import Config from "../config.ts";
 import Package from "../package/package.ts";
 
 export default class CacheRepository implements Repository {
-    readonly name = `cacheRepo for ${this.repository?.name}`;
-    packages: Array<Package> = this.repository?.packages;
+    readonly name;
+    packages: Array<Package>;
 
     private cache: Map<string, Package> = new Map();
 
@@ -38,7 +40,11 @@ export default class CacheRepository implements Repository {
         return pkg;
     }
 
-    listPackages(rootDirOnly?: boolean): Array<Package> {
+    listPackages(rootDirOnly: boolean = false): Array<Package> {
+        if (!rootDirOnly) {
+            return this.packages;
+        }
+
         return this.repository.listPackages(rootDirOnly)
             .sort((a, b) => a.name.localeCompare(b.name));
     }

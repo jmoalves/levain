@@ -400,11 +400,12 @@ export default class Config {
             return;
         }
 
+        log.info(`addRepo ${repoPath}`);
         let repo = this.repoFactory.create(repoPath);
         if (this._extraRepos?.includes(repo.absoluteURI)) {
             log.debug(`addRepo - ignoring repeated ${repoPath}`);
         } else {
-            log.info(`addRepo ${repo.absoluteURI}`);
+            log.debug(`addRepo ${repo.absoluteURI}`);
             repos.push(repo);
             this._extraRepos.push(repo.absoluteURI);
         }

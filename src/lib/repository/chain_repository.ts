@@ -9,10 +9,11 @@ export default class ChainRepository implements Repository {
         public config: Config,
         public repositories: Repository[],
     ) {
+        this.name = `chainRepo for ${this.repositories?.map(repo => repo.name).join(', ')}`;
         this.packages = this.listPackages();
     }
 
-    readonly name = `chainRepo for ${this.repositories?.map(repo => repo.name).join(', ')}`;
+    readonly name;
     packages: Array<Package>;
 
     get absoluteURI(): string {
@@ -34,8 +35,7 @@ export default class ChainRepository implements Repository {
         return undefined;
     }
 
-    listPackages(rootDirOnly?: boolean): Array<Package> {
-        log.debug('listPackages', this.repositories)
+    listPackages(rootDirOnly: boolean = false): Array<Package> {
         return this.repositories
             .flatMap(repo => repo.listPackages(rootDirOnly))
             .reduce((uniquePkgs, pkg) =>

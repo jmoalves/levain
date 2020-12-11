@@ -10,11 +10,13 @@ import {Timer} from "../timer.ts";
 import FileUtils from "../file_utils.ts";
 
 export default class FileSystemRepository implements Repository {
-    readonly name = `fileSystemRepo for ${this.rootDir}`;
+    readonly name;
 
     readonly excludeDirs = ['.git', 'node_modules', 'npm-cache', '$Recycle.Bin', 'temp', 'tmp']
 
     constructor(private config: Config, private rootDir: string) {
+        this.name = `fileSystemRepo for ${this.rootDir}`;
+
         log.debug(`FSRepo: Root=${this.rootDir}`);
         try {
             const fileInfo = Deno.statSync(this.rootDir);
@@ -26,6 +28,8 @@ export default class FileSystemRepository implements Repository {
                 throw err;
             }
         }
+
+        this.packages; // Force load packages
     }
 
     get absoluteURI(): string {
@@ -59,13 +63,17 @@ export default class FileSystemRepository implements Repository {
         return this._packages;
     }
 
-    listPackages(rootDirOnly?: boolean): Array<FileSystemPackage> {
+    listPackages(rootDirOnly: boolean = false): Array<FileSystemPackage> {
+        if (!rootDirOnly && this._packages) {
+            return this._packages;
+        }
+
         if (!existsSync(`${this.rootDir}`)) {
             log.debug(`# listPackages: rootDir not found ${this.rootDir}`);
             return [];
         }
 
-        log.info(`# Scanning ${this.rootDir}`);
+        log.info(`# Scanning ${this.rootDir} - rootDirOnly: ${rootDirOnly}`);
         log.info(`# Please wait...`);
         const timer = new Timer()
 
