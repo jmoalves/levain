@@ -16,8 +16,8 @@ export default class FileSystemRepository extends AbstractRepository {
 
     constructor(
         private config: Config,
-        private rootDir: string,
-        ) {
+        public readonly rootDir: string,
+    ) {
         super();
         this.name = `fileSystemRepo for ${this.rootDir}`;
 
