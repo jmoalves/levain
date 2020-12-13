@@ -151,11 +151,13 @@ ${myDeno} cache --unstable --reload ${distDir}/src/levain.ts
 # Bundle issue - https://github.com/denoland/deno/issues/8486
 
 ### levain cleanup
+cp ${distDir}/scripts/levainBootstrap.cmd ${distRoot}
 rm -rf ${distDir}/scripts
 rm ${distDir}/levain.zip
 rm -rf ${distDir}/jmoalves-levain-*
 # rm -rf ${distDir}/src
 rm -rf ${distDir}/testData
+find ${distDir} -name '*.test.ts' -exec rm {} \;
 
 ## Create zip
 zipFile=levain-v$levainVersion-with-deno-v$denoVersion-windows-x86_64.zip
@@ -172,7 +174,7 @@ cd - >/dev/null
 
 echo
 echo $zipFile created
-ls -l ${distRoot}/${zipFile}*
+ls -l ${distRoot}
 
 echo
 echo SHA256
@@ -193,6 +195,13 @@ curl -ks -X POST -u username:$githubToken \
   -H 'Content-Type: text/plain' \
   -T ${distRoot}/$zipFile.sha256 \
   ${levainAssetsUploadUrl}?name=${zipFile}.sha256
+
+echo
+echo Uploading asset ${distRoot}/levainBootstrap.cmd to $levainAssetsUploadUrl
+curl -ks -X POST -u username:$githubToken \
+  -H 'Content-Type: text/plain' \
+  -T ${distRoot}/levainBootstrap.cmd \
+  ${levainAssetsUploadUrl}?name=levainBootstrap.cmd
 
 echo
 echo Upload completed - ${zipFile}
