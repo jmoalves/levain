@@ -95,6 +95,7 @@ export default class FileSystemRepository extends AbstractRepository {
         log.debug(`# listPackages: ${packagesGlob} ${JSON.stringify(globOptions)}`)
         const packages: Array<FileSystemPackage> = this.getPackageFiles(packagesGlob, globOptions)
 
+        log.info("")
         log.info(`added ${packages.length} packages in ${timer.humanize()}`)
         log.info("")
         return packages;
@@ -175,6 +176,9 @@ export default class FileSystemRepository extends AbstractRepository {
         if (!fileinfo.isFile) {
             return undefined;
         }
+
+        // User feedback
+        Deno.stdout.writeSync(new TextEncoder().encode("."));
 
         const packageName = yamlFile.replace(/.*[\/|\\]/g, '').replace(/\.levain\.ya?ml/, '')
         log.debug(`readPackage ${packageName} ${yamlFile}`);
