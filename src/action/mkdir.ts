@@ -24,9 +24,7 @@ export default class Mkdir implements Action {
 
         const dirname = path.resolve(pkg.baseDir, args._[0]);
 
-        if (this.dirExists(dirname)) {
-            log.info(`MKDIR ${dirname} - Dir already exists`);
-        } else {
+        if (!this.dirExists(dirname)) {
             log.info(`MKDIR ${dirname}`);
             Deno.mkdirSync(dirname, {recursive: true});
         }
