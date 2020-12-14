@@ -23,29 +23,15 @@ export default class Mkdir implements Action {
         }
 
         const dirname = path.resolve(pkg.baseDir, args._[0]);
-        try {
-            const fileInfo = Deno.statSync(dirname);
-            if (fileInfo.isDirectory) {
-                return;
-            }
 
-            if (fileInfo) {
-                throw `Action - mkdir - ${dirname} already exists and it is not a directory`;
-            }
-        } catch (err) {
-            if (err.name != "NotFound") {
-                throw err;
-            }
+        if (!this.dirExists(dirname)) {
+            log.info(`MKDIR ${dirname}`);
+            Deno.mkdirSync(dirname, {recursive: true});
         }
 
-        log.info(`MKDIR ${dirname}`);
-        Deno.mkdirSync(dirname, {recursive: true});
-
-        if (!args.compact) {
-            return;
+        if (args.compact) {
+            this.compactSync(dirname);
         }
-
-        this.compactSync(dirname);
     }
 
     private async compactSync(dirname: string) {
@@ -65,5 +51,24 @@ export default class Mkdir implements Action {
         });
 
         await p.status();
+    }
+
+    private dirExists(dirname: string): boolean {
+        try {
+            const fileInfo = Deno.statSync(dirname);
+            if (fileInfo.isDirectory) {
+                return true;
+            }
+
+            if (fileInfo) {
+                throw `Action - mkdir - ${dirname} already exists and it is not a directory`;
+            }
+        } catch (err) {
+            if (err.name != "NotFound") {
+                throw err;
+            }
+        }
+
+        return false;
     }
 }
