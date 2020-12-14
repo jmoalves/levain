@@ -1,5 +1,12 @@
 @echo off
 
+set denoPath=%1
+if "a%denoPath%" == "a" (
+    echo.
+    echo Where should I find deno.exe?
+    exit /b 1
+)
+
 SETLOCAL
 set myPath=%~dp0
 set levainRoot=%myPath%..
@@ -8,10 +15,9 @@ if not exist %levainRoot%\bin (
     mkdir %levainRoot%\bin
 )
 
-if not exist %levainRoot%\bin\deno.exe (
-    echo Please copy a deno.exe into %levainRoot%\bin
-    goto:eof
-)
+REM if not exist %levainRoot%\bin\deno.exe (
+    copy %denoPath%\deno.exe %levainRoot%\bin
+REM )
 
 set DENO_DIR=%levainRoot%\bin
 %levainRoot%\bin\deno.exe -V info
