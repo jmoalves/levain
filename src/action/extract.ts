@@ -9,6 +9,7 @@ import Package from '../lib/package/package.ts';
 import {parseArgs} from "../lib/parse_args.ts";
 import OsUtils from "../lib/os_utils.ts";
 import {Timer} from "../lib/timer.ts";
+import FileUtils from "../lib/file_utils.ts";
 
 // TODO: Use native TS/JS implementation instead of extra-bin files.
 export default class Extract implements Action {
@@ -55,7 +56,7 @@ abstract class Extractor {
         log.debug(`- TEMP ${tmpRootDir}`);
 
         const timer = new Timer();
-        let tmpSrc = this.copy(src, tmpRootDir);
+        let tmpSrc = await this.copy(src, tmpRootDir);
         log.debug(`- copied in ${timer.humanize()}`);
 
         let tmpDstDir = Deno.makeTempDirSync({
@@ -75,11 +76,12 @@ abstract class Extractor {
         Deno.removeSync(tmpRootDir, {recursive: true});
     }
 
-    copy(src: string, dst: string): string {
+    async copy(src: string, dst: string): Promise<string> {
         let dstPath = path.resolve(dst, path.basename(src));
         log.debug(`- COPY ${src} => ${dstPath}`);
 
-        copySync(src, dstPath);
+        //copySync(src, dstPath);
+        await FileUtils.copyWithProgress(src, dstPath);
         return dstPath;
     }
 

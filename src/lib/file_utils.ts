@@ -1,6 +1,10 @@
 import * as log from "https://deno.land/std/log/mod.ts";
+import * as path from "https://deno.land/std/path/mod.ts";
+
 import {existsSync} from "https://deno.land/std/fs/mod.ts";
 import OsUtils from './os_utils.ts';
+
+import ProgressBar from "https://deno.land/x/progress@v1.1.4/mod.ts";
 
 export default class FileUtils {
 
@@ -105,5 +109,75 @@ export default class FileUtils {
             log.debug(error)
             return false
         }
+    }
+
+    static async copyWithProgress(src: string, dst: string) {
+        let r = new FileReader(src);
+        let w = new FileWriter(dst, r.progressbar);
+        let size = await Deno.copy(r, w);
+        await r.close();
+        await w.close();
+    }
+}
+
+class FileReader implements Deno.Reader {
+    private file:Deno.File;
+    private fileInfo:Deno.FileInfo;
+
+    private pb:ProgressBar;
+
+    constructor(private filePath: string) {
+        if (!existsSync(filePath)) {
+            throw `File ${filePath} does not exist`;
+        }
+
+        this.file = Deno.openSync(filePath, { read: true });
+        this.fileInfo = Deno.statSync(filePath);
+        const title = "- COPY " + path.basename(filePath);
+        const total = this.fileInfo.size; 
+        this.pb = new ProgressBar({ 
+            title, 
+            total, 
+            complete: "=", 
+            incomplete: "-"
+        });
+    }
+
+    get progressbar():ProgressBar {
+        return this.pb;
+    }
+
+    async read(p: Uint8Array): Promise<number | null> {
+        return this.file.read(p);
+    }
+
+    async close() {
+        this.file.close();
+    }
+}
+
+class FileWriter implements Deno.Writer {
+    private file:Deno.File;
+    private written:number = 0;
+
+    constructor(filePath: string, private progress?:ProgressBar) {
+        this.file = Deno.openSync(filePath, { write: true, createNew: true });
+    }
+
+    async write(p: Uint8Array): Promise<number> {
+        return new Promise((resolve, reject) => {
+            this.file.write(p).then(size => {
+                this.written += size;
+                if (this.progress) {
+                    this.progress.render(this.written);
+                }
+
+                resolve(size);
+            })
+        });
+    }
+
+    async close() {
+        this.file.close();
     }
 }
