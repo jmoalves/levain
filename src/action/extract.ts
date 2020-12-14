@@ -1,6 +1,6 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
-import {existsSync} from "https://deno.land/std/fs/mod.ts";
+import {existsSync, copySync} from "https://deno.land/std/fs/mod.ts";
 import {unZipFromFile} from 'https://deno.land/x/zip@v1.1.0/mod.ts'
 
 import Action from "./action.ts";
@@ -79,7 +79,7 @@ abstract class Extractor {
         let dstPath = path.resolve(dst, path.basename(src));
         log.debug(`- COPY ${src} => ${dstPath}`);
 
-        Deno.copyFileSync(src, dstPath);
+        copySync(src, dstPath);
         return dstPath;
     }
 
