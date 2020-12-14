@@ -23,7 +23,9 @@ set args=
 :getArgs
 if not "a%1" == "a" set args=%args% %1& shift & goto getArgs
 
+pushd %TEMP%\levain-%levainVersion%
 %TEMP%\levain-%levainVersion%\levain.cmd %args%
+popd
 goto:eof
 
 
