@@ -40,7 +40,7 @@ export default class Config {
         this.repoFactory = new RepositoryFactory(this);
 
         this.configEnv(args);
-        this.configHome();
+        this.configHome(args);
 
         this.load();
 
@@ -317,8 +317,28 @@ export default class Config {
         });
     }
 
-    private configHome(): void {
-        if (this._env["levainHome"]) {
+    private configHome(args: any): void {
+        delete this._env["levainHome"];
+
+        if (args["levainHome"]) {
+            let dirs:string[] = args["levainHome"];
+            let homeDir = dirs.find(dir => {
+                let home = path.resolve(Deno.cwd(), dir);
+                log.debug(`Checking home at ${home}`);
+                try {
+                    ensureDirSync(home);
+                    return true;
+                } catch (err) {
+                    log.debug(`${home} not available`);
+                    return false;
+                }
+            });
+
+            if (!homeDir) {
+                throw `No valid levainHome in your list\n-> ${args["levainHome"]}`;
+            }
+
+            this._env["levainHome"] = path.resolve(Deno.cwd(), homeDir);
             log.info(`ARG levainHome=${this._env["levainHome"]}`)
             return;
         }
