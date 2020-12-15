@@ -20,7 +20,7 @@ export default class Config {
     private _env: any = {};
     private _context: any = {}; // Do we really need two of them (_env and _context)?
 
-    private _extraRepos: string[] = [];
+    private _extraRepos: Set<string> = new Set<string>();
 
     public email: string | undefined;
     public fullname: string | undefined;
@@ -370,7 +370,7 @@ export default class Config {
     }
 
     configRepo(args: any, installedOnly: boolean): Repository {
-        let repos: Repository[] = [];
+        let repos: Set<string> = new Set<string>();
 
         log.debug("");
         log.debug(`=== configRepo - args: ${JSON.stringify(args)} installedOnly: ${installedOnly}`);
@@ -380,17 +380,20 @@ export default class Config {
         if (installedOnly) {
             this.addLevainRegistryRepo(repos);
         } else {
-            let savedRepos = this._extraRepos;
-            this._extraRepos = [];
+            let savedRepos = [...this._extraRepos];
+            this._extraRepos.clear();
             log.debug(`savedRepos ${JSON.stringify(savedRepos)}`)
             this.addRepos(repos, savedRepos);
             log.debug(`args.addRepo ${JSON.stringify(args.addRepo)}`)
             this.addRepos(repos, args.addRepo);
         }
 
-        log.debug("");
+        log.info("");
+        let repoArr:Repository[] = [];
+        repos.forEach(repoPath => repoArr.push(this.repoFactory.create(repoPath)));
+
         return new CacheRepository(this,
-            new ChainRepository(this, repos)
+            new ChainRepository(this, repoArr)
         );
     }
 
@@ -399,22 +402,22 @@ export default class Config {
         return path.resolve(path.dirname(path.fromFileUrl(import.meta.url)), "../..");
     }
 
-    private addLevainRepo(repos: Repository[]) {
+    private addLevainRepo(repos: Set<string>) {
         log.info(`addRepo DEFAULT ${this.levainSrcDir} --> Levain src dir`);
-        repos.push(this.repoFactory.create(this.levainSrcDir));
+        repos.add(this.levainSrcDir);
     }
 
-    private addLevainRegistryRepo(repos: Repository[]) {
+    private addLevainRegistryRepo(repos: Set<string>) {
         log.info(`addRepo DEFAULT ${this.levainRegistryDir} --> Levain registry dir`);
-        repos.push(this.repoFactory.create(this.levainRegistryDir));
+        repos.add(this.levainRegistryDir);
     }
 
-    private addCurrentDirRepo(repos: Repository[]) {
+    private addCurrentDirRepo(repos: Set<string>) {
         log.info(`addRepo DEFAULT ${Deno.cwd()} --> Current working dir`);
-        repos.push(this.repoFactory.create(Deno.cwd()));
+        repos.add(Deno.cwd());
     }
 
-    addRepos(repos: Repository[], reposPath: undefined | string[]) {
+    addRepos(repos: Set<string>, reposPath: undefined | string[]) {
         if (!reposPath) {
             return;
         }
@@ -424,7 +427,7 @@ export default class Config {
         log.debug(`addRepos after ${reposPath.length}`)
     }
 
-    addRepo(repos: Repository[], repoPath: string | undefined) {
+    addRepo(repos: Set<string>, repoPath: string | undefined) {
         log.debug(`addRepo ${repoPath}`);
 
         if (!repoPath || repoPath === 'undefined') {
@@ -432,13 +435,7 @@ export default class Config {
         }
 
         log.info(`addRepo ${repoPath}`);
-        let repo = this.repoFactory.create(repoPath);
-        if (this._extraRepos?.includes(repo.absoluteURI)) {
-            log.debug(`addRepo - ignoring repeated ${repoPath}`);
-        } else {
-            log.debug(`addRepo ${repo.absoluteURI}`);
-            repos.push(repo);
-            this._extraRepos.push(repo.absoluteURI);
-        }
+        repos.add(repoPath);
+        this._extraRepos.add(repoPath);
     }
 }
