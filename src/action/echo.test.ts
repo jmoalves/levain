@@ -11,6 +11,6 @@ Deno.test('should show a text', async () => {
     await action.execute(TestHelper.mockPackage(), ['Hello', 'world!'])
 
     assertArrayEndsWith<string>(testLogger.messages, [
-        'INFO ECHO Hello, world!'
+        'INFO ECHO Hello world!'
     ])
 })

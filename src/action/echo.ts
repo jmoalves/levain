@@ -8,6 +8,6 @@ export default class Echo implements Action {
     }
 
     async execute(pkg: Package, parameters: string[]) {
-        log.info(`ECHO ${parameters.join(', ')}`);
+        log.info(`ECHO ${parameters.join(' ')}`);
     }
 }
