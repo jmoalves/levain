@@ -14,7 +14,7 @@ Deno.test('should remove package from registry', async () => {
 
     assertEquals(registry.length, 0)
 })
-Deno.test('should throw when no package was added', async () => {
+Deno.test('should throw when no package was passed as parameter', async () => {
     await assertThrowsAsync(
         async () => {
             const registry = TestHelper.getNewTempRegistry()
