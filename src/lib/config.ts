@@ -249,7 +249,7 @@ export default class Config {
 
     public save(): void {
         let cfg: any = {};
-        cfg.repos = this._extraRepos;
+        cfg.repos = [...this._extraRepos];
         cfg.defaultPackage = this._defaultPackage;
 
         let fileName = this.levainConfigFile;
@@ -276,7 +276,7 @@ export default class Config {
             let cfg = JSON.parse(data);
             log.debug(`- PARSE ${JSON.stringify(cfg)}`);
             if (cfg.repos) {
-                this._extraRepos = cfg.repos;
+                this._extraRepos = new Set<string>(cfg.repos);
                 log.debug(`- REPOS ${this._extraRepos}`);
             }
 
