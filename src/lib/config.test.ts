@@ -12,49 +12,49 @@ import {assertStringEndsWith} from './test/more_asserts.ts';
 //
 Deno.test('should add empty string repos', () => {
     const config = new Config([])
-    let repos: Repository[] = []
+    let repos: Set<string> = new Set<string>()
 
     config.addRepos(repos, [""])
 
-    assertEquals(0, repos.length)
+    assertEquals(0, repos.size)
 })
 
 Deno.test('should not add empty array repos', () => {
     const config = new Config([])
-    let repos: Repository[] = []
+    let repos: Set<string> = new Set<string>()
 
     config.addRepos(repos, [])
 
-    assertEquals(0, repos.length)
+    assertEquals(0, repos.size)
 })
 
 Deno.test('should not add undefined repos', () => {
     const config = new Config([])
-    let repos: Repository[] = []
+    let repos: Set<string> = new Set<string>()
 
     config.addRepos(repos, undefined)
 
-    assertEquals(0, repos.length)
+    assertEquals(0, repos.size)
 })
 //
 // addRepo
 //
 Deno.test('should not add undefined repo', () => {
     const config = new Config([])
-    let repos: Repository[] = []
+    let repos: Set<string> = new Set<string>()
 
     config.addRepo(repos, undefined)
 
-    assertEquals(0, repos.length)
+    assertEquals(0, repos.size)
 })
 
 Deno.test('should not add string "undefined" repo', () => {
     const config = new Config([])
-    let repos: Repository[] = []
+    let repos: Set<string> = new Set<string>()
 
     config.addRepo(repos, "undefined")
 
-    assertEquals(0, repos.length)
+    assertEquals(0, repos.size)
 })
 //
 // configRepo
@@ -69,7 +69,11 @@ Deno.test('should config default repos', () => {
     const chainRepo = (cacheRepo as CacheRepository).repository
     assert(chainRepo instanceof ChainRepository)
     const repos: Repository[] = (chainRepo as ChainRepository).repositories
-    assertEquals(repos.length, 2)
+    const repoUris = repos.map(it => it.absoluteURI)
+    assertEquals(repoUris, [
+        "D:\\git.repo\\levain",
+    ])
+    assertEquals(repos.length, 1)
 })
 Deno.test('should add extra repo', () => {
     const config = new Config([])
@@ -83,7 +87,7 @@ Deno.test('should add extra repo', () => {
 
     const chainRepo = (cacheRepo as CacheRepository).repository
     const repos: Repository[] = (chainRepo as ChainRepository).repositories
-    assertEquals(repos.length, 3)
+    assertEquals(repos.length, 2)
 })
 //
 // dirs
