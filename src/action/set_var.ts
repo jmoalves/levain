@@ -3,7 +3,7 @@ import Action from './action.ts';
 import Package from '../lib/package/package.ts';
 import * as log from "https://deno.land/std/log/mod.ts";
 
-export default class SaveVarAction implements Action {
+export default class SetVarAction implements Action {
     constructor(
         private config: Config
     ) {
@@ -11,7 +11,7 @@ export default class SaveVarAction implements Action {
 
     async execute(pkg: Package, parameters: string[]): Promise<void> {
         if (parameters.length !== 2) {
-            throw new Error('Action - saveVar - You should inform the var name and value')
+            throw new Error('Action - setVar - You should inform the var name and value')
         }
 
         let varName = parameters[0]

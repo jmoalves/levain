@@ -1,18 +1,18 @@
 import ActionFactory from './action_factory.ts';
 import TestHelper from '../lib/test/test_helper.ts';
 import {assert, assertEquals, assertThrowsAsync,} from "https://deno.land/std/testing/asserts.ts";
-import SaveVarAction from './save-var.ts';
+import SetVarAction from './set_var.ts';
 
 Deno.test('should be obtainable with action factory', () => {
     const config = TestHelper.getConfig()
     const factory = new ActionFactory()
     const action = factory.get("saveVar", config)
 
-    assert(action instanceof SaveVarAction)
+    assert(action instanceof SetVarAction)
 })
-Deno.test('should save var in config', async () => {
+Deno.test('should set var in config', async () => {
     const config = TestHelper.getConfig()
-    const action = new SaveVarAction(config)
+    const action = new SetVarAction(config)
 
     await action.execute(TestHelper.mockPackage(), ['nova.var', 'abc123'])
 
@@ -20,13 +20,13 @@ Deno.test('should save var in config', async () => {
 })
 Deno.test('should ask for two parameters', async () => {
     const config = TestHelper.getConfig()
-    const action = new SaveVarAction(config)
+    const action = new SetVarAction(config)
 
     await assertThrowsAsync(
         async () => {
             await action.execute(TestHelper.mockPackage(), [])
         },
         Error,
-        'Action - saveVar - You should inform the var name and value',
+        'Action - setVar - You should inform the var name and value',
     )
 })
