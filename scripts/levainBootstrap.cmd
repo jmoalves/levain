@@ -1,4 +1,5 @@
 @echo off
+set currentFileDir=%~dp0
 
 set levainVersion=%1
 if "a%levainVersion%" == "a" (
@@ -7,6 +8,7 @@ if "a%levainVersion%" == "a" (
     exit /b 1
 )
 shift
+
 
 REM FIXME: Allways expand?
 if not exist %TEMP%\levain-%levainVersion%\levain.cmd (
@@ -33,16 +35,19 @@ goto:eof
 :fnExpandLevain
 set levainVersion=%1
 
-set levainPath=%cd%
+set levainPath=%currentFileDir%
 
 set file=
 for %%i in (%levainPath%\levain-v%levainVersion%-*-windows-x86_64.zip) do set file=%%i
 
 if "a%file%" == "a" (
     echo.
-    echo No levain zip found for %levainVersion%
+    echo No levain zip found for %levainVersion% in %levainPath%
     exit /b 1
 )
 
-powershell.exe -nologo -noprofile -command "& { Expand-Archive -Force -LiteralPath %file% -DestinationPath %TEMP% }"
+rem powershell.exe -nologo -noprofile -command "& { Expand-Archive -Force -LiteralPath %file% -DestinationPath %TEMP% }"
+echo Unzipping Levain %currentFileDir%\extra-bin\windows\7z.exe x %file% -o%TEMP%
+%currentFileDir%\extra-bin\windows\7z.exe x %file% -o%TEMP%
+
 goto:eof
