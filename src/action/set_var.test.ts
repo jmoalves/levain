@@ -6,7 +6,7 @@ import SetVarAction from './set_var.ts';
 Deno.test('should be obtainable with action factory', () => {
     const config = TestHelper.getConfig()
     const factory = new ActionFactory()
-    const action = factory.get("saveVar", config)
+    const action = factory.get("setVar", config)
 
     assert(action instanceof SetVarAction)
 })
