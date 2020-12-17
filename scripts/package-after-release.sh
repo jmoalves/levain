@@ -43,7 +43,7 @@ getRelease() {
   echo $(curl -ks $tokenOpt -X GET ${url})
 }
 
-clear
+#clear
 
 levainVersion=$1
 denoVersion=$2
