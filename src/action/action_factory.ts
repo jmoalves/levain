@@ -16,6 +16,7 @@ import CheckChainDirExists from "./check_chain_dir_exists.ts";
 import Echo from "./echo.ts";
 import RemoveFromRegistry from './remove_from_registry.ts';
 import SetVarAction from './set_var.ts';
+import AddToStartupAction from './add_to_startup.ts';
 
 const actionMap = new Map<string, (config: Config) => Action>([
     ['addPath', (config: Config) => new AddPath(config)],
@@ -34,6 +35,7 @@ const actionMap = new Map<string, (config: Config) => Action>([
     ['echo', (config: Config) => new Echo(config)],
     ['removeFromRegistry', (config: Config) => new RemoveFromRegistry(config.levainRegistry)],
     ['setVar', (config: Config) => new SetVarAction(config)],
+    ['addToStartup', (config: Config) => new AddToStartupAction()],
 ])
 
 export default class ActionFactory {

@@ -26,6 +26,7 @@ Deno.test('should list actions', () => {
         'echo',
         'removeFromRegistry',
         'setVar',
+        'addToStartup',
     ])
 })
 Deno.test('should know the assertContains action', () => {
