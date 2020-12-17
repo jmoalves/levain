@@ -3,6 +3,7 @@ version: 0.9.6
 cmd.install:
   - copy --verbose ../src ../bin ../extra-bin ../levain.cmd ../levain.sh ../recipes ${baseDir}
   - levainShell ${baseDir}/src/userPath.cmd ${baseDir}/bin ${baseDir}
+  - levainShell reg import ${pkgDir}/cmd-tab-completion.reg
 
 cmd.env:
   - addPath ${baseDir}
