@@ -105,6 +105,6 @@ Deno.test('should find out that a file is missing', () => {
             assertFolderIncludes('testdata/assertFolderIncludes', ['abc123.doc'])
         },
         AssertionError,
-        'missing: [\n  "abc123.doc",\n]',
+        "abc123.doc",
     )
 })

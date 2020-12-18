@@ -1,5 +1,7 @@
 import {assert, assertArrayIncludes, assertEquals} from "https://deno.land/std/testing/asserts.ts";
+import * as path from "https://deno.land/std/path/mod.ts";
 import DirUtils from "../dir_utils.ts";
+import OsUtils from '../os_utils.ts';
 
 export function assertArrayIncludesElements<T>(array: T[], elements: T[]) {
     let notFound: T[] = []
@@ -65,11 +67,18 @@ export function assertArrayContainsInAnyOrder<T>(
 }
 
 export function assertFolderIncludes(dst: string, expectedFiles: string[]) {
-    const dstWithSlash = dst.endsWith('/') ? dst : dst + '/'
+    let sep = path.sep
+    if (OsUtils.isWindows()) {
+        sep = '\\\\'
+    }
+    console.debug(`path.sep ${path.sep} ${dst}`)
+    const dstWithSlash = dst.endsWith(sep) ? dst : dst + sep
     const dstRelativeFiles = DirUtils.listFileNames(dst)
-        .map(it => it.toString().replace(dstWithSlash, ''))
+        .map(it => path.resolve(it))
+    // .map(it => it.toString().replace(dstWithSlash, ''))
     const expectedRelativeFiles = expectedFiles
-        .map(it => it.toString().replace(dstWithSlash, ''))
+        .map(it => path.resolve(dst, it))
+    // .map(it => it.toString().replace(dstWithSlash, ''))
 
     assertArrayIncludes(
         dstRelativeFiles,

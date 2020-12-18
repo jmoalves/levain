@@ -49,7 +49,7 @@ Deno.test('Extractor should calc cached file path', () => {
 
     assertStringEndsWith(
         extractor.cachedFilePath('/folder/big-file.zip'),
-        '/levain/.levain/cache/_folder_big-file.zip',
+        path.join('levain', '.levain', 'cache', '_folder_big-file.zip'),
     )
 })
 // Deno.test('Extractor should copy file to folder', async () => {
