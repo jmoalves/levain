@@ -2,6 +2,14 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import {envChain} from "./utils.ts";
 
 export default class OsUtils {
+    static get tempDir(): string {
+        const tempDirEnvVars = ['TEMP', 'TMPDIR'];
+        const tempDir = envChain(...tempDirEnvVars);
+        if (!tempDir) {
+            throw `TempDir not found. Looked for env vars ${tempDirEnvVars.join()}`
+        }
+        return tempDir
+    }
 
     static get login(): string {
         const userEnvStrings = ['USERID', "USER", "user", "username"];
