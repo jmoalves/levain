@@ -71,6 +71,7 @@ export default class Levain {
             if (this.error || (this.myArgs && this.myArgs["wait-after-end"])) {
                 console.log("");
                 prompt("Hit ENTER to finish");
+                console.log("Bye!");
             }
         }
         return this.logger
