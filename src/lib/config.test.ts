@@ -6,6 +6,7 @@ import Repository from './repository/repository.ts';
 import ChainRepository from './repository/chain_repository.ts';
 import CacheRepository from './repository/cache_repository.ts';
 import {assertStringEndsWith} from './test/more_asserts.ts';
+import OsUtils from './os_utils.ts';
 
 //
 // addRepos
@@ -136,6 +137,6 @@ Deno.test('should have levainCache', () => {
     const config = new Config([])
 
     const dir = config.levainCacheDir
-
-    assertStringEndsWith(dir, path.join('.levain', 'cache'))
+    
+    assertEquals(dir, path.join(OsUtils.tempDir, 'levain', 'cache'))
 })

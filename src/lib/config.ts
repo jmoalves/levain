@@ -12,6 +12,7 @@ import RepositoryFactory from "./repository/repository_factory.ts";
 import Package from "./package/package.ts";
 import UserInfoUtil from './user_info/userinfo_util.ts';
 import Registry from './repository/registry.ts';
+import OsUtils from './os_utils.ts';
 
 export default class Config {
     private _pkgManager: PackageManager;
@@ -33,6 +34,8 @@ export default class Config {
 
     private repoFactory: RepositoryFactory;
     private _registry: Registry | undefined;
+
+    private _levainCacheDir: string | undefined;
 
     constructor(args: any) {
         this.savedArgs = args;
@@ -115,10 +118,16 @@ export default class Config {
         return dir;
     }
 
+    set levainCacheDir(dir: string) {
+        this._levainCacheDir = dir
+    }
+
     get levainCacheDir(): string {
-        const dir = path.resolve(this.levainConfigDir, "cache");
-        ensureDirSync(dir)
-        return dir;
+        if (!this._levainCacheDir) {
+            this._levainCacheDir = path.resolve(OsUtils.tempDir, 'levain', "cache");
+        }
+        ensureDirSync(this._levainCacheDir)
+        return this._levainCacheDir;
     }
 
     get context(): any {
@@ -331,7 +340,7 @@ export default class Config {
         delete this._env["levainHome"];
 
         if (args["levainHome"]) {
-            let dirs:string[] = args["levainHome"];
+            let dirs: string[] = args["levainHome"];
             let homeDir = dirs.find(dir => {
                 let home = path.resolve(Deno.cwd(), dir);
                 log.debug(`Checking home at ${home}`);
@@ -399,7 +408,7 @@ export default class Config {
         }
 
         log.info("");
-        let repoArr:Repository[] = [];
+        let repoArr: Repository[] = [];
         repos.forEach(repoPath => repoArr.push(this.repoFactory.create(repoPath)));
 
         return new CacheRepository(this,
