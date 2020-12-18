@@ -1,4 +1,5 @@
-import {assert, assertEquals} from "https://deno.land/std/testing/asserts.ts";
+import {assert, assertArrayIncludes, assertEquals} from "https://deno.land/std/testing/asserts.ts";
+import DirUtils from "../dir_utils.ts";
 
 export function assertArrayIncludesElements<T>(array: T[], elements: T[]) {
     let notFound: T[] = []
@@ -60,5 +61,18 @@ export function assertArrayContainsInAnyOrder<T>(
     assert(
         (missedExpectations.length === 0) && (missedActualElements.length === 0),
         `expected ${JSON.stringify(actual)} to have the same elements as ${JSON.stringify(expected)}`,
+    )
+}
+
+export function assertFolderIncludes(dst: string, expectedFiles: string[]) {
+    const dstWithSlash = dst.endsWith('/') ? dst : dst + '/'
+    const dstRelativeFiles = DirUtils.listFileNames(dst)
+        .map(it => it.toString().replace(dstWithSlash, ''))
+    const expectedRelativeFiles = expectedFiles
+        .map(it => it.toString().replace(dstWithSlash, ''))
+
+    assertArrayIncludes(
+        dstRelativeFiles,
+        expectedRelativeFiles,
     )
 }

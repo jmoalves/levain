@@ -70,10 +70,8 @@ Deno.test('should config default repos', () => {
     assert(chainRepo instanceof ChainRepository)
     const repos: Repository[] = (chainRepo as ChainRepository).repositories
     const repoUris = repos.map(it => it.absoluteURI)
-    assertEquals(repoUris, [
-        "D:\\git.repo\\levain",
-    ])
     assertEquals(repos.length, 1)
+    assertStringEndsWith(repoUris[0], "levain")
 })
 Deno.test('should add extra repo', () => {
     const config = new Config([])
@@ -133,4 +131,11 @@ Deno.test('should have a registry', () => {
     const registry = config.levainRegistry
 
     assertNotEquals(registry, undefined)
+})
+Deno.test('should have levainCache', () => {
+    const config = new Config([])
+
+    const dir = config.levainCacheDir
+
+    assertStringEndsWith(dir, path.join('.levain', 'cache'))
 })

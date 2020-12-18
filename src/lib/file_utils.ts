@@ -1,7 +1,6 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
-
-import {existsSync} from "https://deno.land/std/fs/mod.ts";
+import {ensureDirSync, existsSync,} from "https://deno.land/std/fs/mod.ts";
 import OsUtils from './os_utils.ts';
 
 import ProgressBar from "https://deno.land/x/progress@v1.1.4/mod.ts";
@@ -111,9 +110,17 @@ export default class FileUtils {
         }
     }
 
-    static async copyWithProgress(src: string, dst: string) {
-        let r = new FileReader(src);
-        let w = new FileWriter(dst, r.progressbar);
+    static async copyWithProgress(srcFile: string, dstFile: string) {
+        const resolvedSrc = path.resolve(srcFile)
+        log.debug(`reading ${resolvedSrc}`)
+        let r = new FileReader(resolvedSrc);
+
+        const resolvedDst = path.resolve(dstFile)
+        const dstDir = path.dirname(resolvedDst)
+        ensureDirSync(dstDir)
+        log.debug(`writing to ${resolvedDst}`)
+        let w = new FileWriter(resolvedDst, r.progressbar);
+
         let size = await Deno.copy(r, w);
         await r.close();
         await w.close();
@@ -121,29 +128,29 @@ export default class FileUtils {
 }
 
 class FileReader implements Deno.Reader {
-    private file:Deno.File;
-    private fileInfo:Deno.FileInfo;
+    private file: Deno.File;
+    private fileInfo: Deno.FileInfo;
 
-    private pb:ProgressBar;
+    private pb: ProgressBar;
 
     constructor(private filePath: string) {
         if (!existsSync(filePath)) {
             throw `File ${filePath} does not exist`;
         }
 
-        this.file = Deno.openSync(filePath, { read: true });
+        this.file = Deno.openSync(filePath, {read: true});
         this.fileInfo = Deno.statSync(filePath);
         const title = "- COPY " + path.basename(filePath);
-        const total = this.fileInfo.size; 
-        this.pb = new ProgressBar({ 
-            title, 
-            total, 
-            complete: "=", 
+        const total = this.fileInfo.size;
+        this.pb = new ProgressBar({
+            title,
+            total,
+            complete: "=",
             incomplete: "-"
         });
     }
 
-    get progressbar():ProgressBar {
+    get progressbar(): ProgressBar {
         return this.pb;
     }
 
@@ -157,11 +164,11 @@ class FileReader implements Deno.Reader {
 }
 
 class FileWriter implements Deno.Writer {
-    private file:Deno.File;
-    private written:number = 0;
+    private file: Deno.File;
+    private written: number = 0;
 
-    constructor(filePath: string, private progress?:ProgressBar) {
-        this.file = Deno.openSync(filePath, { write: true, createNew: true });
+    constructor(filePath: string, private progress?: ProgressBar) {
+        this.file = Deno.openSync(filePath, {write: true, createNew: true});
     }
 
     async write(p: Uint8Array): Promise<number> {

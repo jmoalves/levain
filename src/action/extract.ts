@@ -1,6 +1,6 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
-import {existsSync, copySync} from "https://deno.land/std/fs/mod.ts";
+import {existsSync} from "https://deno.land/std/fs/mod.ts";
 import {unZipFromFile} from 'https://deno.land/x/zip@v1.1.0/mod.ts'
 
 import Action from "./action.ts";
@@ -46,43 +46,41 @@ abstract class Extractor {
     }
 
     async extract(strip: boolean, src: string, dst: string) {
-        // TODO: Use download cache instead of temp file
-        const safeTempDir = this.config.levainSafeTempDir
-        log.debug(`safeTempDir ${safeTempDir}`)
-        let tmpRootDir = Deno.makeTempDirSync({
-            dir: safeTempDir,
-            prefix: 'extract-'
-        });
-        log.debug(`- TEMP ${tmpRootDir}`);
-
-        const timer = new Timer();
-        let tmpSrc = await this.copy(src, tmpRootDir);
-        log.debug(`- copied in ${timer.humanize()}`);
-
-        let tmpDstDir = Deno.makeTempDirSync({
-            dir: tmpRootDir,
-            prefix: 'extract-dst-'
-        });
-        log.debug(`- DST ${tmpDstDir}`);
-
-        log.debug(`- EXTRACT ${tmpSrc} => ${tmpDstDir}`);
-        timer.reset();
-        await this.extractImpl(tmpSrc, tmpDstDir);
-        log.debug(`- extracted in ${timer.humanize()}`);
-
-        this.move(strip, tmpDstDir, dst);
-
-        log.debug(`- DEL ${tmpRootDir}`);
-        Deno.removeSync(tmpRootDir, {recursive: true});
+        let cachedFile = await this.getCachedFile(src);
+        let extractedTempDir = await this.extractToTemp(cachedFile)
+        this.move(strip, extractedTempDir, dst);
     }
 
-    async copy(src: string, dst: string): Promise<string> {
-        let dstPath = path.resolve(dst, path.basename(src));
-        log.debug(`- COPY ${src} => ${dstPath}`);
+    async getCachedFile(src: string): Promise<string> {
+        const filePathInCache = this.cachedFilePath(src)
+        log.debug(`filePathInCache ${filePathInCache}`);
+        if (existsSync(filePathInCache)) {
+            log.info(`fromCache ${filePathInCache}`)
+            return filePathInCache;
+        } else {
+            return await this.copyToCache(src)
+        }
+    }
 
-        //copySync(src, dstPath);
-        await FileUtils.copyWithProgress(src, dstPath);
-        return dstPath;
+    cachedFilePath(src: string): string {
+        const cacheDir = this.config.levainCacheDir
+        const noFolderSrc = src.replace(/(?:\/|\\)/g, '_')
+        return path.join(cacheDir, noFolderSrc)
+    }
+
+    async copyToCache(src: string): Promise<string> {
+        log.info(`- COPY TO CACHE ${src}`);
+        const filePathInCache = this.cachedFilePath(src)
+        let cachedFile = await this.copy(src, filePathInCache);
+        return cachedFile
+    }
+
+    async copy(srcFile: string, dstFile: string): Promise<string> {
+        log.info(`- COPY ${srcFile} => ${dstFile}`);
+
+        //copySync(srcFile, dstPath);
+        await FileUtils.copyWithProgress(srcFile, dstFile);
+        return dstFile;
     }
 
     abstract extractImpl(src: string, dst: string): void;
@@ -109,6 +107,22 @@ abstract class Extractor {
 
         Deno.removeSync(srcDir);
     }
+
+    async extractToTemp(file: string): Promise<string> {
+        const safeTempDir = this.config.levainSafeTempDir
+        log.debug(`safeTempDir ${safeTempDir}`)
+        let tempDir = Deno.makeTempDirSync({
+            dir: safeTempDir,
+            prefix: 'extract-'
+        });
+
+        const timer = new Timer()
+        log.info(`- EXTRACT ${file} => ${tempDir}`);
+        await this.extractImpl(file, tempDir);
+        log.info(`- extracted in ${timer.humanize()}`);
+        return tempDir
+    }
+
 }
 
 class ExtractorFactory {
@@ -133,7 +147,7 @@ class ExtractorFactory {
     }
 }
 
-class DenoZip extends Extractor {
+export class DenoZip extends Extractor {
     constructor(config: Config) {
         super(config);
     }
@@ -141,11 +155,11 @@ class DenoZip extends Extractor {
     async extractImpl(src: string, dst: string) {
         log.debug(`-- Deno unZIP ${src} => ${dst}`);
 
-        console.log(await unZipFromFile(
+        return await unZipFromFile(
             src,
             dst,
             {includeFileName: false}
-        ))
+        )
     }
 }
 

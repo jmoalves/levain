@@ -81,7 +81,9 @@ export default class Config {
     }
 
     get levainConfigDir(): string {
-        return path.resolve(this.levainHome, ".levain");
+        const dir = path.resolve(this.levainHome, ".levain");
+        ensureDirSync(dir)
+        return dir;
     }
 
     get levainConfigFile(): string {
@@ -108,7 +110,15 @@ export default class Config {
     }
 
     get levainBackupDir(): string {
-        return path.resolve(this.levainConfigDir, "backup");
+        const dir = path.resolve(this.levainConfigDir, "backup");
+        ensureDirSync(dir)
+        return dir;
+    }
+
+    get levainCacheDir(): string {
+        const dir = path.resolve(this.levainConfigDir, "cache");
+        ensureDirSync(dir)
+        return dir;
     }
 
     get context(): any {

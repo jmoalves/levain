@@ -3,6 +3,7 @@ import {
     assertArrayContainsInAnyOrder,
     assertArrayEndsWith,
     assertFind,
+    assertFolderIncludes,
     assertNotFind,
     assertStringEndsWith
 } from "./more_asserts.ts";
@@ -90,5 +91,20 @@ Deno.test('should find out that one element is missing', () => {
             assertArrayContainsInAnyOrder([1, 2], [1, 2, 3])
         },
         AssertionError,
+    )
+})
+//
+// assertFolderIncludes
+//
+Deno.test('should assert a file is in a folder', () => {
+    assertFolderIncludes('testdata/assertFolderIncludes', ['file.txt'])
+})
+Deno.test('should find out that a file is missing', () => {
+    assertThrows(
+        () => {
+            assertFolderIncludes('testdata/assertFolderIncludes', ['abc123.doc'])
+        },
+        AssertionError,
+        'missing: [\n  "abc123.doc",\n]',
     )
 })

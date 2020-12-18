@@ -62,4 +62,8 @@ export default class TestHelper {
             Deno.makeTempDirSync()
         );
     }
+
+    static getNewTempDir(): string {
+        return Deno.makeTempDirSync()
+    }
 }
