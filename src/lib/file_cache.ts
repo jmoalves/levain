@@ -25,9 +25,9 @@ export default class FileCache {
     }
 
     cachedFilePath(src: string): string {
-        const cacheDir = this.dir
-        const noFolderSrc = src.replace(/(?:\/|\\)/g, '_')
-        return path.join(cacheDir, noFolderSrc)
+        // const cacheDir = this.dir
+        const noFolderSrc = src.replace(/(?:\/|\\|:)+/g, '_')
+        return path.join(this.dir, noFolderSrc)
     }
 
     async copyToCache(src: string): Promise<string> {

@@ -34,7 +34,7 @@ export default class TestHelper {
     static readonly folderThatDoesNotExist = 'this-folder-does-not-exist';
     static readonly anotherFolderThatDoesNotExist = 'another-folder-that-does-not-exist';
     static readonly fileThatDoesNotExist = path.join(TestHelper.folderThatAlwaysExists, 'this-file-does-not-exist.txt');
-    static readonly validZipFile = '../testdata/extract/test.zip'
+    static readonly validZipFile = path.resolve('testdata/extract/test.zip')
 
     static getTestPkg(yamlStr: string) {
         return new FileSystemPackage(

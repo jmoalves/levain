@@ -21,8 +21,12 @@ Deno.test('FileCache should calc cached file path', () => {
     const config = TestHelper.getConfig()
     const fileCache = new FileCache(config)
 
-    assertStringEndsWith(
+    assertEquals(
         fileCache.cachedFilePath('/folder/big-file.zip'),
-        path.join('cache', '_folder_big-file.zip'),
+        path.join(fileCache.dir, '_folder_big-file.zip'),
+    )
+    assertStringEndsWith(
+        fileCache.cachedFilePath('d:/folder/big-file.zip'),
+        path.join(fileCache.dir, 'd_folder_big-file.zip'),
     )
 })

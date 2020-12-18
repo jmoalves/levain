@@ -10,10 +10,13 @@ import {parseArgs} from "../lib/parse_args.ts";
 import OsUtils from "../lib/os_utils.ts";
 import {Timer} from "../lib/timer.ts";
 import FileUtils from "../lib/file_utils.ts";
+import FileCache from '../lib/file_cache.ts';
 
 // TODO: Use native TS/JS implementation instead of extra-bin files.
 export default class Extract implements Action {
-    constructor(private config: Config) {
+    constructor(
+        private config: Config,
+    ) {
     }
 
     async execute(pkg: Package, parameters: string[]) {
@@ -35,45 +38,24 @@ export default class Extract implements Action {
         const dst = path.resolve(pkg.baseDir, args._[1]);
 
         log.info(`EXTRACT ${src} => ${dst}`);
+        const fileCache = new FileCache(this.config)
+        const cachedSrc = await fileCache.get(src)
         const factory: ExtractorFactory = new ExtractorFactory();
-        const extractor: Extractor = factory.createExtractor(this.config, src);
-        await extractor.extract(args.strip, src, dst);
+        const extractor: Extractor = factory.createExtractor(this.config, cachedSrc);
+        await extractor.extract(args.strip, cachedSrc, dst);
     }
 }
+
 
 abstract class Extractor {
     constructor(protected config: Config) {
     }
 
     async extract(strip: boolean, src: string, dst: string) {
-        let cachedFile = await this.getCachedFile(src);
-        let extractedTempDir = await this.extractToTemp(cachedFile)
+        let extractedTempDir = await this.extractToTemp(src)
         this.move(strip, extractedTempDir, dst);
     }
 
-    async getCachedFile(src: string): Promise<string> {
-        const filePathInCache = this.cachedFilePath(src)
-        log.debug(`filePathInCache ${filePathInCache}`);
-        if (existsSync(filePathInCache)) {
-            log.info(`fromCache ${filePathInCache}`)
-            return filePathInCache;
-        } else {
-            return await this.copyToCache(src)
-        }
-    }
-
-    cachedFilePath(src: string): string {
-        const cacheDir = this.config.levainCacheDir
-        const noFolderSrc = src.replace(/(?:\/|\\)/g, '_')
-        return path.join(cacheDir, noFolderSrc)
-    }
-
-    async copyToCache(src: string): Promise<string> {
-        log.info(`- COPY TO CACHE ${src}`);
-        const filePathInCache = this.cachedFilePath(src)
-        let cachedFile = await this.copy(src, filePathInCache);
-        return cachedFile
-    }
 
     async copy(srcFile: string, dstFile: string): Promise<string> {
         log.info(`- COPY ${srcFile} => ${dstFile}`);
