@@ -18,6 +18,7 @@ export default class CleanCommand implements Command {
             boolean: [
                 "cache",
                 "backup",
+                "temp",
             ]
         });
 
@@ -27,11 +28,17 @@ export default class CleanCommand implements Command {
             log.info(`cleaning cacheDir ${cacheDir}`)
             emptyDirSync(cacheDir)
         }
+
         if (myArgs.backup || noArgs) {
             const backupDir = this.config.levainBackupDir
             log.info(`cleaning backupDir ${backupDir}`)
             emptyDirSync(backupDir)
         }
-    }
 
+        if (myArgs.temp || noArgs) {
+            const tempDir = this.config.levainSafeTempDir
+            log.info(`cleaning backupDir ${tempDir}`)
+            emptyDirSync(tempDir)
+        }
+    }
 }
