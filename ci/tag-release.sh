@@ -11,6 +11,10 @@ fi
 
 echo Release "$@"
 
+git fetch --prune
+
+git pull
+
 # Check tag
 tag=v${version}
 tagExists=$(git tag -l $tag)
@@ -58,6 +62,13 @@ rm src/levain_cli.ts.bkp
 
 # PUSH
 git push
+
+# Check tag
+tagExists=$(git tag -l $tag)
+if [ -z "$tagExists" ]; then
+  echo Git tag $tag does not exist. ERROR...
+  exit 1
+fi
 
 # Done
 echo Tag $tag created
