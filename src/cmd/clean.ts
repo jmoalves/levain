@@ -17,14 +17,21 @@ export default class CleanCommand implements Command {
         const myArgs = parseArgs(parameters, {
             boolean: [
                 "cache",
+                "backup",
             ]
         });
 
-        const cache = this.config.levainCacheDir;
-        emptyDirSync(cache)
-
-        const backupDir = this.config.levainBackupDir;
-        emptyDirSync(backupDir)
+        const noArgs = !parameters.length
+        if (myArgs.cache || noArgs) {
+            const cacheDir = this.config.levainCacheDir
+            log.info(`cleaning cacheDir ${cacheDir}`)
+            emptyDirSync(cacheDir)
+        }
+        if (myArgs.backup || noArgs) {
+            const backupDir = this.config.levainBackupDir
+            log.info(`cleaning backupDir ${backupDir}`)
+            emptyDirSync(backupDir)
+        }
     }
 
 }

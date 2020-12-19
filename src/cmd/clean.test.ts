@@ -3,6 +3,7 @@ import TestHelper from "../lib/test/test_helper.ts";
 import {assert, assertThrows} from "https://deno.land/std/testing/asserts.ts";
 import CleanCommand from "./clean.ts";
 import {assertDirCount} from "../lib/test/more_asserts.ts";
+import MathUtil from "../lib/math_util.ts";
 
 Deno.test('CleanCommand should be in command factory', () => {
     const commandFactory = new CommandFactory()
@@ -24,27 +25,50 @@ Deno.test('CleanCommand should identify unknown option', () => {
         'ERROR: Unknown option --this-param-does-not-exist',
     )
 })
+
+
 Deno.test('CleanCommand should clean cache and backup', () => {
+    verifyClean([], true, true)
+})
+Deno.test('CleanCommand --cache should only clean cache', () => {
+    verifyClean(['--cache'], false, true)
+})
+Deno.test('CleanCommand --backup should only clean backup', () => {
+    verifyClean(['--backup'], true, false)
+})
+Deno.test('CleanCommand --cache --backup should clean cache and backup', () => {
+    verifyClean(['--backup', '--cache'], true, true)
+})
+
+function verifyClean(parameters: any[], shouldCleanBackupDir: boolean, shouldCleanCacheDir: boolean) {
     const config = TestHelper.getConfig()
 
-    const cacheDir = TestHelper.getNewTempDir()
-    TestHelper.addRandomFilesToDir(cacheDir, 3)
-    config.levainCacheDir = cacheDir
-    assertDirCount(cacheDir, 3)
-
+    const backupDirCount = MathUtil.randomInt(10);
     const backupDir = TestHelper.getNewTempDir()
-    TestHelper.addRandomFilesToDir(backupDir, 5)
+    TestHelper.addRandomFilesToDir(backupDir, backupDirCount)
     config.levainBackupDir = backupDir
-    assertDirCount(backupDir, 5)
+    assertDirCount(backupDir, backupDirCount)
+
+    const cacheDirCount = MathUtil.randomInt(10);
+    const cacheDir = TestHelper.getNewTempDir()
+    TestHelper.addRandomFilesToDir(cacheDir, cacheDirCount)
+    config.levainCacheDir = cacheDir
+    assertDirCount(cacheDir, cacheDirCount)
 
 
     const command = new CleanCommand(config)
+    command.execute(parameters)
 
 
-    command.execute([])
+    if (shouldCleanBackupDir) {
+        assertDirCount(backupDir, 0, 'should clean backupDir')
+    } else {
+        assertDirCount(backupDir, backupDirCount, 'should keep backupDir')
+    }
 
-
-    assertDirCount(cacheDir, 0, 'should clean cacheDir')
-    assertDirCount(backupDir, 0, 'should clean backupDir')
-})
-
+    if (shouldCleanCacheDir) {
+        assertDirCount(cacheDir, 0, 'should clean cacheDir')
+    } else {
+        assertDirCount(cacheDir, cacheDirCount, 'should keep cacheDir')
+    }
+}
