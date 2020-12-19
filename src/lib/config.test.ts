@@ -7,6 +7,7 @@ import ChainRepository from './repository/chain_repository.ts';
 import CacheRepository from './repository/cache_repository.ts';
 import {assertStringEndsWith} from './test/more_asserts.ts';
 import OsUtils from './os_utils.ts';
+import TestHelper from "./test/test_helper.ts";
 
 //
 // addRepos
@@ -112,6 +113,7 @@ Deno.test('should have levainSafeTempDir', () => {
 
     assertStringEndsWith(dir, path.join('.levain', 'temp'))
 })
+
 Deno.test('should have levainBackupDir', () => {
     const config = new Config([])
 
@@ -119,6 +121,15 @@ Deno.test('should have levainBackupDir', () => {
 
     assertStringEndsWith(dir, path.join('.levain', 'backup'))
 })
+Deno.test('should set levainBackupDir', () => {
+    const config = new Config([])
+
+    const newDir = TestHelper.getNewTempDir();
+    config.levainBackupDir = newDir
+
+    assertEquals(config.levainBackupDir, newDir)
+})
+
 Deno.test('should have levainRegistryDir', () => {
     const config = new Config([])
 
@@ -133,10 +144,19 @@ Deno.test('should have a registry', () => {
 
     assertNotEquals(registry, undefined)
 })
+
 Deno.test('should have levainCache', () => {
     const config = new Config([])
 
     const dir = config.levainCacheDir
-    
+
     assertEquals(dir, path.join(OsUtils.tempDir, 'levain', 'cache'))
+})
+Deno.test('should set levainCache', () => {
+    const config = new Config([])
+
+    const newDir = TestHelper.getNewTempDir();
+    config.levainCacheDir = newDir
+
+    assertEquals(config.levainCacheDir, newDir)
 })

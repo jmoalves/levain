@@ -35,6 +35,7 @@ export default class Config {
     private repoFactory: RepositoryFactory;
     private _registry: Registry | undefined;
 
+    private _levainBackupDir: string | undefined;
     private _levainCacheDir: string | undefined;
 
     constructor(args: any) {
@@ -112,11 +113,19 @@ export default class Config {
         return dir;
     }
 
-    get levainBackupDir(): string {
-        const dir = path.resolve(this.levainConfigDir, "backup");
-        ensureDirSync(dir)
-        return dir;
+
+    set levainBackupDir(dir: string) {
+        this._levainBackupDir = dir
     }
+
+    get levainBackupDir(): string {
+        if (!this._levainBackupDir) {
+            this._levainBackupDir = path.resolve(this.levainConfigDir, "backup");
+        }
+        ensureDirSync(this._levainBackupDir)
+        return this._levainBackupDir;
+    }
+
 
     set levainCacheDir(dir: string) {
         this._levainCacheDir = dir
