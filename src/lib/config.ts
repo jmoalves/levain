@@ -12,7 +12,6 @@ import RepositoryFactory from "./repository/repository_factory.ts";
 import Package from "./package/package.ts";
 import UserInfoUtil from './user_info/userinfo_util.ts';
 import Registry from './repository/registry.ts';
-import OsUtils from './os_utils.ts';
 
 export default class Config {
     private _pkgManager: PackageManager;
@@ -133,7 +132,7 @@ export default class Config {
 
     get levainCacheDir(): string {
         if (!this._levainCacheDir) {
-            this._levainCacheDir = path.resolve(OsUtils.tempDir, 'levain', "cache");
+            this._levainCacheDir = path.resolve(this.levainHome, '.levainCache');
         }
         ensureDirSync(this._levainCacheDir)
         return this._levainCacheDir;
