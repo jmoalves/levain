@@ -8,7 +8,9 @@ export default class DirUtils {
     }
 
     static listFiles(path: string): WalkEntry[] {
-        return [...walkSync(path)];
+        const files = [...walkSync(path)]
+        const root = files.shift()
+        return files
     }
 
     static normalizePaths(paths: string[]): string[] {
@@ -17,5 +19,9 @@ export default class DirUtils {
 
     static normalizePath(path: string): string {
         return path.replace(/\\/g, '/');
+    }
+
+    static count(path: string) {
+        return this.listFiles(path).length
     }
 }

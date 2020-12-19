@@ -2,11 +2,13 @@ import {AssertionError, assertThrows} from "https://deno.land/std/testing/assert
 import {
     assertArrayContainsInAnyOrder,
     assertArrayEndsWith,
+    assertDirCount,
     assertFind,
     assertFolderIncludes,
     assertNotFind,
     assertStringEndsWith
 } from "./more_asserts.ts";
+import TestHelper from "./test_helper.ts";
 
 //
 // assertsStringEndsWith
@@ -106,5 +108,20 @@ Deno.test('should find out that a file is missing', () => {
         },
         AssertionError,
         "abc123.doc",
+    )
+})
+//
+// assertDirCount
+//
+Deno.test('assertDirCount should verify element count', () => {
+    assertDirCount('testdata/more_asserts', 3)
+})
+Deno.test('assertDirCount should throw when folder does not exist', () => {
+    assertThrows(
+        () => {
+            assertDirCount(TestHelper.folderThatDoesNotExist, 1)
+        },
+        Deno.errors.NotFound,
+        'No such file or directory (os error 2)',
     )
 })

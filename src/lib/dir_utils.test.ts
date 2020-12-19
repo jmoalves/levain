@@ -1,15 +1,24 @@
 import DirUtils from "./dir_utils.ts";
-import {assertArrayIncludes} from "https://deno.land/std/testing/asserts.ts";
+import {assertArrayIncludes, assertEquals} from "https://deno.land/std/testing/asserts.ts";
 
+const testDataDir = './testdata/dir_utils';
+
+Deno.test('should count dir elements', () => {
+    assertEquals(DirUtils.count(testDataDir), 8)
+})
 Deno.test('should list file names', () => {
-    const fileNames = DirUtils.listFileNames('./testdata/extract')
+    const fileNames = DirUtils.listFileNames(testDataDir)
 
     assertArrayIncludes(DirUtils.normalizePaths(fileNames), [
-        "testdata/extract",
-        "testdata/extract/test",
-        "testdata/extract/test/abc.txt",
-        "testdata/extract/test/hello.txt",
-        "testdata/extract/test.zip",
+        // "testdata/dir_utils",
+        "testdata/dir_utils/test",
+        "testdata/dir_utils/test/abc.txt",
+        "testdata/dir_utils/test/hello.txt",
+        "testdata/dir_utils/test.zip",
+        "testdata/dir_utils/test.zip/test",
+        "testdata/dir_utils/test.zip/test/abc.txt",
+        "testdata/dir_utils/test.zip/test/hello.txt",
+        "testdata/dir_utils/hello.txt",
     ])
 })
 Deno.test('should normalize paths', () => {

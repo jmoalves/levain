@@ -66,4 +66,10 @@ export default class TestHelper {
     static getNewTempDir(): string {
         return Deno.makeTempDirSync()
     }
+
+    static addRandomFilesToDir(dir: string, number: number) {
+        for (let i = 0; i < number; i++) {
+            Deno.makeTempFileSync({dir})
+        }
+    }
 }
