@@ -6,4 +6,4 @@ dependencies:
   - levain
 
 cmd.install:
-  - contextMenu folders --id="levain-shell" --name="Levain Shell" --cmd="${pkg.levain.baseDir}\levain --skip-local-log shell"
+  - contextMenu folders --id="levain-shell" --name="Levain Shell" --cmd="${pkg.levain.baseDir}\levain shell"
