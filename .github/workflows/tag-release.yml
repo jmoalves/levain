@@ -1,6 +1,4 @@
-# This is a basic workflow to help you get started with Actions
-
-name: Release
+name: Tag a new release
 
 # Controls when the action will run. 
 on:
@@ -17,8 +15,10 @@ jobs:
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
 
-      # Runs a single command using the runners shell
-      - name: Release
+      - name: Tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         run: bash $GITHUB_WORKSPACE/ci/release.sh ${{ github.event.inputs.releaseNumber }}
