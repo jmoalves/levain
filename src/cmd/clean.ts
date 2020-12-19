@@ -22,6 +22,9 @@ export default class CleanCommand implements Command {
 
         const cache = this.config.levainCacheDir;
         emptyDirSync(cache)
+
+        const backupDir = this.config.levainBackupDir;
+        emptyDirSync(backupDir)
     }
 
 }

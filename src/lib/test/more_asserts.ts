@@ -86,6 +86,6 @@ export function assertFolderIncludes(dst: string, expectedFiles: string[]) {
     )
 }
 
-export function assertDirCount(dir: string, expectedCount: number) {
-    assertEquals(DirUtils.count(dir), expectedCount)
+export function assertDirCount(dir: string, expectedCount: number, msg?: string | undefined) {
+    assertEquals(DirUtils.count(dir), expectedCount, msg)
 }

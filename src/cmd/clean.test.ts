@@ -24,16 +24,27 @@ Deno.test('CleanCommand should identify unknown option', () => {
         'ERROR: Unknown option --this-param-does-not-exist',
     )
 })
-Deno.test('CleanCommand should clean cache', () => {
+Deno.test('CleanCommand should clean cache and backup', () => {
+    const config = TestHelper.getConfig()
+
     const cacheDir = TestHelper.getNewTempDir()
     TestHelper.addRandomFilesToDir(cacheDir, 3)
+    config.levainCacheDir = cacheDir
     assertDirCount(cacheDir, 3)
 
-    const config = TestHelper.getConfig()
-    config.levainCacheDir = cacheDir
+    const backupDir = TestHelper.getNewTempDir()
+    TestHelper.addRandomFilesToDir(backupDir, 5)
+    config.levainBackupDir = backupDir
+    assertDirCount(backupDir, 5)
+
+
     const command = new CleanCommand(config)
+
 
     command.execute([])
 
-    assertDirCount(cacheDir, 0)
+
+    assertDirCount(cacheDir, 0, 'should clean cacheDir')
+    assertDirCount(backupDir, 0, 'should clean backupDir')
 })
+
