@@ -3,11 +3,13 @@ import Shell from "./shell.ts";
 import Command from "./command.ts";
 import Config from "../lib/config.ts";
 import ListCommand from "./list_command.ts";
+import CleanCommand from "./clean.ts";
 
 const commandMap = new Map<string, (config: Config) => Command>([
     ['install', (config: Config) => new Install(config)],
     ['shell', (config: Config) => new Shell(config)],
     ['list', (config: Config) => new ListCommand(config)],
+    ['clean', (config: Config) => new CleanCommand(config)],
 ])
 export default class CommandFactory {
 
