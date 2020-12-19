@@ -21,4 +21,4 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: Release
-        run: $GITHUB_WORKSPACE/ci/release.sh ${{ github.event.inputs.releaseNumber }}
+        run: bash $GITHUB_WORKSPACE/ci/release.sh ${{ github.event.inputs.releaseNumber }}
