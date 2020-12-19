@@ -49,25 +49,16 @@ rm recipes/levain.levain.yaml.bkp
 git add src/levain_cli.ts recipes/levain.levain.yaml
 git commit -m "$tag"
 git tag $tag
-git push
-
-# Release at Github
-# TODO: Allow inform: Description, prerelease
-curl -ks -X POST \
-  -d "{ \
-        \"tag_name\": \"$tag\", \
-        \"name\": \"$tag\", \
-        \"prerelease\": true \
-    }" \
-  https://api.github.com/repos/jmoalves/levain/releases
 
 # Restore file
 cp -f src/levain_cli.ts.bkp src/levain_cli.ts
 git add src/levain_cli.ts
 git commit -m "vHEAD"
 rm src/levain_cli.ts.bkp
+
+# PUSH
 git push
 
 # Done
-echo Release $tag created
+echo Tag $tag created
 echo
