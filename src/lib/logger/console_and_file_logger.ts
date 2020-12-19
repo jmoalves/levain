@@ -45,11 +45,19 @@ export default class ConsoleAndFileLogger {
     }
 
     static logTag(dt: Date = new Date()): string {
+        return this.logDateTag(dt) + "-" + this.logTimeTag(dt);
+    }
+
+    static logDateTag(dt: Date = new Date()): string {
         let logTag: string = "";
         logTag += dt.getFullYear() + "";
         logTag += (dt.getMonth() < 10 ? "0" : "") + dt.getMonth();
         logTag += (dt.getDate() < 10 ? "0" : "") + dt.getDate();
-        logTag += "-";
+        return logTag;
+    }
+
+    static logTimeTag(dt: Date = new Date()): string {
+        let logTag: string = "";
         logTag += (dt.getHours() < 10 ? "0" : "") + dt.getHours();
         logTag += (dt.getMinutes() < 10 ? "0" : "") + dt.getMinutes();
         logTag += (dt.getSeconds() < 10 ? "0" : "") + dt.getSeconds();

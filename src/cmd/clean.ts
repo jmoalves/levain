@@ -1,8 +1,11 @@
+import * as log from "https://deno.land/std/log/mod.ts";
+import * as path from "https://deno.land/std/path/mod.ts";
+import {emptyDirSync} from "https://deno.land/std/fs/mod.ts";
+
 import Command from "./command.ts";
 import Config from "../lib/config.ts";
 import {parseArgs} from "../lib/parse_args.ts";
-import * as log from "https://deno.land/std/log/mod.ts";
-import {emptyDirSync} from "https://deno.land/std/fs/mod.ts";
+import ConsoleAndFileLogger from "../lib/logger/console_and_file_logger.ts";
 
 export default class CleanCommand implements Command {
 
@@ -19,6 +22,7 @@ export default class CleanCommand implements Command {
                 "cache",
                 "backup",
                 "temp",
+                "logs"
             ]
         });
 
@@ -37,8 +41,59 @@ export default class CleanCommand implements Command {
 
         if (myArgs.temp || noArgs) {
             const tempDir = this.config.levainSafeTempDir
-            log.info(`cleaning backupDir ${tempDir}`)
+            log.info(`cleaning tempDir ${tempDir}`)
             emptyDirSync(tempDir)
+
+            this.cleanOsTempDir();
+        }
+
+        if (myArgs.logs || noArgs) {
+            log.info(`cleaning logs`)
+            this.cleanLogs();
+        }
+    }
+
+    private cleanOsTempDir() {
+        let tempDir = this.getOsTempDir();
+        if (!tempDir) {
+            return;
+        }
+
+        log.info(`cleaning tempDir ${tempDir}`)
+        for (const dirEntry of Deno.readDirSync(tempDir)) {
+            if (dirEntry.isFile && dirEntry.name.match("^levain-temp-.*")) {
+                this.removeIgnoringErrors(path.resolve(tempDir, dirEntry.name));
+            };
+        }
+    }
+
+    private cleanLogs() {
+        let tempDir = this.getOsTempDir();
+        if (!tempDir) {
+            return;
+        }
+
+        log.debug(`cleaning logs at tempDir ${tempDir}`)
+        for (const dirEntry of Deno.readDirSync(tempDir)) {
+            if (dirEntry.isFile && dirEntry.name.match("^levain-.*\.log")) {
+                let dateTag = ConsoleAndFileLogger.logDateTag();
+                if (!dirEntry.name.match(`^levain-${dateTag}-.*`)) { // Do not remove today's logs
+                    this.removeIgnoringErrors(path.resolve(tempDir, dirEntry.name));
+                }
+            }
+        }
+    }
+
+    private getOsTempDir() {
+        return Deno.env.get("TEMP") ?? Deno.env.get("TMPDIR") ?? Deno.env.get("TMP") ?? undefined; 
+    }
+
+    private removeIgnoringErrors(file: string) {
+        log.debug(`DEL ${file}`);
+        try {
+            Deno.removeSync(file);
+        } catch (error) {
+            log.debug(`Error ${error} - Ignoring ${file}`);
         }
     }
 }
