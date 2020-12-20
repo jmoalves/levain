@@ -81,6 +81,7 @@ if [ -z "$levainRelease" ]; then
   echo ERROR getting levain release ${levainVersion}
   exit 1
 fi
+echo levainRelease - $levainRelease
 levainVersion=$(echo $levainRelease | jq -rc '.tag_name' | sed 's/v//g')
 levainUrl=$(echo $levainRelease | jq -rc '.zipball_url')
 
