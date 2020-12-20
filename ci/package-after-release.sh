@@ -1,6 +1,8 @@
 #!/bin/bash
 
 getRelease() {
+  debug=false
+
   while getopts "o:r:t:" o; do
     case "${o}" in
     o)
@@ -8,6 +10,9 @@ getRelease() {
       ;;
     r)
       repo="${OPTARG}"
+      ;;
+    d)
+      debug=true
       ;;
 
     *)
@@ -19,15 +24,28 @@ getRelease() {
   shift $((OPTIND - 1))
 
   version=$1
+  if [ $debug ]; then
+    echo getRelease - owner...: $owner
+    echo getRelease - repo....: $repo
+    echo getRelease - version.: $version
+  fi
   # TODO: Check parameters
 
   # Release url
   url="https://api.github.com/repos/$owner/$repo/releases/latest"
   if [ -n "$version" ]; then
+    if [ $debug ]; then
+      echo getRelease - Releases: $( curl -ks -X GET "https://api.github.com/repos/$owner/$repo/releases" )
+    fi
+
     url=$(
       curl -ks -X GET "https://api.github.com/repos/$owner/$repo/releases" |
         jq -rc ".[] | select( .tag_name == \"v${version}\" ) | .url"
     )
+  fi
+
+  if [ $debug ]; then
+    echo getRelease - URL: ${url}
   fi
 
   # Release
@@ -46,6 +64,7 @@ if [ -z "$levainVersion" ]; then
 fi
 
 echo Levain version ${levainVersion}
+
 myPath="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 cd $myPath/..
 
@@ -57,6 +76,7 @@ rm -rf ${distRoot}
 mkdir -p ${distRoot}
 
 ## levain
+getRelease -d -o jmoalves -r levain $levainVersion
 levainRelease=$(getRelease -o jmoalves -r levain $levainVersion)
 if [ -z "$levainRelease"]; then
   echo ERROR getting levain release ${levainVersion}
