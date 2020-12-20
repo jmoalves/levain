@@ -9,7 +9,7 @@ on:
         required: true
 
 jobs:
-  tagRelease:
+  createRelease:
     runs-on: ubuntu-latest
 
     steps:
@@ -29,6 +29,7 @@ jobs:
         run: bash $GITHUB_WORKSPACE/ci/tag-release.sh ${{ github.event.inputs.releaseNumber }}
 
       - name: Create release
+        id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -37,3 +38,8 @@ jobs:
           release_name: v${{ github.event.inputs.releaseNumber }}
           draft: false
           prerelease: true
+
+      - name: Package and Upload
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash $GITHUB_WORKSPACE/ci/package-after-release.sh ${{ github.event.inputs.releaseNumber }} 
