@@ -26,7 +26,7 @@ jobs:
       - name: Tag
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bash $GITHUB_WORKSPACE/ci/tag-release.sh ${{ github.event.inputs.releaseNumber }}
+        run: bash $GITHUB_WORKSPACE/githubScripts/tag-release.sh ${{ github.event.inputs.releaseNumber }}
 
       - name: Create release
         id: create_release
@@ -45,4 +45,4 @@ jobs:
       - name: Package and Upload
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bash $GITHUB_WORKSPACE/ci/package-after-release.sh ${{ github.event.inputs.releaseNumber }} 
+        run: bash $GITHUB_WORKSPACE/githubScripts/package-after-release.sh ${{ github.event.inputs.releaseNumber }} 

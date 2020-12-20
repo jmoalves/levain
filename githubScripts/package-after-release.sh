@@ -81,7 +81,6 @@ if [ -z "$levainRelease" ]; then
   echo ERROR getting levain release ${levainVersion}
   exit 1
 fi
-echo levainRelease - $levainRelease
 levainVersion=$(echo $levainRelease | jq -rc '.tag_name' | sed 's/v//g')
 levainUrl=$(echo $levainRelease | jq -rc '.zipball_url')
 
@@ -138,10 +137,11 @@ ${myDeno} cache --unstable --reload ${distDir}/src/levain.ts
 ### levain cleanup
 cp ${distDir}/scripts/levainBootstrap.cmd ${distRoot}
 rm -rf ${distDir}/scripts
+rm -rf ${distDir}/ci
 rm ${distDir}/levain.zip
 rm -rf ${distDir}/jmoalves-levain-*
 # rm -rf ${distDir}/src
-rm -rf ${distDir}/testData
+rm -rf ${distDir}/testdata
 find ${distDir} -name '*.test.ts' -exec rm {} \;
 
 ## Create zip
