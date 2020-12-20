@@ -9,9 +9,6 @@ getRelease() {
     r)
       repo="${OPTARG}"
       ;;
-    t)
-      token="${OPTARG}"
-      ;;
 
     *)
       echo Invalid options
@@ -29,7 +26,7 @@ getRelease() {
   if [ -n "$version" ]; then
     url=$(
       curl -ks -X GET "https://api.github.com/repos/$owner/$repo/releases" |
-        $jqBin -rc ".[] | select( .tag_name == \"v${version}\" ) | .url"
+        jq -rc ".[] | select( .tag_name == \"v${version}\" ) | .url"
     )
   fi
 
