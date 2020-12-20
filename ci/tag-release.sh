@@ -65,7 +65,6 @@ git push --tags
 
 # Check tag
 tagExists=$(git tag -l $tag)
-echo Tag exists - ${tagExists}
 if [ -z "${tagExists}" ]; then
   echo Git tag $tag does not exist. ERROR...
   exit 1
