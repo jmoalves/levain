@@ -61,11 +61,12 @@ git commit -m "vHEAD"
 rm src/levain_cli.ts.bkp
 
 # PUSH
-git push
+git push --tags
 
 # Check tag
 tagExists=$(git tag -l $tag)
-if [ -z "$tagExists" ]; then
+echo Tag exists - ${tagExists}
+if [ -z "${tagExists}" ]; then
   echo Git tag $tag does not exist. ERROR...
   exit 1
 fi
