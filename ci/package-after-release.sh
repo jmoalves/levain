@@ -77,7 +77,7 @@ mkdir -p ${distRoot}
 
 ## levain
 levainRelease=$(getRelease -o jmoalves -r levain $levainVersion)
-if [ -z "$levainRelease"]; then
+if [ -z "$levainRelease" ]; then
   echo ERROR getting levain release ${levainVersion}
   exit 1
 fi
@@ -94,7 +94,7 @@ mv ${distDir}/jmoalves-levain-*/* ${distDir}
 
 ## Deno bin
 denoRelease=$(getRelease -o denoland -r deno $denoVersion)
-if [ -z "$denoRelease"]; then
+if [ -z "$denoRelease" ]; then
   echo ERROR getting deno release
   exit 1
 fi
