@@ -3,16 +3,22 @@
 getRelease() {
   debug=false
 
-  while getopts "o:r:d" o; do
+  while getopts "o:r:dt:" o; do
     case "${o}" in
     o)
       owner="${OPTARG}"
       ;;
+
     r)
       repo="${OPTARG}"
       ;;
+
     d)
       debug=true
+      ;;
+
+    t)
+      timeout="${OPTARG}"
       ;;
 
     *)
@@ -27,6 +33,7 @@ getRelease() {
   if [ $debug ]; then
     echo getRelease - owner...: $owner
     echo getRelease - repo....: $repo
+    echo getRelease - timeout.: $timeout
     echo getRelease - version.: $version
   fi
   # TODO: Check parameters
@@ -34,14 +41,7 @@ getRelease() {
   # Release url
   url="https://api.github.com/repos/$owner/$repo/releases/latest"
   if [ -n "$version" ]; then
-    if [ $debug ]; then
-      echo getRelease - Releases: $( curl -ks -X GET "https://api.github.com/repos/$owner/$repo/releases" )
-    fi
-
-    url=$(
-      curl -ks -X GET "https://api.github.com/repos/$owner/$repo/releases" |
-        jq -rc ".[] | select( .tag_name == \"v${version}\" ) | .url"
-    )
+    url="https://api.github.com/repos/$owner/$repo/releases/tags/v$version"
   fi
 
   if [ $debug ]; then
@@ -76,7 +76,6 @@ rm -rf ${distRoot}
 mkdir -p ${distRoot}
 
 ## levain
-getRelease -d -o jmoalves -r levain $levainVersion
 levainRelease=$(getRelease -o jmoalves -r levain $levainVersion)
 if [ -z "$levainRelease"]; then
   echo ERROR getting levain release ${levainVersion}

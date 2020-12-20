@@ -40,7 +40,7 @@ jobs:
           prerelease: true
 
       - name: Wait release - Timeout 5 min
-        run: timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' https://github.com/jmoalves/levain/releases/tag/v${{ github.event.inputs.releaseNumber }})" != "200" ]]; do sleep 5; done' || false
+        run: timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' https://api.github.com/repos/$owner/$repo/releases/tags/v${{ github.event.inputs.releaseNumber }})" != "200" ]]; do sleep 5; done' || false
 
       - name: Package and Upload
         env:
