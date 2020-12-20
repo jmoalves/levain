@@ -1,4 +1,4 @@
-name: Tag a new release
+name: Create a new release
 
 on:
   # Allows you to run this workflow manually from the Actions tab
@@ -28,8 +28,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash $GITHUB_WORKSPACE/ci/tag-release.sh ${{ github.event.inputs.releaseNumber }}
 
-      - name: Push changes
-        uses: ad-m/github-push-action@master
+      - name: Create release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          tags: true
+          tag_name: v${{ github.event.inputs.releaseNumber }}
+          release_name: v${{ github.event.inputs.releaseNumber }}
+          draft: false
+          prerelease: true

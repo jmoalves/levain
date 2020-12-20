@@ -60,6 +60,9 @@ git add src/levain_cli.ts
 git commit -m "vHEAD"
 rm src/levain_cli.ts.bkp
 
+# PUSH
+git push --tags
+
 # Check tag
 tagExists=$(git tag -l $tag)
 if [ -z "${tagExists}" ]; then
