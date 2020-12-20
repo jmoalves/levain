@@ -58,6 +58,10 @@ mkdir -p ${distRoot}
 
 ## levain
 levainRelease=$(getRelease -o jmoalves -r levain $levainVersion)
+if [ -z "$levainRelease"]; then
+  echo ERROR getting levain release ${levainVersion}
+  exit 1
+fi
 levainVersion=$(echo $levainRelease | jq -rc '.tag_name' | sed 's/v//g')
 levainUrl=$(echo $levainRelease | jq -rc '.zipball_url')
 
@@ -71,6 +75,10 @@ mv ${distDir}/jmoalves-levain-*/* ${distDir}
 
 ## Deno bin
 denoRelease=$(getRelease -o denoland -r deno $denoVersion)
+if [ -z "$denoRelease"]; then
+  echo ERROR getting deno release
+  exit 1
+fi
 denoVersion=$(echo $denoRelease | jq -rc '.tag_name' | sed 's/v//g')
 denoWindowsUrl=$(echo $denoRelease | jq -rc '.assets|.[] | select( .name == "deno-x86_64-pc-windows-msvc.zip" ) | .browser_download_url')
 denoLinuxUrl=$(echo $denoRelease | jq -rc '.assets|.[] | select( .name == "deno-x86_64-unknown-linux-gnu.zip" ) | .browser_download_url')
