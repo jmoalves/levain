@@ -61,6 +61,7 @@ git commit -m "vHEAD"
 rm src/levain_cli.ts.bkp
 
 # PUSH
+git push
 git push --tags
 
 # Check tag
