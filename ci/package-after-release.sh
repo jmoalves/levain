@@ -34,6 +34,8 @@ getRelease() {
   echo $(curl -ks -X GET ${url})
 }
 
+echo Packaging "$@"
+
 levainVersion=$1
 denoVersion=$2
 
@@ -43,11 +45,9 @@ if [ -z "$levainVersion" ]; then
   exit 1
 fi
 
-echo Packaging "$@"
-
+echo Levain version ${levainVersion}
 myPath="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 cd $myPath/..
-myRoot=$(pwd)
 
 tag=v${levainVersion}
 
