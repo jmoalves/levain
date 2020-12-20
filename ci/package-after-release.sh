@@ -30,7 +30,7 @@ getRelease() {
   shift $((OPTIND - 1))
 
   version=$1
-  if [ $debug ]; then
+  if $debug; then
     echo getRelease - owner...: $owner
     echo getRelease - repo....: $repo
     echo getRelease - timeout.: $timeout
@@ -44,7 +44,7 @@ getRelease() {
     url="https://api.github.com/repos/$owner/$repo/releases/tags/v$version"
   fi
 
-  if [ $debug ]; then
+  if $debug; then
     echo getRelease - URL: ${url}
   fi
 
