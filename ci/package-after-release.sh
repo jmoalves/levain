@@ -3,7 +3,7 @@
 getRelease() {
   debug=false
 
-  while getopts "o:r:t:" o; do
+  while getopts "o:r:d" o; do
     case "${o}" in
     o)
       owner="${OPTARG}"
