@@ -22,13 +22,15 @@ export default class Shell implements Command {
 
         let pkgs: Package[] | null = this.config.packageManager.resolvePackages(pkgNames);
         if (pkgs) {
-            let installed = pkgs
-                    .map(pkg => pkg.installed)
-                    .reduce((acc, value) => acc && value);
+            let needInstall = pkgs
+                    .map(pkg => !pkg.installed || pkg.updateAvailable)
+                    .reduce((acc, value) => acc || value);
 
-            if (!installed) {
+            if (needInstall) {
                 let loader = new Loader(this.config);
                 await loader.command("install", pkgNames);
+            } else {
+                log.debug("No package to install or upgrade");
             }
         }
 
