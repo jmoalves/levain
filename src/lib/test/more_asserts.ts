@@ -2,6 +2,7 @@ import {assert, assertArrayIncludes, assertEquals} from "https://deno.land/std/t
 import * as path from "https://deno.land/std/path/mod.ts";
 import DirUtils from "../dir_utils.ts";
 import OsUtils from '../os_utils.ts';
+import FileUtils from '../file_utils.ts';
 
 export function assertArrayIncludesElements<T>(array: T[], elements: T[]) {
     let notFound: T[] = []
@@ -88,4 +89,9 @@ export function assertFolderIncludes(dst: string, expectedFiles: string[]) {
 
 export function assertDirCount(dir: string, expectedCount: number, msg?: string | undefined) {
     assertEquals(DirUtils.count(dir), expectedCount, msg)
+}
+
+export function assertFileSize(path: string, expectedSize: number) {
+    const size = FileUtils.getSize(path);
+    assertEquals(size, expectedSize)
 }

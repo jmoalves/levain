@@ -125,6 +125,12 @@ export default class FileUtils {
         await r.close();
         await w.close();
     }
+
+    static getSize(path: string) {
+        const stat = Deno.statSync(path)
+        const size = stat.size
+        return size
+    }
 }
 
 class FileReader implements Deno.Reader {

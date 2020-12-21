@@ -3,12 +3,14 @@ import {
     assertArrayContainsInAnyOrder,
     assertArrayEndsWith,
     assertDirCount,
+    assertFileSize,
     assertFind,
     assertFolderIncludes,
     assertNotFind,
     assertStringEndsWith
 } from "./more_asserts.ts";
 import TestHelper from "./test_helper.ts";
+import * as path from "https://deno.land/std/path/mod.ts";
 
 //
 // assertsStringEndsWith
@@ -123,5 +125,20 @@ Deno.test('assertDirCount should throw when folder does not exist', () => {
         },
         Deno.errors.NotFound,
         '(os error 2)',
+    )
+})
+//
+// assertFileSize
+//
+Deno.test('assertFileSize should check file size', () => {
+    assertFileSize(path.join('testdata', 'more_asserts', 'file.txt'), 29)
+})
+Deno.test('assertFileSize should throw if file size doesnt match', () => {
+    assertThrows(
+        () => {
+            assertFileSize(path.join('testdata', 'more_asserts', 'file.txt'), 10)
+        },
+        AssertionError,
+        'Values are not equal',
     )
 })

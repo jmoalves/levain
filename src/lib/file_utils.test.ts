@@ -1,5 +1,6 @@
 import {assertEquals, assertThrows,} from "https://deno.land/std/testing/asserts.ts";
 import {existsSync} from "https://deno.land/std/fs/mod.ts";
+import * as path from "https://deno.land/std/path/mod.ts";
 
 import FileUtils from "./file_utils.ts";
 import OsUtils from './os_utils.ts';
@@ -85,7 +86,7 @@ Deno.test('should detect that a dir is a dir', () => {
 //
 // canCreateTempFileInDir
 //
-Deno.test('should be able to write in a temp dir', () => {
+Deno.test('canCreateTempFileInDir should be able to write in a temp dir', () => {
     const tempDir = Deno.makeTempDirSync()
 
     const canWrite = FileUtils.canCreateTempFileInDir(tempDir)
@@ -103,7 +104,7 @@ if (OsUtils.isWindows()) {
         )
     })
 } else {
-    Deno.test('should not be able to write in a read only dir', () => {
+    Deno.test('canCreateTempFileInDir should not be able to write in a read only dir', () => {
         Deno.chmodSync(readOnlyFolder, 0o000);
         const canWrite = FileUtils.canCreateTempFileInDir(readOnlyFolder)
 
@@ -111,8 +112,14 @@ if (OsUtils.isWindows()) {
     })
 }
 
-Deno.test('should not be able to write in a dir that does not exist', () => {
+Deno.test('canCreateTempFileInDir should not be able to write in a dir that does not exist', () => {
     const canWrite = FileUtils.canCreateTempFileInDir(TestHelper.folderThatDoesNotExist)
 
     assertEquals(canWrite, false)
+})
+Deno.test('getSize should get file size', () => {
+    const filePath = path.join('testdata', 'file_utils', 'file.txt')
+    const fileSize = FileUtils.getSize(filePath)
+
+    assertEquals(fileSize, 615)
 })
