@@ -1,6 +1,6 @@
 import Action from "./action.ts";
 import AddPath from "./addpath.ts";
-import Copy from "./copy.ts";
+import CopyAction from "./copy.ts";
 import ContextMenu from "./context_menu.ts";
 import DefaultPackage from "./defaultPackage.ts";
 import Extract from "./extract.ts";
@@ -20,7 +20,7 @@ import AddToStartupAction from './add_to_startup.ts';
 
 const actionMap = new Map<string, (config: Config) => Action>([
     ['addPath', (config: Config) => new AddPath(config)],
-    ['copy', (config: Config) => new Copy(config)],
+    ['copy', (config: Config) => new CopyAction(config)],
     ['contextMenu', (config: Config) => new ContextMenu(config)],
     ['defaultPackage', (config: Config) => new DefaultPackage(config)],
     ['extract', (config: Config) => new Extract(config)],

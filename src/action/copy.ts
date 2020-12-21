@@ -1,5 +1,5 @@
 import * as log from "https://deno.land/std/log/mod.ts";
-import {copySync, walkSync} from "https://deno.land/std/fs/mod.ts";
+import {copySync, existsSync, walkSync} from "https://deno.land/std/fs/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 
 import Action from "./action.ts";
@@ -7,7 +7,7 @@ import Config from "../lib/config.ts";
 import Package from '../lib/package/package.ts';
 import {parseArgs} from "../lib/parse_args.ts";
 
-export default class Copy implements Action {
+export default class CopyAction implements Action {
     constructor(private config: Config) {
     }
 
@@ -15,7 +15,8 @@ export default class Copy implements Action {
         let args = parseArgs(parameters, {
             boolean: [
                 "verbose",
-                "strip"
+                "strip",
+                'ifNotExists',
             ]
         });
 
@@ -29,6 +30,9 @@ export default class Copy implements Action {
         let copyToDir = false;
         try {
             const fileInfo = Deno.statSync(dst);
+            if (args.ifNotExists && existsSync(dst)) {
+                return
+            }
             if (fileInfo.isDirectory) {
                 copyToDir = true;
             }
