@@ -1,4 +1,5 @@
 import {assert, assertArrayIncludes, assertEquals} from "https://deno.land/std/testing/asserts.ts";
+import {existsSync} from "https://deno.land/std/fs/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import DirUtils from "../dir_utils.ts";
 import OsUtils from '../os_utils.ts';
@@ -94,4 +95,8 @@ export function assertDirCount(dir: string, expectedCount: number, msg?: string 
 export function assertFileSize(path: string, expectedSize: number) {
     const size = FileUtils.getSize(path);
     assertEquals(size, expectedSize)
+}
+
+export function assertFileDoesNotExist(filePath: string) {
+    assert(!existsSync(filePath), `File ${filePath} should not exist`)
 }
