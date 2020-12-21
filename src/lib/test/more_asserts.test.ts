@@ -122,6 +122,6 @@ Deno.test('assertDirCount should throw when folder does not exist', () => {
             assertDirCount(TestHelper.folderThatDoesNotExist, 1)
         },
         Deno.errors.NotFound,
-        'No such file or directory (os error 2)',
+        '(os error 2)',
     )
 })
