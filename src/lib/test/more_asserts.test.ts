@@ -4,10 +4,11 @@ import {
     assertArrayEndsWith,
     assertDirCount,
     assertFileDoesNotExist,
-    assertFileSize,
+    assertFileSizeAprox,
     assertFind,
     assertFolderIncludes,
     assertNotFind,
+    assertNumberEquals,
     assertStringEndsWith
 } from "./more_asserts.ts";
 import TestHelper from "./test_helper.ts";
@@ -132,12 +133,12 @@ Deno.test('assertDirCount should throw when folder does not exist', () => {
 // assertFileSize
 //
 Deno.test('assertFileSize should check file size', () => {
-    assertFileSize(path.join('testdata', 'more_asserts', 'file.txt'), 29)
+    assertFileSizeAprox(path.join('testdata', 'more_asserts', 'file.txt'), 29)
 })
 Deno.test('assertFileSize should throw if file size doesnt match', () => {
     assertThrows(
         () => {
-            assertFileSize(path.join('testdata', 'more_asserts', 'file.txt'), 10)
+            assertFileSizeAprox(path.join('testdata', 'more_asserts', 'file.txt'), 10)
         },
         AssertionError,
         'Values are not equal',
@@ -159,4 +160,20 @@ Deno.test('assertFileDoesNotExist should raise when file exists', () => {
         AssertionError,
         `File ${filePath} should not exist`
     )
+})
+//
+// assertNumberEquals
+//
+Deno.test('assertNumberEquals should have a tolerance', () => {
+    assertNumberEquals(600, 615, 0.1)
+})
+Deno.test('assertNumberEquals should throw when diff is above tolerance', () => {
+    assertThrows(
+        () => {
+            assertNumberEquals(100, 1000, 0.01)
+        }
+    )
+})
+Deno.test('assertNumberEquals should work with zeros', () => {
+    assertNumberEquals(0, 0)
 })
