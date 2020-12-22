@@ -72,4 +72,8 @@ export default class TestHelper {
             Deno.makeTempFileSync({dir})
         }
     }
+
+    static resolveTestFile(filepath: string): string {
+        return path.resolve('testdata', filepath);
+    } 
 }

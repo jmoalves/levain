@@ -4,9 +4,10 @@ import Action from "../action.ts";
 import Package from "../../lib/package/package.ts";
 import Config from "../../lib/config.ts";
 import { parseArgs } from "../../lib/parse_args.ts";
+import JsonUtils from "../../lib/json_utils.ts";
 
 export default class JsonGet implements Action {
-    constructor(config: Config) {
+    constructor(private config: Config) {
     }
 
     async execute(pkg: Package, parameters: string[]) {
@@ -22,5 +23,28 @@ export default class JsonGet implements Action {
             boolean: [
             ]
         });
+
+        if (myArgs?._?.length < 2) {
+            throw Error('Missing parameters. jsonGet --setVar=VAR property filename');
+        }
+
+        if (!myArgs?.setVar) {
+            throw Error('Missing parameters. jsonGet --setVar=VAR property filename');
+        }
+
+        let property = myArgs._[0];
+        let filename = myArgs._[1];
+        let json = JsonUtils.load(filename);
+        let value = JsonUtils.get(json, property, myArgs.default);
+
+        if (Array.isArray(value)) {
+            throw Error(`Could not retrieve an entire array property - "${property}"`);
+        }
+
+        if (typeof value === 'object' && value !== null) {
+            throw Error(`Could not retrieve an entire object property - "${property}"`);
+        }
+
+        this.config.setVar(myArgs.setVar, value);
     }
 }

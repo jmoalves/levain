@@ -1,0 +1,15 @@
+{
+    "property": "value",
+    "numberProperty": 150.00,
+    "booleanProperty": true,
+
+    "objectProperty": {
+        "innerProperty": "innerValue"
+    },
+
+    "arrayProperty": [
+        "first",
+        "second",
+        "third"
+    ]
+}
