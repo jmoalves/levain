@@ -1,1 +1,1 @@
-deno test --allow-all --unstable
+deno test --allow-all --unstable %*
