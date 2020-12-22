@@ -187,10 +187,26 @@ Deno.test('JsonUtils - should set inner properties', async () => {
     assert(JsonUtils.set(json, "[property][array][2][name]", "newThird"));
     assert(JsonUtils.set(json, "[property][array][2][value]", 1350.00));
     assert(JsonUtils.set(json, "[property][array][2][flag]", true));
-    assert(JsonUtils.set(json, "[property][array][2][name]", "newThird"));
-    assert(JsonUtils.set(json, "[property][array][2][value]", 1350.00));
-    assert(JsonUtils.set(json, "[property][array][2][flag]", true));
 
-    // assertEquals(json.property.innerProperty, "innerValue");
-    // assertEquals(json.property.newProperty, "newValue");
+    assert(JsonUtils.set(json, "[property][newArray][0][name]", "newArray"));
+    assert(JsonUtils.set(json, "[property][newArray][0][value]", 50.00));
+    assert(JsonUtils.set(json, "[property][newArray][0][flag]", false));
+
+    // console.log(`\njson: ${JSON.stringify(json)}`);
+
+    assertEquals(json.property.innerProperty, "innerValue");
+    assertEquals(json.property.array[0].name, "newFirst");
+    assertEquals(json.property.array[0].value, 1150.00);
+    assertEquals(json.property.array[0].flag, false);
+    assertEquals(json.property.array[1].name, "newSecond");
+    assertEquals(json.property.array[1].value, 1250.00);
+    assertEquals(json.property.array[1].flag, true);
+    assertEquals(json.property.array[2].name, "newThird");
+    assertEquals(json.property.array[2].value, 1350.00);
+    assertEquals(json.property.array[2].flag, true);
+
+    assert(Array.isArray(json.property.newArray));
+    assertEquals(json.property.newArray[0].name, "newArray");
+    assertEquals(json.property.newArray[0].value, 50.00);
+    assertEquals(json.property.newArray[0].flag, false);
 })

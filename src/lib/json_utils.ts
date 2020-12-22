@@ -39,11 +39,10 @@ export default class JsonUtils {
 
     static set(json: any, property: string, value: any, ifNotExists = false): boolean {
         let jsonPath = this.translatePath(property);
-
-        // console.log(`\njsonPath ${jsonPath} - json: ${JSON.stringify(json)} - length ${jsonPath.length}`);
+        // console.log(`\nValue: ${value} jsonPath ${jsonPath} - json: ${JSON.stringify(json)} - length ${jsonPath.length}`);
 
         let level = 0;
-        let obj = json;
+        let obj:any = json;
         for (let item of jsonPath) {
             level++;
             // console.log(`level: ${level} obj: ${JSON.stringify(obj)} - length ${jsonPath.length}`);
@@ -53,22 +52,30 @@ export default class JsonUtils {
                     return false;
                 }
 
+                // console.log(`${JSON.stringify(obj)}[${item}] = ${value}`)
                 obj[item] = value;
                 return true;
             }
 
-            if (obj[item] != undefined) {
-                obj = obj[item];
-                continue;
+            if (obj[item] == undefined) {
+                if (JsonUtils.isNumeric(jsonPath[level])) {
+                    obj[item] = []
+                } else {
+                    obj[item] = {}
+                }
             }
 
-            if (obj[item+1] instanceof Number) {
-                obj[item] = []
-            } else {
-                obj[item] = {}
-            }
+            obj = obj[item];
         }
 
         throw Error(`We must not arrive here...`);
     }
+
+    // https://stackoverflow.com/questions/175739/built-in-way-in-javascript-to-check-if-a-string-is-a-valid-number
+    static isNumeric(str: any) {
+        if (typeof str != "string") return false // we only process strings!  
+        let s:any = str;
+        return !isNaN(s) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
+               !isNaN(parseFloat(s)) // ...and ensure strings of whitespace fail
+      }
 }
