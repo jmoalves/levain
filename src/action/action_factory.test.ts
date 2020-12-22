@@ -4,7 +4,7 @@ import TestHelper from "../lib/test/test_helper.ts";
 import ActionFactory from "./action_factory.ts";
 import {assertArrayContainsInAnyOrder} from "../lib/test/more_asserts.ts";
 
-Deno.test('should list actions', () => {
+Deno.test('ActionFactory should list actions', () => {
     const factory = getActionFactory()
 
     const actions: string[] = factory.list()
