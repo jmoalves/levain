@@ -159,3 +159,8 @@ Deno.test('should set levainCache', () => {
 
     assertEquals(config.levainCacheDir, newDir)
 })
+Deno.test('should config levainCache with cli args', () => {
+    const config = new Config({levainCache: 'cache/'})
+
+    assertEquals(config.levainCacheDir, 'cache/')
+})
