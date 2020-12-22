@@ -6,6 +6,7 @@ import Command from "./command.ts";
 import Config from "../lib/config.ts";
 import {parseArgs} from "../lib/parse_args.ts";
 import ConsoleAndFileLogger from "../lib/logger/console_and_file_logger.ts";
+import OsUtils from "../lib/os_utils.ts";
 
 export default class CleanCommand implements Command {
 
@@ -85,7 +86,7 @@ export default class CleanCommand implements Command {
     }
 
     private getOsTempDir() {
-        return Deno.env.get("TEMP") ?? Deno.env.get("TMPDIR") ?? Deno.env.get("TMP") ?? undefined; 
+        return OsUtils.tempDir;
     }
 
     private removeIgnoringErrors(file: string) {

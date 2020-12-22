@@ -3,11 +3,13 @@ import {envChain} from "./utils.ts";
 
 export default class OsUtils {
     static get tempDir(): string {
-        const tempDirEnvVars = ['TEMP', 'TMPDIR'];
+        const tempDirEnvVars = ['TEMP', 'TMPDIR', 'TMP'];
         const tempDir = envChain(...tempDirEnvVars);
         if (!tempDir) {
-            throw `TempDir not found. Looked for env vars ${tempDirEnvVars.join()}`
+            //throw `TempDir not found. Looked for env vars ${tempDirEnvVars.join()}`
+            return "/tmp";
         }
+
         return tempDir
     }
 
