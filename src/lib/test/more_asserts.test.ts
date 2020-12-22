@@ -4,7 +4,7 @@ import {
     assertArrayEndsWith,
     assertDirCount,
     assertFileDoesNotExist,
-    assertFileSize,
+    assertFileSizeAprox,
     assertFind,
     assertFolderIncludes,
     assertNotFind,
@@ -132,12 +132,12 @@ Deno.test('assertDirCount should throw when folder does not exist', () => {
 // assertFileSize
 //
 Deno.test('assertFileSize should check file size', () => {
-    assertFileSize(path.join('testdata', 'more_asserts', 'file.txt'), 29)
+    assertFileSizeAprox(path.join('testdata', 'more_asserts', 'file.txt'), 29)
 })
 Deno.test('assertFileSize should throw if file size doesnt match', () => {
     assertThrows(
         () => {
-            assertFileSize(path.join('testdata', 'more_asserts', 'file.txt'), 10)
+            assertFileSizeAprox(path.join('testdata', 'more_asserts', 'file.txt'), 10)
         },
         AssertionError,
         'Values are not equal',

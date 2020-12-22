@@ -3,7 +3,7 @@ import ActionFactory from './action_factory.ts';
 import {assert,} from "https://deno.land/std/testing/asserts.ts";
 import CopyAction from './copy.ts';
 import * as path from "https://deno.land/std/path/mod.ts";
-import {assertFileDoesNotExist, assertFileSize} from '../lib/test/more_asserts.ts';
+import {assertFileDoesNotExist, assertFileSizeAprox} from '../lib/test/more_asserts.ts';
 
 const emptyFile = path.join('testdata', 'copyAction', 'emptyFile.txt')
 const fileWithContent = path.resolve('testdata', 'copyAction', 'fileWithContent.txt')
@@ -17,7 +17,7 @@ Deno.test('CopyAction should replace file', async () => {
     const tempDir = TestHelper.getNewTempDir()
     const dstFile = path.resolve(tempDir, 'newFile.txt')
     Deno.copyFileSync(emptyFile, dstFile)
-    assertFileSize(dstFile, 0)
+    assertFileSizeAprox(dstFile, 0)
 
     const action = getCopyAction()
     await action.execute(TestHelper.mockPackage(), [
@@ -25,7 +25,7 @@ Deno.test('CopyAction should replace file', async () => {
         dstFile,
     ])
 
-    assertFileSize(dstFile, 576)
+    assertFileSizeAprox(dstFile, 576)
 })
 Deno.test('CopyAction --ifNotExists should copy a new file', async () => {
     const tempDir = TestHelper.getNewTempDir()
@@ -39,13 +39,13 @@ Deno.test('CopyAction --ifNotExists should copy a new file', async () => {
         dstFile,
     ])
 
-    assertFileSize(dstFile, 576)
+    assertFileSizeAprox(dstFile, 576)
 })
 Deno.test('CopyAction --ifNotExists should not copy file if it already exists', async () => {
     const tempDir = TestHelper.getNewTempDir()
     const dstFile = path.resolve(tempDir, 'newFile.txt')
     Deno.copyFileSync(emptyFile, dstFile)
-    assertFileSize(dstFile, 0)
+    assertFileSizeAprox(dstFile, 0)
 
     const action = getCopyAction()
     await action.execute(TestHelper.mockPackage(), [
@@ -54,7 +54,7 @@ Deno.test('CopyAction --ifNotExists should not copy file if it already exists', 
         dstFile,
     ])
 
-    assertFileSize(dstFile, 0)
+    assertFileSizeAprox(dstFile, 0)
 })
 
 
