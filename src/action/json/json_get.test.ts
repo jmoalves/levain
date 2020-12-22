@@ -121,13 +121,24 @@ Deno.test('JsonGet - array property must throw exception', async () => {
     )
 })
 
-// Deno.test('JsonGet - should get an inner string property', async () => {
-//     const config = TestHelper.getConfig();
-//     const action = new JsonGet(config);
-//     const varName = "my.var";
-//     const params = [`--setVar=${varName}`, "objectProperty.innerProperty", TestHelper.resolveTestFile('json/test.json')];
+Deno.test('JsonGet - should get an inner string property', async () => {
+    const config = TestHelper.getConfig();
+    const action = new JsonGet(config);
+    const varName = "my.var";
+    const params = [`--setVar=${varName}`, "[objectProperty][innerProperty]", TestHelper.resolveTestFile('json/test.json')];
 
-//     await action.execute(TestHelper.mockPackage(), params);
+    await action.execute(TestHelper.mockPackage(), params);
 
-//     assertEquals(config.getVar(varName), "innerValue");
-// })
+    assertEquals(config.getVar(varName), "innerValue");
+})
+
+Deno.test('JsonGet - should get simple string property with dots', async () => {
+    const config = TestHelper.getConfig();
+    const action = new JsonGet(config);
+    const varName = "my.var";
+    const params = [`--setVar=${varName}`, "property.with.dots", TestHelper.resolveTestFile('json/test.json')];
+
+    await action.execute(TestHelper.mockPackage(), params);
+
+    assertEquals(config.getVar(varName), "dotValue");
+})

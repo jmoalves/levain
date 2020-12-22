@@ -11,5 +11,7 @@
         "first",
         "second",
         "third"
-    ]
+    ],
+
+    "property.with.dots": "dotValue"
 }
