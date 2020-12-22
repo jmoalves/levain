@@ -33,7 +33,15 @@ export default class JsonGet implements Action {
         }
 
         let property = myArgs._[0];
+        if (property.startsWith("--")) {
+            throw Error('Missing parameters. jsonGet --setVar=VAR property filename');
+        }
+
         let filename = myArgs._[1];
+        if (filename.startsWith("--")) {
+            throw Error('Missing parameters. jsonGet --setVar=VAR property filename');
+        }
+
         let json = JsonUtils.load(filename);
         let value = JsonUtils.get(json, property, myArgs.default);
 

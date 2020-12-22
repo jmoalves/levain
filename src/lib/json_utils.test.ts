@@ -1,5 +1,5 @@
 import * as log from "https://deno.land/std/log/mod.ts";
-import { assertEquals, assertThrowsAsync } from "https://deno.land/std/testing/asserts.ts";
+import { assert, assertEquals, assertThrowsAsync } from "https://deno.land/std/testing/asserts.ts";
 
 import TestHelper from "../lib/test/test_helper.ts";
 import JsonUtils from "./json_utils.ts";
@@ -106,4 +106,91 @@ Deno.test('JsonUtils - should get an inner property', async () => {
     assertEquals(JsonUtils.get(json, "[property][array][1][flag]"), false);
     assertEquals(JsonUtils.get(json, "[property][array][2][flag]"), undefined);
     assertEquals(JsonUtils.get(json, "[property][array][2][name]", "myName"), "myName");
+})
+
+Deno.test('JsonUtils - should set simple string property', async () => {
+    let json = { "property": "value" };
+    JsonUtils.set(json, "property", "newValue");
+    assertEquals(json.property, "newValue");
+})
+
+Deno.test('JsonUtils - should set simple number property', async () => {
+    let json = { "property": 10.00 };
+    JsonUtils.set(json, "property", 120.00);
+    assertEquals(json.property, 120.00);
+})
+
+Deno.test('JsonUtils - should set simple boolean property', async () => {
+    let json = { "property": true };
+    JsonUtils.set(json, "property", false);
+    assertEquals(json.property, false);
+})
+
+Deno.test('JsonUtils - should NOT set simple string property that exists', async () => {
+    let json = { "property": "myValue" };
+    JsonUtils.set(json, "property", "otherValue", true);
+    assertEquals(json.property, "myValue");
+})
+
+Deno.test('JsonUtils - should create simple string property that NOT exists', async () => {
+    let json:any = { "property": "myValue" };
+    JsonUtils.set(json, "newProperty", "otherValue", true);
+    assertEquals(json.property, "myValue");
+    assertEquals(json.newProperty, "otherValue");
+})
+
+Deno.test('JsonUtils - should set inner string property that NOT exists', async () => {
+    let json:any = { 
+        property: {
+            innerProperty: "innerValue",
+            array: [{
+                name: "first",
+                value: 150.00,
+                flag: true
+            }, {
+                name: "second",
+                value: 250.00,
+                flag: false
+            }]
+        } 
+    }
+
+    assert(!JsonUtils.set(json, "[property][innerProperty]", "otherValue", true));
+    assert(JsonUtils.set(json, "[property][newProperty]", "newValue", true));
+
+    assertEquals(json.property.innerProperty, "innerValue");
+    assertEquals(json.property.newProperty, "newValue");
+})
+
+Deno.test('JsonUtils - should set inner properties', async () => {
+    let json:any = { 
+        property: {
+            innerProperty: "innerValue",
+            array: [{
+                name: "first",
+                value: 150.00,
+                flag: true
+            }, {
+                name: "second",
+                value: 250.00,
+                flag: false
+            }]
+        } 
+    }
+
+    assert(JsonUtils.set(json, "[property][array][0][name]", "newFirst"));
+    assert(JsonUtils.set(json, "[property][array][0][value]", 1150.00));
+    assert(JsonUtils.set(json, "[property][array][0][flag]", false));
+    assert(JsonUtils.set(json, "[property][array][1][name]", "newSecond"));
+    assert(JsonUtils.set(json, "[property][array][1][value]", 1250.00));
+    assert(JsonUtils.set(json, "[property][array][1][flag]", true));
+    assert(JsonUtils.set(json, "[property][array][2][name]", "newThird"));
+    assert(JsonUtils.set(json, "[property][array][2][value]", 1350.00));
+    assert(JsonUtils.set(json, "[property][array][2][flag]", true));
+    assert(JsonUtils.set(json, "[property][array][2][name]", "newThird"));
+    assert(JsonUtils.set(json, "[property][array][2][value]", 1350.00));
+    assert(JsonUtils.set(json, "[property][array][2][flag]", true));
+
+    // assertEquals(json.property.innerProperty, "innerValue");
+    // assertEquals(json.property.newProperty, "newValue");
 })
