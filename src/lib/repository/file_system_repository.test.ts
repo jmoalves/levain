@@ -1,5 +1,5 @@
 import {assert, assertEquals} from "https://deno.land/std/testing/asserts.ts";
-import {exists,} from "https://deno.land/std/fs/asserts.ts";
+import {exists,} from "https://deno.land/std/fs/mod.ts";
 import Config from "../config.ts";
 import FileSystemRepository from "./file_system_repository.ts";
 import FileSystemPackage from "../package/file_system_package.ts";
