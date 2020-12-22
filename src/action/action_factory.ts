@@ -17,6 +17,9 @@ import Echo from "./echo.ts";
 import RemoveFromRegistry from './remove_from_registry.ts';
 import SetVarAction from './set_var.ts';
 import AddToStartupAction from './add_to_startup.ts';
+import JsonGet from "./json/json_get.ts";
+import JsonSet from "./json/json_set.ts";
+import JsonRemove from "./json/json_remove.ts";
 
 const actionMap = new Map<string, (config: Config) => Action>([
     ['addPath', (config: Config) => new AddPath(config)],
@@ -36,6 +39,9 @@ const actionMap = new Map<string, (config: Config) => Action>([
     ['removeFromRegistry', (config: Config) => new RemoveFromRegistry(config.levainRegistry)],
     ['setVar', (config: Config) => new SetVarAction(config)],
     ['addToStartup', (config: Config) => new AddToStartupAction()],
+    ['jsonGet', (config: Config) => new JsonGet(config)],
+    ['jsonSet', (config: Config) => new JsonSet(config)],
+    ['jsonRemove', (config: Config) => new JsonRemove(config)],
 ])
 
 export default class ActionFactory {
