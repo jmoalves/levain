@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  createRelease:
+  runTests:
     runs-on: ubuntu-latest
 
     steps:
@@ -15,8 +15,8 @@ jobs:
       - name: Run tests
         run: |
           denoTemp=$( mktemp -d )  
-          $GITHUB_WORKSPACE/githubScripts/get-deno.sh $denoTemp
+          bash $GITHUB_WORKSPACE/githubScripts/get-deno.sh $denoTemp
           export PATH=${denoTemp}:$PATH
           cd $GITHUB_WORKSPACE
-          $GITHUB_WORKSPACE/scripts/test.sh
+          bash ./scripts/test.sh
           rm -rf ${denoTemp}
