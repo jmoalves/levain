@@ -44,6 +44,7 @@ export default class Config {
 
         this.configEnv(args);
         this.configHome(args);
+        this.configCache(args);
 
         this.load();
 
@@ -344,6 +345,12 @@ export default class Config {
         });
     }
 
+    configCache(args: any): void {
+        if (args.levainCache) {
+            this.levainCacheDir = args.levainCache
+        }
+    }
+    
     private configHome(args: any): void {
         delete this._env["levainHome"];
 
