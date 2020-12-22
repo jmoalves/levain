@@ -95,17 +95,21 @@ export function assertDirCount(dir: string, expectedCount: number, msg?: string 
 export function assertFileSizeAprox(path: string, expectedSize: number) {
     const size = FileUtils.getSize(path)
 
-    if (expectedSize === 0) {
-        assertEquals(size, expectedSize)
-        return
-    }
-
-    const diff = (size - expectedSize) / expectedSize
-    if (diff > 0.10) {
-        assertEquals(size, expectedSize)
-    }
+    assertNumberEquals(size, expectedSize, 0.10)
 }
 
 export function assertFileDoesNotExist(filePath: string) {
     assert(!existsSync(filePath), `File ${filePath} should not exist`)
+}
+
+export function assertNumberEquals(current: number, expected: number, tolerance: number = 0.10) {
+    if (expected === 0) {
+        assertEquals(current, expected)
+        return
+    }
+
+    const diff = (current - expected) / expected
+    if (Math.abs(diff) > tolerance) {
+        assertEquals(current, expected)
+    }
 }

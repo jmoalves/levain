@@ -8,6 +8,7 @@ import {
     assertFind,
     assertFolderIncludes,
     assertNotFind,
+    assertNumberEquals,
     assertStringEndsWith
 } from "./more_asserts.ts";
 import TestHelper from "./test_helper.ts";
@@ -159,4 +160,20 @@ Deno.test('assertFileDoesNotExist should raise when file exists', () => {
         AssertionError,
         `File ${filePath} should not exist`
     )
+})
+//
+// assertNumberEquals
+//
+Deno.test('assertNumberEquals should have a tolerance', () => {
+    assertNumberEquals(600, 615, 0.1)
+})
+Deno.test('assertNumberEquals should throw when diff is above tolerance', () => {
+    assertThrows(
+        () => {
+            assertNumberEquals(100, 1000, 0.01)
+        }
+    )
+})
+Deno.test('assertNumberEquals should work with zeros', () => {
+    assertNumberEquals(0, 0)
 })

@@ -5,6 +5,7 @@ import * as path from "https://deno.land/std/path/mod.ts";
 import FileUtils from "./file_utils.ts";
 import OsUtils from './os_utils.ts';
 import TestHelper from './test/test_helper.ts';
+import {assertNumberEquals} from "./test/more_asserts.ts";
 
 const readOnlyFolder = './testdata/file_utils/read_only_folder';
 const folderThatDoesNotExist = './testdata/file_utils/--does_not_exist--';
@@ -117,9 +118,10 @@ Deno.test('canCreateTempFileInDir should not be able to write in a dir that does
 
     assertEquals(canWrite, false)
 })
+
 Deno.test('getSize should get file size', () => {
     const filePath = path.join('testdata', 'file_utils', 'file.txt')
     const fileSize = FileUtils.getSize(filePath)
 
-    assertEquals(fileSize, 615)
+    assertNumberEquals(fileSize, 615, 0.1)
 })
