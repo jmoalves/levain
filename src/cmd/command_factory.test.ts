@@ -4,7 +4,7 @@ import TestHelper from "../lib/test/test_helper.ts";
 import {assert, assertThrows} from "https://deno.land/std/testing/asserts.ts";
 import {assertArrayContainsInAnyOrder} from "../lib/test/more_asserts.ts";
 
-Deno.test('should list actions', () => {
+Deno.test('CommandFactory should list commands', () => {
     const factory = getCommandFactory()
 
     const actions: string[] = factory.list()
