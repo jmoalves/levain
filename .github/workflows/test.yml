@@ -1,0 +1,22 @@
+name: Run tests at master branch
+
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  createRelease:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Run tests
+        run: |
+          denoTemp=$( mktemp -d )  
+          $GITHUB_WORKSPACE/githubScripts/get-deno.sh $denoTemp
+          export PATH=${denoTemp}:$PATH
+          cd $GITHUB_WORKSPACE
+          $GITHUB_WORKSPACE/scripts/test.sh
+          rm -rf ${denoTemp}
