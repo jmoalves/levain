@@ -23,29 +23,34 @@ export default class JsonSet implements Action {
             ]
         });
 
-        if (myArgs?._?.length < 2) {
-            throw Error('Missing parameters. jsonGet [--ifNotExists] property filename');
+        if (myArgs?._?.length < 3) {
+            throw Error('Missing parameters. jsonSet [--ifNotExists] property value filename');
         }
 
         let property = myArgs._[0];
         if (property.startsWith("--")) {
-            throw Error('Missing parameters. jsonGet [--ifNotExists] property filename');
+            throw Error('Missing parameters. jsonSet [--ifNotExists] property value filename');
         }
 
-        let filename = myArgs._[1];
+        let value = myArgs._[1];
+        if (value.startsWith("--")) {
+            throw Error('Missing parameters. jsonSet [--ifNotExists] property value filename');
+        }
+
+        let filename = myArgs._[2];
         if (filename.startsWith("--")) {
-            throw Error('Missing parameters. jsonGet [--ifNotExists] property filename');
+            throw Error('Missing parameters. jsonSet [--ifNotExists] property value filename');
         }
 
         let json = JsonUtils.load(filename);
-        let value = JsonUtils.get(json, property, myArgs.default);
+        let changed = JsonUtils.set(json, property, value, myArgs.ifNotExists);
 
-        if (Array.isArray(value)) {
-            throw Error(`Could not retrieve an entire array property - "${property}"`);
-        }
-
-        if (typeof value === 'object' && value !== null) {
-            throw Error(`Could not retrieve an entire object property - "${property}"`);
+        log.debug(`- json: ${JSON.stringify(json)}`);
+        if (changed) {
+            JsonUtils.save(filename, json);
+            log.info(`JSON-SET ${property} = ${value} at ${filename}`);
+        } else {
+            log.info(`JSON-SET ${property} unchanged at ${filename}`);
         }
     }
 }

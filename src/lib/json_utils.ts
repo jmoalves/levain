@@ -5,6 +5,10 @@ export default class JsonUtils {
         return JSON.parse(Deno.readTextFileSync(path.resolve(filename)));
     }
 
+    static save(filename: string, json: any) {
+        Deno.writeTextFileSync(filename, JSON.stringify(json, null, 3));
+    }
+
     static translatePath(propertyPath: string): string[] {
         let matches = propertyPath.match(/\[[^[\]]+\]/g);
         if (!matches || matches.length == 0) {
@@ -52,8 +56,15 @@ export default class JsonUtils {
                     return false;
                 }
 
-                // console.log(`${JSON.stringify(obj)}[${item}] = ${value}`)
-                obj[item] = value;
+                if (JsonUtils.isNumeric(value)) {
+                    obj[item] = +value;
+                } else if (JsonUtils.isBoolean(value)) {
+                    obj[item] = JsonUtils.toBoolean(value);
+                } else {
+                    obj[item] = value;
+                }
+
+                // console.log(`${JSON.stringify(obj)}[${item}] = ${value} ==> ${obj[item]}`);
                 return true;
             }
 
@@ -73,9 +84,36 @@ export default class JsonUtils {
 
     // https://stackoverflow.com/questions/175739/built-in-way-in-javascript-to-check-if-a-string-is-a-valid-number
     static isNumeric(str: any) {
-        if (typeof str != "string") return false // we only process strings!  
+        if (typeof str == "number") {
+            return true; 
+        }
+
+        if (typeof str != "string") {
+            return false; // we only process strings! 
+        }
+
         let s:any = str;
         return !isNaN(s) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
                !isNaN(parseFloat(s)) // ...and ensure strings of whitespace fail
-      }
+    }
+
+    static isBoolean(str: any) {
+        return this.toBoolean(str) != undefined;
+    }
+
+    static toBoolean(str: any): boolean|undefined {
+        if (typeof str == "boolean") {
+            return str; 
+        }
+
+        if (typeof str != "string") {
+            return false; // we only process strings! 
+        }
+
+        switch(str.toLowerCase().trim()){
+            case "true": return true;
+            case "false": return false;
+            default: return undefined;
+        }
+    }
 }

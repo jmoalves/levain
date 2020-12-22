@@ -192,6 +192,9 @@ Deno.test('JsonUtils - should set inner properties', async () => {
     assert(JsonUtils.set(json, "[property][newArray][0][value]", 50.00));
     assert(JsonUtils.set(json, "[property][newArray][0][flag]", false));
 
+    assert(JsonUtils.set(json, "[property][numberProperty]", "25.00"));
+    assert(JsonUtils.set(json, "[property][booleanProperty]", "true"));
+
     // console.log(`\njson: ${JSON.stringify(json)}`);
 
     assertEquals(json.property.innerProperty, "innerValue");
@@ -209,4 +212,7 @@ Deno.test('JsonUtils - should set inner properties', async () => {
     assertEquals(json.property.newArray[0].name, "newArray");
     assertEquals(json.property.newArray[0].value, 50.00);
     assertEquals(json.property.newArray[0].flag, false);
+
+    assertEquals(json.property.numberProperty, 25.00);
+    assertEquals(json.property.booleanProperty, true);
 })
