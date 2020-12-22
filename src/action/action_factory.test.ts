@@ -27,6 +27,10 @@ Deno.test('should list actions', () => {
         'removeFromRegistry',
         'setVar',
         'addToStartup',
+        'jsonGet',
+        'jsonSet',
+        'jsonRemove',
+        'propertyGet',
     ])
 })
 Deno.test('should know the assertContains action', () => {
