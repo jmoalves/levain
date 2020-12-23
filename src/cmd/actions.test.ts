@@ -32,3 +32,25 @@ Deno.test('ActionsCommand should list actions', async () => {
         ]
     )
 })
+Deno.test('ActionsCommand should list actions that match a search string', async () => {
+    const searchString = 'json'
+    const logger = await TestLogger.setup()
+    const config = TestHelper.getConfig()
+    const command = new ActionsCommand(config)
+
+    await command.execute([searchString])
+
+    assertArrayIncludes(
+        logger.messages,
+        [
+            "INFO ",
+            "INFO ==================================",
+            `INFO actions \"${searchString}\"`,
+            "INFO ",
+            "INFO = Actions:",
+            "INFO   jsonGet",
+            "INFO   jsonSet",
+            "INFO   jsonRemove",
+        ]
+    )
+})

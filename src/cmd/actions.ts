@@ -17,7 +17,9 @@ export default class ActionsCommand implements Command {
         log.info("");
         log.info(`= Actions:`)
 
-        const actions = new ActionFactory().list().sort()
+        const actions = new ActionFactory().list()
+            .filter(it => it.includes(searchText))
+            .sort()
         actions.forEach(action => {
             log.info(`  ${action}`)
         })
