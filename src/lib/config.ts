@@ -431,7 +431,7 @@ export default class Config {
         );
     }
 
-    private get levainSrcDir(): string {
+    get levainSrcDir(): string {
         // https://stackoverflow.com/questions/61829367/node-js-dirname-filename-equivalent-in-deno
         return path.resolve(path.dirname(path.fromFileUrl(import.meta.url)), "../..");
     }
