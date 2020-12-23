@@ -1,4 +1,4 @@
-import {assertEquals, assertThrows,} from "https://deno.land/std/testing/asserts.ts";
+import {assert, assertEquals, assertNotEquals, assertThrows,} from "https://deno.land/std/testing/asserts.ts";
 import {ensureDirSync, existsSync} from "https://deno.land/std/fs/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 
@@ -11,6 +11,29 @@ const readOnlyFolder = './testdata/file_utils/read_only_folder';
 const folderThatDoesNotExist = './testdata/file_utils/--does_not_exist--';
 const readOnlyFile = './testdata/file_utils/read_only.txt';
 
+Deno.test('should create a backup for a given file in the same dir', () => {
+    let src = Deno.makeTempFileSync();
+    let myData = "some string data";
+    Deno.writeTextFileSync(src, myData);
+    assert(existsSync(src));
+
+    let bkp1 = FileUtils.createBackup(src);
+    let bkp2 = FileUtils.createBackup(src);
+
+    assert(existsSync(bkp1));
+    assertEquals(path.dirname(bkp1), path.dirname(src));
+    assert(path.basename(bkp1).startsWith(path.basename(src)));
+
+    assert(existsSync(bkp2));
+    assertEquals(path.dirname(bkp2), path.dirname(src));
+    assert(path.basename(bkp2).startsWith(path.basename(src)));
+
+    assertNotEquals(bkp1, bkp2);
+
+    Deno.removeSync(src);
+    Deno.removeSync(bkp1);
+    Deno.removeSync(bkp2);
+})
 
 Deno.test('should get file permissions in Windows', () => {
     if (OsUtils.isWindows()) {
@@ -95,6 +118,7 @@ Deno.test('canCreateTempFileInDir should be able to write in a temp dir', () => 
 })
 if (OsUtils.isWindows()) {
     Deno.test('adjust test when chmodSync is implemented in Windows', () => {
+        ensureDirSync(readOnlyFolder)
         assertThrows(
             () => {
                 Deno.chmodSync(readOnlyFolder, 0o000);

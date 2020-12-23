@@ -2,6 +2,7 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import {ensureDirSync, existsSync,} from "https://deno.land/std/fs/mod.ts";
 import OsUtils from './os_utils.ts';
+import DateUtils from './date_utils.ts';
 
 import ProgressBar from "https://deno.land/x/progress@v1.1.4/mod.ts";
 
@@ -136,6 +137,18 @@ export default class FileUtils {
         if (!existsSync(filePath)) {
             throw new Deno.errors.NotFound(`File ${filePath} does not exist`)
         }
+    }
+
+    static createBackup(filename: string, backupDir?:string): string {
+        let now = new Date();
+        let bkp = "";
+
+        do
+            bkp = filename + "." + DateUtils.dateTag(now) + "." + DateUtils.timeTagWithMillis('', now) + ".bkp";
+        while (existsSync(bkp))
+
+        Deno.copyFileSync(filename, bkp);
+        return bkp;
     }
 }
 
