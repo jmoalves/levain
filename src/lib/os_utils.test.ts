@@ -1,5 +1,5 @@
 import {assert, assertEquals, assertNotEquals} from "https://deno.land/std/testing/asserts.ts";
-import { existsSync } from "https://deno.land/std@0.79.0/fs/exists.ts";
+import { existsSync } from "https://deno.land/std/fs/exists.ts";
 import OsUtils from "./os_utils.ts";
 
 Deno.test('should know where is the temp folder', () => {
