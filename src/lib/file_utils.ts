@@ -139,7 +139,7 @@ export default class FileUtils {
         }
     }
 
-    static createBackup(filename: string, backupDir?:string): string {
+    static createBackup(filename: string): string {
         let now = new Date();
         let bkp = "";
 
