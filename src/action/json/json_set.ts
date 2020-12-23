@@ -48,9 +48,9 @@ export default class JsonSet implements Action {
         log.debug(`- json: ${JSON.stringify(json)}`);
         if (changed) {
             JsonUtils.save(filename, json);
-            log.info(`JSON-SET ${property} = ${value} at ${filename}`);
+            log.debug(`JSON-SET ${property} = ${value} at ${filename}`);
         } else {
-            log.info(`JSON-SET ${property} unchanged at ${filename}`);
+            log.debug(`JSON-SET ${property} unchanged at ${filename}`);
         }
     }
 }
