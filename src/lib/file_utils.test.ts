@@ -6,7 +6,6 @@ import FileUtils from "./file_utils.ts";
 import OsUtils from './os_utils.ts';
 import TestHelper from './test/test_helper.ts';
 import {assertNumberEquals} from "./test/more_asserts.ts";
-import DirUtils from "./dir_utils.ts";
 
 const readOnlyFolder = './testdata/file_utils/read_only_folder';
 const folderThatDoesNotExist = './testdata/file_utils/--does_not_exist--';
@@ -105,14 +104,15 @@ if (OsUtils.isWindows()) {
         )
     })
 } else {
-Deno.test('canCreateTempFileInDir should not be able to write in a read only dir', () => {
-    ensureDirSync(readOnlyFolder)
-    Deno.chmodSync(readOnlyFolder, 0o000)
+    Deno.test('canCreateTempFileInDir should not be able to write in a read only dir', () => {
+        ensureDirSync(readOnlyFolder)
+        Deno.chmodSync(readOnlyFolder, 0o000)
 
-    const canWrite = FileUtils.canCreateTempFileInDir(readOnlyFolder)
+        const canWrite = FileUtils.canCreateTempFileInDir(readOnlyFolder)
 
-    assertEquals(canWrite, false)
-})
+        assertEquals(canWrite, false)
+    })
+}
 Deno.test('canCreateTempFileInDir should not be able to write in a dir that does not exist', () => {
     const canWrite = FileUtils.canCreateTempFileInDir(TestHelper.folderThatDoesNotExist)
 
