@@ -220,3 +220,19 @@ Deno.test('JsonSet - should set the last array element', async () => {
     assertEquals(json.arrayProperty.length, 3);
     assertEquals(json.arrayProperty[2], "changed");
 })
+
+Deno.test('JsonSet - should set an string property with a windows path', async () => {
+    let tempfile = Deno.makeTempFileSync();
+    Deno.copyFileSync(TestHelper.resolveTestFile('json/test.json'), tempfile);
+
+    const config = TestHelper.getConfig();
+    const action = new JsonSet(config);
+    const params = [tempfile, "pathProperty", "d:\\test\\dir\\subdir"];
+
+    await action.execute(TestHelper.mockPackage(), params);
+
+    let json = JSON.parse(Deno.readTextFileSync(tempfile));
+    Deno.removeSync(tempfile);
+
+    assertEquals(json.pathProperty, "d:\\test\\dir\\subdir");
+})
