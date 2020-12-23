@@ -31,6 +31,7 @@ Deno.test('ActionFactory should list actions', () => {
         'jsonSet',
         'jsonRemove',
         'propertyGet',
+        'backupFile',
     ])
 })
 Deno.test('should know the assertContains action', () => {
