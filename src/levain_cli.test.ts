@@ -1,6 +1,6 @@
 import LevainCli from './levain_cli.ts';
 import TestHelper from "./lib/test/test_helper.ts";
-import {assertEquals,} from "https://deno.land/std/testing/asserts.ts";
+import {assertArrayIncludes,} from "https://deno.land/std/testing/asserts.ts";
 
 Deno.test('should be able to list packages', () => {
     const levainCli = new LevainCli()
@@ -17,12 +17,13 @@ Deno.test('levainCli should list commands available', async () => {
     levainCli.showCliHelp()
 
 
-    assertEquals(
+    assertArrayIncludes(
         logger.messages,
         [
             "INFO ",
             "INFO Commands available:",
             "INFO   actions <optional search text>",
+            "INFO   clean --cache(optional) --backup(optional) --temp(optional) --logs(optional)",
             "INFO   install <package name>",
             "INFO   list <optional search text>",
             "INFO   shell <optional package name>",

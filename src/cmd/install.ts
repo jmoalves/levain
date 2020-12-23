@@ -169,4 +169,7 @@ export default class Install implements Command {
         // Or a maximum of N directories
         // Or a combination of both approches
     }
+
+    readonly oneLineExample = "  install <package name>"
+
 }

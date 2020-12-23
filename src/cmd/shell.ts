@@ -23,8 +23,8 @@ export default class Shell implements Command {
         let pkgs: Package[] | null = this.config.packageManager.resolvePackages(pkgNames);
         if (pkgs) {
             let needInstall = pkgs
-                    .map(pkg => !pkg.installed || pkg.updateAvailable)
-                    .reduce((acc, value) => acc || value);
+                .map(pkg => !pkg.installed || pkg.updateAvailable)
+                .reduce((acc, value) => acc || value);
 
             if (needInstall) {
                 let loader = new Loader(this.config);
@@ -39,4 +39,7 @@ export default class Shell implements Command {
 
         await osShell.execute([]);
     }
+
+    readonly oneLineExample = "  shell <optional package name>"
+
 }

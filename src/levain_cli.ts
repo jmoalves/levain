@@ -5,6 +5,7 @@ import ConsoleAndFileLogger from "./lib/logger/console_and_file_logger.ts";
 import Loader from "./lib/loader.ts";
 import UserInfoUtil from "./lib/user_info/userinfo_util.ts";
 import CliUtil from "./lib/cli_util.ts";
+import CommandFactory from "./cmd/command_factory.ts";
 
 export default class LevainCli {
 
@@ -63,12 +64,16 @@ export default class LevainCli {
 
 
     showCliHelp() {
+        const commandFactory = new CommandFactory();
+        const examples = commandFactory
+            .list()
+            .sort()
+            .map(name => commandFactory.get(name, new Config({})))
+            .map(command => command.oneLineExample)
+
         log.info("");
         log.info("Commands available:")
-        log.info("  actions <optional search text>")
-        log.info("  install <package name>")
-        log.info("  list <optional search text>")
-        log.info("  shell <optional package name>")
+        examples.forEach(example => log.info(example))
     }
 
 }

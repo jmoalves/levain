@@ -1,5 +1,7 @@
 import Package from '../lib/package/package.ts';
 
 export default interface Action {
-    execute(pkg: Package, parameters: string[]): Promise<void>;
+    // readonly oneLineExample: string
+
+    execute(pkg: Package, parameters: string[]): Promise<void>
 }

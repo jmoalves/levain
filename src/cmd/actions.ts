@@ -25,4 +25,5 @@ export default class ActionsCommand implements Command {
         })
     }
 
+    readonly oneLineExample = "  actions <optional search text>"
 }
