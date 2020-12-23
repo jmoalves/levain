@@ -1,5 +1,7 @@
 import Command from "./command.ts";
 import Config from "../lib/config.ts";
+import * as log from "https://deno.land/std/log/mod.ts";
+import ActionFactory from "../action/action_factory.ts";
 
 export default class ActionsCommand implements Command {
     constructor(
@@ -8,6 +10,17 @@ export default class ActionsCommand implements Command {
     }
 
     execute(args: string[]): void {
+        log.info("");
+        log.info("==================================");
+        const searchText = args?.join(' ') || '';
+        log.info(`actions "${searchText}"`);
+        log.info("");
+        log.info(`= Actions:`)
+
+        const actions = new ActionFactory().list().sort()
+        actions.forEach(action => {
+            log.info(`  ${action}`)
+        })
     }
 
 }
