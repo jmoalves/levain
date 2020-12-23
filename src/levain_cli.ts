@@ -23,7 +23,7 @@ export default class LevainCli {
 
         }
 
-        // Time to business!
+        // Time to do business!
         log.info("");
         log.info("==================================");
         log.info("");
@@ -65,8 +65,9 @@ export default class LevainCli {
     showCliHelp() {
         log.info("");
         log.info("Commands available:")
-        log.info("  list <optional search text>")
+        log.info("  actions <optional search text>")
         log.info("  install <package name>")
+        log.info("  list <optional search text>")
         log.info("  shell <optional package name>")
     }
 
