@@ -11,6 +11,18 @@ Deno.test('JsonUtils - should load json file', async () => {
     assertEquals(json.property, "value");
 })
 
+Deno.test('JsonUtils - should inform that file does not exist', async () => {
+    let filename = TestHelper.resolveTestFile('missing_file.json');
+
+    await assertThrowsAsync(
+        async () => {
+            JsonUtils.load(filename);
+        },
+        Error,
+        `File ${filename} not found`
+    )
+})
+
 Deno.test('JsonUtils - should get simple string property', async () => {
     let json = { "property": "value" }
     assertEquals(JsonUtils.get(json, "property"), "value");

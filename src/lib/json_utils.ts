@@ -2,11 +2,23 @@ import * as path from "https://deno.land/std/path/mod.ts";
 
 export default class JsonUtils {
     static load(filename: string): any {
-        return JSON.parse(Deno.readTextFileSync(path.resolve(filename)));
+        try {
+            return JSON.parse(Deno.readTextFileSync(path.resolve(filename)));
+        } catch (err) {
+            if (err.name == "NotFound") {
+                throw Error(`File ${filename} not found`);
+            }
+        }
     }
 
     static save(filename: string, json: any) {
-        Deno.writeTextFileSync(filename, JSON.stringify(json, null, 3));
+        try {
+            Deno.writeTextFileSync(filename, JSON.stringify(json, null, 3));
+        } catch (err) {
+            if (err.name == "NotFound") {
+                throw Error(`File ${filename} not found`);
+            }
+        }
     }
 
     static translatePath(propertyPath: string): string[] {
