@@ -5,7 +5,7 @@ import ConsoleAndFileLogger from "./lib/logger/console_and_file_logger.ts";
 import Loader from "./lib/loader.ts";
 import UserInfoUtil from "./lib/user_info/userinfo_util.ts";
 import CliUtil from "./lib/cli_util.ts";
-import CommandFactory from "./cmd/command_factory.ts";
+import CommandFactory, { CommandNotFoundError } from "./cmd/command_factory.ts";
 
 export default class LevainCli {
 
@@ -39,13 +39,13 @@ export default class LevainCli {
         const config = new Config(myArgs);
         ConsoleAndFileLogger.config = config;
 
-        function getCmd() {
+        function getCmdFromArgs() {
             return myArgs._.shift()!;
         }
 
         // First parameter is the command
-        let cmd: string = getCmd();
-
+        let cmd: string = getCmdFromArgs();
+        
         // Ask for user_info
         if (cmd === 'install') {
             const userInfoUtil = new UserInfoUtil()
@@ -53,8 +53,18 @@ export default class LevainCli {
         }
 
         const loader = new Loader(config);
-        await loader.command(cmd, myArgs._);
-
+        try {
+            await loader.command(cmd, myArgs._);
+        } catch (err) {
+            if (err instanceof CommandNotFoundError) {
+                log.info("");
+                log.error(err);
+                this.showCliHelp()
+                return
+            }
+            throw err
+        }
+        
         /////////////////////////////////////////////////////////////////////////////////
         log.info("==================================");
         log.info("");

@@ -1,5 +1,5 @@
 import Action from "./action.ts";
-import AddPath from "./addpath.ts";
+import AddPathAction from "./add_path.ts";
 import CopyAction from "./copy.ts";
 import ContextMenu from "./context_menu.ts";
 import DefaultPackage from "./defaultPackage.ts";
@@ -23,7 +23,7 @@ import JsonRemove from "./json/json_remove.ts";
 import PropertyGetAction from "./property/property_get.ts";
 
 const actionMap = new Map<string, (config: Config) => Action>([
-    ['addPath', (config: Config) => new AddPath(config)],
+    ['addPath', (config: Config) => new AddPathAction(config)],
     ['copy', (config: Config) => new CopyAction(config)],
     ['contextMenu', (config: Config) => new ContextMenu(config)],
     ['defaultPackage', (config: Config) => new DefaultPackage(config)],

@@ -22,7 +22,7 @@ export default class CommandFactory {
     get(cmd: string, config: Config): Command {
         const builder = commandMap.get(cmd)
         if (!builder) {
-            throw new Error(`Command ${cmd} not found - Aborting...`);
+            throw new CommandNotFoundError(cmd);
         }
         return builder(config)
     }
@@ -33,3 +33,9 @@ export default class CommandFactory {
     // }
 
 }
+
+export class CommandNotFoundError extends Error {
+    constructor(cmd: string) {
+        super(`Command ${cmd} not found - Aborting...`)
+    }
+ }

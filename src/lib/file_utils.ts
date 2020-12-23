@@ -131,6 +131,12 @@ export default class FileUtils {
         const size = stat.size
         return size
     }
+
+    static throwIfNotExists(filePath: string) {
+        if (!existsSync(filePath)) {
+            throw new Deno.errors.NotFound(`File ${filePath} does not exist`)
+        }
+    }
 }
 
 class FileReader implements Deno.Reader {

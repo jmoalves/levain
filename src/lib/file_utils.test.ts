@@ -1,11 +1,12 @@
 import {assertEquals, assertThrows,} from "https://deno.land/std/testing/asserts.ts";
-import {existsSync} from "https://deno.land/std/fs/mod.ts";
+import {ensureDirSync, existsSync} from "https://deno.land/std/fs/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 
 import FileUtils from "./file_utils.ts";
 import OsUtils from './os_utils.ts';
 import TestHelper from './test/test_helper.ts';
 import {assertNumberEquals} from "./test/more_asserts.ts";
+import DirUtils from "./dir_utils.ts";
 
 const readOnlyFolder = './testdata/file_utils/read_only_folder';
 const folderThatDoesNotExist = './testdata/file_utils/--does_not_exist--';
@@ -62,7 +63,6 @@ Deno.test('should detect a folder without permissions', () => {
     }
     verifyFileReadWrite(fileUri, false, false);
 })
-
 Deno.test('should not read or write a folder that does not exist', () => {
     const fileUri = folderThatDoesNotExist
     verifyFileReadWrite(fileUri, false, false);
@@ -105,23 +105,33 @@ if (OsUtils.isWindows()) {
         )
     })
 } else {
-    Deno.test('canCreateTempFileInDir should not be able to write in a read only dir', () => {
-        Deno.chmodSync(readOnlyFolder, 0o000);
-        const canWrite = FileUtils.canCreateTempFileInDir(readOnlyFolder)
+Deno.test('canCreateTempFileInDir should not be able to write in a read only dir', () => {
+    ensureDirSync(readOnlyFolder)
+    Deno.chmodSync(readOnlyFolder, 0o000)
 
-        assertEquals(canWrite, false)
-    })
-}
+    const canWrite = FileUtils.canCreateTempFileInDir(readOnlyFolder)
 
+    assertEquals(canWrite, false)
+})
 Deno.test('canCreateTempFileInDir should not be able to write in a dir that does not exist', () => {
     const canWrite = FileUtils.canCreateTempFileInDir(TestHelper.folderThatDoesNotExist)
 
     assertEquals(canWrite, false)
 })
-
 Deno.test('getSize should get file size', () => {
     const filePath = path.join('testdata', 'file_utils', 'file.txt')
     const fileSize = FileUtils.getSize(filePath)
 
     assertNumberEquals(fileSize, 615, 0.1)
+})
+Deno.test('throwIfNotExists should throw error when file does not exist', () => {
+    const filePath = TestHelper.fileThatDoesNotExist
+
+    assertThrows(
+        () => {
+            FileUtils.throwIfNotExists(filePath)
+        },
+        Error,
+        `File ${filePath} does not exist`
+    )
 })

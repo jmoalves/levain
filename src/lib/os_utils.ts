@@ -1,7 +1,12 @@
 import * as log from "https://deno.land/std/log/mod.ts";
+import * as path from "https://deno.land/std/path/mod.ts";
+import { existsSync } from "https://deno.land/std@0.82.0/fs/exists.ts";
+import Config from "./config.ts";
+import FileUtils from "./file_utils.ts";
 import {envChain} from "./utils.ts";
 
 export default class OsUtils {
+
     static get tempDir(): string {
         const tempDirEnvVars = ['TEMP', 'TMPDIR', 'TMP'];
         const tempDir = envChain(...tempDirEnvVars);
@@ -55,6 +60,15 @@ export default class OsUtils {
         Deno.env.set(key, value)
 
         await this.runAndLog(`setx ${key} ${value}`)
+    }
+
+    static async addPathPermanent(newPathItem: any, config: Config) {
+        OsUtils.onlyInWindows()
+        const userPathCMD = path.resolve(config.levainSrcDir, 'src', 'userPath.cmd')
+        FileUtils.throwIfNotExists(userPathCMD)
+        const resolvedPathItem = path.resolve(newPathItem);
+        FileUtils.throwIfNotExists(resolvedPathItem)
+        await this.runAndLog(`${userPathCMD} ${resolvedPathItem}`)
     }
 
     static async runAndLog(command: string): Promise<void> {
