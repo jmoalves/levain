@@ -10,7 +10,7 @@ Deno.test('JsonSet - should throw exception for missing parameters', async () =>
             await action.execute(TestHelper.mockPackage(), []);
         },
         Error,
-        'Missing parameters. jsonSet [--ifNotExists] property value filename'
+        'Missing parameters. jsonSet [--ifNotExists] filename property value'
     )
 })
 
@@ -21,7 +21,7 @@ Deno.test('JsonSet - should throw exception for missing parameters', async () =>
             await action.execute(TestHelper.mockPackage(), ["property"]);
         },
         Error,
-        'Missing parameters. jsonSet [--ifNotExists] property value filename'
+        'Missing parameters. jsonSet [--ifNotExists] filename property value'
     )
 })
 
@@ -32,7 +32,7 @@ Deno.test('JsonSet - should throw exception for missing parameters', async () =>
             await action.execute(TestHelper.mockPackage(), ["--ifNotExists", "filename"]);
         },
         Error,
-        'Missing parameters. jsonSet [--ifNotExists] property value filename'
+        'Missing parameters. jsonSet [--ifNotExists] filename property value'
     )
 })
 
@@ -43,7 +43,7 @@ Deno.test('JsonSet - should throw exception for missing parameters', async () =>
             await action.execute(TestHelper.mockPackage(), ["filename", "--ifNotExists"]);
         },
         Error,
-        'Missing parameters. jsonSet [--ifNotExists] property value filename'
+        'Missing parameters. jsonSet [--ifNotExists] filename property value'
     )
 })
 
@@ -55,7 +55,7 @@ Deno.test('JsonSet - should throw exception for missing parameters', async () =>
             await action.execute(TestHelper.mockPackage(), ["property", "value", "--ifNotExists"]);
         },
         Error,
-        'Missing parameters. jsonSet [--ifNotExists] property value filename'
+        'Missing parameters. jsonSet [--ifNotExists] filename property value'
     )
 })
 
@@ -65,7 +65,7 @@ Deno.test('JsonSet - should set simple string property', async () => {
 
     const config = TestHelper.getConfig();
     const action = new JsonSet(config);
-    const params = ["property", "newValue", tempfile];
+    const params = [tempfile, "property", "newValue"];
 
     await action.execute(TestHelper.mockPackage(), params);
 
@@ -81,7 +81,7 @@ Deno.test('JsonSet - should set simple number property', async () => {
 
     const config = TestHelper.getConfig();
     const action = new JsonSet(config);
-    const params = ["numberProperty", "25.00", tempfile];
+    const params = [tempfile, "numberProperty", "25.00"];
 
     await action.execute(TestHelper.mockPackage(), params);
 
@@ -97,7 +97,7 @@ Deno.test('JsonSet - should set simple boolean property', async () => {
 
     const config = TestHelper.getConfig();
     const action = new JsonSet(config);
-    const params = ["booleanProperty", "true", tempfile];
+    const params = [tempfile, "booleanProperty", "true"];
 
     await action.execute(TestHelper.mockPackage(), params);
 
@@ -113,7 +113,7 @@ Deno.test('JsonSet - should set an inner string property', async () => {
 
     const config = TestHelper.getConfig();
     const action = new JsonSet(config);
-    const params = ["[newObject][newArray][0][stringProperty]", "name", tempfile];
+    const params = [tempfile, "[newObject][newArray][0][stringProperty]", "name"];
 
     await action.execute(TestHelper.mockPackage(), params);
 
@@ -129,7 +129,7 @@ Deno.test('JsonSet - should set an string property with dots', async () => {
 
     const config = TestHelper.getConfig();
     const action = new JsonSet(config);
-    const params = ["newProperty.with.dots", "dotValue", tempfile];
+    const params = [tempfile, "newProperty.with.dots", "dotValue"];
 
     await action.execute(TestHelper.mockPackage(), params);
 
@@ -145,7 +145,7 @@ Deno.test('JsonSet - should NOT set an inner string property that exists', async
 
     const config = TestHelper.getConfig();
     const action = new JsonSet(config);
-    const params = ["--ifNotExists", "[objectProperty][innerProperty]", "newValue", tempfile];
+    const params = ["--ifNotExists", tempfile, "[objectProperty][innerProperty]", "newValue"];
 
     await action.execute(TestHelper.mockPackage(), params);
 
@@ -161,7 +161,7 @@ Deno.test('JsonSet - should NOT set an inner string property that exists', async
 
     const config = TestHelper.getConfig();
     const action = new JsonSet(config);
-    const params = ["--ifNotExists", "[objectProperty][innerProperty]", "newValue", tempfile];
+    const params = ["--ifNotExists", tempfile, "[objectProperty][innerProperty]", "newValue"];
 
     await action.execute(TestHelper.mockPackage(), params);
 
@@ -177,7 +177,7 @@ Deno.test('JsonSet - should set an string property with dots', async () => {
 
     const config = TestHelper.getConfig();
     const action = new JsonSet(config);
-    const params = ["--ifNotExists", "property.with.dots", "newValue", tempfile];
+    const params = ["--ifNotExists", tempfile, "property.with.dots", "newValue"];
 
     await action.execute(TestHelper.mockPackage(), params);
 

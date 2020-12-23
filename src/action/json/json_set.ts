@@ -24,22 +24,22 @@ export default class JsonSet implements Action {
         });
 
         if (myArgs?._?.length < 3) {
-            throw Error('Missing parameters. jsonSet [--ifNotExists] property value filename');
+            throw Error('Missing parameters. jsonSet [--ifNotExists] filename property value');
         }
 
-        let property = myArgs._[0];
-        if (property.startsWith("--")) {
-            throw Error('Missing parameters. jsonSet [--ifNotExists] property value filename');
-        }
-
-        let value = myArgs._[1];
-        if (value.startsWith("--")) {
-            throw Error('Missing parameters. jsonSet [--ifNotExists] property value filename');
-        }
-
-        let filename = myArgs._[2];
+        let filename = myArgs._[0];
         if (filename.startsWith("--")) {
-            throw Error('Missing parameters. jsonSet [--ifNotExists] property value filename');
+            throw Error('Missing parameters. jsonSet [--ifNotExists] filename property value');
+        }
+
+        let property = myArgs._[1];
+        if (property.startsWith("--")) {
+            throw Error('Missing parameters. jsonSet [--ifNotExists] filename property value');
+        }
+
+        let value = myArgs._[2];
+        if (value.startsWith("--")) {
+            throw Error('Missing parameters. jsonSet [--ifNotExists] filename property value');
         }
 
         let json = JsonUtils.load(filename);
