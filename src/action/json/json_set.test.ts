@@ -186,3 +186,37 @@ Deno.test('JsonSet - should set an string property with dots', async () => {
 
     assertEquals(json["property.with.dots"], "dotValue");
 })
+
+Deno.test('JsonSet - should set a new array element', async () => {
+    let tempfile = Deno.makeTempFileSync();
+    Deno.copyFileSync(TestHelper.resolveTestFile('json/test.json'), tempfile);
+
+    const config = TestHelper.getConfig();
+    const action = new JsonSet(config);
+    const params = [tempfile, "[arrayProperty][:+1:]", "newElement"];
+
+    await action.execute(TestHelper.mockPackage(), params);
+
+    let json = JSON.parse(Deno.readTextFileSync(tempfile));
+    Deno.removeSync(tempfile);
+
+    assertEquals(json.arrayProperty.length, 4);
+    assertEquals(json.arrayProperty[3], "newElement");
+})
+
+Deno.test('JsonSet - should set the last array element', async () => {
+    let tempfile = Deno.makeTempFileSync();
+    Deno.copyFileSync(TestHelper.resolveTestFile('json/test.json'), tempfile);
+
+    const config = TestHelper.getConfig();
+    const action = new JsonSet(config);
+    const params = [tempfile, "[arrayProperty][:last:]", "changed"];
+
+    await action.execute(TestHelper.mockPackage(), params);
+
+    let json = JSON.parse(Deno.readTextFileSync(tempfile));
+    Deno.removeSync(tempfile);
+
+    assertEquals(json.arrayProperty.length, 3);
+    assertEquals(json.arrayProperty[2], "changed");
+})

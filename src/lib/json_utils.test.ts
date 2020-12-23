@@ -199,10 +199,17 @@ Deno.test('JsonUtils - should set inner properties', async () => {
     assert(JsonUtils.set(json, "[property][array][2][name]", "newThird"));
     assert(JsonUtils.set(json, "[property][array][2][value]", 1350.00));
     assert(JsonUtils.set(json, "[property][array][2][flag]", true));
+    assert(JsonUtils.set(json, "[property][array][:+1:][name]", "newForth"));
+    assert(JsonUtils.set(json, "[property][array][:last:][value]", 1450.00));
+    assert(JsonUtils.set(json, "[property][array][:last:][flag]", false));
 
     assert(JsonUtils.set(json, "[property][newArray][0][name]", "newArray"));
     assert(JsonUtils.set(json, "[property][newArray][0][value]", 50.00));
     assert(JsonUtils.set(json, "[property][newArray][0][flag]", false));
+
+    assert(JsonUtils.set(json, "[property][otherArray][:+1:][name]", "otherArray"));
+    assert(JsonUtils.set(json, "[property][otherArray][:last:][value]", 50.00));
+    assert(JsonUtils.set(json, "[property][otherArray][:last:][flag]", false));
 
     assert(JsonUtils.set(json, "[property][numberProperty]", "25.00"));
     assert(JsonUtils.set(json, "[property][booleanProperty]", "true"));
@@ -219,11 +226,19 @@ Deno.test('JsonUtils - should set inner properties', async () => {
     assertEquals(json.property.array[2].name, "newThird");
     assertEquals(json.property.array[2].value, 1350.00);
     assertEquals(json.property.array[2].flag, true);
+    assertEquals(json.property.array[3].name, "newForth");
+    assertEquals(json.property.array[3].value, 1450.00);
+    assertEquals(json.property.array[3].flag, false);
 
     assert(Array.isArray(json.property.newArray));
     assertEquals(json.property.newArray[0].name, "newArray");
     assertEquals(json.property.newArray[0].value, 50.00);
     assertEquals(json.property.newArray[0].flag, false);
+
+    assert(Array.isArray(json.property.otherArray));
+    assertEquals(json.property.otherArray[0].name, "otherArray");
+    assertEquals(json.property.otherArray[0].value, 50.00);
+    assertEquals(json.property.otherArray[0].flag, false);
 
     assertEquals(json.property.numberProperty, 25.00);
     assertEquals(json.property.booleanProperty, true);
