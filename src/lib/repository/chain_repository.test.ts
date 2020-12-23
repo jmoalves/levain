@@ -5,13 +5,13 @@ import ChainRepository from "./chain_repository.ts";
 import MockRepository from "./mock_repository.ts";
 import {MockPackage} from "../package/mock_package.ts";
 
-Deno.test('should have a name', () => {
+Deno.test('chainRepo should have a name', () => {
     const repo = getTestRepo()
 
     assertEquals(repo.name, 'chainRepo for mockRepo1, mockRepo2')
 })
 
-Deno.test('should list packages from repos', () => {
+Deno.test('chainRepo should list packages from repos', () => {
     const repo = getTestRepo()
 
     const packages = repo.packages
