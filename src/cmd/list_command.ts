@@ -47,4 +47,6 @@ export default class ListCommand implements Command {
     private myPad(text: string | undefined, size: number): string {
         return (text + "" || " ").padEnd(size);
     }
+
+    readonly oneLineExample = "  list <optional search text>"
 }

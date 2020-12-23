@@ -64,7 +64,8 @@ export default class CleanCommand implements Command {
         for (const dirEntry of Deno.readDirSync(tempDir)) {
             if (dirEntry.isFile && dirEntry.name.match("^levain-temp-.*")) {
                 this.removeIgnoringErrors(path.resolve(tempDir, dirEntry.name));
-            };
+            }
+            ;
         }
     }
 
@@ -97,4 +98,6 @@ export default class CleanCommand implements Command {
             log.debug(`Error ${error} - Ignoring ${file}`);
         }
     }
+
+    readonly oneLineExample = "  clean --cache(optional) --backup(optional) --temp(optional) --logs(optional)"
 }

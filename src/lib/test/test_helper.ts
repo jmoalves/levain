@@ -6,6 +6,7 @@ import {MockPackage} from "../package/mock_package.ts";
 import OsUtils from '../os_utils.ts';
 import FileSystemPackage from '../package/file_system_package.ts';
 import Registry from '../repository/registry.ts';
+import TestLogger from "../logger/test_logger.ts";
 
 export default class TestHelper {
 
@@ -75,5 +76,9 @@ export default class TestHelper {
 
     static resolveTestFile(filepath: string): string {
         return path.resolve('testdata', filepath);
-    } 
+    }
+
+    static async setupTestLogger() {
+        return await TestLogger.setup()
+    }
 }
