@@ -10,7 +10,7 @@ Deno.test('JsonGet - should throw exception for missing parameters', async () =>
             await action.execute(TestHelper.mockPackage(), []);
         },
         Error,
-        'Missing parameters. jsonGet --setVar=VAR property filename'
+        'Missing parameters. jsonGet --setVar=VAR filename property'
     )
 })
 
@@ -21,7 +21,7 @@ Deno.test('JsonGet - should throw exception for missing parameters', async () =>
             await action.execute(TestHelper.mockPackage(), ["property"]);
         },
         Error,
-        'Missing parameters. jsonGet --setVar=VAR property filename'
+        'Missing parameters. jsonGet --setVar=VAR filename property'
     )
 })
 
@@ -29,10 +29,10 @@ Deno.test('JsonGet - should throw exception for missing parameters', async () =>
     const action = new JsonGet(TestHelper.getConfig());
     await assertThrowsAsync(
         async () => {
-            await action.execute(TestHelper.mockPackage(), ["property", "filename"]);
+            await action.execute(TestHelper.mockPackage(), ["filename", "property"]);
         },
         Error,
-        'Missing parameters. jsonGet --setVar=VAR property filename'
+        'Missing parameters. jsonGet --setVar=VAR filename property'
     )
 })
 
@@ -43,7 +43,7 @@ Deno.test('JsonGet - should throw exception for missing parameters', async () =>
             await action.execute(TestHelper.mockPackage(), ["--setVar", "filename"]);
         },
         Error,
-        'Missing parameters. jsonGet --setVar=VAR property filename'
+        'Missing parameters. jsonGet --setVar=VAR filename property'
     )
 })
 
@@ -54,7 +54,7 @@ Deno.test('JsonGet - should throw exception for missing parameters', async () =>
             await action.execute(TestHelper.mockPackage(), ["--setVar=var", "filename"]);
         },
         Error,
-        'Missing parameters. jsonGet --setVar=VAR property filename'
+        'Missing parameters. jsonGet --setVar=VAR filename property'
     )
 })
 
@@ -62,7 +62,7 @@ Deno.test('JsonGet - should get simple string property', async () => {
     const config = TestHelper.getConfig();
     const action = new JsonGet(config);
     const varName = "my.var";
-    const params = [`--setVar=${varName}`, "property", TestHelper.resolveTestFile('json/test.json')];
+    const params = [`--setVar=${varName}`, TestHelper.resolveTestFile('json/test.json'), "property"];
 
     await action.execute(TestHelper.mockPackage(), params);
 
@@ -73,7 +73,7 @@ Deno.test('JsonGet - should get simple number property', async () => {
     const config = TestHelper.getConfig();
     const action = new JsonGet(config);
     const varName = "my.var";
-    const params = [`--setVar=${varName}`, "numberProperty", TestHelper.resolveTestFile('json/test.json')];
+    const params = [`--setVar=${varName}`, TestHelper.resolveTestFile('json/test.json'), "numberProperty"];
 
     await action.execute(TestHelper.mockPackage(), params);
 
@@ -84,7 +84,7 @@ Deno.test('JsonGet - should get simple boolean property', async () => {
     const config = TestHelper.getConfig();
     const action = new JsonGet(config);
     const varName = "my.var";
-    const params = [`--setVar=${varName}`, "booleanProperty", TestHelper.resolveTestFile('json/test.json')];
+    const params = [`--setVar=${varName}`, TestHelper.resolveTestFile('json/test.json'), "booleanProperty"];
 
     await action.execute(TestHelper.mockPackage(), params);
 
@@ -95,7 +95,7 @@ Deno.test('JsonGet - object property must throw exception', async () => {
     const config = TestHelper.getConfig();
     const action = new JsonGet(config);
     const varName = "my.var";
-    const params = [`--setVar=${varName}`, "objectProperty", TestHelper.resolveTestFile('json/test.json')];
+    const params = [`--setVar=${varName}`, TestHelper.resolveTestFile('json/test.json'), "objectProperty"];
 
     await assertThrowsAsync(
         async () => {
@@ -110,7 +110,7 @@ Deno.test('JsonGet - array property must throw exception', async () => {
     const config = TestHelper.getConfig();
     const action = new JsonGet(config);
     const varName = "my.var";
-    const params = [`--setVar=${varName}`, "arrayProperty", TestHelper.resolveTestFile('json/test.json')];
+    const params = [`--setVar=${varName}`, TestHelper.resolveTestFile('json/test.json'), "arrayProperty"];
 
     await assertThrowsAsync(
         async () => {
@@ -125,7 +125,7 @@ Deno.test('JsonGet - should get an inner string property', async () => {
     const config = TestHelper.getConfig();
     const action = new JsonGet(config);
     const varName = "my.var";
-    const params = [`--setVar=${varName}`, "[objectProperty][innerProperty]", TestHelper.resolveTestFile('json/test.json')];
+    const params = [`--setVar=${varName}`, TestHelper.resolveTestFile('json/test.json'), "[objectProperty][innerProperty]"];
 
     await action.execute(TestHelper.mockPackage(), params);
 
@@ -136,7 +136,7 @@ Deno.test('JsonGet - should get simple string property with dots', async () => {
     const config = TestHelper.getConfig();
     const action = new JsonGet(config);
     const varName = "my.var";
-    const params = [`--setVar=${varName}`, "property.with.dots", TestHelper.resolveTestFile('json/test.json')];
+    const params = [`--setVar=${varName}`, TestHelper.resolveTestFile('json/test.json'), "property.with.dots"];
 
     await action.execute(TestHelper.mockPackage(), params);
 

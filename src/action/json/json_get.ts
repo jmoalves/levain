@@ -25,21 +25,21 @@ export default class JsonGet implements Action {
         });
 
         if (myArgs?._?.length < 2) {
-            throw Error('Missing parameters. jsonGet --setVar=VAR property filename');
+            throw Error('Missing parameters. jsonGet --setVar=VAR filename property');
         }
 
         if (!myArgs?.setVar) {
-            throw Error('Missing parameters. jsonGet --setVar=VAR property filename');
+            throw Error('Missing parameters. jsonGet --setVar=VAR filename property');
         }
 
-        let property = myArgs._[0];
-        if (property.startsWith("--")) {
-            throw Error('Missing parameters. jsonGet --setVar=VAR property filename');
-        }
-
-        let filename = myArgs._[1];
+        let filename = myArgs._[0];
         if (filename.startsWith("--")) {
-            throw Error('Missing parameters. jsonGet --setVar=VAR property filename');
+            throw Error('Missing parameters. jsonGet --setVar=VAR filename property');
+        }
+
+        let property = myArgs._[1];
+        if (property.startsWith("--")) {
+            throw Error('Missing parameters. jsonGet --setVar=VAR filename property');
         }
 
         let json = JsonUtils.load(filename);
