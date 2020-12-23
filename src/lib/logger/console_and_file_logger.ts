@@ -8,6 +8,7 @@ import LogFormatterFactory from "./log_formatter_factory.ts";
 import LogUtils from "./log_utils.ts";
 import OsUtils from "../os_utils.ts";
 import FileUtils from '../file_utils.ts';
+import DateUtils from '../date_utils.ts';
 
 export default class ConsoleAndFileLogger {
     static config: Config;
@@ -49,19 +50,11 @@ export default class ConsoleAndFileLogger {
     }
 
     static logDateTag(dt: Date = new Date()): string {
-        let logTag: string = "";
-        logTag += dt.getFullYear() + "";
-        logTag += (dt.getMonth() < 10 ? "0" : "") + dt.getMonth();
-        logTag += (dt.getDate() < 10 ? "0" : "") + dt.getDate();
-        return logTag;
+        return DateUtils.dateTag(dt);
     }
 
     static logTimeTag(dt: Date = new Date()): string {
-        let logTag: string = "";
-        logTag += (dt.getHours() < 10 ? "0" : "") + dt.getHours();
-        logTag += (dt.getMinutes() < 10 ? "0" : "") + dt.getMinutes();
-        logTag += (dt.getSeconds() < 10 ? "0" : "") + dt.getSeconds();
-        return logTag;
+        return DateUtils.timeTag(dt);
     }
 
     static hidePassword(msg: string): string {
