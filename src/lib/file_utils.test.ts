@@ -20,10 +20,12 @@ Deno.test('should create a backup for a given file in the same dir', () => {
     let bkp1 = FileUtils.createBackup(src);
     let bkp2 = FileUtils.createBackup(src);
 
+    assert(bkp1);
     assert(existsSync(bkp1));
     assertEquals(path.dirname(bkp1), path.dirname(src));
     assert(path.basename(bkp1).startsWith(path.basename(src)));
 
+    assert(bkp2);
     assert(existsSync(bkp2));
     assertEquals(path.dirname(bkp2), path.dirname(src));
     assert(path.basename(bkp2).startsWith(path.basename(src)));
@@ -33,6 +35,15 @@ Deno.test('should create a backup for a given file in the same dir', () => {
     Deno.removeSync(src);
     Deno.removeSync(bkp1);
     Deno.removeSync(bkp2);
+})
+
+Deno.test('should NOT create a backup for a given file that does NOT exist', () => {
+    let src = "/tmp/doesNotExist";
+    assert(!existsSync(src));
+
+    let bkp = FileUtils.createBackup(src);
+
+    assert(bkp == undefined);
 })
 
 Deno.test('should get file permissions in Windows', () => {

@@ -21,6 +21,7 @@ import JsonGet from "./json/json_get.ts";
 import JsonSet from "./json/json_set.ts";
 import JsonRemove from "./json/json_remove.ts";
 import PropertyGetAction from "./property/property_get.ts";
+import BackupFile from "./backup_file.ts";
 
 const actionMap = new Map<string, (config: Config) => Action>([
     ['addPath', (config: Config) => new AddPathAction(config)],
@@ -44,6 +45,7 @@ const actionMap = new Map<string, (config: Config) => Action>([
     ['jsonSet', (config: Config) => new JsonSet(config)],
     ['jsonRemove', (config: Config) => new JsonRemove(config)],
     ['propertyGet', (config: Config) => new PropertyGetAction(config)],
+    ['backupFile', (config: Config) => new BackupFile(config)],
 ])
 
 export default class ActionFactory {

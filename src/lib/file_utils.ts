@@ -139,7 +139,11 @@ export default class FileUtils {
         }
     }
 
-    static createBackup(filename: string): string {
+    static createBackup(filename: string): string | undefined {
+        if (!existsSync(filename)) {
+            return undefined;
+        }
+
         let now = new Date();
         let bkp = "";
 
