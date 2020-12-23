@@ -27,7 +27,7 @@ export default class CheckChainDirExists implements Action {
 
         let found = dirs
                 .find(it => {
-                    console.debug(`checking dir ${it}`)
+                    log.debug(`checking dir ${it}`)
                     return existsSync(it)
                 })
             || defaultValue
