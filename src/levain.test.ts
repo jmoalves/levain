@@ -4,6 +4,7 @@ import {assertEquals,} from "https://deno.land/std/testing/asserts.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import {assertFind} from "./lib/test/more_asserts.ts";
 import OsUtils from "./lib/os_utils.ts";
+import CliUtil from "./lib/cli_util.ts";
 
 
 // Deno.test('should show help message when no command was included',
@@ -30,6 +31,8 @@ Deno.test('should add an extra log file', async () => {
     try {
         const extraLogFile = Deno.makeTempFileSync();
         const params = `--add-log ${extraLogFile}`
+
+        CliUtil.testMode = true;
 
         const levain = new Levain()
         logger = await levain.runLevinWithLog(params.split(' '))
