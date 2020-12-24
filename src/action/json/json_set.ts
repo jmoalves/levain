@@ -43,12 +43,9 @@ export default class JsonSet implements Action {
 
         let json = {}
         if (existsSync(filename)) {
-            console.debug('filename ' + filename)
             json = JsonUtils.load(filename) || {}
         }
-        console.debug('json ' + json)
         const changed = JsonUtils.set(json, property, value, myArgs.ifNotExists);
-        console.debug('changed json ' + json)
 
         log.debug(`- json: ${JSON.stringify(json)}`);
         if (changed) {
