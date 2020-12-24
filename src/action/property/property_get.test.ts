@@ -22,7 +22,6 @@ Deno.test('PropertyGetAction should get value from .properties file', async () =
         'name',
     ])
 
-
     const currentValue = config.getVar('myVar')
     assertEquals(currentValue, 'John Doe')
 })

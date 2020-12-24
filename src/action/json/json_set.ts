@@ -1,9 +1,10 @@
 import * as log from "https://deno.land/std/log/mod.ts";
+import {existsSync} from "https://deno.land/std/fs/mod.ts";
 
 import Action from "../action.ts";
 import Package from "../../lib/package/package.ts";
 import Config from "../../lib/config.ts";
-import { parseArgs } from "../../lib/parse_args.ts";
+import {parseArgs} from "../../lib/parse_args.ts";
 import JsonUtils from "../../lib/json_utils.ts";
 
 export default class JsonSet implements Action {
@@ -14,10 +15,8 @@ export default class JsonSet implements Action {
         log.info(`JSON-SET ${parameters.join(' ')}`);
 
         let myArgs = parseArgs(parameters, {
-            stringOnce: [
-            ],
-            stringMany: [
-            ],
+            stringOnce: [],
+            stringMany: [],
             boolean: [
                 "ifNotExists"
             ]
@@ -42,8 +41,11 @@ export default class JsonSet implements Action {
             throw Error('Missing parameters. jsonSet [--ifNotExists] filename property value');
         }
 
-        let json = JsonUtils.load(filename);
-        let changed = JsonUtils.set(json, property, value, myArgs.ifNotExists);
+        let json = {}
+        if (existsSync(filename)) {
+            json = JsonUtils.load(filename);
+        }
+        const changed = JsonUtils.set(json, property, value, myArgs.ifNotExists);
 
         log.debug(`- json: ${JSON.stringify(json)}`);
         if (changed) {

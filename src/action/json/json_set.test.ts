@@ -1,4 +1,5 @@
-import { assertEquals, assertThrowsAsync } from "https://deno.land/std/testing/asserts.ts";
+import {assertEquals, assertThrowsAsync} from "https://deno.land/std/testing/asserts.ts";
+import * as path from "https://deno.land/std/path/mod.ts";
 
 import TestHelper from "../../lib/test/test_helper.ts";
 import JsonSet from "./json_set.ts";
@@ -59,12 +60,11 @@ Deno.test('JsonSet - should throw exception for missing parameters', async () =>
     )
 })
 
+
 Deno.test('JsonSet - should set simple string property', async () => {
     let tempfile = Deno.makeTempFileSync();
     Deno.copyFileSync(TestHelper.resolveTestFile('json/test.json'), tempfile);
-
-    const config = TestHelper.getConfig();
-    const action = new JsonSet(config);
+    const action = getJsonSetAction();
     const params = [tempfile, "property", "newValue"];
 
     await action.execute(TestHelper.mockPackage(), params);
@@ -236,3 +236,21 @@ Deno.test('JsonSet - should set an string property with a windows path', async (
 
     assertEquals(json.pathProperty, "d:\\test\\dir\\subdir");
 })
+Deno.test('JsonSet should create file when it doesnt exist', () => {
+    const tempDir = Deno.makeTempDirSync()
+    const newFilePath = path.join(tempDir, 'new.json')
+    const action = getJsonSetAction()
+
+    const params = [newFilePath, 'newProperty', 'newValue']
+    action.execute(TestHelper.mockPackage(), params)
+
+    const newFileText = Deno.readTextFileSync(newFilePath)
+    Deno.removeSync(newFilePath);
+
+    assertEquals(newFileText, '{\n   "newProperty": "newValue"\n}')
+})
+
+function getJsonSetAction() {
+    const config = TestHelper.getConfig();
+    return new JsonSet(config);
+}
