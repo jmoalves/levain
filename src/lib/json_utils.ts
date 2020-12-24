@@ -1,4 +1,3 @@
-import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 
 export default class JsonUtils {
@@ -29,9 +28,9 @@ export default class JsonUtils {
         }
 
         return matches.map(match => match
-            .replace(/^\[(.*)\]$/,"$1")
-            .replace(/^"(.*)"$/,"$1")
-            .replace(/^'(.*)'$/,"$1")
+            .replace(/^\[(.*)\]$/, "$1")
+            .replace(/^"(.*)"$/, "$1")
+            .replace(/^'(.*)'$/, "$1")
         )
     }
 
@@ -59,7 +58,7 @@ export default class JsonUtils {
         // log.debug(`\nValue: ${value} jsonPath ${jsonPath} - json: ${JSON.stringify(json)} - length ${jsonPath.length}`);
 
         let level = 0;
-        let obj:any = json;
+        let obj: any = json;
         for (let item of jsonPath) {
             level++;
 
@@ -110,35 +109,38 @@ export default class JsonUtils {
     // https://stackoverflow.com/questions/175739/built-in-way-in-javascript-to-check-if-a-string-is-a-valid-number
     static isNumeric(str: any) {
         if (typeof str == "number") {
-            return true; 
+            return true;
         }
 
         if (typeof str != "string") {
             return false; // we only process strings! 
         }
 
-        let s:any = str;
+        let s: any = str;
         return !isNaN(s) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
-               !isNaN(parseFloat(s)) // ...and ensure strings of whitespace fail
+            !isNaN(parseFloat(s)) // ...and ensure strings of whitespace fail
     }
 
     static isBoolean(str: any) {
         return this.toBoolean(str) != undefined;
     }
 
-    static toBoolean(str: any): boolean|undefined {
+    static toBoolean(str: any): boolean | undefined {
         if (typeof str == "boolean") {
-            return str; 
+            return str;
         }
 
         if (typeof str != "string") {
             return false; // we only process strings! 
         }
 
-        switch(str.toLowerCase().trim()){
-            case "true": return true;
-            case "false": return false;
-            default: return undefined;
+        switch (str.toLowerCase().trim()) {
+            case "true":
+                return true;
+            case "false":
+                return false;
+            default:
+                return undefined;
         }
     }
 
