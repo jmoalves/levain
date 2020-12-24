@@ -75,6 +75,10 @@ export default class JsonUtils {
                     return false;
                 }
 
+                if (obj[item] == value) {
+                    return false;
+                }
+
                 if (this.isNumeric(value)) {
                     obj[item] = +value;
                 } else if (this.isBoolean(value)) {
