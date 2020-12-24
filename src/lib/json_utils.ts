@@ -1,4 +1,5 @@
 import * as path from "https://deno.land/std/path/mod.ts";
+import {ensureDirSync} from "https://deno.land/std/fs/mod.ts"
 
 export default class JsonUtils {
     static load(filename: string): any {
@@ -11,12 +12,14 @@ export default class JsonUtils {
         }
     }
 
-    static save(filename: string, json: any) {
+    static save(fileName: string, json: any) {
         try {
-            Deno.writeTextFileSync(filename, JSON.stringify(json, null, 3));
+            const filePath = path.dirname(fileName)
+            ensureDirSync(filePath)
+            Deno.writeTextFileSync(fileName, JSON.stringify(json, null, 3))
         } catch (err) {
             if (err.name == "NotFound") {
-                throw Error(`File ${filename} not found`);
+                throw Error(`File ${fileName} not found`);
             }
         }
     }

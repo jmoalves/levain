@@ -1,7 +1,9 @@
 import {assert, assertEquals, assertThrowsAsync} from "https://deno.land/std/testing/asserts.ts";
-
+import * as path from 'https://deno.land/std/path/mod.ts'
 import TestHelper from "../lib/test/test_helper.ts";
 import JsonUtils from "./json_utils.ts";
+
+// TODO JsonUtils should save when folder does not exist
 
 Deno.test('JsonUtils - should load json file', async () => {
     let filename = TestHelper.resolveTestFile('json/test.json');
@@ -21,7 +23,24 @@ Deno.test('JsonUtils - should inform that file does not exist', async () => {
         `File ${filename} not found`
     )
 })
+//
+// save
+//
+Deno.test('JsonUtils.save should create folder when it does not exist', async () => {
+    const tempdir = Deno.makeTempDirSync();
+    let fileInFolderThatDoesNotExist = path.join(
+        tempdir,
+        'folder-that-does-not-exist',
+        'file-that-does-not-exist.json'
+    )
 
+    JsonUtils.save(fileInFolderThatDoesNotExist, {attr: 'value'})
+
+    Deno.removeSync(tempdir, {recursive: true})
+})
+//
+//
+//
 Deno.test('JsonUtils - should get simple string property', async () => {
     let json = {"property": "value"}
     assertEquals(JsonUtils.get(json, "property"), "value");
