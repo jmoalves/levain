@@ -32,6 +32,7 @@ Deno.test('ActionFactory should list actions', () => {
         'jsonRemove',
         'propertyGet',
         'backupFile',
+        'propertySet',
         'checkPort',
     ])
 })
