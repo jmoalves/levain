@@ -61,7 +61,12 @@ Deno.test('should not add string "undefined" repo', () => {
 // configRepo
 //
 Deno.test('should config default repos', () => {
-    const config = new Config([])
+    class TestConfig extends Config {
+        public load(): void {
+        }
+    }
+
+    const config = new TestConfig([])
     const myArgs = {}
 
     const cacheRepo: Repository = config.configRepo(myArgs, false)

@@ -12,6 +12,7 @@ import RepositoryFactory from "./repository/repository_factory.ts";
 import Package from "./package/package.ts";
 import UserInfoUtil from './user_info/userinfo_util.ts';
 import Registry from './repository/registry.ts';
+import OsUtils from './os_utils.ts';
 
 export default class Config {
     private _pkgManager: PackageManager;
@@ -438,17 +439,25 @@ export default class Config {
 
     private addLevainRepo(repos: Set<string>) {
         log.info(`addRepo DEFAULT ${this.levainSrcDir} --> Levain src dir`);
-        repos.add(this.levainSrcDir);
+        this.addRepoPath(repos, this.levainSrcDir);
     }
 
     private addLevainRegistryRepo(repos: Set<string>) {
         log.info(`addRepo DEFAULT ${this.levainRegistryDir} --> Levain registry dir`);
-        repos.add(this.levainRegistryDir);
+        this.addRepoPath(repos, this.levainRegistryDir);
     }
 
     private addCurrentDirRepo(repos: Set<string>) {
         log.info(`addRepo DEFAULT ${Deno.cwd()} --> Current working dir`);
-        repos.add(Deno.cwd());
+        this.addRepoPath(repos, Deno.cwd());
+    }
+
+    addRepoPath(repos: Set<string>, repoPath: string) {
+        if (OsUtils.isWindows()) {
+            repoPath = repoPath.toLowerCase();
+        }
+
+        repos.add(path.resolve(repoPath));
     }
 
     addRepos(repos: Set<string>, reposPath: undefined | string[]) {
@@ -469,7 +478,7 @@ export default class Config {
         }
 
         log.info(`addRepo ${repoPath}`);
-        repos.add(repoPath);
+        this.addRepoPath(repos, repoPath);
         this._extraRepos.add(repoPath);
     }
 }
