@@ -1,5 +1,6 @@
-@set currentFileDir=%~dp0
-@pushd %currentFileDir%..
+@echo off
+set currentFileDir=%~dp0
+pushd %currentFileDir%..
 for /R . %%f in (*.test.ts) do (
     cls
     echo.
@@ -7,4 +8,4 @@ for /R . %%f in (*.test.ts) do (
     deno test --allow-all --unstable %%f
     if errorlevel 1 pause
 )
-@popd
+popd
