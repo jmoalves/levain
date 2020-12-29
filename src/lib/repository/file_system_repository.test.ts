@@ -1,5 +1,5 @@
 import {assert, assertEquals} from "https://deno.land/std/testing/asserts.ts";
-import {exists,} from "https://deno.land/std/fs/mod.ts";
+import {existsSync} from "https://deno.land/std/fs/mod.ts";
 import Config from "../config.ts";
 import FileSystemRepository from "./file_system_repository.ts";
 import FileSystemPackage from "../package/file_system_package.ts";
@@ -46,27 +46,6 @@ Deno.test('fileSystemRepo should list FileSystemPackages', () => {
     packages.forEach(pkg => assert(pkg instanceof FileSystemPackage))
 })
 
-const networkRootDir: string = '\\\\bndes.net\\bndes\\Grupos\\AmbienteDesenvolvedor\\bnd-levain-pkg';
-if (OsUtils.isWindows() && exists(networkRootDir)) {
-    Deno.test('fileSystemRepo should list network packages', () => {
-        const repo = getTestRepo(networkRootDir)
-
-        const packages = repo.packages
-
-        const packageNames = packages.map(pkg => pkg.name)
-        assertArrayIncludesElements<string>(packageNames, ['git', 'cntlm'])
-    })
-
-    Deno.test('fileSystemRepo should crawl windows network packages', () => {
-        const repo = getTestRepo(networkRootDir)
-
-        const packages = repo.crawlPackages(networkRootDir, {})
-
-        const packageNames = packages.map(pkg => pkg.name)
-
-        assertArrayIncludesElements(packageNames, ['vscode', 'cmder'])
-    })
-}
 //
 // resolvePackage
 //
