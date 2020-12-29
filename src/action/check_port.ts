@@ -46,7 +46,7 @@ export default class CheckPort implements Action {
             const listener = Deno.listen(options);
             listener.close();
         } catch (error) {
-            throw Error(`Unable to listen at ${JSON.stringify(options)}`);
+            throw Error(`Port already in use ${JSON.stringify(options)}`);
         }
     }
 }
