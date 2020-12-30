@@ -23,7 +23,7 @@ export default class GitRepository extends AbstractRepository {
         this.gitUtils = new GitUtils(config);
         this.localDir = path.resolve(this.config.levainCacheDir, "gitRepos", path.basename(this.rootUrl, ".git"));
 
-        this.loadRepo();
+        /* await */ this.loadRepo();
     }
 
     async loadRepo() {
