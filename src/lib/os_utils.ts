@@ -1,6 +1,7 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
-import { existsSync } from "https://deno.land/std@0.82.0/fs/exists.ts";
+import { existsSync } from "https://deno.land/std/fs/exists.ts";
+
 import Config from "./config.ts";
 import FileUtils from "./file_utils.ts";
 import {envChain} from "./utils.ts";
@@ -109,7 +110,9 @@ export default class OsUtils {
     static async clearConsole() {
         const cmdLine = OsUtils.isWindows() ? 'cmd /c cls' : 'clear';
         const cmd = cmdLine.split(' ')
-        await Deno.run({cmd})
+        let proc = Deno.run({cmd})
+        await proc.status();
+        proc.close();
     }
 
     static makeReadOnly(path: string) {
