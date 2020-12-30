@@ -1,6 +1,7 @@
 import {LogRecord} from "https://deno.land/std/log/logger.ts"
 import {LogLevels} from "https://deno.land/std/log/levels.ts"
 import * as path from "https://deno.land/std/path/mod.ts"
+import {copySync, exists} from "https://deno.land/std/fs/mod.ts"
 import Config from "../config.ts";
 import {MockPackage} from "../package/mock_package.ts";
 import OsUtils from '../os_utils.ts';
@@ -68,6 +69,14 @@ export default class TestHelper {
         return Deno.makeTempDirSync()
     }
 
+    static getNewTempFile(originalFile?: string): string {
+        const fileName = Deno.makeTempFileSync()
+        if (originalFile) {
+            copySync(originalFile, fileName, {overwrite: true})
+        }
+        return fileName
+    }
+
     static addRandomFilesToDir(dir: string, number: number) {
         for (let i = 0; i < number; i++) {
             Deno.makeTempFileSync({dir})
@@ -80,5 +89,22 @@ export default class TestHelper {
 
     static async setupTestLogger() {
         return await TestLogger.setup()
+    }
+
+    static randomString(size: number = 32) {
+        let outString: string = '';
+        let inOptions: string = 'abcdefghijklmnopqrstuvwxyz0123456789';
+
+        for (let i = 0; i < size; i++) {
+            outString += inOptions.charAt(Math.floor(Math.random() * inOptions.length));
+        }
+
+        return outString;
+    }
+
+    static remove(path: string) {
+        if (exists(path)) {
+            Deno.removeSync(path, {recursive: true})
+        }
     }
 }
