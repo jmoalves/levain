@@ -457,7 +457,11 @@ export default class Config {
             repoPath = repoPath.toLowerCase();
         }
 
-        repos.add(path.resolve(repoPath));
+        if (!repoPath.endsWith(".git")) {
+            repoPath = path.resolve(repoPath);
+        }
+
+        repos.add(repoPath);
     }
 
     addRepos(repos: Set<string>, reposPath: undefined | string[]) {
