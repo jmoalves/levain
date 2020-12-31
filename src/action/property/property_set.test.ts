@@ -17,16 +17,16 @@ Deno.test('PropertySet should set a property in a file', async () => {
     const originalFile = path.join('testdata', 'properties', 'person.properties')
     const newTempFile = TestHelper.getNewTempFile(originalFile)
     try {
-        const expectedAddress = '321 The Other st, Nova Scotia, Canada'
+        const newAddress = '321 The Other st, Nova Scotia, Canada'
         const oldAddress = PropertiesUtils.get(newTempFile, 'address')
-        assertNotEquals(oldAddress, expectedAddress)
+        assertNotEquals(oldAddress, newAddress)
 
         const config = new Config({});
         const action = new PropertySetAction(config)
-        await action.execute(TestHelper.mockPackage(), [newTempFile, 'address', expectedAddress] as string[])
+        await action.execute(TestHelper.mockPackage(), [newTempFile, 'address', newAddress] as string[])
 
-        const newAddress = PropertiesUtils.get(newTempFile, 'address')
-        assertEquals(newAddress, expectedAddress)
+        const fileAddress = PropertiesUtils.get(newTempFile, 'address')
+        assertEquals(fileAddress, newAddress)
     } finally {
         TestHelper.remove(newTempFile)
     }
@@ -42,4 +42,34 @@ Deno.test('PropertySet should throw when parameters are missing', async () => {
         Error,
         'Missing parameters in "propertySet ".\nCorrect usage:\npropertySet [--ifNotExists] filename property value'
     )
+})
+Deno.test('PropertySet should throw when last parameter is missing', async () => {
+    const config = new Config({})
+    const action = new PropertySetAction(config)
+
+    await assertThrowsAsync(
+        async () => {
+            await action.execute(TestHelper.mockPackage(), ['filename', 'property'])
+        },
+        Error,
+        'Missing parameters in "propertySet filename property".\nCorrect usage:\npropertySet [--ifNotExists] filename property value'
+    )
+})
+Deno.test('PropertySet --ifNotExists should not change existing value', async () => {
+    const originalFile = path.join('testdata', 'properties', 'person.properties')
+    const newTempFile = TestHelper.getNewTempFile(originalFile)
+    try {
+        const newAddress = '321 The Other st, Nova Scotia, Canada'
+        const oldAddress = PropertiesUtils.get(newTempFile, 'address')
+        assertNotEquals(oldAddress, newAddress)
+
+        const config = new Config({});
+        const action = new PropertySetAction(config)
+        await action.execute(TestHelper.mockPackage(), ['--ifNotExists', newTempFile, 'address', newAddress] as string[])
+
+        const fileAddress = PropertiesUtils.get(newTempFile, 'address')
+        assertEquals(fileAddress, oldAddress)
+    } finally {
+        TestHelper.remove(newTempFile)
+    }
 })
