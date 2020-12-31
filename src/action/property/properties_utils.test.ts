@@ -134,6 +134,23 @@ Deno.test('PropertiesUtils.set should work with a new attribute', async () => {
         TestHelper.remove(newTempFile)
     }
 })
+Deno.test('PropertiesUtils.set should not replace value when ifNotExists', async () => {
+    const originalFile = path.join('testdata', 'properties', 'person.properties')
+    const newTempFile = TestHelper.getNewTempFile(originalFile)
+    try {
+        const newValue = '321 The Other st, Nova Scotia, Canada'
+        const key = 'address';
+        const oldValue = PropertiesUtils.get(newTempFile, key)
+        assertNotEquals(oldValue, newValue)
+
+        PropertiesUtils.set(newTempFile, key, newValue, true)
+
+        const fileValue = PropertiesUtils.get(newTempFile, key)
+        assertEquals(fileValue, oldValue)
+    } finally {
+        TestHelper.remove(newTempFile)
+    }
+})
 //
 // fixtures
 //
