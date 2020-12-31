@@ -95,6 +95,5 @@ Deno.test('PropertySet --ifNotExists should set new attr', async () => {
         throw error
     } finally {
         TestHelper.remove(newTempFile)
-        
     }
 })
