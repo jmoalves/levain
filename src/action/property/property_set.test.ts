@@ -1,6 +1,6 @@
 import TestHelper from "../../lib/test/test_helper.ts";
 import ActionFactory from "../action_factory.ts";
-import {assert, assertEquals, assertNotEquals} from "https://deno.land/std/testing/asserts.ts";
+import {assert, assertEquals, assertNotEquals, assertThrowsAsync} from "https://deno.land/std/testing/asserts.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import PropertySetAction from "./property_set.ts";
 import Config from "../../lib/config.ts";
@@ -30,4 +30,16 @@ Deno.test('PropertySet should set a property in a file', async () => {
     } finally {
         TestHelper.remove(newTempFile)
     }
+})
+Deno.test('PropertySet should throw when parameters are missing', async () => {
+    const config = new Config({})
+    const action = new PropertySetAction(config)
+
+    await assertThrowsAsync(
+        async () => {
+            await action.execute(TestHelper.mockPackage(), [])
+        },
+        Error,
+        'Missing parameters in "propertySet ".\nCorrect usage:\npropertySet [--ifNotExists] filename property value'
+    )
 })
