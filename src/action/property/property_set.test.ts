@@ -59,17 +59,42 @@ Deno.test('PropertySet --ifNotExists should not change existing value', async ()
     const originalFile = path.join('testdata', 'properties', 'person.properties')
     const newTempFile = TestHelper.getNewTempFile(originalFile)
     try {
-        const newAddress = '321 The Other st, Nova Scotia, Canada'
-        const oldAddress = PropertiesUtils.get(newTempFile, 'address')
-        assertNotEquals(oldAddress, newAddress)
+        const key = 'address';
+        const newValue = '321 The Other st, Nova Scotia, Canada'
+        const oldValue = PropertiesUtils.get(newTempFile, key)
+        assertNotEquals(oldValue, newValue)
 
         const config = new Config({});
         const action = new PropertySetAction(config)
-        await action.execute(TestHelper.mockPackage(), ['--ifNotExists', newTempFile, 'address', newAddress] as string[])
+        await action.execute(TestHelper.mockPackage(), ['--ifNotExists', newTempFile, key, newValue] as string[])
 
-        const fileAddress = PropertiesUtils.get(newTempFile, 'address')
-        assertEquals(fileAddress, oldAddress)
+        const fileAddress = PropertiesUtils.get(newTempFile, key)
+        assertEquals(fileAddress, oldValue)
+    } catch (error) {
+        throw error
     } finally {
         TestHelper.remove(newTempFile)
+    }
+})
+Deno.test('PropertySet --ifNotExists should set new attr', async () => {
+    const originalFile = path.join('testdata', 'properties', 'person.properties')
+    const newTempFile = TestHelper.getNewTempFile(originalFile)
+    try {
+        const key = '-new-attr-'
+        const newAddress = '321 The Other st, Nova Scotia, Canada'
+        const oldAddress = PropertiesUtils.get(newTempFile, key)
+        assertEquals(oldAddress, undefined)
+
+        const config = new Config({});
+        const action = new PropertySetAction(config)
+        await action.execute(TestHelper.mockPackage(), ['--ifNotExists', newTempFile, key, newAddress] as string[])
+
+        const fileAddress = PropertiesUtils.get(newTempFile, key)
+        assertEquals(fileAddress, newAddress)
+    } catch (error) {
+        throw error
+    } finally {
+        TestHelper.remove(newTempFile)
+        
     }
 })

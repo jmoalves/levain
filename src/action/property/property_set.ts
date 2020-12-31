@@ -24,14 +24,15 @@ export default class PropertySetAction implements Action {
             ]
         });
 
-        if (myArgs?._?.length < 3) {
+        if (myArgs?._?.length !== 3) {
             throw Error(`Missing parameters in "propertySet ${parameters.join(' ')}".\nCorrect usage:\npropertySet [--ifNotExists] filename property value`)
         }
 
-        const filePath = parameters[0]
-        const attribute = parameters[1]
-        const value = parameters[2]
-        return PropertiesUtils.set(filePath, attribute, value)
+        const filePath = myArgs?._?.[0]
+        const attribute = myArgs?._?.[1]
+        const value = myArgs?._?.[2]
+        const ifNotExists = myArgs.ifNotExists
+        return PropertiesUtils.set(filePath, attribute, value, ifNotExists)
     }
 
 }

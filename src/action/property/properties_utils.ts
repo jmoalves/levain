@@ -35,10 +35,14 @@ export default class PropertiesUtils {
         return propertiesMap.get(attribute) || defaultValue
     }
 
-    static set(filePath: string, attribute: string, value: string) {
+    static set(filePath: string, attribute: string, value: string, ifNotExists: boolean = false): void {
         let propertiesMap = new Map<string, string>()
         if (FileUtils.exists(filePath)) {
             propertiesMap = PropertiesUtils.load(filePath)
+        }
+        const oldValue = propertiesMap.get(attribute)
+        if (ifNotExists && oldValue) {
+            return
         }
         propertiesMap.set(attribute, value)
         PropertiesUtils.save(filePath, propertiesMap)
