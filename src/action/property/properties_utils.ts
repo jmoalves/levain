@@ -5,12 +5,18 @@ export default class PropertiesUtils {
         const text = Deno.readTextFileSync(filePath)
         const lines = text.split('\n')
         lines
-            .filter(line => line?.trim())
+            .map(line => line?.toString()?.trim())
+            .filter(line => line)
             .map(line => line.split('='))
             .forEach(kv => {
-                const key = kv[0]?.trim()
-                const value = kv[1]?.trim() || ''
-                propertiesMap.set(key, value)
+                const kvString = kv as Array<string | undefined>
+                const key = kvString[0]?.trim() as string
+                const value = kvString[1]?.trim() || ''
+                if (value === undefined) {
+                    propertiesMap.delete(key)
+                } else {
+                    propertiesMap.set(key, value || '')
+                }
             })
 
         return propertiesMap
@@ -20,5 +26,21 @@ export default class PropertiesUtils {
         return [...properties.entries()]
             .map(entry => `${entry[0]?.trim()}=${entry[1]?.trim() || ''}`)
             .join('\r\n')
+    }
+
+    static get(filePath: string, attribute: string, defaultValue: string | undefined = undefined): string | undefined {
+        const propertiesMap = PropertiesUtils.load(filePath)
+        return propertiesMap.get(attribute) || defaultValue
+    }
+
+    static set(filePath: string, attribute: string, value: string) {
+        const propertiesMap = PropertiesUtils.load(filePath)
+        propertiesMap.set(attribute, value)
+        PropertiesUtils.save(filePath, propertiesMap)
+    }
+
+    static save(filePath: string, content: Map<string, string>) {
+        const stringContent = PropertiesUtils.stringify(content)
+        Deno.writeTextFileSync(filePath, stringContent)
     }
 }
