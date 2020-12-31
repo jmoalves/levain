@@ -1,6 +1,6 @@
 import PropertiesUtils from "./properties_utils.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
-import {assert, assertEquals} from "https://deno.land/std/testing/asserts.ts";
+import {assert, assertEquals, assertNotEquals} from "https://deno.land/std/testing/asserts.ts";
 import TestHelper from "../../lib/test/test_helper.ts";
 
 //
@@ -69,6 +69,70 @@ Deno.test('PropertiesUtils.save should save content', () => {
     const savedPropertiesMap = PropertiesUtils.load(newFilePath)
     const stringSavedProps = PropertiesUtils.stringify(savedPropertiesMap)
     assertEquals(stringSavedProps, `${key}=${value}`)
+})
+//
+// set
+//
+Deno.test('PropertiesUtils.set should change a value', async () => {
+    const originalFile = path.join('testdata', 'properties', 'person.properties')
+    const newTempFile = TestHelper.getNewTempFile(originalFile)
+    try {
+        const expectedValue = '321 The Other st, Nova Scotia, Canada'
+        const key = 'address';
+        const oldValue = PropertiesUtils.get(newTempFile, key)
+        assertNotEquals(oldValue, expectedValue)
+
+        PropertiesUtils.set(newTempFile, key, expectedValue)
+
+        const newAddress = PropertiesUtils.get(newTempFile, key)
+        assertEquals(newAddress, expectedValue)
+    } finally {
+        TestHelper.remove(newTempFile)
+    }
+})
+Deno.test('PropertiesUtils.set should create the file if it does not exist', async () => {
+    const newTempFile = TestHelper.getNewTempFile()
+    try {
+        TestHelper.remove(newTempFile)
+
+        const key = 'email';
+        const expectedValue = 'john@doe.com';
+
+        PropertiesUtils.set(newTempFile, key, expectedValue)
+
+        const currentValue = PropertiesUtils.get(newTempFile, key)
+        assertEquals(currentValue, expectedValue)
+    } finally {
+        TestHelper.remove(newTempFile)
+    }
+})
+Deno.test('PropertiesUtils.set should work with a empty file', async () => {
+    const newTempFile = TestHelper.getNewTempFile()
+    try {
+        const key = 'email';
+        const expectedValue = 'john@doe.com';
+
+        PropertiesUtils.set(newTempFile, key, expectedValue)
+
+        const currentValue = PropertiesUtils.get(newTempFile, key)
+        assertEquals(currentValue, expectedValue)
+    } finally {
+        TestHelper.remove(newTempFile)
+    }
+})
+Deno.test('PropertiesUtils.set should work with a new attribute', async () => {
+    const newTempFile = TestHelper.getNewTempFile()
+    try {
+        const key = '--new-attribute--';
+        const expectedValue = 'sbrubles';
+
+        PropertiesUtils.set(newTempFile, key, expectedValue)
+
+        const currentValue = PropertiesUtils.get(newTempFile, key)
+        assertEquals(currentValue, expectedValue)
+    } finally {
+        TestHelper.remove(newTempFile)
+    }
 })
 //
 // fixtures

@@ -1,3 +1,5 @@
+import FileUtils from "../../lib/file_utils.ts";
+
 export default class PropertiesUtils {
 
     static load(filePath: any): Map<string, string> {
@@ -34,7 +36,10 @@ export default class PropertiesUtils {
     }
 
     static set(filePath: string, attribute: string, value: string) {
-        const propertiesMap = PropertiesUtils.load(filePath)
+        let propertiesMap = new Map<string, string>()
+        if (FileUtils.exists(filePath)) {
+            propertiesMap = PropertiesUtils.load(filePath)
+        }
         propertiesMap.set(attribute, value)
         PropertiesUtils.save(filePath, propertiesMap)
     }

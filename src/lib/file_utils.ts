@@ -154,6 +154,10 @@ export default class FileUtils {
         Deno.copyFileSync(filename, bkp);
         return bkp;
     }
+
+    static exists(path: string): boolean {
+        return existsSync(path);
+    }
 }
 
 class FileReader implements Deno.Reader {

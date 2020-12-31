@@ -23,7 +23,6 @@ Deno.test('PropertySet should set a property in a file', async () => {
 
         const config = new Config({});
         const action = new PropertySetAction(config)
-
         await action.execute(TestHelper.mockPackage(), [newTempFile, 'address', expectedAddress] as string[])
 
         const newAddress = PropertiesUtils.get(newTempFile, 'address')
@@ -32,6 +31,3 @@ Deno.test('PropertySet should set a property in a file', async () => {
         TestHelper.remove(newTempFile)
     }
 })
-// Deno.test('PropertySet should create the file if it doesnt exist', () => {
-//
-// })
