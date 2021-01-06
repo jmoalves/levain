@@ -108,7 +108,9 @@ export default class OsUtils {
     static async clearConsole() {
         const cmdLine = OsUtils.isWindows() ? 'cmd /c cls' : 'clear';
         const cmd = cmdLine.split(' ')
-        await Deno.run({cmd})
+        let proc = Deno.run({cmd})
+        await proc.status();
+        proc.close();
     }
 
     static makeReadOnly(path: string) {
