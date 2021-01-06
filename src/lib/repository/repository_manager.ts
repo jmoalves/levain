@@ -75,6 +75,11 @@ export default class RepositoryManager {
         return this.repositories.regular
     }
 
+    set repository(repo: Repository) {
+        log.warning(`RepositoryManager.repository(${repo.name}) - TEST ONLY!`);
+        this.repositories.regular = repo;
+    }    
+
     get repositoryInstalled(): Repository {
         if (!this.repositories.installed) {
             throw Error("RepositoryManager not initialized")

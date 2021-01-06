@@ -10,7 +10,7 @@ Deno.test('should list nullRepo', async () => {
     const logger = await TestLogger.setup()
 
     const config = new Config([]);
-    config.repository = new NullRepository(config)
+    config.repositoryManager.repository = new NullRepository(config)
     const list = new ListCommand(config)
 
     list.execute()
@@ -33,7 +33,7 @@ Deno.test('should list packages available in a repo', async () => {
 
     const logger = await TestLogger.setup()
     const config = new Config([]);
-    config.repository = new MockRepository()
+    config.repositoryManager.repository = new MockRepository()
     const list = new ListCommand(config)
 
     list.execute()
@@ -59,7 +59,7 @@ Deno.test('should list packages that match a search string', async () => {
     const searchString = 'another'
     const logger = await TestLogger.setup()
     const config = new Config([]);
-    config.repository = new MockRepository()
+    config.repositoryManager.repository = new MockRepository()
     const list = new ListCommand(config)
 
 
