@@ -13,6 +13,9 @@ export default class MockRepository extends AbstractRepository {
         super();
     }
 
+    async init(): Promise<void> {
+    }
+
     resolvePackage(packageName: string): Package | undefined {
         return this.packages.find(pkg => pkg.name === packageName);
     }

@@ -12,11 +12,22 @@ export default class ChainRepository extends AbstractRepository {
     ) {
         super();
         this.name = `chainRepo for ${this.repositories?.map(repo => repo.name).join(', ')}`;
-        this.packages = this.listPackages();
     }
 
     readonly name;
-    packages: Array<Package>;
+    packages: Array<Package> = [];
+
+    async init(): Promise<void> {
+        if (!this.repositories) {
+            return
+        }
+
+        for (let repo of this.repositories) {
+            await repo.init()
+        }
+
+        this.packages = this.listPackages()
+    }
 
     get absoluteURI(): string {
         return this.name;

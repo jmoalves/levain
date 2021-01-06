@@ -10,6 +10,9 @@ export default class NullRepository extends AbstractRepository {
         super();
     }
 
+    async init(): Promise<void> {
+    }
+
     get absoluteURI(): string {
         return this.name;
     }

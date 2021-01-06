@@ -36,6 +36,9 @@ export default class GitRepository extends AbstractRepository {
         this.localRepo = new FileSystemRepository(this.config, this.localDir);
     }
 
+    async init(): Promise<void> {
+    }
+
     get absoluteURI(): string {
         return this.rootUrl;
     }

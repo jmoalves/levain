@@ -22,7 +22,7 @@ export default class Install implements Command {
         if (args && args.length > 0) {
             pkgNames = args;
         } else {
-            let curDirPkg = this.config.currentDirPackage;
+            let curDirPkg = this.config.repositoryManager.currentDirPackage;
             if (curDirPkg) {
                 pkgNames = [curDirPkg.name];
                 log.info(`- Default installation package -> ${JSON.stringify(pkgNames)}`);

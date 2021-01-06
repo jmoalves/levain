@@ -22,6 +22,7 @@ import JsonSet from "./json/json_set.ts";
 import JsonRemove from "./json/json_remove.ts";
 import PropertyGetAction from "./property/property_get.ts";
 import BackupFile from "./backup_file.ts";
+import PropertySetAction from "./property/property_set.ts";
 import CheckPort from "./check_port.ts";
 
 const actionMap = new Map<string, (config: Config) => Action>([
@@ -47,6 +48,7 @@ const actionMap = new Map<string, (config: Config) => Action>([
     ['jsonRemove', (config: Config) => new JsonRemove(config)],
     ['propertyGet', (config: Config) => new PropertyGetAction(config)],
     ['backupFile', (config: Config) => new BackupFile(config)],
+    ['propertySet', (config: Config) => new PropertySetAction(config)],
     ['checkPort', (config: Config) => new CheckPort(config)],
 ])
 

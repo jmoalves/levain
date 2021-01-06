@@ -19,7 +19,7 @@ export default class PackageManager {
         let names: Set<string> = new Set(); // Solving circular references - Issue #11
         let error: boolean = false;
         for (const pkgName of pkgNames) {
-            let repo = (installedOnly ? this.config.repositoryInstalled : this.config.repository);
+            let repo = (installedOnly ? this.config.repositoryManager.repositoryInstalled : this.config.repositoryManager.repository);
             let myError: boolean = this.resolvePkgs(repo, pkgs, names, pkgName);
             error = error || myError;
         }

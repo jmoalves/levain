@@ -6,6 +6,7 @@ import Loader from "./lib/loader.ts";
 import UserInfoUtil from "./lib/user_info/userinfo_util.ts";
 import CliUtil from "./lib/cli_util.ts";
 import CommandFactory, { CommandNotFoundError } from "./cmd/command_factory.ts";
+import RepositoryManager from "./lib/repository/repository_manager.ts";
 
 export default class LevainCli {
 
@@ -27,7 +28,6 @@ export default class LevainCli {
         // Time to do business!
         log.info("");
         log.info("==================================");
-        log.info("");
         log.info(`CWD ${Deno.cwd()}`);
 
         if (myArgs?._?.length == 0) {
@@ -51,6 +51,11 @@ export default class LevainCli {
             const userInfoUtil = new UserInfoUtil()
             userInfoUtil.askUserInfo(config, myArgs);
         }
+
+        // Repository Manager
+        log.info("");
+        log.info("==================================");
+        await config.repositoryManager.init(myArgs.addRepo)
 
         const loader = new Loader(config);
         try {

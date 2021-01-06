@@ -20,6 +20,13 @@ export default class FileSystemRepository extends AbstractRepository {
     ) {
         super();
         this.name = `fileSystemRepo for ${this.rootDir}`;
+    }
+
+    async init(): Promise<void> {
+        if (this._packages) {
+            log.debug(`FSRepo: Root=${this.rootDir} - already initialized`);
+            return;
+        }
 
         log.debug(`FSRepo: Root=${this.rootDir}`);
         try {
@@ -69,6 +76,7 @@ export default class FileSystemRepository extends AbstractRepository {
     }
 
     invalidatePackages() {
+        log.debug(`invalidatePackages - ${this.name}`)
         this._packages = undefined
     }
 
@@ -76,6 +84,7 @@ export default class FileSystemRepository extends AbstractRepository {
         if (!rootDirOnly && this._packages) {
             return this._packages;
         }
+
         if (!existsSync(`${this.rootDir}`)) {
             log.debug(`# listPackages: rootDir not found ${this.rootDir}`);
             return [];
