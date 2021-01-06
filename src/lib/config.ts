@@ -13,15 +13,14 @@ import Package from "./package/package.ts";
 import UserInfoUtil from './user_info/userinfo_util.ts';
 import Registry from './repository/registry.ts';
 import OsUtils from './os_utils.ts';
+import RepositoryManager from "./repository/repository_manager.ts";
 
 export default class Config {
     private _pkgManager: PackageManager;
-    private _repository: Repository | undefined;
-    private _installedRepository: Repository | undefined;
+    private _repoManager: RepositoryManager;
+
     private _env: any = {};
     private _context: any = {}; // Do we really need two of them (_env and _context)?
-
-    private _extraRepos: Set<string> = new Set<string>();
 
     public email: string | undefined;
     public fullname: string | undefined;
@@ -30,18 +29,14 @@ export default class Config {
 
     private _defaultPackage: string | undefined;
 
-    private savedArgs: any;
-
-    private repoFactory: RepositoryFactory;
     private _registry: Registry | undefined;
 
     private _levainBackupDir: string | undefined;
     private _levainCacheDir: string | undefined;
 
     constructor(args: any) {
-        this.savedArgs = args;
-
-        this.repoFactory = new RepositoryFactory(this);
+        this._pkgManager = new PackageManager(this);
+        this._repoManager = new RepositoryManager(this);
 
         this.configEnv(args);
         this.configHome(args);
@@ -49,36 +44,16 @@ export default class Config {
 
         this.load();
 
-        this._pkgManager = new PackageManager(this);
-
         log.debug("");
         log.debug(`=== Config: \n${JSON.stringify(this._env, null, 3)}`);
     }
 
-    get repository(): Repository {
-        if (!this._repository) {
-            // Lazy loading
-            this._repository = this.configRepo(this.savedArgs, false);
-        }
-
-        return this._repository;
-    }
-
-    set repository(repo: Repository) {
-        this._repository = repo;
-    }
-
-    get repositoryInstalled(): Repository {
-        if (!this._installedRepository) {
-            // Lazy loading
-            this._installedRepository = this.configRepo(this.savedArgs, true);
-        }
-
-        return this._installedRepository;
-    }
-
     get packageManager(): PackageManager {
         return this._pkgManager;
+    }
+
+    get repositoryManager(): RepositoryManager {
+        return this._repoManager;
     }
 
     get levainHome(): string {
@@ -114,7 +89,6 @@ export default class Config {
         return dir;
     }
 
-
     set levainBackupDir(dir: string) {
         this._levainBackupDir = dir
     }
@@ -145,7 +119,7 @@ export default class Config {
     }
 
     get defaultPackage(): string {
-        return this.currentDirPackage?.name || this._defaultPackage || "levain";
+        return this.repositoryManager.currentDirPackage?.name || this._defaultPackage || "levain";
     }
 
     set defaultPackage(pkgName: string) {
@@ -158,26 +132,6 @@ export default class Config {
         }
 
         this._defaultPackage = pkgName;
-    }
-
-    get currentDirPackage(): Package | undefined {
-        // Looking for package at current dir
-        let curDirRepo = this.repoFactory.create(Deno.cwd());
-        let pkgs = curDirRepo.listPackages(true);
-        if (pkgs && pkgs.length == 1) {
-            return curDirRepo.resolvePackage(pkgs[0].name);
-        }
-
-        // TODO: Could we provide a default mechanism?
-        if (pkgs && pkgs.length > 1) {
-            log.warning("");
-            log.warning("***********************************************************************************");
-            log.warning(`** Found more than one .levain.yaml file in this folder. Which one should I use? => ${pkgs}`);
-            log.warning("***********************************************************************************");
-            log.warning("");
-        }
-
-        return undefined;
     }
 
     setVar(name: string, value: string): void {
@@ -278,7 +232,7 @@ export default class Config {
 
     public save(): void {
         let cfg: any = {};
-        cfg.repos = [...this._extraRepos];
+        cfg.repos = this.repositoryManager.saveState;
         cfg.defaultPackage = this._defaultPackage;
 
         let fileName = this.levainConfigFile;
@@ -305,8 +259,7 @@ export default class Config {
             let cfg = JSON.parse(data);
             log.debug(`- PARSE ${JSON.stringify(cfg)}`);
             if (cfg.repos) {
-                this._extraRepos = new Set<string>(cfg.repos);
-                log.debug(`- REPOS ${this._extraRepos}`);
+                this.repositoryManager.saveState = cfg.repos;
             }
 
             if (cfg.defaultPackage) {
@@ -404,81 +357,8 @@ export default class Config {
         }
     }
 
-    configRepo(args: any, installedOnly: boolean): Repository {
-        let repos: Set<string> = new Set<string>();
-
-        log.debug("");
-        log.debug(`=== configRepo - args: ${JSON.stringify(args)} installedOnly: ${installedOnly}`);
-        this.addLevainRepo(repos);
-        this.addCurrentDirRepo(repos);
-
-        if (installedOnly) {
-            this.addLevainRegistryRepo(repos);
-        } else {
-            let savedRepos = [...this._extraRepos];
-            this._extraRepos.clear();
-            log.debug(`savedRepos ${JSON.stringify(savedRepos)}`)
-            this.addRepos(repos, savedRepos);
-            log.debug(`args.addRepo ${JSON.stringify(args.addRepo)}`)
-            this.addRepos(repos, args.addRepo);
-        }
-
-        log.info("");
-        let repoArr: Repository[] = [];
-        repos.forEach(repoPath => repoArr.push(this.repoFactory.create(repoPath)));
-
-        return new CacheRepository(this,
-            new ChainRepository(this, repoArr)
-        );
-    }
-
     get levainSrcDir(): string {
         // https://stackoverflow.com/questions/61829367/node-js-dirname-filename-equivalent-in-deno
         return path.resolve(path.dirname(path.fromFileUrl(import.meta.url)), "../..");
-    }
-
-    private addLevainRepo(repos: Set<string>) {
-        log.info(`addRepo DEFAULT ${this.levainSrcDir} --> Levain src dir`);
-        this.addRepoPath(repos, this.levainSrcDir);
-    }
-
-    private addLevainRegistryRepo(repos: Set<string>) {
-        log.info(`addRepo DEFAULT ${this.levainRegistryDir} --> Levain registry dir`);
-        this.addRepoPath(repos, this.levainRegistryDir);
-    }
-
-    private addCurrentDirRepo(repos: Set<string>) {
-        log.info(`addRepo DEFAULT ${Deno.cwd()} --> Current working dir`);
-        this.addRepoPath(repos, Deno.cwd());
-    }
-
-    addRepoPath(repos: Set<string>, repoPath: string) {
-        if (OsUtils.isWindows()) {
-            repoPath = repoPath.toLowerCase();
-        }
-
-        repos.add(path.resolve(repoPath));
-    }
-
-    addRepos(repos: Set<string>, reposPath: undefined | string[]) {
-        if (!reposPath) {
-            return;
-        }
-
-        log.debug(`addRepos ${reposPath.length} ${JSON.stringify(reposPath)}`)
-        reposPath?.forEach(repoPath => this.addRepo(repos, repoPath));
-        log.debug(`addRepos after ${reposPath.length}`)
-    }
-
-    addRepo(repos: Set<string>, repoPath: string | undefined) {
-        log.debug(`addRepo ${repoPath}`);
-
-        if (!repoPath || repoPath === 'undefined') {
-            return;
-        }
-
-        log.info(`addRepo ${repoPath}`);
-        this.addRepoPath(repos, repoPath);
-        this._extraRepos.add(repoPath);
     }
 }

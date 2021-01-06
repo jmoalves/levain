@@ -12,6 +12,9 @@ export default class GitRepository extends AbstractRepository {
         log.debug(`GitRepo: Root=${this.rootUrl}`);
     }
 
+    async init(): Promise<void> {
+    }
+
     get absoluteURI(): string {
         return this.rootUrl;
     }

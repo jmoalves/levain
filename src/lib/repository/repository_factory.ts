@@ -7,22 +7,61 @@ import Config from '../config.ts';
 import NullRepository from './null_repository.ts';
 import GitRepository from './git_repository.ts';
 import FileSystemRepository from './file_system_repository.ts';
+import OsUtils from "../os_utils.ts";
 
 export default class RepositoryFactory {
+    private knownRepos = new Map<string, Repository>()
+
     constructor(private config: Config) {
     }
 
+    static isGitPath(repoPath: string): boolean {
+        return repoPath.endsWith(".git")
+    }
+
+    static normalizeList(repoPaths: string[]): string[] {
+        let repos = new Set<string>()
+        repoPaths.map(repo => RepositoryFactory.normalize(repo))
+                .forEach(repo => repos.add(repo))
+        return [...repos]
+    }
+
+    static normalize(repoPath: string): string {
+        if (RepositoryFactory.isGitPath(repoPath)) {
+            return repoPath
+        }
+
+        // Should normalize path separators (\, /) as well?
+
+        if (!OsUtils.isWindows()) {
+            return repoPath
+        }
+
+        return repoPath.toLowerCase().trim()
+    }
+
     create(repoURI: string): Repository {
-        log.debug(`RepoFactory - create repo for uri - ${repoURI}`);
+        log.debug(`RepoFactory.create - repo for uri ${repoURI}`)
 
         if (!repoURI) {
-            throw "RepoFactory with no repoURI";
+            throw "RepoFactory with no repoURI"
         }
 
-        if (repoURI.endsWith(".git")) {
-            return new GitRepository(this.config, repoURI);
+        let repoPath = RepositoryFactory.normalize(repoURI)
+        if (this.knownRepos.has(repoPath)) {
+            let repo = this.knownRepos.get(repoPath)!
+            log.debug(`RepoFactory.create - already known ${repo.name}`)
+            return repo
         }
 
-        return new FileSystemRepository(this.config, repoURI);
+        let repo = undefined;
+        if (RepositoryFactory.isGitPath(repoPath)) {
+            repo = new GitRepository(this.config, repoPath)
+        } else {
+            repo = new FileSystemRepository(this.config, repoPath)
+        }
+
+        this.knownRepos.set(repoPath, repo)
+        return repo
     }
 }
