@@ -16,7 +16,7 @@ export default class GitUtils {
         log.info(`-- GIT - CLONE - ${url} => ${dst}`);
         OsUtils.onlyInWindows();
 
-        const command = `cmd /u /c path ${this.cmdPath} && ${this.gitCmd} clone --single-branch --depth 1 ${url} ${dst}`;
+        const command = `cmd /u /c path ${this.cmdPath} && ${this.gitCmd} clone --progress --single-branch --no-tags --depth 1 ${url} ${dst}`;
         await OsUtils.runAndLog(command);
     }
 
@@ -24,7 +24,7 @@ export default class GitUtils {
         log.info(`-- GIT - PULL - ${dir}`);
         OsUtils.onlyInWindows();
 
-        const command = `cmd /u /c path ${this.cmdPath} && pushd ${dir} && ${this.gitCmd} pull && popd`;
+        const command = `cmd /u /c path ${this.cmdPath} && pushd ${dir} && ${this.gitCmd} pull --progress --no-tags --depth=1 && popd`;
         await OsUtils.runAndLog(command);
     }
 }

@@ -22,11 +22,9 @@ export default class GitRepository extends AbstractRepository {
         this.name = `gitRepo for ${this.rootUrl}`;
         this.gitUtils = new GitUtils(config);
         this.localDir = path.resolve(this.config.levainCacheDir, "gitRepos", path.basename(this.rootUrl, ".git"));
-
-        /* await */ this.loadRepo();
     }
 
-    async loadRepo() {
+    async init(): Promise<void> {
         if (existsSync(this.localDir)) {
             await this.gitUtils.pull(this.localDir);
         } else {
@@ -34,9 +32,7 @@ export default class GitRepository extends AbstractRepository {
         }
 
         this.localRepo = new FileSystemRepository(this.config, this.localDir);
-    }
-
-    async init(): Promise<void> {
+        await this.localRepo.init();
     }
 
     get absoluteURI(): string {
