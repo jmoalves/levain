@@ -79,8 +79,8 @@ export class OsShell {
         let actions = pkg.yamlItem("cmd.shell");
         let envActions = pkg.yamlItem("cmd.env");
 
-        log.debug(`SHELL actions: ${JSON.stringify(actions)}`);
-        log.debug(`ENV   actions: ${JSON.stringify(envActions)}`);
+        log.debug(`${pkg.name} SHELL actions: ${JSON.stringify(actions)}`);
+        log.debug(`${pkg.name} ENV   actions: ${JSON.stringify(envActions)}`);
 
         if (envActions) {
             if (actions) {
@@ -90,7 +90,7 @@ export class OsShell {
             }
         }
 
-        log.debug(`ALL   actions: ${JSON.stringify(actions)}`);
+        log.debug(`${pkg.name} ALL   actions: ${JSON.stringify(actions)}`);
         if (!actions) {
             return;
         }
