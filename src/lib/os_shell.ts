@@ -72,10 +72,6 @@ export class OsShell {
             return;
         }
 
-        if (!existsSync(`${pkg.baseDir}`)) {
-            return;
-        }
-
         let actions = pkg.yamlItem("cmd.shell");
         let envActions = pkg.yamlItem("cmd.env");
 
