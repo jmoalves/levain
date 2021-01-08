@@ -15,7 +15,7 @@ class Repositories {
 
 export default class RepositoryManager {
     private repoFactory: RepositoryFactory
-    private extraRepos: string[] = []
+    private extraRepos: Set<string> = new Set<string>()
 
     private repositories = new Repositories()
 
@@ -28,7 +28,7 @@ export default class RepositoryManager {
         log.debug(`=== RepositoryManager.init - extraRepos: ${JSON.stringify(repos)}`)
 
         if (repos) {
-            repos.forEach(repo => this.extraRepos.push(repo))
+            repos.forEach(repo => this.extraRepos.add(repo))
         }
 
         await this.createRepositories()
@@ -51,11 +51,11 @@ export default class RepositoryManager {
     }
 
     get saveState(): any {
-        return this.extraRepos
+        return [...this.extraRepos]
     }
 
     set saveState(state: any) {
-        this.extraRepos = state
+        this.extraRepos = new Set<string>(state)
         log.debug(`- Loaded REPOS ${this.extraRepos}`)
     }
 
