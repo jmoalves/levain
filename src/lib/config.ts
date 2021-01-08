@@ -234,6 +234,7 @@ export default class Config {
         let cfg: any = {};
         cfg.repos = this.repositoryManager.saveState;
         cfg.defaultPackage = this._defaultPackage;
+        cfg.cacheDir = this.levainCacheDir;
 
         let fileName = this.levainConfigFile;
 
@@ -265,6 +266,10 @@ export default class Config {
             if (cfg.defaultPackage) {
                 this._defaultPackage = cfg.defaultPackage;
                 log.debug(`- DEFAULT-PACKAGE ${this._defaultPackage}`);
+            }
+
+            if (cfg.cacheDir) {
+                this.levainCacheDir = cfg.cacheDir;
             }
         } catch (err) {
             if (err.name != "NotFound") {
