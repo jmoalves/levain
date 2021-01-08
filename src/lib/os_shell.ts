@@ -206,6 +206,7 @@ export class OsShell {
             return undefined;
         }
 
+        myPath = [...new Set(myPath)]; // Remove duplicates
         let pathStr = myPath.join(";");
         let envPath = Deno.env.get("PATH");
         if (!envPath) {
