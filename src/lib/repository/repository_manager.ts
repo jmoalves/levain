@@ -154,7 +154,7 @@ export default class RepositoryManager {
             this.addExtraRepos(repos)
         }
 
-        return repos
+        return [...new Set(repos)]
     }
 
     private addLevainRepo(repos: string[]) {
