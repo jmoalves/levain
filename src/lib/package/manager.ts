@@ -25,12 +25,12 @@ export default class PackageManager {
             let myError: boolean = this.resolvePkgs(repo, pkgs, names, pkgName);
             error = error || myError;
         }
+        Deno.stdout.writeSync(new TextEncoder().encode("\n")); // User feedback
 
         if (error) {
             return null;
         }
 
-        log.info("");
         log.info("");
         log.info("=== Package list (in order):");
         let result: Package[] = [];
@@ -101,7 +101,7 @@ export default class PackageManager {
         log.debug(`resolving package ${pkgName}`)
         const pkgDef = repo.resolvePackage(pkgName);
         if (!pkgDef) {
-            log.info(""); // User feedback
+            Deno.stdout.writeSync(new TextEncoder().encode("\n")); // User feedback
             log.error("PACKAGE NOT FOUND: " + pkgName);
             return true;
         }
