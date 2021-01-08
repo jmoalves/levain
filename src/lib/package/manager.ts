@@ -101,6 +101,7 @@ export default class PackageManager {
         log.debug(`resolving package ${pkgName}`)
         const pkgDef = repo.resolvePackage(pkgName);
         if (!pkgDef) {
+            log.info(""); // User feedback
             log.error("PACKAGE NOT FOUND: " + pkgName);
             return true;
         }
