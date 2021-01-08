@@ -1,8 +1,7 @@
-bin/
-dist/
+/bin/
+/dist/
 /.idea/workspace.xml
 sonarLint
 *.log
 .DS_Store
-
 cannot_read_this_folder
