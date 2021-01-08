@@ -13,7 +13,7 @@ export default class LevainCli {
     async execute(myArgs: any = {}): Promise<void> {
         const __filename = path.fromFileUrl(import.meta.url);
 
-        log.info(`levain v0.20.2    (${__filename})`);
+        log.info(`levain vHEAD    (${__filename})`);
         log.info(`Deno   v${Deno.version.deno}`);
 
         log.debug("args " + JSON.stringify(myArgs));
