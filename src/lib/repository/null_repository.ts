@@ -13,6 +13,9 @@ export default class NullRepository extends AbstractRepository {
     async init(): Promise<void> {
     }
 
+    invalidatePackages() {
+    }
+
     get absoluteURI(): string {
         return this.name;
     }

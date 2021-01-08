@@ -29,6 +29,11 @@ export default class CacheRepository extends AbstractRepository {
         this.packages = this.repository.packages;
     }
 
+    invalidatePackages() {
+        this.repository.invalidatePackages();
+        this.packages = this.repository.packages;
+    }
+
     get absoluteURI(): string {
         return this.name;
     }

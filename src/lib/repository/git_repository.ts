@@ -35,6 +35,10 @@ export default class GitRepository extends AbstractRepository {
         await this.localRepo.init();
     }
 
+    invalidatePackages() {
+        this.localRepo?.invalidatePackages();
+    }
+
     get absoluteURI(): string {
         return this.rootUrl;
     }

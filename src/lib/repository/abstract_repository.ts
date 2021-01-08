@@ -10,6 +10,8 @@ export default abstract class AbstractRepository implements Repository {
 
     abstract init(): void
 
+    abstract invalidatePackages(): void
+
     abstract listPackages(rootDirOnly?: boolean): Array<Package>
 
     abstract resolvePackage(packageName: string): Package | undefined

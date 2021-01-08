@@ -29,6 +29,14 @@ export default class ChainRepository extends AbstractRepository {
         this.packages = this.listPackages()
     }
 
+    invalidatePackages() {
+        for (let repo of this.repositories) {
+            repo.invalidatePackages()
+        }
+
+        this.packages = this.listPackages()
+    }
+
     get absoluteURI(): string {
         return this.name;
     }

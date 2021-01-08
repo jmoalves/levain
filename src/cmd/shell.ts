@@ -29,6 +29,7 @@ export default class Shell implements Command {
             if (needInstall) {
                 let loader = new Loader(this.config);
                 await loader.command("install", pkgNames);
+                this.config.repositoryManager.invalidatePackages();
             } else {
                 log.debug("No package to install or upgrade");
             }

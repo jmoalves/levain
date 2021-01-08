@@ -10,6 +10,8 @@ export default interface Repository {
 
     init(): void;
 
+    invalidatePackages(): void;
+
     resolvePackage(packageName: string): Package | undefined;
 
     listPackages(rootDirOnly?: boolean): Array<Package>;

@@ -35,6 +35,21 @@ export default class RepositoryManager {
         await this.initRepositories()
     }
 
+    invalidatePackages() {
+        if (!this.repositories) {
+            throw Error("Error initializing RepositoryManager - repositories not found")
+        }
+
+        let repos: any = this.repositories;
+        for (let key in repos) {
+            if (repos[key]) {
+                let repo:Repository = repos[key]
+                log.debug(`INVALIDATE-PACKAGES Repo[${key}] - ${repo.name}`)
+                repo.invalidatePackages()
+            }
+        }
+    }
+
     get saveState(): any {
         return this.extraRepos
     }
