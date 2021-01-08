@@ -15,6 +15,8 @@ export default class PackageManager {
             return null;
         }
 
+        log.info("");
+        log.info(`=== Resolving ${pkgNames}`);
         let pkgs: Map<string, Package> = new Map();
         let names: Set<string> = new Set(); // Solving circular references - Issue #11
         let error: boolean = false;
@@ -28,6 +30,7 @@ export default class PackageManager {
             return null;
         }
 
+        log.info("");
         log.info("");
         log.info("=== Package list (in order):");
         let result: Package[] = [];
@@ -76,6 +79,9 @@ export default class PackageManager {
     }
 
     private resolvePkgs(repo: Repository, pkgs: Map<string, Package>, names: Set<String>, pkgName: string): boolean {
+        // User feedback
+        Deno.stdout.writeSync(new TextEncoder().encode("."));
+
         if (pkgs.has(pkgName)) {
             return false;
         } else if (names.has(pkgName)) {
