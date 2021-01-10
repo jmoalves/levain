@@ -157,7 +157,7 @@ echo ${levainZipFile} created
 
 bootstrapZipFile=levainBootstrap-windows-x86_64.zip
 cd ${distDir}
-rm -rf extra-bin/git #bootstrap does not need this
+rm -rf extra-bin/windows/git #bootstrap does not need this
 zip -r ${distRoot}/${bootstrapZipFile} ../levainBootstrap.cmd extra-bin >/dev/null
 cd - >/dev/null
 cd ${distRoot}
