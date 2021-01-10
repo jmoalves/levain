@@ -145,7 +145,7 @@ rm -rf ${distDir}/jmoalves-levain-*
 rm -rf ${distDir}/testdata
 find ${distDir} -name '*.test.ts' -exec rm {} \;
 
-## Create zip
+## Create Levain zip
 zipFile=levain-v$levainVersion-windows-x86_64.zip
 cd ${distRoot}
 zip -r ${zipFile} $(basename $distDir) >/dev/null
@@ -155,7 +155,7 @@ cd - >/dev/null
 rm -rf ${distDir}
 
 echo
-echo $zipFile created
+echo ${zipFile} created
 ls -l ${distRoot}
 
 echo
@@ -165,17 +165,17 @@ cat ${distRoot}/${zipFile}.sha256
 ## Upload asset to GitHub
 levainAssetsUploadUrl=$(echo $levainRelease | jq -rc '.upload_url' | sed 's/{.*}//')
 echo
-echo Uploading asset $zipFile to $levainAssetsUploadUrl
+echo Uploading asset ${zipFile} to $levainAssetsUploadUrl
 curl -ks -X POST -u username:$GITHUB_TOKEN \
   -H 'Content-Type: application/zip' \
-  -T ${distRoot}/$zipFile \
+  -T ${distRoot}/${zipFile} \
   ${levainAssetsUploadUrl}?name=${zipFile}
 
 echo
-echo Uploading asset $zipFile.sha256 to $levainAssetsUploadUrl
+echo Uploading asset ${zipFile}.sha256 to $levainAssetsUploadUrl
 curl -ks -X POST -u username:$GITHUB_TOKEN \
   -H 'Content-Type: text/plain' \
-  -T ${distRoot}/$zipFile.sha256 \
+  -T ${distRoot}/${zipFile}.sha256 \
   ${levainAssetsUploadUrl}?name=${zipFile}.sha256
 
 echo
