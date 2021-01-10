@@ -20,6 +20,15 @@ jobs:
             echo Version v${version};
           else
             echo Invalid version number - $version;
+            echo
+            echo You must use the pattern
+            echo major.minor.patch
+            echo
+            echo Examples:
+            echo 0.20.1
+            echo 1.0.3
+            echo 2.5.0
+
             exit 1
           fi
 
