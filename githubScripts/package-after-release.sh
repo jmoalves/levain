@@ -145,7 +145,7 @@ rm -rf ${distDir}/testdata
 find ${distDir} -name '*.test.ts' -exec rm {} \;
 
 ## Create zip
-zipFile=levain-v$levainVersion-with-deno-v$denoVersion-windows-x86_64.zip
+zipFile=levain-v$levainVersion-windows-x86_64.zip
 cd ${distRoot}
 zip -r ${zipFile} $(basename $distDir) >/dev/null
 sha256sum ${zipFile} > ${zipFile}.sha256
