@@ -1,5 +1,14 @@
 @echo off
+
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+:: Levain - bootstrap
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+SETLOCAL
+
 set currentFileDir=%~dp0
+:: removing the trailing backslash
+set currentFileDir=%currentFileDir:~0,-1%
 
 set levainVersion=%1
 if "a%levainVersion%" == "a" (
@@ -9,45 +18,118 @@ if "a%levainVersion%" == "a" (
 )
 shift
 
-
-REM FIXME: Allways expand?
-if not exist %TEMP%\levain-%levainVersion%\levain.cmd (
-    call:fnExpandLevain %levainVersion%
+set levainUrl=
+if /I "a%1" == "a--levainUrl" (
+    if not "a%2" == "a" set levainUrl=%2& shift & shift
 )
 
-if not exist %TEMP%\levain-%levainVersion%\levain.cmd (
-    echo.
-    echo No levain %levainVersion% found 
-    exit /b 1
-)
+
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+cls
+
+set tempDir=%TEMP%\levain
+set levainDir=%tempDir%\levain-%levainVersion%
+set levainCMD=%levainDir%\levain.cmd
+set levainZipFile=levain-v%levainVersion%-windows-x86_64.zip
+
+if not exist %tempDir% mkdir %tempDir%
+
+call:fnGetLevainZip
+if errorlevel 1 exit /b %ERRORLEVEL%
+
+call:fnExpandLevainZip
+if errorlevel 1 exit /b %ERRORLEVEL%
 
 set args=
 :getArgs
 if not "a%1" == "a" set args=%args% %1& shift & goto getArgs
 
-pushd %TEMP%\levain-%levainVersion%
-call %TEMP%\levain-%levainVersion%\levain.cmd %args%
+pushd %levainDir%
+call %levainCMD% %args%
 popd
 goto:eof
 
 
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+:: Get Levain
+::
+:fnGetLevainZip
 
-:fnExpandLevain
-set levainVersion=%1
+:: Is Levain already available?
+if exist %levainCMD% goto:eof
 
-set levainPath=%currentFileDir%
+:: tempDir should appear last
+for %%d in (%currentFileDir% %tempDir%) do (
+    set levainZipPath=%%d
+    :: Is Levain zip already available?
+    echo CHECK - %%d\%levainZipFile%
+    if exist %%d\%levainZipFile% exit /b 0
+)
 
-set file=
-for %%i in (%levainPath%\levain-v%levainVersion%-*windows-x86_64.zip) do set file=%%i
-
-if "a%file%" == "a" (
+if "a%levainUrl%" == "a" (
     echo.
-    echo No levain zip found for %levainVersion% in %levainPath%
+    echo.
+    echo ========================================
+    echo.
+    echo ERROR: You must inform the url if you want we download the Levain zip file
+    echo.
+    echo ========================================
+    exit /b 1
+
+)
+
+:: Download Levain Zip
+set url=%levainUrl%/download/v%levainVersion%/%levainZipFile%
+echo Downloading Levain zip from %url%
+%currentFileDir%\extra-bin\windows\curl\bin\curl.exe -L -f %url% -o%levainZipPath%\%levainZipFile%
+if errorlevel 1 (
+    echo.
+    echo.
+    echo ========================================
+    echo.
+    echo ERROR: No Levain Zip found at %url%
+    echo.
+    echo ========================================
     exit /b 1
 )
 
-rem powershell.exe -nologo -noprofile -command "& { Expand-Archive -Force -LiteralPath %file% -DestinationPath %TEMP% }"
-echo Unzipping Levain %currentFileDir%\extra-bin\windows\7z.exe x %file% -o%TEMP%
-%currentFileDir%\extra-bin\windows\7z.exe x %file% -o%TEMP%
+goto:eof
+
+
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+:: Expand Levain
+::
+:fnExpandLevainZip
+
+:: Is Levain already available?
+if exist %levainCMD% goto:eof
+
+:: Do we have the Levain Zip?
+if not exist %levainZipPath%\%levainZipFile% (
+    echo.
+    echo.
+    echo ========================================
+    echo.
+    echo ERROR: No levain zip found for %levainVersion% in %levainZipPath%\%levainZipFile%
+    echo.
+    echo ========================================
+    echo.
+    exit /b 1
+)
+
+:: Expand Levain Zip
+REM powershell.exe -nologo -noprofile -command "& { Expand-Archive -Force -LiteralPath %levainZipPath%\%levainZipFile% -DestinationPath %tempDir% }"
+echo Extracting Levain zip %levainZipPath%\%levainZipFile% to %tempDir%
+%currentFileDir%\extra-bin\windows\7z.exe x %levainZipPath%\%levainZipFile% -o%tempDir%
+if errorlevel 1 (
+    echo.
+    echo.
+    echo ========================================
+    echo.
+    echo ERROR: Could not extract Levain zip %levainZipPath%\%levainZipFile% to %tempDir%
+    echo.
+    echo ========================================
+    exit /b 1
+)
 
 goto:eof
