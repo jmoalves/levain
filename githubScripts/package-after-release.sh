@@ -135,7 +135,8 @@ ${myDeno} cache --unstable --reload ${distDir}/src/levain.ts
 # Bundle issue - https://github.com/denoland/deno/issues/8486
 
 ### levain cleanup
-cp ${distDir}/scripts/levainBootstrap.cmd ${distRoot}
+cp ${distDir}/bootstrap/levainBootstrap.cmd ${distRoot}
+rm -rf ${distDir}/bootstrap
 rm -rf ${distDir}/scripts
 rm -rf ${distDir}/ci
 rm ${distDir}/levain.zip
