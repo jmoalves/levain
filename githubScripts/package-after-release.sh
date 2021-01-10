@@ -152,18 +152,31 @@ zip -r ${levainZipFile} $(basename $distDir) >/dev/null
 sha256sum ${levainZipFile} > ${levainZipFile}.sha256
 cd - >/dev/null
 
-rm -rf ${distDir}
-
 echo
 echo ${levainZipFile} created
+
+bootstrapZipFile=levainBootstrap-windows-x86_64.zip
+cd ${distDir}
+zip -r ${distRoot}/${bootstrapZipFile} ../levainBootstrap.cmd extra-bin >/dev/null
+cd - >/dev/null
+cd ${distRoot}
+sha256sum ${bootstrapZipFile} > ${bootstrapZipFile}.sha256
+cd - >/dev/null
+
+echo
+echo ${bootstrapZipFile} created
+
+rm -rf ${distDir}
 ls -l ${distRoot}
 
 echo
 echo SHA256
 cat ${distRoot}/${levainZipFile}.sha256
+cat ${distRoot}/${bootstrapZipFile}.sha256
 
-## Upload asset to GitHub
+## Upload assets to GitHub
 levainAssetsUploadUrl=$(echo $levainRelease | jq -rc '.upload_url' | sed 's/{.*}//')
+
 echo
 echo Uploading asset ${levainZipFile} to $levainAssetsUploadUrl
 curl -ks -X POST -u username:$GITHUB_TOKEN \
@@ -179,11 +192,19 @@ curl -ks -X POST -u username:$GITHUB_TOKEN \
   ${levainAssetsUploadUrl}?name=${levainZipFile}.sha256
 
 echo
-echo Uploading asset ${distRoot}/levainBootstrap.cmd to $levainAssetsUploadUrl
+echo Uploading asset ${bootstrapZipFile} to $levainAssetsUploadUrl
+curl -ks -X POST -u username:$GITHUB_TOKEN \
+  -H 'Content-Type: application/zip' \
+  -T ${distRoot}/${bootstrapZipFile} \
+  ${levainAssetsUploadUrl}?name=${bootstrapZipFile}
+
+echo
+echo Uploading asset ${bootstrapZipFile}.sha256 to $levainAssetsUploadUrl
 curl -ks -X POST -u username:$GITHUB_TOKEN \
   -H 'Content-Type: text/plain' \
-  -T ${distRoot}/levainBootstrap.cmd \
-  ${levainAssetsUploadUrl}?name=levainBootstrap.cmd
+  -T ${distRoot}/${bootstrapZipFile}.sha256 \
+  ${levainAssetsUploadUrl}?name=${bootstrapZipFile}.sha256
+
 
 echo
 echo Cleanup
