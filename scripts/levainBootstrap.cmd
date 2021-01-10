@@ -38,7 +38,7 @@ set levainVersion=%1
 set levainPath=%currentFileDir%
 
 set file=
-for %%i in (%levainPath%\levain-v%levainVersion%-*-windows-x86_64.zip) do set file=%%i
+for %%i in (%levainPath%\levain-v%levainVersion%-*windows-x86_64.zip) do set file=%%i
 
 if "a%file%" == "a" (
     echo.
