@@ -14,6 +14,7 @@ import UserInfoUtil from './user_info/userinfo_util.ts';
 import Registry from './repository/registry.ts';
 import OsUtils from './os_utils.ts';
 import RepositoryManager from "./repository/repository_manager.ts";
+import LevainVersion from "../levain_version.ts";
 
 export default class Config {
     private _pkgManager: PackageManager;
@@ -359,7 +360,6 @@ export default class Config {
     }
 
     get levainSrcDir(): string {
-        // https://stackoverflow.com/questions/61829367/node-js-dirname-filename-equivalent-in-deno
-        return path.resolve(path.dirname(path.fromFileUrl(import.meta.url)), "../..");
+        return LevainVersion.levainSrcDir
     }
 }

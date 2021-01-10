@@ -157,8 +157,7 @@ class SevenZip extends Extractor {
         log.debug(`-- 7z ${src} => ${dst}`);
         OsUtils.onlyInWindows()
 
-        const extraBin = new ExtraBin(this.config);
-        const command = `cmd /u /c path ${extraBin.sevenZipDir};%PATH% && ${extraBin.sevenZipDir}\\7z.exe x -bsp2 -o${dst} ${src}`;
+        const command = `cmd /u /c path ${ExtraBin.sevenZipDir};%PATH% && ${ExtraBin.sevenZipDir}\\7z.exe x -bsp2 -o${dst} ${src}`;
         await OsUtils.runAndLog(command);
     }
 }
@@ -176,8 +175,7 @@ class UnTar extends Extractor {
 
         log.debug(`-- UNTAR ${src} => ${dst}`);
 
-        const extraBin = new ExtraBin(this.config);
-        let args = `cmd /u /c path ${extraBin.sevenZipDir};%PATH% && ( ${extraBin.sevenZipDir}\\7z.exe x ${src} -bsp2 -so | ${extraBin.sevenZipDir}\\7z.exe x -si -bd -ttar -o${dst} )`.split(" ");
+        let args = `cmd /u /c path ${ExtraBin.sevenZipDir};%PATH% && ( ${ExtraBin.sevenZipDir}\\7z.exe x ${src} -bsp2 -so | ${ExtraBin.sevenZipDir}\\7z.exe x -si -bd -ttar -o${dst} )`.split(" ");
 
         const p = Deno.run({
             stdout: "null",

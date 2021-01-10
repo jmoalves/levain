@@ -36,18 +36,11 @@ for r in $releases; do
   fi
 done
 
-# Change version at main file
-cp -f src/levain_cli.ts src/levain_cli.ts.bkp
-cat src/levain_cli.ts.bkp |
-  sed "s/levain vHEAD/levain ${tag}/g" \
-    >src/levain_cli.ts
-
 # Change version at yaml file
 cp -f recipes/levain.levain.yaml recipes/levain.levain.yaml.bkp
 cat recipes/levain.levain.yaml.bkp |
   sed "s/version: .*/version: ${version}/g" \
     >recipes/levain.levain.yaml
-rm recipes/levain.levain.yaml.bkp
 
 # Commit version
 git add src/levain_cli.ts recipes/levain.levain.yaml
@@ -55,10 +48,10 @@ git commit -m "$tag"
 git tag $tag
 
 # Restore file
-cp -f src/levain_cli.ts.bkp src/levain_cli.ts
-git add src/levain_cli.ts
+cp -f recipes/levain.levain.yaml.bkp recipes/levain.levain.yaml
+git add recipes/levain.levain.yaml
 git commit -m "vHEAD"
-rm src/levain_cli.ts.bkp
+rm recipes/levain.levain.yaml.bkp
 
 # PUSH
 git push

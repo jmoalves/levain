@@ -8,8 +8,7 @@ export default class GitUtils {
     readonly gitCmd: string;
 
     constructor(private config: Config) {
-        const extraBin = new ExtraBin(this.config);
-        this.gitCmd = `${extraBin.gitDir}\\cmd\\git.exe`;
+        this.gitCmd = `${ExtraBin.gitDir}\\cmd\\git.exe`;
     }
 
     async clone(url: string, dst: string, options?: any) {
