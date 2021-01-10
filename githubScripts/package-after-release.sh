@@ -146,37 +146,37 @@ rm -rf ${distDir}/testdata
 find ${distDir} -name '*.test.ts' -exec rm {} \;
 
 ## Create Levain zip
-zipFile=levain-v$levainVersion-windows-x86_64.zip
+levainZipFile=levain-v$levainVersion-windows-x86_64.zip
 cd ${distRoot}
-zip -r ${zipFile} $(basename $distDir) >/dev/null
-sha256sum ${zipFile} > ${zipFile}.sha256
+zip -r ${levainZipFile} $(basename $distDir) >/dev/null
+sha256sum ${levainZipFile} > ${levainZipFile}.sha256
 cd - >/dev/null
 
 rm -rf ${distDir}
 
 echo
-echo ${zipFile} created
+echo ${levainZipFile} created
 ls -l ${distRoot}
 
 echo
 echo SHA256
-cat ${distRoot}/${zipFile}.sha256
+cat ${distRoot}/${levainZipFile}.sha256
 
 ## Upload asset to GitHub
 levainAssetsUploadUrl=$(echo $levainRelease | jq -rc '.upload_url' | sed 's/{.*}//')
 echo
-echo Uploading asset ${zipFile} to $levainAssetsUploadUrl
+echo Uploading asset ${levainZipFile} to $levainAssetsUploadUrl
 curl -ks -X POST -u username:$GITHUB_TOKEN \
   -H 'Content-Type: application/zip' \
-  -T ${distRoot}/${zipFile} \
-  ${levainAssetsUploadUrl}?name=${zipFile}
+  -T ${distRoot}/${levainZipFile} \
+  ${levainAssetsUploadUrl}?name=${levainZipFile}
 
 echo
-echo Uploading asset ${zipFile}.sha256 to $levainAssetsUploadUrl
+echo Uploading asset ${levainZipFile}.sha256 to $levainAssetsUploadUrl
 curl -ks -X POST -u username:$GITHUB_TOKEN \
   -H 'Content-Type: text/plain' \
-  -T ${distRoot}/${zipFile}.sha256 \
-  ${levainAssetsUploadUrl}?name=${zipFile}.sha256
+  -T ${distRoot}/${levainZipFile}.sha256 \
+  ${levainAssetsUploadUrl}?name=${levainZipFile}.sha256
 
 echo
 echo Uploading asset ${distRoot}/levainBootstrap.cmd to $levainAssetsUploadUrl
