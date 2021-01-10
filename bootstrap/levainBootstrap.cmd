@@ -120,7 +120,7 @@ if not exist %levainZipPath%\%levainZipFile% (
 :: Expand Levain Zip
 REM powershell.exe -nologo -noprofile -command "& { Expand-Archive -Force -LiteralPath %levainZipPath%\%levainZipFile% -DestinationPath %tempDir% }"
 echo Extracting Levain zip %levainZipPath%\%levainZipFile% to %tempDir%
-%currentFileDir%\extra-bin\windows\7z.exe x %levainZipPath%\%levainZipFile% -o%tempDir%
+%currentFileDir%\extra-bin\windows\7-Zip\7z.exe x %levainZipPath%\%levainZipFile% -o%tempDir%
 if errorlevel 1 (
     echo.
     echo.

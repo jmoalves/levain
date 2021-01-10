@@ -226,10 +226,6 @@ export default class Config {
         return myText;
     }
 
-    get extraBinDir(): string {
-        return path.resolve(this.levainSrcDir, "extra-bin", Deno.build.os);
-    }
-
     public save(): void {
         let cfg: any = {};
         cfg.repos = this.repositoryManager.saveState;

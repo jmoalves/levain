@@ -1,22 +1,22 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import Config from "./config.ts";
+import ExtraBin from "./extra_bin.ts";
 
 import OsUtils from "./os_utils.ts";
 
 export default class GitUtils {
-    readonly cmdPath: string;
     readonly gitCmd: string;
 
     constructor(private config: Config) {
-        this.cmdPath = `${this.config.extraBinDir};${this.config.extraBinDir}\\git\\cmd;%PATH%`;
-        this.gitCmd = `${this.config.extraBinDir}\\git\\cmd\\git.exe`;
+        const extraBin = new ExtraBin(this.config);
+        this.gitCmd = `${extraBin.gitDir}\\cmd\\git.exe`;
     }
 
     async clone(url: string, dst: string, options?: any) {
         log.info(`-- GIT - CLONE - ${url} => ${dst}`);
         OsUtils.onlyInWindows();
 
-        const command = `cmd /u /c path ${this.cmdPath} && ${this.gitCmd} clone --progress --single-branch --no-tags --depth 1 ${url} ${dst}`;
+        const command = `cmd /u /c ${this.gitCmd} clone --progress --single-branch --no-tags --depth 1 ${url} ${dst}`;
         await OsUtils.runAndLog(command);
     }
 
@@ -24,7 +24,7 @@ export default class GitUtils {
         log.info(`-- GIT - PULL - ${dir}`);
         OsUtils.onlyInWindows();
 
-        const command = `cmd /u /c path ${this.cmdPath} && pushd ${dir} && ${this.gitCmd} pull --progress --no-tags --depth=1 && popd`;
+        const command = `cmd /u /c pushd ${dir} && ${this.gitCmd} pull --progress --no-tags --depth=1 && popd`;
         await OsUtils.runAndLog(command);
     }
 }

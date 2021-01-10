@@ -11,6 +11,7 @@ import OsUtils from "../lib/os_utils.ts";
 import {Timer} from "../lib/timer.ts";
 import FileUtils from "../lib/file_utils.ts";
 import FileCache from '../lib/file_cache.ts';
+import ExtraBin from "../lib/extra_bin.ts";
 
 // TODO: Use native TS/JS implementation instead of extra-bin files.
 export default class Extract implements Action {
@@ -111,7 +112,7 @@ class ExtractorFactory {
     createExtractor(config: Config, src: string): Extractor {
         if (src.endsWith(".zip")) {
             if (OsUtils.isWindows()) {
-                return new SevenZip(config); //new Unzipper(config);
+                return new SevenZip(config);
             } else {
                 return new DenoZip(config)
             }
@@ -145,32 +146,6 @@ export class DenoZip extends Extractor {
     }
 }
 
-class Unzipper extends Extractor {
-    constructor(config: Config) {
-        super(config);
-    }
-
-    async extractImpl(src: string, dst: string) {
-        // TODO: Handle other os's
-        if (Deno.build.os != "windows") {
-            throw `${Deno.build.os} not supported`;
-        }
-
-        log.debug(`-- UNZIP ${src} => ${dst}`);
-
-        let args = `cmd /u /c path ${this.config.extraBinDir};%PATH% && ${this.config.extraBinDir}\\unzip -qn ${src} -d ${dst}`.split(" ");
-
-        const p = Deno.run({
-            cmd: args
-        });
-
-        let status = await p.status();
-        if (!status.success) {
-            throw "CMD terminated with code " + status.code;
-        }
-    }
-}
-
 
 class SevenZip extends Extractor {
     constructor(config: Config) {
@@ -182,7 +157,8 @@ class SevenZip extends Extractor {
         log.debug(`-- 7z ${src} => ${dst}`);
         OsUtils.onlyInWindows()
 
-        const command = `cmd /u /c path ${this.config.extraBinDir};%PATH% && ${this.config.extraBinDir}\\7z.exe x -bsp2 -o${dst} ${src}`;
+        const extraBin = new ExtraBin(this.config);
+        const command = `cmd /u /c path ${extraBin.sevenZipDir};%PATH% && ${extraBin.sevenZipDir}\\7z.exe x -bsp2 -o${dst} ${src}`;
         await OsUtils.runAndLog(command);
     }
 }
@@ -200,7 +176,8 @@ class UnTar extends Extractor {
 
         log.debug(`-- UNTAR ${src} => ${dst}`);
 
-        let args = `cmd /u /c path ${this.config.extraBinDir};%PATH% && ( ${this.config.extraBinDir}\\7z.exe x ${src} -bsp2 -so | ${this.config.extraBinDir}\\7z.exe x -si -bd -ttar -o${dst} )`.split(" ");
+        const extraBin = new ExtraBin(this.config);
+        let args = `cmd /u /c path ${extraBin.sevenZipDir};%PATH% && ( ${extraBin.sevenZipDir}\\7z.exe x ${src} -bsp2 -so | ${extraBin.sevenZipDir}\\7z.exe x -si -bd -ttar -o${dst} )`.split(" ");
 
         const p = Deno.run({
             stdout: "null",
