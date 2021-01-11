@@ -15,6 +15,7 @@ Deno.test('CommandFactory should list commands', () => {
         'list',
         'clean',
         'actions',
+        'info'
     ])
 })
 Deno.test('loadCommand should know the list command', () => {

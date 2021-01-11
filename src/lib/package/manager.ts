@@ -10,19 +10,22 @@ export default class PackageManager {
     constructor(private config: Config) {
     }
 
-    resolvePackages(pkgNames: string[], installedOnly = false): Package[] | null {
+    resolvePackages(pkgNames: string[], installedOnly = false, showLog = true): Package[] | null {
         if (!pkgNames || pkgNames.length == 0) {
             return null;
         }
 
-        log.info("");
-        log.info(`=== Resolving ${pkgNames}`);
+        if (showLog) {
+            log.info("");
+            log.info(`=== Resolving ${pkgNames}`);    
+        }
+
         let pkgs: Map<string, Package> = new Map();
         let names: Set<string> = new Set(); // Solving circular references - Issue #11
         let error: boolean = false;
         for (const pkgName of pkgNames) {
             let repo = (installedOnly ? this.config.repositoryManager.repositoryInstalled : this.config.repositoryManager.repository);
-            let myError: boolean = this.resolvePkgs(repo, pkgs, names, pkgName);
+            let myError: boolean = this.resolvePkgs(repo, pkgs, names, pkgName, showLog);
             error = error || myError;
         }
         Deno.stdout.writeSync(new TextEncoder().encode("\n")); // User feedback
@@ -31,14 +34,19 @@ export default class PackageManager {
             return null;
         }
 
-        log.info("");
-        log.info("=== Package list (in order):");
+        if (showLog) {
+            log.info("");
+            log.info("=== Package list (in order):");    
+        }
+
         let result: Package[] = [];
         for (let name of pkgs.keys()) {
             const pkg = pkgs.get(name)!;
             this.knownPackages.set(name, pkg);
             result.push(pkg);
-            log.info(name);
+            if (showLog) {
+                log.info(name);
+            }
         }
 
         return result;
@@ -78,9 +86,11 @@ export default class PackageManager {
         return this.config.replaceVars(value!, pkgName);
     }
 
-    private resolvePkgs(repo: Repository, pkgs: Map<string, Package>, names: Set<String>, pkgName: string): boolean {
+    private resolvePkgs(repo: Repository, pkgs: Map<string, Package>, names: Set<String>, pkgName: string, showLog: boolean): boolean {
         // User feedback
-        Deno.stdout.writeSync(new TextEncoder().encode("."));
+        if (showLog) {
+            Deno.stdout.writeSync(new TextEncoder().encode("."));
+        }
 
         if (pkgs.has(pkgName)) {
             return false;
@@ -101,7 +111,10 @@ export default class PackageManager {
         log.debug(`resolving package ${pkgName}`)
         const pkgDef = repo.resolvePackage(pkgName);
         if (!pkgDef) {
-            Deno.stdout.writeSync(new TextEncoder().encode("\n")); // User feedback
+            if (showLog) {
+                Deno.stdout.writeSync(new TextEncoder().encode("\n")); // User feedback
+            }
+
             log.error("PACKAGE NOT FOUND: " + pkgName);
             return true;
         }
@@ -110,7 +123,7 @@ export default class PackageManager {
         let error: boolean = false;
         if (pkgDef.dependencies) {
             for (let dep of pkgDef.dependencies) {
-                let myError: boolean = this.resolvePkgs(repo, pkgs, names, dep);
+                let myError: boolean = this.resolvePkgs(repo, pkgs, names, dep, showLog);
                 error = error || myError;
             }
         }

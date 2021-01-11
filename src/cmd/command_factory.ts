@@ -5,6 +5,7 @@ import Config from "../lib/config.ts";
 import ListCommand from "./list_command.ts";
 import CleanCommand from "./clean.ts";
 import ActionsCommand from "./actions.ts";
+import InfoCommand from "./info.ts";
 
 const commandMap = new Map<string, (config: Config) => Command>([
     ['install', (config: Config) => new Install(config)],
@@ -12,6 +13,7 @@ const commandMap = new Map<string, (config: Config) => Command>([
     ['list', (config: Config) => new ListCommand(config)],
     ['clean', (config: Config) => new CleanCommand(config)],
     ['actions', (config: Config) => new ActionsCommand(config)],
+    ['info', (config: Config) => new InfoCommand(config)],
 ])
 export default class CommandFactory {
 
