@@ -19,7 +19,7 @@ export class OsShell {
             throw new Error("No package");
         }
 
-        let pkgs: Package[] | null = this.config.packageManager.resolvePackages(pkgNames, installedOnly);
+        let pkgs: Package[] | null = this.config.packageManager.resolvePackages(pkgNames, installedOnly, false);
         if (!pkgs) {
             throw new Error("Unable to load dependencies for a levain shell. Aborting...");
         }
