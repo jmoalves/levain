@@ -62,10 +62,13 @@ export default class CleanCommand implements Command {
 
         log.info(`cleaning tempDir ${tempDir}`)
         for (const dirEntry of Deno.readDirSync(tempDir)) {
-            if (dirEntry.isFile && dirEntry.name.match("^levain-temp-.*")) {
+            if (dirEntry.name.match("^levain-temp-.*")) {
+                this.removeIgnoringErrors(path.resolve(tempDir, dirEntry.name));
+            } else if (dirEntry.isDirectory && dirEntry.name.match("^levain-.*")) {
+                this.removeIgnoringErrors(path.resolve(tempDir, dirEntry.name));
+            } else if (dirEntry.name.match("^levain$")) {
                 this.removeIgnoringErrors(path.resolve(tempDir, dirEntry.name));
             }
-            ;
         }
     }
 
@@ -90,12 +93,12 @@ export default class CleanCommand implements Command {
         return OsUtils.tempDir;
     }
 
-    private removeIgnoringErrors(file: string) {
-        log.debug(`DEL ${file}`);
+    private removeIgnoringErrors(entryName: string) {
+        log.debug(`DEL ${entryName}`);
         try {
-            Deno.removeSync(file);
+            Deno.removeSync(entryName, { recursive: true });
         } catch (error) {
-            log.debug(`Error ${error} - Ignoring ${file}`);
+            log.debug(`Error ${error} - Ignoring ${entryName}`);
         }
     }
 
