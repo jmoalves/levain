@@ -21,7 +21,7 @@ export default class GitRepository extends AbstractRepository {
         log.info(`GitRepo: Root=${this.rootUrl}`);
         this.name = `gitRepo for ${this.rootUrl}`;
         this.gitUtils = new GitUtils(config);
-        this.localDir = path.resolve(this.config.levainCacheDir, "gitRepos", path.basename(this.rootUrl, ".git"));
+        this.localDir = path.resolve(this.config.levainConfigDir, "gitRepos", path.basename(this.rootUrl, ".git"));
     }
 
     async init(): Promise<void> {
