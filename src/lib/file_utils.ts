@@ -125,6 +125,14 @@ export default class FileUtils {
         let size = await Deno.copy(r, w);
         await r.close();
         await w.close();
+
+        // Preserve timestamps
+        const statInfo = Deno.statSync(srcFile);
+        if (statInfo.atime instanceof Date && statInfo.mtime instanceof Date) {
+            Deno.utimeSync(dstFile, statInfo.atime, statInfo.mtime)
+        } else {
+            log.error(`Could not preserve timestamps - ${dstFile}`)
+        }
     }
 
     static getSize(path: string) {
