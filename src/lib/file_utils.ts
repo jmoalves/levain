@@ -112,27 +112,61 @@ export default class FileUtils {
     }
 
     static async copyWithProgress(srcFile: string, dstFile: string) {
-        const resolvedSrc = path.resolve(srcFile)
-        log.debug(`reading ${resolvedSrc}`)
-        let r = new FileReader(resolvedSrc);
+        let tries = 0
 
-        const resolvedDst = path.resolve(dstFile)
-        const dstDir = path.dirname(resolvedDst)
-        ensureDirSync(dstDir)
-        log.debug(`writing to ${resolvedDst}`)
-        let w = new FileWriter(resolvedDst, r.progressbar);
+        while (tries < 3) {
+            tries++
 
-        let size = await Deno.copy(r, w);
-        await r.close();
-        await w.close();
+            try {
+                const resolvedSrc = path.resolve(srcFile)
+                log.debug(`${tries} - reading ${resolvedSrc}`)
+                let r = new FileReader(resolvedSrc);
+        
+                const resolvedDst = path.resolve(dstFile)
+                const dstDir = path.dirname(resolvedDst)
 
-        // Preserve timestamps
-        const statInfo = Deno.statSync(srcFile);
-        if (statInfo.atime instanceof Date && statInfo.mtime instanceof Date) {
-            Deno.utimeSync(dstFile, statInfo.atime, statInfo.mtime)
-        } else {
-            log.error(`Could not preserve timestamps - ${dstFile}`)
+                if (existsSync(resolvedDst)) {
+                    log.debug(`${tries} - removing ${resolvedDst}`)
+                    Deno.removeSync(resolvedDst)
+                }
+
+                ensureDirSync(dstDir)
+                log.debug(`${tries} - writing to ${resolvedDst}`)
+                let w = new FileWriter(resolvedDst, r.progressbar);
+        
+                let size = await Deno.copy(r, w);
+
+                log.debug(`${tries} - closing ${resolvedSrc}`)
+                await r.close();
+
+                log.debug(`${tries} - closing ${resolvedDst}`)
+                await w.close();
+
+                const srcInfo = Deno.statSync(resolvedSrc);
+                const dstInfo = Deno.statSync(resolvedDst);
+
+                // Check size
+                if (srcInfo.size != dstInfo.size) {
+                    throw Error(`Copy size does not match ${dstInfo.size} != ${srcInfo.size}`)
+                }
+                log.debug(`Size ok for ${resolvedDst}`)
+
+                // Preserve timestamps
+                if (srcInfo.atime instanceof Date && srcInfo.mtime instanceof Date) {
+                    Deno.utimeSync(dstFile, srcInfo.atime, srcInfo.mtime)
+                    log.debug(`Timestamps preserved - ${resolvedDst}`)
+                } else {
+                    log.error(`Could not preserve timestamps - ${resolvedDst}`)
+                }
+
+                return;
+            } catch (error) {
+                log.info("")
+                log.error(`Error ${error}`)
+            }
         }
+
+        throw Error(`Unable to copy ${srcFile} to ${dstFile}`)
     }
 
     static getSize(path: string) {
