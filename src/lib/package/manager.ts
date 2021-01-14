@@ -15,6 +15,9 @@ export default class PackageManager {
             return null;
         }
 
+        // See https://github.com/jmoalves/levain/issues/92
+        PackageManager.removeExtension(pkgNames);
+
         if (showLog) {
             log.info("");
             log.info(`=== Resolving ${pkgNames}`);    
@@ -50,6 +53,19 @@ export default class PackageManager {
         }
 
         return result;
+    }
+
+    static removeExtension(pkgNames: string[]) {
+        log.info(`removeExtension <- ${pkgNames}`)
+
+        for (let idx in pkgNames) {
+            pkgNames[idx] = pkgNames[idx]
+                .replace(/\.levain\.yaml$/, "")
+                .replace(/\.levain\.yml$/, "")
+                .replace(/\.levain$/, "")
+        }
+
+        log.info(`removeExtension -> ${pkgNames}`)
     }
 
     package(pkgName: string): Package | undefined {
