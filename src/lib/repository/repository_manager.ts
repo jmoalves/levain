@@ -146,7 +146,6 @@ export default class RepositoryManager {
         let repos: string[] = [];
 
         this.addLevainRepo(repos)
-        this.addCurrentDirRepo(repos)
 
         if (installedOnly) {
             this.addLevainRegistryRepo(repos)
@@ -165,11 +164,6 @@ export default class RepositoryManager {
     private addLevainRegistryRepo(repos: string[]) {
         log.debug(`addRepo DEFAULT ${this.config.levainRegistryDir} --> Levain registry dir`)
         repos.push(this.config.levainRegistryDir)
-    }
-
-    private addCurrentDirRepo(repos: string[]) {
-        log.debug(`addRepo DEFAULT ${Deno.cwd()} --> Current working dir`)
-        repos.push(Deno.cwd())
     }
 
     private addExtraRepos(repos: string[]) {
