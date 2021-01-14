@@ -56,7 +56,7 @@ export default class PackageManager {
     }
 
     static removeExtension(pkgNames: string[]) {
-        log.info(`removeExtension <- ${pkgNames}`)
+        log.debug(`removeExtension <- ${pkgNames}`)
 
         for (let idx in pkgNames) {
             pkgNames[idx] = pkgNames[idx]
@@ -65,7 +65,7 @@ export default class PackageManager {
                 .replace(/\.levain$/, "")
         }
 
-        log.info(`removeExtension -> ${pkgNames}`)
+        log.debug(`removeExtension -> ${pkgNames}`)
     }
 
     package(pkgName: string): Package | undefined {
