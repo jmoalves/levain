@@ -25,8 +25,6 @@ if /I "a%1" == "a--levainUrl" (
 
 
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-cls
-
 set tempDir=%TEMP%\levain
 set levainDir=%tempDir%\levain-%levainVersion%
 set levainCMD=%levainDir%\levain.cmd
