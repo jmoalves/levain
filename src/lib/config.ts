@@ -120,7 +120,7 @@ export default class Config {
     }
 
     get defaultPackage(): string {
-        return this.repositoryManager.currentDirPackage?.name || this._defaultPackage || "levain";
+        return this._defaultPackage || "levain";
     }
 
     set defaultPackage(pkgName: string) {
