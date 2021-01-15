@@ -130,16 +130,27 @@ export default class FileSystemRepository extends AbstractRepository {
         }
 
         log.debug(`crawlPackages ${dirname}`)
+        if (!FileUtils.canReadSync(dirname)) {
+            log.debug(`not crawling ${dirname}`)
+            return []
+        }
 
-        if (!this.canReadSync(dirname)) {
+        let entries = undefined;
+        try {
+            entries = Deno.readDirSync(dirname)
+        } catch (error) {
+            log.debug(`error reading ${dirname} - ${error}`)
+        }
+
+        if (!entries) {
             log.debug(`not crawling ${dirname}`)
             return []
         }
 
         let packages: Array<FileSystemPackage> = [];
-        for (const entry of Deno.readDirSync(dirname)) {
+        for (const entry of entries) {
             const fullUri = path.resolve(dirname, entry.name);
-            if (!this.canReadSync(fullUri)) {
+            if (!FileUtils.canReadSync(fullUri)) {
                 log.debug(`not crawling ${fullUri}`)
                 continue
             }
@@ -162,15 +173,6 @@ export default class FileSystemRepository extends AbstractRepository {
         return packages;
     }
 
-    canReadSync(name: string) {
-        try {
-            return FileUtils.canReadSync(name)
-        } catch (error) {
-            log.debug(`unable to read ${name} - ${error}`)
-            return false;
-        }
-    }
-
     globPackages(packagesGlob: string, globOptions: ExpandGlobOptions): Array<FileSystemPackage> {
         const packages = []
         const packageFiles = expandGlobSync(packagesGlob, globOptions);
@@ -190,8 +192,13 @@ export default class FileSystemRepository extends AbstractRepository {
             return undefined;
         }
 
-        const fileinfo = Deno.lstatSync(yamlFile);
-        if (!fileinfo.isFile) {
+        let fileinfo = undefined
+        try {
+            fileinfo = Deno.lstatSync(yamlFile)
+        } catch (error) {
+        }
+
+        if (!fileinfo || !fileinfo.isFile) {
             return undefined;
         }
 

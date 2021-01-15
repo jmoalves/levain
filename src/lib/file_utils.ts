@@ -37,12 +37,12 @@ export default class FileUtils {
                 return true
             } catch (e) {
                 if (e.name != 'PermissionDenied') {
-                    log.warning(`Error reading ${filePath}`)
-                    log.warning(e)
+                    log.debug(`Error reading ${filePath}`)
                 }
                 return false
             }
         }
+
         const bitwisePermission = 0b100_000_000;
         return this.checkBitwisePermission(filePath, bitwisePermission);
     }
