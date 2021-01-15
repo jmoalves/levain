@@ -12,7 +12,7 @@ import AbstractRepository from './abstract_repository.ts';
 export default class FileSystemRepository extends AbstractRepository {
     readonly name;
 
-    readonly excludeDirs = ['.git', 'node_modules', 'npm-cache', '$Recycle.Bin', 'temp', 'tmp', 'windows', 'system', 'system32', '/', '\\']
+    readonly excludeDirs = ['.git', 'node_modules', 'npm-cache', '$Recycle.Bin', 'temp', 'tmp', 'windows', 'system', 'system32']
 
     constructor(
         private config: Config,
