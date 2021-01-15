@@ -19,12 +19,15 @@ REM if not exist %levainRoot%\bin\deno.exe (
     copy %denoPath%\deno.exe %levainRoot%\bin
 REM )
 
+if exist %levainRoot%\dist rmdir /q/s %levainRoot%\dist
+
 set DENO_DIR=%levainRoot%\bin
 %levainRoot%\bin\deno.exe -V info
 %levainRoot%\bin\deno.exe cache --unstable --reload %levainRoot%\src\levain.ts
-if exist %levainRoot%\dist rmdir /q/s %levainRoot%\dist
+if errorlevel 1 exit /b %ERRORLEVEL%
 
 echo.
+echo Deno cache ok
 echo.
 
 ENDLOCAL
