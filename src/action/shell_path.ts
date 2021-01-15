@@ -4,7 +4,7 @@ import Action from "./action.ts";
 import Config from "../lib/config.ts";
 import Package from '../lib/package/package.ts';
 
-export default class SetShell implements Action {
+export default class ShellPath implements Action {
     constructor(private config: Config) {
     }
 
@@ -14,7 +14,7 @@ export default class SetShell implements Action {
         }
 
         let shellPath = parameters[0]
-        log.info(`SET-SHELL ${shellPath}`)
+        log.info(`SHELL-PATH ${shellPath}`)
 
         this.config.shellPath = shellPath
     }
