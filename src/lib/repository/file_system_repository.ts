@@ -102,7 +102,7 @@ export default class FileSystemRepository extends AbstractRepository {
             exclude: this.excludeDirs,
         }
         log.debug(`# listPackages: ${packagesGlob} ${JSON.stringify(globOptions)}`)
-        const packages: Array<FileSystemPackage> = this.getPackageFiles(packagesGlob, globOptions)
+        const packages: Array<FileSystemPackage> = this.getPackageFiles(packagesGlob, globOptions, rootDirOnly)
 
         log.info("")
         log.info(`added ${packages.length} packages in ${timer.humanize()}`)
@@ -110,17 +110,17 @@ export default class FileSystemRepository extends AbstractRepository {
         return packages;
     }
 
-    private getPackageFiles(packagesGlob: string, globOptions: ExpandGlobOptions): Array<FileSystemPackage> {
+    private getPackageFiles(packagesGlob: string, globOptions: ExpandGlobOptions, rootDirOnly: boolean = false): Array<FileSystemPackage> {
         // FIXME Why, oh my...
         // FIXME globPackages throws error when folder is readonly in Deno 1.5.4
         // if (OsUtils.isWindows()) {
-        return this.crawlPackages(globOptions['root'] || '.', globOptions)
+        return this.crawlPackages(globOptions['root'] || '.', globOptions, rootDirOnly)
         // } else {
         //     return this.globPackages(packagesGlob, globOptions);
         // }
     }
 
-    crawlPackages(dirname: string, options: ExpandGlobOptions, currentLevel = 0): Array<FileSystemPackage> {
+    crawlPackages(dirname: string, options: ExpandGlobOptions, rootDirOnly: boolean = false, currentLevel = 0): Array<FileSystemPackage> {
         const maxLevels = 5
         const nextLevel = currentLevel + 1;
 
@@ -155,11 +155,14 @@ export default class FileSystemRepository extends AbstractRepository {
                 continue
             }
 
-            if (entry.isDirectory) {
+            if (entry.isDirectory && !rootDirOnly) {
+                // User feedback
+                Deno.stdout.writeSync(new TextEncoder().encode("."));
+
                 if (currentLevel > maxLevels) {
                     log.debug(`skipping ${fullUri}, more then ${maxLevels} levels deep`)
                 } else {
-                    Array.prototype.push.apply(packages, this.crawlPackages(fullUri, options, nextLevel));
+                    Array.prototype.push.apply(packages, this.crawlPackages(fullUri, options, false, nextLevel));
                 }
             } else if (entry.isFile) {
                 const pkg = this.readPackage(fullUri);
@@ -201,9 +204,6 @@ export default class FileSystemRepository extends AbstractRepository {
         if (!fileinfo || !fileinfo.isFile) {
             return undefined;
         }
-
-        // User feedback
-        Deno.stdout.writeSync(new TextEncoder().encode("."));
 
         const packageName = yamlFile.replace(/.*[\/|\\]/g, '').replace(/\.levain\.ya?ml/, '')
         log.debug(`readPackage ${packageName} ${yamlFile}`);
