@@ -138,6 +138,7 @@ ${myDeno} cache --unstable --reload ${distDir}/src/levain.ts
 cp ${distDir}/bootstrap/levainBootstrap.cmd ${distRoot}
 rm -rf ${distDir}/bootstrap
 rm -rf ${distDir}/scripts
+rm -rf ${distDir}/githubScripts
 rm -rf ${distDir}/ci
 rm ${distDir}/levain.zip
 rm -rf ${distDir}/jmoalves-levain-*
