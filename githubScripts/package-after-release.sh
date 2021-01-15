@@ -154,6 +154,8 @@ cd - >/dev/null
 
 echo
 echo ${levainZipFile} created
+echo
+unzip -l ${levainZipFile}
 
 bootstrapZipFile=levainBootstrap-windows-x86_64.zip
 cd ${distDir}
@@ -166,6 +168,8 @@ cd - >/dev/null
 
 echo
 echo ${bootstrapZipFile} created
+echo
+unzip -l ${bootstrapZipFile}
 
 rm -rf ${distDir}
 ls -l ${distRoot}
