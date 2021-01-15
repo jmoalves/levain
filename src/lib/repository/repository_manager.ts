@@ -106,9 +106,10 @@ export default class RepositoryManager {
 
     ////////////////////////////////////////////////////////////////////////////////
     async createRepositories(): Promise<void> {
-        await this.createCurrentDirRepo()
         await this.createInstalledRepo()
         await this.createRegularRepository()
+
+        await this.createCurrentDirRepo()
     }
 
     async initRepositories(): Promise<void> {
