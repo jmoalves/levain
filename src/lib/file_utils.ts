@@ -95,6 +95,11 @@ export default class FileUtils {
         return fileInfo.isDirectory
     }
 
+    static isFile(filePath: string) {
+        const fileInfo = this.getFileInfoSync(filePath);
+        return fileInfo.isFile
+    }
+
     static canCreateTempFileInDir(dir: string): boolean {
         try {
             const options = {

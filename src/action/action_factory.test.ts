@@ -34,6 +34,7 @@ Deno.test('ActionFactory should list actions', () => {
         'backupFile',
         'propertySet',
         'checkPort',
+        'setShell',
     ])
 })
 Deno.test('should know the assertContains action', () => {

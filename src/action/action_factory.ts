@@ -24,6 +24,7 @@ import PropertyGetAction from "./property/property_get.ts";
 import BackupFile from "./backup_file.ts";
 import PropertySetAction from "./property/property_set.ts";
 import CheckPort from "./check_port.ts";
+import SetShell from "./set_shell.ts";
 
 const actionMap = new Map<string, (config: Config) => Action>([
     ['addPath', (config: Config) => new AddPathAction(config)],
@@ -50,6 +51,7 @@ const actionMap = new Map<string, (config: Config) => Action>([
     ['backupFile', (config: Config) => new BackupFile(config)],
     ['propertySet', (config: Config) => new PropertySetAction(config)],
     ['checkPort', (config: Config) => new CheckPort(config)],
+    ['setShell', (config: Config) => new SetShell(config)],
 ])
 
 export default class ActionFactory {

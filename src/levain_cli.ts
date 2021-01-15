@@ -52,6 +52,11 @@ export default class LevainCli {
             userInfoUtil.askUserInfo(config, myArgs);
         }
 
+        // Shell path
+        if (myArgs.shellPath) {
+            config.shellPath = myArgs.shellPath
+        }
+
         // Repository Manager
         log.info("");
         log.info("==================================");

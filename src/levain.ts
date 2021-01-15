@@ -20,6 +20,7 @@ export default class Levain {
                 stringOnce: [
                     "email-domain",
                     "levainCache",
+                    "shellPath"
                 ],
                 stringMany: [
                     "levainHome",

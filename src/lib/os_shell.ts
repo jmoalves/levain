@@ -106,7 +106,11 @@ export class OsShell {
 
         let cmd = "";
         if (this.interactive) {
-            cmd = "cmd /c start cmd /u /k prompt [levain]$P$G";
+            if (this.config.shellPath) {
+                cmd = `cmd /c start ${this.config.shellPath}`;
+            } else {
+                cmd = "cmd /c start cmd /u /k prompt [levain]$P$G";
+            }
         } else {
             cmd = "cmd /u /c " + args.join(" ");
         }

@@ -1,6 +1,6 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
-import {ensureDirSync} from "https://deno.land/std/fs/mod.ts";
+import {ensureDirSync, existsSync} from "https://deno.land/std/fs/mod.ts";
 
 import {homedir} from './utils.ts';
 
@@ -15,6 +15,7 @@ import Registry from './repository/registry.ts';
 import OsUtils from './os_utils.ts';
 import RepositoryManager from "./repository/repository_manager.ts";
 import LevainVersion from "../levain_version.ts";
+import FileUtils from '../lib/file_utils.ts';
 
 export default class Config {
     private _pkgManager: PackageManager;
@@ -28,6 +29,7 @@ export default class Config {
     private _login: string | undefined;
     private _password: string | undefined;
 
+    private _shellPath: string | undefined;
     private _defaultPackage: string | undefined;
 
     private _registry: Registry | undefined;
@@ -117,6 +119,32 @@ export default class Config {
 
     get context(): any {
         return this._context;
+    }
+
+    get shellPath(): string | undefined {
+        if (this._shellPath) {
+            if (!existsSync(this._shellPath)) {
+                log.debug(`Shell path does not exist - ${this._shellPath}`)
+                return undefined
+            }
+    
+            if (!FileUtils.isFile(this._shellPath)) {
+                log.debug(`Shell path must be the executable - ${this._shellPath}`)
+                return undefined
+            }    
+        }
+
+        return this._shellPath
+    }
+
+    set shellPath(shellPath: string | undefined) {
+        log.warning("");
+        log.warning("***********************************************************************************");
+        log.warning(`** Changing shell path: ${shellPath}`);
+        log.warning("***********************************************************************************");
+        log.warning("");
+
+        this._shellPath = shellPath;
     }
 
     get defaultPackage(): string {
@@ -232,10 +260,12 @@ export default class Config {
         cfg.repos = this.repositoryManager.saveState;
         cfg.defaultPackage = this._defaultPackage;
         cfg.cacheDir = this.levainCacheDir;
+        cfg.shellPath = this._shellPath;
 
         let fileName = this.levainConfigFile;
 
         log.info(`SAVE ${fileName}`);
+        log.debug(`${JSON.stringify(cfg, null, 3)}`);
 
         ensureDirSync(this.levainConfigDir)
         Deno.writeTextFileSync(fileName, JSON.stringify(cfg, null, 3));
@@ -267,6 +297,10 @@ export default class Config {
 
             if (cfg.cacheDir) {
                 this.levainCacheDir = cfg.cacheDir;
+            }
+
+            if (cfg.shellPath) {
+                this._shellPath = cfg.shellPath;
             }
         } catch (err) {
             if (err.name != "NotFound") {
