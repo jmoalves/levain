@@ -12,7 +12,7 @@ import AbstractRepository from './abstract_repository.ts';
 export default class FileSystemRepository extends AbstractRepository {
     readonly name;
 
-    readonly excludeDirs = ['.git', 'node_modules', 'npm-cache', '$Recycle.Bin', 'temp', 'tmp']
+    readonly excludeDirs = ['.git', 'node_modules', 'npm-cache', '$Recycle.Bin', 'temp', 'tmp', 'windows', 'system', 'system32', '/', '\\']
 
     constructor(
         private config: Config,
@@ -123,43 +123,52 @@ export default class FileSystemRepository extends AbstractRepository {
     crawlPackages(dirname: string, options: ExpandGlobOptions, currentLevel = 0): Array<FileSystemPackage> {
         const maxLevels = 5
         const nextLevel = currentLevel + 1;
-        let packages: Array<FileSystemPackage> = [];
 
         if (this.excludeDirs.find(ignoreDir => dirname.toLowerCase().endsWith(ignoreDir.toLowerCase()))) {
             log.debug(`ignoring ${dirname}`)
-            return packages;
+            return []
         }
 
         log.debug(`crawlPackages ${dirname}`)
 
-        if (FileUtils.canReadSync(dirname)) {
-            for (const entry of Deno.readDirSync(dirname)) {
-                const fullUri = path.resolve(dirname, entry.name);
-                if (FileUtils.canReadSync(fullUri)) {
-                    if (entry.isDirectory) {
-                        if (currentLevel > maxLevels) {
-                            log.debug(`skipping ${fullUri}, more then ${maxLevels} levels deep`)
-                        } else {
-                            Array.prototype.push.apply(packages, this.crawlPackages(fullUri, options, nextLevel));
-                        }
-                    }
+        if (!this.canReadSync(dirname)) {
+            log.debug(`not crawling ${dirname}`)
+            return []
+        }
 
-                    if (entry.isFile) {
-                        const pkg = this.readPackage(fullUri);
-                        if (pkg) {
-                            packages.push(pkg);
-                            log.debug(`added package ${entry.name}`)
-                        }
-                    }
+        let packages: Array<FileSystemPackage> = [];
+        for (const entry of Deno.readDirSync(dirname)) {
+            const fullUri = path.resolve(dirname, entry.name);
+            if (!this.canReadSync(fullUri)) {
+                log.debug(`not crawling ${fullUri}`)
+                continue
+            }
+
+            if (entry.isDirectory) {
+                if (currentLevel > maxLevels) {
+                    log.debug(`skipping ${fullUri}, more then ${maxLevels} levels deep`)
                 } else {
-                    log.debug(`not crawling ${fullUri}`)
+                    Array.prototype.push.apply(packages, this.crawlPackages(fullUri, options, nextLevel));
+                }
+            } else if (entry.isFile) {
+                const pkg = this.readPackage(fullUri);
+                if (pkg) {
+                    packages.push(pkg);
+                    log.debug(`added package ${entry.name}`)
                 }
             }
-        } else {
-            log.debug(`not crawling ${dirname}`)
         }
 
         return packages;
+    }
+
+    canReadSync(name: string) {
+        try {
+            return FileUtils.canReadSync(name)
+        } catch (error) {
+            log.debug(`unable to read ${name} - ${error}`)
+            return false;
+        }
     }
 
     globPackages(packagesGlob: string, globOptions: ExpandGlobOptions): Array<FileSystemPackage> {
