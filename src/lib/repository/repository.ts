@@ -14,5 +14,5 @@ export default interface Repository {
 
     resolvePackage(packageName: string): Package | undefined;
 
-    listPackages(rootDirOnly?: boolean): Array<Package>;
+    listPackages(): Array<Package>;
 }

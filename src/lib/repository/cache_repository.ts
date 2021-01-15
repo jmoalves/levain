@@ -55,12 +55,7 @@ export default class CacheRepository extends AbstractRepository {
         return pkg;
     }
 
-    listPackages(rootDirOnly: boolean = false): Array<Package> {
-        if (!rootDirOnly) {
-            return this.packages;
-        }
-
-        return this.repository.listPackages(rootDirOnly)
-            .sort((a, b) => a.name.localeCompare(b.name));
+    listPackages(): Array<Package> {
+        return this.packages;
     }
 }

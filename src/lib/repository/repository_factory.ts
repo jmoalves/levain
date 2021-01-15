@@ -40,7 +40,7 @@ export default class RepositoryFactory {
         return repoPath.toLowerCase().trim()
     }
 
-    create(repoURI: string): Repository {
+    create(repoURI: string, rootOnly: boolean = false): Repository {
         log.debug(`RepoFactory.create - repo for uri ${repoURI}`)
 
         if (!repoURI) {
@@ -56,9 +56,9 @@ export default class RepositoryFactory {
 
         let repo = undefined;
         if (RepositoryFactory.isGitPath(repoPath)) {
-            repo = new GitRepository(this.config, repoPath)
+            repo = new GitRepository(this.config, repoPath, rootOnly)
         } else {
-            repo = new FileSystemRepository(this.config, repoPath)
+            repo = new FileSystemRepository(this.config, repoPath, rootOnly)
         }
 
         this.knownRepos.set(repoPath, repo)

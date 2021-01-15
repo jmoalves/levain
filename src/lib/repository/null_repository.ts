@@ -25,7 +25,7 @@ export default class NullRepository extends AbstractRepository {
         return undefined;
     }
 
-    listPackages(rootDirOnly?: boolean): Array<Package> {
+    listPackages(): Array<Package> {
         return [];
     }
 }

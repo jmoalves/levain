@@ -1,4 +1,5 @@
 import * as log from "https://deno.land/std/log/mod.ts";
+import { dirname } from "https://deno.land/std@0.82.0/path/mod.ts";
 
 import Config from "../config.ts";
 import Package from "../package/package.ts";
@@ -65,7 +66,7 @@ export default class RepositoryManager {
         }
 
         // Looking for package at current dir
-        let pkgs = this.repositories.currentDir.listPackages(true)
+        let pkgs = this.repositories.currentDir.listPackages()
         if (pkgs && pkgs.length == 1) {
             return this.repositories.currentDir.resolvePackage(pkgs[0].name)
         }
@@ -127,7 +128,7 @@ export default class RepositoryManager {
 
     private async createCurrentDirRepo() {
         log.debug("createCurrentDirRepo")
-        this.repositories.currentDir = this.repoFactory.create(Deno.cwd())
+        this.repositories.currentDir = this.repoFactory.create(Deno.cwd(), true)
     }
 
     private async createInstalledRepo() {

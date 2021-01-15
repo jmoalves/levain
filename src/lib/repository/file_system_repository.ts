@@ -17,6 +17,7 @@ export default class FileSystemRepository extends AbstractRepository {
     constructor(
         private config: Config,
         public readonly rootDir: string,
+        private rootOnly: boolean = false
     ) {
         super();
         this.name = `fileSystemRepo for ${this.rootDir}`;
@@ -80,8 +81,8 @@ export default class FileSystemRepository extends AbstractRepository {
         this._packages = undefined
     }
 
-    listPackages(rootDirOnly: boolean = false): Array<FileSystemPackage> {
-        if (!rootDirOnly && this._packages) {
+    listPackages(): Array<FileSystemPackage> {
+        if (this._packages) {
             return this._packages;
         }
 
@@ -90,7 +91,7 @@ export default class FileSystemRepository extends AbstractRepository {
             return [];
         }
 
-        log.info(`# Scanning ${this.rootDir} - rootDirOnly: ${rootDirOnly}`);
+        log.info(`# Scanning ${this.rootDir} - rootDirOnly: ${this.rootOnly}`);
         log.info(`# Please wait...`);
         const timer = new Timer()
 
@@ -102,7 +103,7 @@ export default class FileSystemRepository extends AbstractRepository {
             exclude: this.excludeDirs,
         }
         log.debug(`# listPackages: ${packagesGlob} ${JSON.stringify(globOptions)}`)
-        const packages: Array<FileSystemPackage> = this.getPackageFiles(packagesGlob, globOptions, rootDirOnly)
+        const packages: Array<FileSystemPackage> = this.getPackageFiles(packagesGlob, globOptions, this.rootOnly)
 
         log.info("")
         log.info(`added ${packages.length} packages in ${timer.humanize()}`)

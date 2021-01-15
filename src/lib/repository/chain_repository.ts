@@ -56,9 +56,9 @@ export default class ChainRepository extends AbstractRepository {
         return undefined;
     }
 
-    listPackages(rootDirOnly: boolean = false): Array<Package> {
+    listPackages(): Array<Package> {
         return this.repositories
-            .flatMap(repo => repo.listPackages(rootDirOnly))
+            .flatMap(repo => repo.listPackages())
             .reduce((uniquePkgs, pkg) =>
                     uniquePkgs.find(includedPkg => includedPkg.name === pkg.name)
                         ? uniquePkgs

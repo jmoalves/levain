@@ -12,7 +12,7 @@ export default abstract class AbstractRepository implements Repository {
 
     abstract invalidatePackages(): void
 
-    abstract listPackages(rootDirOnly?: boolean): Array<Package>
+    abstract listPackages(): Array<Package>
 
     abstract resolvePackage(packageName: string): Package | undefined
 

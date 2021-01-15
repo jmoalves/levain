@@ -15,7 +15,7 @@ export default class GitRepository extends AbstractRepository {
     private readonly localDir: string;
     private localRepo: FileSystemRepository|undefined;
 
-    constructor(private config: Config, private rootUrl: string) {
+    constructor(private config: Config, private rootUrl: string, private rootOnly: boolean = false) {
         super();
 
         log.info(`GitRepo: Root=${this.rootUrl}`);
@@ -31,7 +31,7 @@ export default class GitRepository extends AbstractRepository {
             await this.gitUtils.clone(this.rootUrl, this.localDir);
         }
 
-        this.localRepo = new FileSystemRepository(this.config, this.localDir);
+        this.localRepo = new FileSystemRepository(this.config, this.localDir, this.rootOnly);
         await this.localRepo.init();
     }
 
@@ -59,11 +59,11 @@ export default class GitRepository extends AbstractRepository {
         return this.localRepo.resolvePackage(packageName);
     }
 
-    listPackages(rootDirOnly?: boolean): Array<Package> {
+    listPackages(): Array<Package> {
         if (!this.localRepo) {
             throw Error(`${this.name} not loaded`)
         }
 
-        return this.localRepo.listPackages(rootDirOnly);
+        return this.localRepo.listPackages();
     }
 }
