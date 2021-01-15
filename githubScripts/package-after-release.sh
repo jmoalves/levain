@@ -160,7 +160,8 @@ unzip -l ${levainZipFile}
 bootstrapZipFile=levainBootstrap-windows-x86_64.zip
 cd ${distDir}
 rm -rf extra-bin/windows/git #bootstrap does not need this
-zip -r ${distRoot}/${bootstrapZipFile} ${distRoot}/levainBootstrap.cmd extra-bin >/dev/null
+cp ${distRoot}/levainBootstrap.cmd .
+zip -r ${distRoot}/${bootstrapZipFile} levainBootstrap.cmd extra-bin >/dev/null
 cd - >/dev/null
 cd ${distRoot}
 sha256sum ${bootstrapZipFile} > ${bootstrapZipFile}.sha256
