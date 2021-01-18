@@ -24,6 +24,17 @@ export default class GitUtils {
         OsUtils.onlyInWindows();
 
         const command = `cmd /u /c pushd ${dir} && ${this.gitCmd} pull --force -q --progress --no-tags --depth=1 --update-shallow --allow-unrelated-histories --no-commit && popd`;
-        await OsUtils.runAndLog(command);
+        let tries = 0;
+        do {
+            tries++;
+            try {
+                await OsUtils.runAndLog(command);
+                return;
+            } catch (error) {
+                log.info(`git error - ${error}`)
+            }
+        } while (tries < 3)
+
+        throw Error(`Unable to GIT PULL ${dir}`)
     }
 }
