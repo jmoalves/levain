@@ -1,10 +1,16 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import {ensureDirSync, existsSync,} from "https://deno.land/std/fs/mod.ts";
-import OsUtils from './os_utils.ts';
-import DateUtils from './date_utils.ts';
 
 import ProgressBar from "https://deno.land/x/progress@v1.1.4/mod.ts";
+
+import OsUtils from './os_utils.ts';
+import DateUtils from './date_utils.ts';
+import FileReader from './io/file_reader.ts';
+import FileWriter from './io/file_writer.ts';
+import RewindReader from "./io/rewind_reader.ts";
+import Timestamps from "./io/timestamps.ts";
+import Progress from "./io/progress.ts";
 
 export default class FileUtils {
 
@@ -115,53 +121,56 @@ export default class FileUtils {
             return false
         }
     }
+    
+    static async copyWithProgress(src: string | ProgressReader, dstFile: string) {
+        let r:ProgressReader | undefined = undefined
 
-    static async copyWithProgress(srcFile: string, dstFile: string) {
+        if (typeof src == 'string') {
+            r = new FileReader(src)
+        } else {
+            r = src
+        }
+
+        if (!r) {
+            throw Error(`Reader undefined`)
+        }
+
         let tries = 0
-
         while (tries < 3) {
             tries++
 
             try {
-                const resolvedSrc = path.resolve(srcFile)
-                log.debug(`${tries} - reading ${resolvedSrc}`)
-                let r = new FileReader(resolvedSrc);
+                r.rewind();
+                let dst = new FileWriter(dstFile);
         
-                const resolvedDst = path.resolve(dstFile)
-                const dstDir = path.dirname(resolvedDst)
+                let title = r.title;
+                let total = r.size;
+                let pb = new ProgressBar({
+                    title,
+                    total,
+                    complete: "=",
+                    incomplete: "-"
+                });
 
-                if (existsSync(resolvedDst)) {
-                    log.debug(`${tries} - removing ${resolvedDst}`)
-                    Deno.removeSync(resolvedDst)
-                }
+                dst.size = r.size;
+                dst.progressBar = pb;
+                await Deno.copy(r, dst);
 
-                ensureDirSync(dstDir)
-                log.debug(`${tries} - writing to ${resolvedDst}`)
-                let w = new FileWriter(resolvedDst, r.progressbar);
-        
-                let size = await Deno.copy(r, w);
-
-                log.debug(`${tries} - closing ${resolvedSrc}`)
                 await r.close();
-
-                log.debug(`${tries} - closing ${resolvedDst}`)
-                await w.close();
-
-                const srcInfo = Deno.statSync(resolvedSrc);
-                const dstInfo = Deno.statSync(resolvedDst);
+                await dst.close();
 
                 // Check size
-                if (srcInfo.size != dstInfo.size) {
-                    throw Error(`Copy size does not match ${dstInfo.size} != ${srcInfo.size}`)
+                if (r.size != dst.size) {
+                    throw Error(`Copy size does not match ${r.size} => ${dst.size}`)
                 }
-                log.debug(`Size ok for ${resolvedDst}`)
+                log.debug(`Size ok for ${dstFile}`)
 
                 // Preserve timestamps
-                if (srcInfo.atime instanceof Date && srcInfo.mtime instanceof Date) {
-                    Deno.utimeSync(dstFile, srcInfo.atime, srcInfo.mtime)
-                    log.debug(`Timestamps preserved - ${resolvedDst}`)
+                if (r.motificationTime instanceof Date && dst.motificationTime instanceof Date) {
+                    Deno.utimeSync(dstFile, r.motificationTime, r.motificationTime)
+                    log.debug(`Timestamps preserved - ${dstFile}`)
                 } else {
-                    log.error(`Could not preserve timestamps - ${resolvedDst}`)
+                    log.error(`Could not preserve timestamps - ${dstFile}`)
                 }
 
                 return;
@@ -171,7 +180,7 @@ export default class FileUtils {
             }
         }
 
-        throw Error(`Unable to copy ${srcFile} to ${dstFile}`)
+        throw Error(`Unable to copy to ${dstFile}`)
     }
 
     static getSize(path: string) {
@@ -207,64 +216,5 @@ export default class FileUtils {
     }
 }
 
-class FileReader implements Deno.Reader {
-    private file: Deno.File;
-    private fileInfo: Deno.FileInfo;
-
-    private pb: ProgressBar;
-
-    constructor(private filePath: string) {
-        if (!existsSync(filePath)) {
-            throw `File ${filePath} does not exist`;
-        }
-
-        this.file = Deno.openSync(filePath, {read: true});
-        this.fileInfo = Deno.statSync(filePath);
-        const title = "- COPY " + path.basename(filePath);
-        const total = this.fileInfo.size;
-        this.pb = new ProgressBar({
-            title,
-            total,
-            complete: "=",
-            incomplete: "-"
-        });
-    }
-
-    get progressbar(): ProgressBar {
-        return this.pb;
-    }
-
-    async read(p: Uint8Array): Promise<number | null> {
-        return this.file.read(p);
-    }
-
-    async close() {
-        this.file.close();
-    }
-}
-
-class FileWriter implements Deno.Writer {
-    private file: Deno.File;
-    private written: number = 0;
-
-    constructor(filePath: string, private progress?: ProgressBar) {
-        this.file = Deno.openSync(filePath, {write: true, createNew: true});
-    }
-
-    async write(p: Uint8Array): Promise<number> {
-        return new Promise((resolve, reject) => {
-            this.file.write(p).then(size => {
-                this.written += size;
-                if (this.progress) {
-                    this.progress.render(this.written);
-                }
-
-                resolve(size);
-            })
-        });
-    }
-
-    async close() {
-        this.file.close();
-    }
+interface ProgressReader extends Deno.Reader, Progress, RewindReader, Timestamps, Deno.Closer {
 }
