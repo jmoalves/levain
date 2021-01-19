@@ -11,6 +11,7 @@ export default class HttpReader implements ProgressReader {
     private reader: Deno.Reader | null = null
 
     private contentLength: number|undefined
+    private lastModified: Date|null = null
     private bytesRead: number = 0
 
     private pb: ProgressBar | undefined
@@ -51,7 +52,13 @@ export default class HttpReader implements ProgressReader {
         this.bytesRead = 0
 
         let response = await HttpUtils.get(this.url)
+
         this.contentLength = Number(response.headers.get('content-length')) || undefined
+        this.lastModified = null
+        let strDate = response.headers.get('last-modified')
+        if (strDate) {
+            this.lastModified = new Date(strDate)
+        }
 
         let stream = await response.body
         if (stream) {
@@ -93,6 +100,6 @@ export default class HttpReader implements ProgressReader {
 
     // Timestamps
     get motificationTime(): Date | null { 
-        return null
+        return this.lastModified
     }
 }
