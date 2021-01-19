@@ -4,16 +4,13 @@ import Config from "../config.ts";
 import HttpUtils from "../http_utils.ts";
 import OsUtils from "../os_utils.ts";
 
-export default class LevainReleases {
-    private httpUtils: HttpUtils
-
+export default class LevainReleases { 
     private apiUrl = 'https://api.github.com/repos/jmoalves/levain/releases'
     private downloadUrl = 'https://github.com/jmoalves/levain/releases/download'
 
     private releasesCache: any | undefined;
 
     constructor(private config: Config) {
-        this.httpUtils = new HttpUtils(config)
     }
 
     async releases(): Promise<any> {
@@ -21,7 +18,8 @@ export default class LevainReleases {
             return this.releasesCache
         }
 
-        this.releasesCache = await this.httpUtils.getJson(`${this.apiUrl}`)
+        let response = await HttpUtils.get(`${this.apiUrl}`)
+        this.releasesCache = await response.json()
         return this.releasesCache
     }
 

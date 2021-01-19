@@ -100,7 +100,7 @@ export default class ZipRepository extends AbstractRepository {
 
     private createReader(url: string): ProgressReader {
         if (url.startsWith("http://") || url.startsWith("https://")) {
-            return new HttpReader(this.config, this.rootUrl)
+            return new HttpReader(this.rootUrl)
         }
 
         return new FileReader(url)
