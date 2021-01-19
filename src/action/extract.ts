@@ -9,7 +9,7 @@ import Package from '../lib/package/package.ts';
 import {parseArgs} from "../lib/parse_args.ts";
 import OsUtils from "../lib/os_utils.ts";
 import {Timer} from "../lib/timer.ts";
-import FileUtils from "../lib/file_utils.ts";
+import { FileUtils } from "../lib/file_utils.ts";
 import FileCache from '../lib/file_cache.ts';
 import ExtraBin from "../lib/extra_bin.ts";
 

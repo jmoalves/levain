@@ -7,8 +7,9 @@ import { existsSync } from "https://deno.land/std@0.82.0/fs/exists.ts";
 import Progress from "./progress.ts";
 import Timestamps from "./timestamps.ts";
 import RewindReader from "./rewind_reader.ts";
+import { ProgressReader } from "../file_utils.ts";
 
-export default class FileReader implements Deno.Reader, Progress, Timestamps, RewindReader, Deno.Closer {
+export default class FileReader implements ProgressReader {
     private filePath: string;
     private file: Deno.File | undefined;
     private fileInfo: Deno.FileInfo | undefined;

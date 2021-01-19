@@ -3,7 +3,7 @@ import {existsSync} from "https://deno.land/std/fs/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import DirUtils from "../dir_utils.ts";
 import OsUtils from '../os_utils.ts';
-import FileUtils from '../file_utils.ts';
+import { FileUtils } from '../file_utils.ts';
 
 export function assertArrayIncludesElements<T>(array: T[], elements: T[]) {
     let notFound: T[] = []

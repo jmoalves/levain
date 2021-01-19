@@ -1,4 +1,4 @@
-import FileUtils from "../../lib/file_utils.ts";
+import { FileUtils } from "../../lib/file_utils.ts";
 
 export default class PropertiesUtils {
 

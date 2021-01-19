@@ -8,6 +8,7 @@ import NullRepository from './null_repository.ts';
 import GitRepository from './git_repository.ts';
 import FileSystemRepository from './file_system_repository.ts';
 import OsUtils from "../os_utils.ts";
+import ZipRepository from "./zip_repository.ts";
 
 export default class RepositoryFactory {
     private knownRepos = new Map<string, Repository>()
@@ -17,6 +18,10 @@ export default class RepositoryFactory {
 
     static isGitPath(repoPath: string): boolean {
         return repoPath.endsWith(".git")
+    }
+
+    static isZipPath(repoPath: string): boolean {
+        return repoPath.endsWith(".zip")
     }
 
     static normalizeList(repoPaths: string[]): string[] {
@@ -57,6 +62,8 @@ export default class RepositoryFactory {
         let repo = undefined;
         if (RepositoryFactory.isGitPath(repoPath)) {
             repo = new GitRepository(this.config, repoPath, rootOnly)
+        } else if (RepositoryFactory.isZipPath(repoPath)) {
+            repo = new ZipRepository(this.config, repoPath, rootOnly)
         } else {
             repo = new FileSystemRepository(this.config, repoPath, rootOnly)
         }

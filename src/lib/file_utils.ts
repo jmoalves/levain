@@ -12,8 +12,7 @@ import RewindReader from "./io/rewind_reader.ts";
 import Timestamps from "./io/timestamps.ts";
 import Progress from "./io/progress.ts";
 
-export default class FileUtils {
-
+export class FileUtils {
     static getModificationTimestamp(filePath: string): Date | undefined {
         const stat = this.getFileInfoSync(filePath);
         const modificationTimestamp = stat.mtime;
@@ -160,7 +159,7 @@ export default class FileUtils {
                 await dst.close();
 
                 // Check size
-                if (r.size != dst.size) {
+                if (r.size && dst.size && r.size != dst.size) {
                     throw Error(`Copy size does not match ${r.size} => ${dst.size}`)
                 }
                 log.debug(`Size ok for ${dstFile}`)
@@ -216,5 +215,5 @@ export default class FileUtils {
     }
 }
 
-interface ProgressReader extends Deno.Reader, Progress, RewindReader, Timestamps, Deno.Closer {
+export interface ProgressReader extends Deno.Reader, Progress, RewindReader, Timestamps, Deno.Closer {
 }

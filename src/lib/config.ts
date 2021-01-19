@@ -15,7 +15,7 @@ import Registry from './repository/registry.ts';
 import OsUtils from './os_utils.ts';
 import RepositoryManager from "./repository/repository_manager.ts";
 import LevainVersion from "../levain_version.ts";
-import FileUtils from '../lib/file_utils.ts';
+import { FileUtils } from '../lib/file_utils.ts';
 
 export default class Config {
     private _pkgManager: PackageManager;
