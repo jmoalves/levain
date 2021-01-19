@@ -90,6 +90,7 @@ export default class ZipRepository extends AbstractRepository {
     }
 
     private async extractLocalZip() {
+        // FIXME: Use the same code as extract action (needs refactoring)
         return await unZipFromFile(
             this.localZip,
             this.localDir,

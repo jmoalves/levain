@@ -139,20 +139,24 @@ export class FileUtils {
             tries++
 
             try {
-                r.rewind();
+                await r.rewind();
                 let dst = new FileWriter(dstFile);
         
                 let title = r.title;
                 let total = r.size;
-                let pb = new ProgressBar({
-                    title,
-                    total,
-                    complete: "=",
-                    incomplete: "-"
-                });
 
-                dst.size = r.size;
-                dst.progressBar = pb;
+                if (total) {
+                    let pb = new ProgressBar({
+                        title,
+                        total,
+                        complete: "=",
+                        incomplete: "-"
+                    });
+    
+                    dst.size = r.size;
+                    dst.progressBar = pb;    
+                }
+                
                 await Deno.copy(r, dst);
 
                 await r.close();

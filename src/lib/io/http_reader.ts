@@ -59,11 +59,14 @@ export default class HttpReader implements ProgressReader {
     // Deno.Reader
     async read(p: Uint8Array): Promise<number | null> {
         if (!this.reader) {
+            log.debug(`- reader null`)
             return Promise.resolve(null)
         }
 
+        log.debug(`- pre-read ${p.length}`)
         return new Promise((resolve, reject) => {
             this.reader?.read(p).then(size => {
+                log.debug(`- read ${size}`)
                 if (size) {
                     this.bytesRead += size;
                     if (this.progressBar) {
