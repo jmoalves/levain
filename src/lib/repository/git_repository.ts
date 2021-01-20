@@ -4,7 +4,7 @@ import { existsSync } from "https://deno.land/std/fs/exists.ts";
 
 import Package from '../package/package.ts'
 import Config from '../config.ts';
-import GitUtils from "../git_utils.ts";
+import GitUtils from "../git/git_utils.ts";
 
 import AbstractRepository from './abstract_repository.ts';
 import Repository from "./repository.ts";

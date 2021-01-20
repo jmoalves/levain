@@ -1,8 +1,8 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
-import Config from "./config.ts";
-import ExtraBin from "./extra_bin.ts";
-import OsUtils from "./os_utils.ts";
+import Config from "../config.ts";
+import ExtraBin from "../extra_bin.ts";
+import OsUtils from "../os_utils.ts";
 
 export default class GitUtils {
     readonly gitCmd: string;
