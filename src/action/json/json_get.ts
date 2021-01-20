@@ -4,7 +4,7 @@ import Action from "../action.ts";
 import Package from "../../lib/package/package.ts";
 import Config from "../../lib/config.ts";
 import { parseArgs } from "../../lib/parse_args.ts";
-import JsonUtils from "../../lib/json_utils.ts";
+import JsonUtils from "../../lib/utils/json_utils.ts";
 
 export default class JsonGet implements Action {
     constructor(private config: Config) {
