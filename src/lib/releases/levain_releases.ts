@@ -1,7 +1,7 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
 import Config from "../config.ts";
-import HttpUtils from "../http_utils.ts";
+import HttpUtils from "../utils/http_utils.ts";
 import OsUtils from "../os_utils.ts";
 
 export default class LevainReleases { 
