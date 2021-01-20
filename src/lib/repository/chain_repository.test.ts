@@ -1,9 +1,10 @@
 import {assertEquals} from "https://deno.land/std/testing/asserts.ts";
 
 import Config from "../config.ts";
+import {MockPackage} from "../package/mock_package.ts";
+
 import ChainRepository from "./chain_repository.ts";
 import MockRepository from "./mock_repository.ts";
-import {MockPackage} from "../package/mock_package.ts";
 
 Deno.test('chainRepo should have a name', async () => {
     const repo = await getTestRepo()

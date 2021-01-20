@@ -1,10 +1,12 @@
-import TestHelper from "../../lib/test/test_helper.ts";
-import ActionFactory from "../action_factory.ts";
 import {assert, assertEquals, assertNotEquals, assertThrowsAsync} from "https://deno.land/std/testing/asserts.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
-import PropertySetAction from "./property_set.ts";
+
+import TestHelper from "../../lib/test/test_helper.ts";
+import ActionFactory from "../action_factory.ts";
 import Config from "../../lib/config.ts";
+
 import PropertiesUtils from "./properties_utils.ts";
+import PropertySetAction from "./property_set.ts";
 
 Deno.test('PropertySet should be obtainable from actionFactory', () => {
     const config = TestHelper.getConfig()

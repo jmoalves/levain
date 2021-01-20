@@ -1,5 +1,6 @@
-import Action from './action.ts';
 import Package from '../lib/package/package.ts';
+
+import Action from './action.ts';
 
 export default class AddToStartupAction implements Action {
 

@@ -1,10 +1,10 @@
 import * as log from "https://deno.land/std/log/mod.ts";
-
 import {existsSync} from "https://deno.land/std/fs/mod.ts";
 
 import Config from "../lib/config.ts";
 import Package from "../lib/package/package.ts";
 import Loader from '../lib/loader.ts';
+
 import OsUtils from "./os_utils.ts";
 
 export class OsShell {

@@ -1,7 +1,8 @@
+import Config from "../lib/config.ts";
+
 import Install from "./install.ts";
 import Shell from "./shell.ts";
 import Command from "./command.ts";
-import Config from "../lib/config.ts";
 import ListCommand from "./list_command.ts";
 import CleanCommand from "./clean.ts";
 import ActionsCommand from "./actions.ts";

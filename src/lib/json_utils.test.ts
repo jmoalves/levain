@@ -1,6 +1,8 @@
 import {assert, assertEquals, assertThrowsAsync} from "https://deno.land/std/testing/asserts.ts";
 import * as path from 'https://deno.land/std/path/mod.ts'
-import TestHelper from "../lib/test/test_helper.ts";
+
+import TestHelper from "./test/test_helper.ts";
+
 import JsonUtils from "./json_utils.ts";
 
 // TODO JsonUtils should save when folder does not exist

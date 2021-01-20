@@ -1,6 +1,8 @@
 import {assertEquals} from "https://deno.land/std/testing/asserts.ts";
-import CacheRepository from "./cache_repository.ts";
+
 import Config from "../config.ts";
+
+import CacheRepository from "./cache_repository.ts";
 import MockRepository from "./mock_repository.ts";
 
 Deno.test('cacheRepo should have a name', async () => {

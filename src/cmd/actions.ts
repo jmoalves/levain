@@ -1,7 +1,9 @@
-import Command from "./command.ts";
-import Config from "../lib/config.ts";
 import * as log from "https://deno.land/std/log/mod.ts";
+
+import Config from "../lib/config.ts";
 import ActionFactory from "../action/action_factory.ts";
+
+import Command from "./command.ts";
 
 export default class ActionsCommand implements Command {
     constructor(

@@ -2,6 +2,7 @@ import {assertEquals, assertThrowsAsync} from "https://deno.land/std/testing/ass
 import * as path from "https://deno.land/std/path/mod.ts";
 
 import TestHelper from "../../lib/test/test_helper.ts";
+
 import JsonSet from "./json_set.ts";
 
 Deno.test('JsonSet - should throw exception for missing parameters', async () => {

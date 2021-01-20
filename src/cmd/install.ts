@@ -2,13 +2,13 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import {existsSync} from "https://deno.land/std/fs/mod.ts";
 
-import Command from "./command.ts";
 import Config from "../lib/config.ts";
 import Package from "../lib/package/package.ts";
 import Loader from '../lib/loader.ts';
-
 import {Timer} from "../lib/timer.ts";
 import Registry from '../lib/repository/registry.ts';
+
+import Command from "./command.ts";
 
 export default class Install implements Command {
     private registry: Registry;

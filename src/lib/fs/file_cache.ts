@@ -1,8 +1,10 @@
-import Config from './config.ts';
-import { FileUtils } from './file_utils.ts';
-import {existsSync} from "https://deno.land/std/fs/mod.ts";
 import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
+import {existsSync} from "https://deno.land/std/fs/mod.ts";
+
+import Config from '../config.ts';
+
+import { FileUtils } from './file_utils.ts';
 
 export default class FileCache {
     constructor(

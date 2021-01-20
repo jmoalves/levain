@@ -3,8 +3,9 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import ConsoleAndFileLogger from './lib/logger/console_and_file_logger.ts'
 import {parseArgs} from "./lib/parse_args.ts";
 import {Timer} from "./lib/timer.ts";
-import LevainCli from "./levain_cli.ts";
 import CliUtil from "./lib/cli_util.ts";
+
+import LevainCli from "./levain_cli.ts";
 
 export default class Levain {
     logFiles: string[] = [];

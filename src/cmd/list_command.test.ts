@@ -1,9 +1,10 @@
-import ListCommand from "./list_command.ts";
 import Config from "../lib/config.ts";
 import NullRepository from "../lib/repository/null_repository.ts";
 import MockRepository from "../lib/repository/mock_repository.ts";
 import TestLogger from "../lib/logger/test_logger.ts";
 import {assertArrayEndsWith} from '../lib/test/more_asserts.ts';
+
+import ListCommand from "./list_command.ts";
 
 Deno.test('should list nullRepo', async () => {
 

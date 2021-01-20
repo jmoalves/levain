@@ -7,7 +7,7 @@ import {AutoFlushLogFileHandler} from "./auto_flush_log_file_handler.ts";
 import LogFormatterFactory from "./log_formatter_factory.ts";
 import LogUtils from "./log_utils.ts";
 import OsUtils from "../os_utils.ts";
-import { FileUtils } from '../file_utils.ts';
+import { FileUtils } from '../fs/file_utils.ts';
 import DateUtils from '../date_utils.ts';
 
 export default class ConsoleAndFileLogger {

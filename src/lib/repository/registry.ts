@@ -1,9 +1,11 @@
-import FileSystemRepository from './file_system_repository.ts';
+import * as log from "https://deno.land/std/log/mod.ts";
+import * as path from "https://deno.land/std/path/mod.ts";
+import {copySync, ensureDirSync, existsSync} from "https://deno.land/std/fs/mod.ts";
+
 import Config from '../config.ts';
 import FileSystemPackage from '../package/file_system_package.ts';
-import {copySync, ensureDirSync, existsSync} from "https://deno.land/std/fs/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import * as log from "https://deno.land/std/log/mod.ts";
+
+import FileSystemRepository from './file_system_repository.ts';
 
 export default class Registry extends FileSystemRepository {
 

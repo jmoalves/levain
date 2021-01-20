@@ -1,5 +1,7 @@
 import {assertEquals} from "https://deno.land/std/testing/asserts.ts";
+
 import {assertStringEndsWith} from "../test/more_asserts.ts";
+
 import UserInfoUtil from "./userinfo_util.ts";
 
 Deno.test('should use user_info file in $HOME/credentials_jdoe.yaml', () => {

@@ -1,10 +1,12 @@
 import {assert, assertEquals} from "https://deno.land/std/testing/asserts.ts";
 import {existsSync} from "https://deno.land/std/fs/mod.ts";
+
 import Config from "../config.ts";
-import FileSystemRepository from "./file_system_repository.ts";
+import OsUtils from "../os_utils.ts";
 import FileSystemPackage from "../package/file_system_package.ts";
 import {assertArrayContainsInAnyOrder, assertArrayIncludesElements} from '../test/more_asserts.ts';
-import OsUtils from "../os_utils.ts";
+
+import FileSystemRepository from "./file_system_repository.ts";
 
 Deno.test('fileSystemRepo should have a name', () => {
     const repo = new FileSystemRepository(new Config([]), '.')

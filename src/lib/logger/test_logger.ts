@@ -1,4 +1,5 @@
 import * as log from "https://deno.land/std/log/mod.ts";
+
 import MemoryHandler from "./memory_handler.ts";
 
 export default class TestLogger {

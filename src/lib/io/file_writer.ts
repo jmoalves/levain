@@ -1,11 +1,11 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
+import { ensureDirSync } from "https://deno.land/std/fs/ensure_dir.ts";
+import { existsSync } from "https://deno.land/std/fs/exists.ts";
 
 import ProgressBar from "https://deno.land/x/progress@v1.1.4/mod.ts";
-import { existsSync } from "https://deno.land/std@0.82.0/fs/exists.ts";
 
 import Progress from "./progress.ts";
-import { ensureDirSync } from "https://deno.land/std@0.82.0/fs/ensure_dir.ts";
 import Timestamps from "./timestamps.ts";
 
 export default class FileWriter implements Deno.Writer, Progress, Timestamps, Deno.Closer {

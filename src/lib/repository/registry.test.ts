@@ -1,6 +1,7 @@
-import {assertEquals, assertThrows,} from "https://deno.land/std/testing/asserts.ts";
-import TestHelper from '../test/test_helper.ts';
 import {ensureDirSync} from "https://deno.land/std/fs/mod.ts";
+import {assertEquals, assertThrows,} from "https://deno.land/std/testing/asserts.ts";
+
+import TestHelper from '../test/test_helper.ts';
 import FileSystemPackage from '../package/file_system_package.ts';
 
 Deno.test('should start empty', () => {

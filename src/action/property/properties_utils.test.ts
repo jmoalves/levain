@@ -1,7 +1,9 @@
-import PropertiesUtils from "./properties_utils.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import {assert, assertEquals, assertNotEquals} from "https://deno.land/std/testing/asserts.ts";
+
 import TestHelper from "../../lib/test/test_helper.ts";
+
+import PropertiesUtils from "./properties_utils.ts";
 
 //
 // load

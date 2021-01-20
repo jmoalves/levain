@@ -1,9 +1,11 @@
-import ExtractAction, {DenoZip} from "./extract.ts";
-import TestHelper from "../lib/test/test_helper.ts";
 import {assertEquals,} from "https://deno.land/std/testing/asserts.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
+
+import TestHelper from "../lib/test/test_helper.ts";
 import {assertFolderIncludes} from "../lib/test/more_asserts.ts";
-import FileCache from '../lib/file_cache.ts';
+import FileCache from '../lib/fs/file_cache.ts';
+
+import ExtractAction, {DenoZip} from "./extract.ts";
 
 Deno.test('ExtractAction should check if source exists', async () => {
     const src = TestHelper.fileThatDoesNotExist

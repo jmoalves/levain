@@ -1,6 +1,7 @@
-import Repository from './repository.ts';
 import Package from '../package/package.ts';
 import Config from "../config.ts";
+
+import Repository from './repository.ts';
 
 export default abstract class AbstractRepository implements Repository {
     abstract name: string;

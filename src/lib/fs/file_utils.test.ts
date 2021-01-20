@@ -1,15 +1,16 @@
+import * as path from "https://deno.land/std/path/mod.ts";
 import {assert, assertEquals, assertNotEquals, assertThrows,} from "https://deno.land/std/testing/asserts.ts";
 import {ensureDirSync, existsSync} from "https://deno.land/std/fs/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
+
+import OsUtils from '../os_utils.ts';
+import TestHelper from '../test/test_helper.ts';
+import {assertNumberEquals} from "../test/more_asserts.ts";
 
 import { FileUtils } from "./file_utils.ts";
-import OsUtils from './os_utils.ts';
-import TestHelper from './test/test_helper.ts';
-import {assertNumberEquals} from "./test/more_asserts.ts";
 
-const readOnlyFolder = './testdata/file_utils/read_only_folder';
-const folderThatDoesNotExist = './testdata/file_utils/--does_not_exist--';
-const readOnlyFile = './testdata/file_utils/read_only.txt';
+const readOnlyFolder = '../testdata/file_utils/read_only_folder';
+const folderThatDoesNotExist = '../testdata/file_utils/--does_not_exist--';
+const readOnlyFile = '../testdata/file_utils/read_only.txt';
 
 Deno.test('should create a backup for a given file in the same dir', () => {
     let src = Deno.makeTempFileSync();

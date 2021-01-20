@@ -1,5 +1,6 @@
 import {MockPackage} from "../package/mock_package.ts";
 import Package from "../package/package.ts";
+
 import AbstractRepository from './abstract_repository.ts';
 
 export default class MockRepository extends AbstractRepository {

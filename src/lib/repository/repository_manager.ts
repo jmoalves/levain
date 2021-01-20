@@ -3,9 +3,10 @@ import { dirname } from "https://deno.land/std@0.82.0/path/mod.ts";
 
 import Config from "../config.ts";
 import Package from "../package/package.ts";
+
+import Repository from "./repository.ts";
 import CacheRepository from "./cache_repository.ts";
 import ChainRepository from "./chain_repository.ts";
-import Repository from "./repository.ts";
 import RepositoryFactory from "./repository_factory.ts";
 
 class Repositories {

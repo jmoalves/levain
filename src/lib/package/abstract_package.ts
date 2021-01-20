@@ -1,6 +1,7 @@
 import StringUtils from '../string_utils.ts';
-import Package from './package.ts';
 import Repository from '../repository/repository.ts';
+
+import Package from './package.ts';
 
 export default abstract class AbstractPackage implements Package {
 

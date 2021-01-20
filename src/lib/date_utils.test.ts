@@ -1,5 +1,6 @@
-import DateUtils from "./date_utils.ts";
 import {assertArrayIncludes, assertEquals} from "https://deno.land/std/testing/asserts.ts";
+
+import DateUtils from "./date_utils.ts";
 
 Deno.test('DateUtils - should format date', () => {
     // Date month starts with zero!

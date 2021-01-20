@@ -2,16 +2,17 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import { existsSync } from "https://deno.land/std/fs/exists.ts";
 
+import { unZipFromFile } from "https://deno.land/x/zip@v1.1.0/unzip.ts";
+
 import Package from '../package/package.ts'
 import Config from '../config.ts';
-
-import AbstractRepository from './abstract_repository.ts';
-import Repository from "./repository.ts";
-import RepositoryFactory from "./repository_factory.ts";
-import { FileUtils, ProgressReader } from "../file_utils.ts";
+import { FileUtils, ProgressReader } from "../fs/file_utils.ts";
 import HttpReader from "../io/http_reader.ts";
 import FileReader from "../io/file_reader.ts";
-import { unZipFromFile } from "https://deno.land/x/zip@v1.1.0/unzip.ts";
+
+import Repository from "./repository.ts";
+import AbstractRepository from './abstract_repository.ts';
+import RepositoryFactory from "./repository_factory.ts";
 
 export default class ZipRepository extends AbstractRepository {
     readonly name

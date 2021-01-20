@@ -3,15 +3,16 @@ import * as path from "https://deno.land/std/path/mod.ts";
 import {existsSync} from "https://deno.land/std/fs/mod.ts";
 import {unZipFromFile} from 'https://deno.land/x/zip@v1.1.0/mod.ts'
 
-import Action from "./action.ts";
 import Config from "../lib/config.ts";
 import Package from '../lib/package/package.ts';
 import {parseArgs} from "../lib/parse_args.ts";
 import OsUtils from "../lib/os_utils.ts";
 import {Timer} from "../lib/timer.ts";
-import { FileUtils } from "../lib/file_utils.ts";
-import FileCache from '../lib/file_cache.ts';
+import { FileUtils } from "../lib/fs/file_utils.ts";
+import FileCache from '../lib/fs/file_cache.ts';
 import ExtraBin from "../lib/extra_bin.ts";
+
+import Action from "./action.ts";
 
 // TODO: Use native TS/JS implementation instead of extra-bin files.
 export default class Extract implements Action {

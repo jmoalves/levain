@@ -1,8 +1,9 @@
 import {assertThrowsAsync} from "https://deno.land/std/testing/asserts.ts";
 
-import AssertContainsAction from "./assert_contains_action.ts";
 import {MockPackage} from "../lib/package/mock_package.ts";
 import Config from "../lib/config.ts";
+
+import AssertContainsAction from "./assert_contains_action.ts";
 
 const command = new AssertContainsAction(new Config({}))
 const pkg = new MockPackage();

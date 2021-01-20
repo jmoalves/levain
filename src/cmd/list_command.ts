@@ -1,7 +1,8 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
-import Command from "./command.ts";
 import Config from "../lib/config.ts";
+
+import Command from "./command.ts";
 
 export default class ListCommand implements Command {
     constructor(private config: Config) {

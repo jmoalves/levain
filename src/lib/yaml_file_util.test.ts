@@ -1,4 +1,5 @@
 import {assertEquals,} from "https://deno.land/std/testing/asserts.ts";
+
 import YamlFileUtils from "./yaml_file_utils.ts";
 
 Deno.test('should save and load an object', () => {

@@ -6,7 +6,8 @@ import Config from '../config.ts';
 import Package from '../package/package.ts'
 import FileSystemPackage from '../package/file_system_package.ts'
 import {Timer} from "../timer.ts";
-import { FileUtils } from "../file_utils.ts";
+import { FileUtils } from "../fs/file_utils.ts";
+
 import AbstractRepository from './abstract_repository.ts';
 
 export default class FileSystemRepository extends AbstractRepository {

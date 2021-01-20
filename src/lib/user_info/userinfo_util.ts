@@ -5,8 +5,9 @@ import {envChain, promptSecret} from '../utils.ts';
 import Config from '../config.ts';
 import StringUtils from '../string_utils.ts';
 import OsUtils from "../os_utils.ts";
-import {UserInfo} from "./user_info.ts";
 import YamlFileUtils from "../yaml_file_utils.ts";
+
+import {UserInfo} from "./user_info.ts";
 
 export default class UserInfoUtil {
 

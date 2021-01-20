@@ -1,11 +1,11 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
-import Action from "./action.ts";
 import Config from "../lib/config.ts";
 import Package from '../lib/package/package.ts';
 import { parseArgs } from "../lib/parse_args.ts";
-
 import Loader from '../lib/loader.ts';
+
+import Action from "./action.ts";
 
 export default class ContextMenu implements Action {
     constructor(private config: Config) {

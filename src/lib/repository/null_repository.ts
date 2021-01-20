@@ -1,5 +1,6 @@
 import Config from "../config.ts";
 import Package from "../package/package.ts";
+
 import AbstractRepository from './abstract_repository.ts';
 
 export default class NullRepository extends AbstractRepository {

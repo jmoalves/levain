@@ -1,10 +1,11 @@
-import Levain from "./levain.ts";
-
 import {assertEquals,} from "https://deno.land/std/testing/asserts.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
+
 import {assertFind} from "./lib/test/more_asserts.ts";
 import OsUtils from "./lib/os_utils.ts";
 import CliUtil from "./lib/cli_util.ts";
+
+import Levain from "./levain.ts";
 
 
 // Deno.test('should show help message when no command was included',

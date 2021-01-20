@@ -1,15 +1,14 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
+import CommandFactory from "../cmd/command_factory.ts";
 import Command from "../cmd/command.ts";
-import Config from "./config.ts";
+import ActionFactory from "../action/action_factory.ts";
 import Action from "../action/action.ts";
+
 import Package from './package/package.ts';
 
+import Config from "./config.ts";
 import {handleQuotes} from "./parse_args.ts";
-
-// Commands
-import ActionFactory from "../action/action_factory.ts";
-import CommandFactory from "../cmd/command_factory.ts";
 
 export default class Loader {
     constructor(private config: Config) {

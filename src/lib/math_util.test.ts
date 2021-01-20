@@ -1,4 +1,5 @@
 import {assert, assertEquals} from "https://deno.land/std/testing/asserts.ts";
+
 import MathUtil from "./math_util.ts";
 
 Deno.test('MathUtil should generate a random int', () => {

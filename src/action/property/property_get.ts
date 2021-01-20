@@ -1,8 +1,10 @@
+import * as log from "https://deno.land/std/log/mod.ts";
+
 import Action from "../action.ts";
 import Package from "../../lib/package/package.ts";
 import {parseArgs} from "../../lib/parse_args.ts";
-import * as log from "https://deno.land/std/log/mod.ts";
 import Config from "../../lib/config.ts";
+
 import PropertiesUtils from "./properties_utils.ts";
 
 export default class PropertyGetAction implements Action {

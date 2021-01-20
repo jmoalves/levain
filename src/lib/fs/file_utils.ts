@@ -1,16 +1,15 @@
 import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import {ensureDirSync, existsSync,} from "https://deno.land/std/fs/mod.ts";
+import {existsSync,} from "https://deno.land/std/fs/mod.ts";
 
 import ProgressBar from "https://deno.land/x/progress@v1.1.4/mod.ts";
 
-import OsUtils from './os_utils.ts';
-import DateUtils from './date_utils.ts';
-import FileReader from './io/file_reader.ts';
-import FileWriter from './io/file_writer.ts';
-import RewindReader from "./io/rewind_reader.ts";
-import Timestamps from "./io/timestamps.ts";
-import Progress from "./io/progress.ts";
+import OsUtils from '../os_utils.ts';
+import DateUtils from '../date_utils.ts';
+import FileReader from '../io/file_reader.ts';
+import FileWriter from '../io/file_writer.ts';
+import RewindReader from "../io/rewind_reader.ts";
+import Timestamps from "../io/timestamps.ts";
+import Progress from "../io/progress.ts";
 
 export class FileUtils {
     static getModificationTimestamp(filePath: string): Date | undefined {

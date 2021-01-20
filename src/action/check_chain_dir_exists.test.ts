@@ -1,6 +1,8 @@
-import CheckChainDirExists from "./check_chain_dir_exists.ts";
-import TestHelper from "../lib/test/test_helper.ts";
 import {assertEquals, assertThrowsAsync} from "https://deno.land/std/testing/asserts.ts";
+
+import TestHelper from "../lib/test/test_helper.ts";
+
+import CheckChainDirExists from "./check_chain_dir_exists.ts";
 
 Deno.test('should check if folder exists', async () => {
     const action = new CheckChainDirExists(TestHelper.getConfig())

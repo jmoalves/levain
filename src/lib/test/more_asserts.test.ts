@@ -1,4 +1,6 @@
+import * as path from "https://deno.land/std/path/mod.ts";
 import {AssertionError, assertThrows} from "https://deno.land/std/testing/asserts.ts";
+
 import {
     assertArrayContainsInAnyOrder,
     assertArrayEndsWith,
@@ -12,7 +14,6 @@ import {
     assertStringEndsWith
 } from "./more_asserts.ts";
 import TestHelper from "./test_helper.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
 
 //
 // assertsStringEndsWith

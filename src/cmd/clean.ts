@@ -2,11 +2,12 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import {emptyDirSync} from "https://deno.land/std/fs/mod.ts";
 
-import Command from "./command.ts";
 import Config from "../lib/config.ts";
 import {parseArgs} from "../lib/parse_args.ts";
 import ConsoleAndFileLogger from "../lib/logger/console_and_file_logger.ts";
 import OsUtils from "../lib/os_utils.ts";
+
+import Command from "./command.ts";
 
 export default class CleanCommand implements Command {
 

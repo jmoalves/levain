@@ -1,11 +1,11 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
-import Command from "./command.ts";
 import Config from "../lib/config.ts";
 import {OsShell} from '../lib/os_shell.ts';
-
 import Loader from '../lib/loader.ts';
 import Package from '../lib/package/package.ts';
+
+import Command from "./command.ts";
 
 export default class Shell implements Command {
     constructor(private config: Config) {

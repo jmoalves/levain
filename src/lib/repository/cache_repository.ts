@@ -1,8 +1,9 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
-import Repository from './repository.ts'
 import Config from "../config.ts";
 import Package from "../package/package.ts";
+
+import Repository from './repository.ts'
 import AbstractRepository from './abstract_repository.ts';
 
 export default class CacheRepository extends AbstractRepository {

@@ -1,9 +1,10 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
-import Action from "./action.ts";
 import Config from "../lib/config.ts";
 import Package from '../lib/package/package.ts';
-import { FileUtils } from "../lib/file_utils.ts";
+import { FileUtils } from "../lib/fs/file_utils.ts";
+
+import Action from "./action.ts";
 
 export default class BackupFile implements Action {
     constructor(private config: Config) {

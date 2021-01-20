@@ -1,8 +1,10 @@
-import FileCache from './file_cache.ts';
-import TestHelper from './test/test_helper.ts';
 import * as path from "https://deno.land/std/path/mod.ts";
-import {assertFolderIncludes, assertStringEndsWith} from './test/more_asserts.ts';
 import {assertEquals,} from "https://deno.land/std/testing/asserts.ts";
+
+import TestHelper from '../test/test_helper.ts';
+import {assertFolderIncludes, assertStringEndsWith} from '../test/more_asserts.ts';
+
+import FileCache from './file_cache.ts';
 
 Deno.test('FileCache should get file from cache', async () => {
         const config = TestHelper.getConfig()

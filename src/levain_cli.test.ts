@@ -1,6 +1,8 @@
-import LevainCli from './levain_cli.ts';
-import TestHelper from "./lib/test/test_helper.ts";
 import {assertArrayIncludes,} from "https://deno.land/std/testing/asserts.ts";
+
+import TestHelper from "./lib/test/test_helper.ts";
+
+import LevainCli from './levain_cli.ts';
 
 Deno.test('should be able to list packages', async () => {
     const logger = await TestHelper.setupTestLogger()

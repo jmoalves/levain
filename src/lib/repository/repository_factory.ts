@@ -1,9 +1,9 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
-import Repository from './repository.ts'
 import Package from '../package/package.ts'
 import Config from '../config.ts';
 
+import Repository from './repository.ts'
 import NullRepository from './null_repository.ts';
 import GitRepository from './git_repository.ts';
 import FileSystemRepository from './file_system_repository.ts';

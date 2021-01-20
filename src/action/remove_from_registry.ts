@@ -1,6 +1,7 @@
-import Action from './action.ts';
 import Package from '../lib/package/package.ts';
 import Registry from '../lib/repository/registry.ts';
+
+import Action from './action.ts';
 
 export default class RemoveFromRegistry implements Action {
     constructor(

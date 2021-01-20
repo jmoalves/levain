@@ -1,10 +1,11 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 
-import Action from "./action.ts";
 import Config from "../lib/config.ts";
 import Package from '../lib/package/package.ts';
 import {parseArgs} from "../lib/parse_args.ts";
+
+import Action from "./action.ts";
 
 export default class Template implements Action {
     constructor(private config: Config) {

@@ -1,9 +1,10 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
-import Command from "./command.ts";
 import Config from "../lib/config.ts";
 import Package from '../lib/package/package.ts';
 import {parseArgs} from "../lib/parse_args.ts";
+
+import Command from "./command.ts";
 
 export default class InfoCommand implements Command {
     constructor(private config: Config) {

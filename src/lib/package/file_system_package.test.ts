@@ -1,5 +1,7 @@
-import TestHelper from '../test/test_helper.ts';
 import {assertEquals,} from "https://deno.land/std/testing/asserts.ts";
+
+import TestHelper from '../test/test_helper.ts';
+
 //
 // skipRegistry
 //

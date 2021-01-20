@@ -1,6 +1,8 @@
-import ActionFactory from './action_factory.ts';
-import TestHelper from '../lib/test/test_helper.ts';
 import {assert, assertEquals, assertThrowsAsync,} from "https://deno.land/std/testing/asserts.ts";
+
+import TestHelper from '../lib/test/test_helper.ts';
+
+import ActionFactory from './action_factory.ts';
 import SetVarAction from './set_var.ts';
 
 Deno.test('should be obtainable with action factory', () => {

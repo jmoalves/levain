@@ -1,7 +1,9 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
+
+import { FileUtils } from "./fs/file_utils.ts";
+
 import Config from "./config.ts";
-import { FileUtils } from "./file_utils.ts";
 import {envChain} from "./utils.ts";
 
 export default class OsUtils {

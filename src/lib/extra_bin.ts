@@ -1,8 +1,10 @@
 import * as path from "https://deno.land/std/path/mod.ts";
 
-import Config from "./config.ts";
-import OsUtils from "../lib/os_utils.ts";
 import LevainVersion from "../levain_version.ts";
+
+import OsUtils from "../lib/os_utils.ts";
+
+import Config from "./config.ts";
 
 export default class ExtraBin {
     static get extraBinDir(): string {

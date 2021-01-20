@@ -1,7 +1,8 @@
-import DirUtils from "./dir_utils.ts";
 import {assertArrayIncludes, assertEquals} from "https://deno.land/std/testing/asserts.ts";
 
-const testDataDir = './testdata/dir_utils';
+import DirUtils from "./dir_utils.ts";
+
+const testDataDir = '../testdata/dir_utils';
 
 Deno.test('should count dir elements', () => {
     assertEquals(DirUtils.count(testDataDir), 8)

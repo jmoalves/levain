@@ -2,7 +2,7 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import {ensureDirSync, existsSync} from "https://deno.land/std/fs/mod.ts";
 
-import {homedir} from './utils.ts';
+import LevainVersion from "../levain_version.ts";
 
 import Repository from './repository/repository.ts'
 import CacheRepository from './repository/cache_repository.ts'
@@ -12,10 +12,11 @@ import RepositoryFactory from "./repository/repository_factory.ts";
 import Package from "./package/package.ts";
 import UserInfoUtil from './user_info/userinfo_util.ts';
 import Registry from './repository/registry.ts';
-import OsUtils from './os_utils.ts';
 import RepositoryManager from "./repository/repository_manager.ts";
-import LevainVersion from "../levain_version.ts";
-import { FileUtils } from '../lib/file_utils.ts';
+import { FileUtils } from './fs/file_utils.ts';
+
+import OsUtils from './os_utils.ts';
+import {homedir} from './utils.ts';
 
 export default class Config {
     private _pkgManager: PackageManager;

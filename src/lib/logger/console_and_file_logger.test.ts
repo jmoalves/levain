@@ -1,4 +1,5 @@
 import {assertEquals,} from "https://deno.land/std/testing/asserts.ts";
+
 import ConsoleAndFileLogger from "./console_and_file_logger.ts";
 
 Deno.test('should setup logger with logFiles and console', async () => {
