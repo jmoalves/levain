@@ -1,4 +1,4 @@
-import StringUtils from './string_utils.ts';
+import StringUtils from './utils/string_utils.ts';
 
 export class Timer {
     startTime = performance.now()
