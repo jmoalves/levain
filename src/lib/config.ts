@@ -14,9 +14,9 @@ import UserInfoUtil from './user_info/userinfo_util.ts';
 import Registry from './repository/registry.ts';
 import RepositoryManager from "./repository/repository_manager.ts";
 import { FileUtils } from './fs/file_utils.ts';
+import {homedir} from './utils/utils.ts';
 
 import OsUtils from './os_utils.ts';
-import {homedir} from './utils.ts';
 
 export default class Config {
     private _pkgManager: PackageManager;
