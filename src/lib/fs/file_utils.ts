@@ -4,7 +4,7 @@ import {existsSync,} from "https://deno.land/std/fs/mod.ts";
 import ProgressBar from "https://deno.land/x/progress@v1.1.4/mod.ts";
 
 import OsUtils from '../os_utils.ts';
-import DateUtils from '../date_utils.ts';
+import DateUtils from '../utils/date_utils.ts';
 import FileReader from '../io/file_reader.ts';
 import FileWriter from '../io/file_writer.ts';
 import RewindReader from "../io/rewind_reader.ts";
