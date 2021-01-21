@@ -1,5 +1,5 @@
 import * as log from "https://deno.land/std/log/mod.ts";
-import { dirname } from "https://deno.land/std@0.82.0/path/mod.ts";
+import { dirname } from "https://deno.land/std/path/mod.ts";
 
 import Config from "../config.ts";
 import Package from "../package/package.ts";
