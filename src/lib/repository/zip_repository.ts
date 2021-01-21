@@ -7,6 +7,7 @@ import { unZipFromFile } from "https://deno.land/x/zip@v1.1.0/unzip.ts";
 import Package from '../package/package.ts'
 import Config from '../config.ts';
 import { FileUtils } from "../fs/file_utils.ts";
+import FileCache from "../fs/file_cache.ts";
 import ProgressReader from "../io/progress_reader.ts";
 import HttpReader from "../io/http_reader.ts";
 import FileReader from "../io/file_reader.ts";
@@ -40,12 +41,9 @@ export default class ZipRepository extends AbstractRepository {
     }
 
     async init(): Promise<void> {
-        if (!existsSync(this.localZip)) {
-            await this.copyLocalZip()
-        }
-
         if (!existsSync(this.localDir)) {
-            await this.extractLocalZip()
+            const zipfile = await this.copyLocalZip()
+            await this.extractLocalZip(zipfile)
         }
 
         this.localRepo = this.repoFactory.create(this.localDir, this.rootOnly);
@@ -86,18 +84,11 @@ export default class ZipRepository extends AbstractRepository {
 
 
     /////////////////////////////////////////////////////////////////////
-    private async copyLocalZip() {
+    private async copyLocalZip(): Promise<string>  {
         let reader = this.createReader(this.rootUrl)
-        await FileUtils.copyWithProgress(reader, this.localZip)
-    }
-
-    private async extractLocalZip() {
-        // FIXME: Use the same code as extract action (needs refactoring)
-        return await unZipFromFile(
-            this.localZip,
-            this.localDir,
-            {includeFileName: false}
-        )
+        const fileCache = new FileCache(this.config)
+        const cachedSrc = await fileCache.get(reader)
+        return cachedSrc
     }
 
     private createReader(url: string): ProgressReader {
@@ -107,4 +98,14 @@ export default class ZipRepository extends AbstractRepository {
 
         return new FileReader(url)
     }
+
+    private async extractLocalZip(zipfile: string) {
+        // FIXME: Use the same code as extract action (needs refactoring)
+        return await unZipFromFile(
+            zipfile,
+            this.localDir,
+            {includeFileName: false}
+        )
+    }
+
 }
