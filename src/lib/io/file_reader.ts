@@ -21,6 +21,8 @@ export default class FileReader implements ProgressReader {
         if (!existsSync(this.filePath)) {
             throw Error(`File ${this.filePath} does not exist`)
         }
+
+        this.fileInfo = Deno.statSync(this.filePath)
     }
 
     get name(): string {

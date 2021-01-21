@@ -28,7 +28,7 @@ export default class FileCache {
 
         const filePathInCache = this.cachedFilePath(r.name)
         log.debug(`filePathInCache ${filePathInCache}`);
-        if (this.cacheValid(r.name, filePathInCache)) {
+        if (this.cacheValid(r, filePathInCache)) {
             log.info(`fromCache ${filePathInCache}`)
             return filePathInCache;
         }
@@ -47,19 +47,14 @@ export default class FileCache {
         return path.join(this.dir, noFolderSrc)
     }
 
-    cacheValid(srcPath: string, cachePath: string): boolean {
+    cacheValid(src: ProgressReader, cachePath: string): boolean {
         try {
             if (!existsSync(cachePath)) {
                 return false;
             }
 
-            let srcInfo = Deno.statSync(srcPath)
             let cacheInfo = Deno.statSync(cachePath)
-            if (!srcInfo.isFile || !cacheInfo.isFile) {
-                return false
-            }
-
-            return this.fileMatch(srcInfo, cacheInfo)
+            return this.fileMatch(src, cacheInfo)
 
         } catch (error) {
             log.debug(`Error: ${error}`)
@@ -67,15 +62,15 @@ export default class FileCache {
         }
     }
 
-    fileMatch(srcInfo: Deno.FileInfo, cacheInfo: Deno.FileInfo): boolean {
+    fileMatch(src: ProgressReader, cacheInfo: Deno.FileInfo): boolean {
         // We should check sha256 sum but it would take long...
-        if (srcInfo.size != cacheInfo.size ) {
-            log.info(`Cache - size does not match`)
+        if (src.size != cacheInfo.size ) {
+            log.info(`Cache - size does not match - ${src.size} != ${cacheInfo.size}`)
             return false
         }
 
-        if (srcInfo.mtime?.getTime() != cacheInfo.mtime?.getTime()) {
-            log.info(`Cache - mtime does not match`)
+        if (src.motificationTime?.getTime() != cacheInfo.mtime?.getTime()) {
+            log.info(`Cache - mtime does not match - ${src.motificationTime?.getTime()} != ${cacheInfo.mtime?.getTime()}`)
             return false
         }
 
