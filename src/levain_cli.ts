@@ -62,7 +62,7 @@ export default class LevainCli {
         // Repository Manager
         log.info("");
         log.info("==================================");
-        await config.repositoryManager.init(myArgs.addRepo)
+        await config.repositoryManager.init(myArgs.addRepo, myArgs["skip-levain-updates"])
 
         const loader = new Loader(config);
         try {
@@ -97,5 +97,4 @@ export default class LevainCli {
         log.info("Commands available:")
         examples.forEach(example => log.info(example))
     }
-
 }

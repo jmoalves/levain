@@ -37,6 +37,7 @@ export default class Levain {
                     "ask-fullname",
                     "wait-to-begin",
                     "wait-after-end",
+                    "skip-levain-updates"
                 ]
             });
 

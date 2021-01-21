@@ -1,3 +1,4 @@
+import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import * as yaml from "https://deno.land/std/encoding/yaml.ts";
 
@@ -17,5 +18,32 @@ export default class LevainVersion {
         const yamlStr: string = Deno.readTextFileSync(levainRecipe)
         const yamlStruct:any = yaml.parse(yamlStr)
         return yamlStruct.version;
+    }
+
+    static isHeadVersion(version?: string): boolean {
+        let myVersion = version || LevainVersion.levainVersion
+        return "vHEAD" == myVersion
+    }
+
+    static needsUpdate(newVersion: string): boolean {
+        let myVersion = LevainVersion.levainVersion
+
+        if (LevainVersion.isHeadVersion(myVersion)) {
+            log.debug(`No update needed - vHEAD version`)
+            return false
+        }
+
+        if (!newVersion) {
+            log.debug(`No update needed - no new version`)
+            return false
+        }
+
+        if (newVersion == myVersion) {
+            log.debug(`No update needed - same version ${newVersion}`)
+            return false
+        }
+
+        log.debug(`UPDATE needed - my version ${myVersion} != new version ${newVersion}`)
+        return true
     }
 }

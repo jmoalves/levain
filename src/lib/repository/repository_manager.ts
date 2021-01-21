@@ -3,6 +3,8 @@ import { dirname } from "https://deno.land/std/path/mod.ts";
 
 import Config from "../config.ts";
 import Package from "../package/package.ts";
+import LevainReleases from "../releases/levain_releases.ts";
+import LevainVersion from "../../levain_version.ts";
 
 import Repository from "./repository.ts";
 import CacheRepository from "./cache_repository.ts";
@@ -25,7 +27,7 @@ export default class RepositoryManager {
         this.repoFactory = new RepositoryFactory(config)
     }
 
-    async init(repos: string[]) {
+    async init(repos: string[], skipLevainUpdates: boolean = false) {
         log.debug("")
         log.debug(`=== RepositoryManager.init - extraRepos: ${JSON.stringify(repos)}`)
 
@@ -33,7 +35,7 @@ export default class RepositoryManager {
             repos.forEach(repo => this.extraRepos.add(repo))
         }
 
-        await this.createRepositories()
+        await this.createRepositories(skipLevainUpdates)
         await this.initRepositories()
     }
 
@@ -106,14 +108,19 @@ export default class RepositoryManager {
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    async createRepositories(): Promise<void> {
-        await this.createInstalledRepo()
-        await this.createRegularRepository()
+    async createRepositories(skipLevainUpdates: boolean = false): Promise<void> {
+        log.info("");
+        log.info("===");
+        await this.createInstalledRepo(skipLevainUpdates)
+        await this.createRegularRepository(skipLevainUpdates)
 
         await this.createCurrentDirRepo()
     }
 
     async initRepositories(): Promise<void> {
+        log.info("");
+        log.info("===");
+
         if (!this.repositories) {
             throw Error("Error initializing RepositoryManager - repositories not found")
         }
@@ -133,21 +140,24 @@ export default class RepositoryManager {
         this.repositories.currentDir = this.repoFactory.create(Deno.cwd(), true)
     }
 
-    private async createInstalledRepo() {
+    private async createInstalledRepo(skipLevainUpdates: boolean = false) {
         log.debug("createInstalledRepo")
-        let repos = this.repoList(true)
+        let repos = await this.repoList(true, skipLevainUpdates)
         this.repositories.installed = this.createRepos(repos)
     }
 
-    private async createRegularRepository() {
+    private async createRegularRepository(skipLevainUpdates: boolean = false) {
         log.debug("createRegularRepository")
-        let repos = this.repoList(false)
+        let repos = await this.repoList(false, skipLevainUpdates)
         this.repositories.regular = this.createRepos(repos)
     }
 
-    private repoList(installedOnly: boolean): string[] {
+    private async repoList(installedOnly: boolean, skipLevainUpdates: boolean = false): Promise<string[]> {
         let repos: string[] = [];
 
+        if (!skipLevainUpdates) {
+            await this.addLevainReleasesRepo(repos)
+        }
         this.addLevainRepo(repos)
 
         if (installedOnly) {
@@ -157,6 +167,17 @@ export default class RepositoryManager {
         }
 
         return [...new Set(repos)]
+    }
+
+    private async addLevainReleasesRepo(repos: string[]) {
+        let levainReleases = new LevainReleases(this.config)
+        if (!LevainVersion.needsUpdate(await levainReleases.latest())) {
+            return
+        }
+
+        let url = await levainReleases.releasesRepositoryUrl()
+        log.debug(`addRepo DEFAULT ${url} --> Levain releases repo`)
+        repos.push(url)
     }
 
     private addLevainRepo(repos: string[]) {
