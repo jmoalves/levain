@@ -2,12 +2,12 @@ import * as log from "https://deno.land/std/log/mod.ts";
 
 import Package from '../package/package.ts'
 import Config from '../config.ts';
+import OsUtils from "../os/os_utils.ts";
 
 import Repository from './repository.ts'
 import NullRepository from './null_repository.ts';
 import GitRepository from './git_repository.ts';
 import FileSystemRepository from './file_system_repository.ts';
-import OsUtils from "../os_utils.ts";
 import ZipRepository from "./zip_repository.ts";
 
 export default class RepositoryFactory {

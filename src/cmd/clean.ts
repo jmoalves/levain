@@ -5,7 +5,7 @@ import {emptyDirSync} from "https://deno.land/std/fs/mod.ts";
 import Config from "../lib/config.ts";
 import {parseArgs} from "../lib/parse_args.ts";
 import ConsoleAndFileLogger from "../lib/logger/console_and_file_logger.ts";
-import OsUtils from "../lib/os_utils.ts";
+import OsUtils from "../lib/os/os_utils.ts";
 
 import Command from "./command.ts";
 

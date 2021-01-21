@@ -5,7 +5,7 @@ import {copySync, exists} from "https://deno.land/std/fs/mod.ts"
 
 import Config from "../config.ts";
 import {MockPackage} from "../package/mock_package.ts";
-import OsUtils from '../os_utils.ts';
+import OsUtils from '../os/os_utils.ts';
 import FileSystemPackage from '../package/file_system_package.ts';
 import Registry from '../repository/registry.ts';
 import TestLogger from "../logger/test_logger.ts";

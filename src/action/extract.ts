@@ -6,7 +6,7 @@ import {unZipFromFile} from 'https://deno.land/x/zip@v1.1.0/mod.ts'
 import Config from "../lib/config.ts";
 import Package from '../lib/package/package.ts';
 import {parseArgs} from "../lib/parse_args.ts";
-import OsUtils from "../lib/os_utils.ts";
+import OsUtils from "../lib/os/os_utils.ts";
 import {Timer} from "../lib/timer.ts";
 import { FileUtils } from "../lib/fs/file_utils.ts";
 import FileCache from '../lib/fs/file_cache.ts';

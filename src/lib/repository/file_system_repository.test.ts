@@ -2,7 +2,7 @@ import {assert, assertEquals} from "https://deno.land/std/testing/asserts.ts";
 import {existsSync} from "https://deno.land/std/fs/mod.ts";
 
 import Config from "../config.ts";
-import OsUtils from "../os_utils.ts";
+import OsUtils from "../os/os_utils.ts";
 import FileSystemPackage from "../package/file_system_package.ts";
 import {assertArrayContainsInAnyOrder, assertArrayIncludesElements} from '../test/more_asserts.ts';
 

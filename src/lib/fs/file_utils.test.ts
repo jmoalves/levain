@@ -2,7 +2,7 @@ import * as path from "https://deno.land/std/path/mod.ts";
 import {assert, assertEquals, assertNotEquals, assertThrows,} from "https://deno.land/std/testing/asserts.ts";
 import {ensureDirSync, existsSync} from "https://deno.land/std/fs/mod.ts";
 
-import OsUtils from '../os_utils.ts';
+import OsUtils from '../os/os_utils.ts';
 import TestHelper from '../test/test_helper.ts';
 import {assertNumberEquals} from "../test/more_asserts.ts";
 

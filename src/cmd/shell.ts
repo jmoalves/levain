@@ -1,7 +1,7 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
 import Config from "../lib/config.ts";
-import {OsShell} from '../lib/os_shell.ts';
+import {OsShell} from '../lib/os/os_shell.ts';
 import Loader from '../lib/loader.ts';
 import Package from '../lib/package/package.ts';
 

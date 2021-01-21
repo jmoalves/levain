@@ -1,7 +1,7 @@
 import {assertEquals, assertThrowsAsync, fail} from "https://deno.land/std/testing/asserts.ts";
 
 import TestHelper from "../lib/test/test_helper.ts";
-import OsUtils from "../lib/os_utils.ts";
+import OsUtils from "../lib/os/os_utils.ts";
 
 import Action from "./action.ts";
 import SetEnv from "./set_env.ts";

@@ -2,7 +2,7 @@ import * as path from "https://deno.land/std/path/mod.ts";
 
 import LevainVersion from "../levain_version.ts";
 
-import OsUtils from "../lib/os_utils.ts";
+import OsUtils from "../lib/os/os_utils.ts";
 
 import Config from "./config.ts";
 

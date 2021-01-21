@@ -4,7 +4,7 @@ import * as path from "https://deno.land/std/path/mod.ts";
 
 import DirUtils from "../fs/dir_utils.ts";
 import { FileUtils } from '../fs/file_utils.ts';
-import OsUtils from '../os_utils.ts';
+import OsUtils from '../os/os_utils.ts';
 
 export function assertArrayIncludesElements<T>(array: T[], elements: T[]) {
     let notFound: T[] = []
