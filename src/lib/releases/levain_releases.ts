@@ -25,21 +25,24 @@ export default class LevainReleases {
                     .then(json => {
                         LevainReleases.releasesCache = json
                         resolve(json)
+                        return
                     })
                     .catch(error => {
                         log.error(`Error looking for Levain releases ${error}`)
                         reject(error)
+                        return
                     })    
                 })
                 .catch(error => {
                     log.error(`Error looking for Levain releases ${error}`)
                     reject(error)
+                    return
                 })
         })
     }
 
     async levainZipUrl(version?: string): Promise<string> {
-        version = version || await this.latest()
+        version = version || await this.latestVersion()
 
         if (!version.startsWith("v")) {
             version = "v" + version
@@ -49,19 +52,53 @@ export default class LevainReleases {
         return `${this.downloadUrl}/${version}/levain-${version}-windows-x86_64.zip`
     }
 
-    async latest(): Promise<string> {
+    async latest(): Promise<any> {
         const obj = this;
         return new Promise((resolve, reject) => {
             obj.releases()
                 .then((list) => {
                     if (!list || list.length == 0) {
                         reject(Error(`No release found`))
+                        return
                     }
 
-                    resolve(list[0].tag_name)
+                    resolve(list[0])
+                    return
                 })
                 .catch((error) => reject(error))
         })
+    }
+
+    async latestVersion(): Promise<string> {
+        const obj = this;
+        return new Promise((resolve, reject) => {
+            obj.latest()
+                .then((release) => {
+                    if (!release) {
+                        reject(Error(`No release found`))
+                        return
+                    }
+
+                    if (release.tag_name) {
+                        if (LevainReleases.isValidReleaseTag(release.tag_name)) {
+                            resolve(release.tag_name.replace("v", ""))
+                            return
+                        }
+
+                        log.error(`Invalid release tag format - ${release.tag_name}`)
+                        reject(Error(`No release found`))    
+                        return
+                    }
+
+                    reject(Error(`No release found`))
+                    return
+                })
+                .catch((error) => reject(error))
+        })
+    }
+
+    static isValidReleaseTag(tag?: string): boolean {
+        return (tag?.match(/^v[0-9]+\.[0-9]+\.[0-9]+$/) != null)
     }
 
     async releasesRepositoryUrl(): Promise<string> {

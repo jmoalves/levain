@@ -170,14 +170,18 @@ export default class RepositoryManager {
     }
 
     private async addLevainReleasesRepo(repos: string[]) {
-        let levainReleases = new LevainReleases(this.config)
-        if (!LevainVersion.needsUpdate(await levainReleases.latest())) {
-            return
-        }
+        try {
+            let levainReleases = new LevainReleases(this.config)
+            if (!LevainVersion.needsUpdate(await levainReleases.latestVersion())) {
+                return
+            }
 
-        let url = await levainReleases.releasesRepositoryUrl()
-        log.debug(`addRepo DEFAULT ${url} --> Levain releases repo`)
-        repos.push(url)
+            let url = await levainReleases.releasesRepositoryUrl()
+            log.debug(`addRepo DEFAULT ${url} --> Levain releases repo`)
+            repos.push(url)
+        } catch(error) {
+            log.info(`Ignoring Levain updates - Error ${error}`)
+        }
     }
 
     private addLevainRepo(repos: string[]) {
