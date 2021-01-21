@@ -27,11 +27,15 @@ export default class GitUtils {
         let tries = 0;
         do {
             tries++;
+            if (tries > 1) {
+                log.info(`-- GIT - PULL - ${dir} - RETRY`);
+            }
+
             try {
                 await OsUtils.runAndLog(command);
                 return;
             } catch (error) {
-                log.info(`git error - ${error}`)
+                log.info(`${tries} - git error - ${error}`)
             }
         } while (tries < 3)
 
