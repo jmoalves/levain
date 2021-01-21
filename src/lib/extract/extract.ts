@@ -36,7 +36,7 @@ export abstract class Extractor {
             let from = path.resolve(srcDir, child.name);
             if (strip) {
                 if (count > 1) { // There can be only one!
-                    throw `You should not for --strip if there are more the one directory`;
+                    throw `You should not ask for --strip if there are more than one directory`;
                 }
 
                 log.debug(`- STRIP ${from}`);

@@ -1,6 +1,6 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
-import { existsSync } from "https://deno.land/std/fs/exists.ts";
+import { ensureDirSync, existsSync } from "https://deno.land/std/fs/mod.ts";
 
 import { unZipFromFile } from "https://deno.land/x/zip@v1.1.0/unzip.ts";
 
@@ -11,6 +11,7 @@ import FileCache from "../fs/file_cache.ts";
 import ProgressReader from "../io/progress_reader.ts";
 import HttpReader from "../io/http_reader.ts";
 import FileReader from "../io/file_reader.ts";
+import { ExtractorFactory, Extractor } from "../extract/extract.ts"
 
 import Repository from "./repository.ts";
 import AbstractRepository from './abstract_repository.ts';
@@ -100,12 +101,10 @@ export default class ZipRepository extends AbstractRepository {
     }
 
     private async extractLocalZip(zipfile: string) {
-        // FIXME: Use the same code as extract action (needs refactoring)
-        return await unZipFromFile(
-            zipfile,
-            this.localDir,
-            {includeFileName: false}
-        )
-    }
+        ensureDirSync(this.localDir)
 
+        const factory: ExtractorFactory = new ExtractorFactory()
+        const extractor: Extractor = factory.createExtractor(this.config, zipfile)
+        await extractor.extract(false, zipfile, this.localDir)
+    }
 }
