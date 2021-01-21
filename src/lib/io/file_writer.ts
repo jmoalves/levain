@@ -10,6 +10,7 @@ import Timestamps from "./timestamps.ts";
 
 export default class FileWriter implements Deno.Writer, Progress, Timestamps, Deno.Closer {
     private filePath: string
+    private tempPath: string
     private file: Deno.File
     private fileInfo: Deno.FileInfo | undefined
     private fileSize: number | undefined
@@ -21,16 +22,13 @@ export default class FileWriter implements Deno.Writer, Progress, Timestamps, De
     constructor(filename: string) {
         this.filePath = path.resolve(filename)
 
-        if (existsSync(this.filePath)) {
-            log.debug(`Removing ${this.filePath}`)
-            Deno.removeSync(this.filePath)
-        }
-
         const dstDir = path.dirname(this.filePath)
         ensureDirSync(dstDir)
 
-        log.debug(`Writing to ${this.filePath}`)
-        this.file = Deno.openSync(this.filePath, {write: true, createNew: true});
+        this.tempPath = Deno.makeTempFileSync({ dir: dstDir, prefix: 'levain-temp-'})
+
+        log.debug(`Writing to ${this.tempPath}`)
+        this.file = Deno.openSync(this.tempPath, {write: true, create: true, truncate: true});
     }
 
     // Progress
@@ -43,7 +41,7 @@ export default class FileWriter implements Deno.Writer, Progress, Timestamps, De
     }
 
     get title(): string | undefined {
-        return "- FROM " + path.basename(this.filePath)
+        return "- TO " + path.basename(this.filePath)
     }
 
     get size(): number | undefined {
@@ -77,8 +75,16 @@ export default class FileWriter implements Deno.Writer, Progress, Timestamps, De
     }
 
     async close() {
-        log.debug(`Closing ${this.filePath}`)
+        log.debug(`Closing ${this.tempPath}`)
         this.file.close()
+
+        if (existsSync(this.filePath)) {
+            log.debug(`Removing ${this.filePath}`)
+            Deno.removeSync(this.filePath)
+        }
+
+        log.debug(`Moving ${this.tempPath} => ${this.filePath}`)
+        Deno.renameSync(this.tempPath, this.filePath)
 
         this.fileInfo = Deno.statSync(this.filePath)
     }
