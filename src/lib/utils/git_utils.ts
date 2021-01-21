@@ -23,7 +23,7 @@ export default class GitUtils {
         log.info(`-- GIT - PULL - ${dir}`);
         OsUtils.onlyInWindows();
 
-        const command = `cmd /u /c pushd ${dir} && ${this.gitCmd} pull --force -q --progress --no-tags --depth=1 --update-shallow --allow-unrelated-histories --no-commit && popd`;
+        const command = `cmd /u /c pushd ${dir} && ${this.gitCmd} pull --force -q --progress --no-tags --depth=1 --update-shallow --allow-unrelated-histories --no-commit --rebase && popd`;
         let tries = 0;
         do {
             tries++;
