@@ -17,6 +17,9 @@ class Repositories {
     currentDir: Repository|undefined = undefined
 }
 
+const TURN_OFF_AUTO_UPDATE = true;
+let autoupdate_warning = true;
+
 export default class RepositoryManager {
     private repoFactory: RepositoryFactory
     private extraRepos: Set<string> = new Set<string>()
@@ -172,7 +175,27 @@ export default class RepositoryManager {
     private async addLevainReleasesRepo(repos: string[]) {
         try {
             let levainReleases = new LevainReleases(this.config)
-            if (!LevainVersion.needsUpdate(await levainReleases.latestVersion())) {
+            let latestVersion = await levainReleases.latestVersion()
+            if (!LevainVersion.needsUpdate(latestVersion)) {
+                return
+            }
+
+            // Turning off this feature - See https://github.com/jmoalves/levain/issues/57
+            if (TURN_OFF_AUTO_UPDATE) {
+                if (autoupdate_warning) {
+                    log.warning("")
+                    log.warning("")
+                    log.warning("Levain auto-update is disabled")
+                    log.warning("However, we have a new Levain release available!")
+                    log.warning("")
+                    log.warning(`Your version: ${LevainVersion.levainVersion}`)
+                    log.warning(` New version: ${latestVersion}`)
+                    log.warning("")
+                    log.warning("")
+                    prompt(`Hit ENTER to continue with your version`)
+                    autoupdate_warning = false
+                }
+
                 return
             }
 
