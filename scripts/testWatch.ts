@@ -1,5 +1,5 @@
 import {exists} from "https://deno.land/std/fs/mod.ts"
-import OsUtils from '../src/lib/os_utils.ts';
+import OsUtils from '../src/lib/os/os_utils.ts';
 
 const watcher = Deno.watchFs('src/')
 
