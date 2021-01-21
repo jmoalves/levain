@@ -1,6 +1,6 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
-import {existsSync} from "https://deno.land/std/fs/mod.ts";
+import {existsSync, copySync} from "https://deno.land/std/fs/mod.ts";
 
 import Config from "../lib/config.ts";
 import Package from "../lib/package/package.ts";
@@ -136,8 +136,11 @@ export default class Install implements Command {
 
             let src = pkg.baseDir;
             let dst = path.resolve(bkpDir, path.basename(src));
-            log.info(`SAVE-MOVE ${src} => ${dst}`);
-            Deno.renameSync(src, dst);
+            log.info(`SAVE-COPY ${src} => ${dst}`);
+            copySync(src, dst);
+
+            log.info(`SAVE-DEL ${src}`);
+            Deno.removeSync(src, { recursive: true })
 
             log.debug(`- MOVED ${src} => ${dst}`);
             return true;
