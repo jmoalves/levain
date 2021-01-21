@@ -19,6 +19,10 @@ export default class HttpReader implements ProgressReader {
     constructor(private url: string) {
     }
 
+    get name(): string {
+        return this.url
+    }
+
     // Progress
     get progressBar(): ProgressBar | undefined {
         return this.pb;

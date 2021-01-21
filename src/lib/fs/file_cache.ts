@@ -3,6 +3,8 @@ import * as path from "https://deno.land/std/path/mod.ts";
 import {existsSync} from "https://deno.land/std/fs/mod.ts";
 
 import Config from '../config.ts';
+import ProgressReader from '../io/progress_reader.ts';
+import FileReader from '../io/file_reader.ts';
 
 import { FileUtils } from './file_utils.ts';
 
@@ -15,10 +17,18 @@ export default class FileCache {
 
     public readonly dir: string;
 
-    async get(filePath: string): Promise<string> {
-        const filePathInCache = this.cachedFilePath(filePath)
+    async get(src: string | ProgressReader ): Promise<string> {
+        let r:ProgressReader | undefined = undefined
+
+        if (typeof src == 'string') {
+            r = new FileReader(src)
+        } else {
+            r = src
+        }
+
+        const filePathInCache = this.cachedFilePath(r.name)
         log.debug(`filePathInCache ${filePathInCache}`);
-        if (this.cacheValid(filePath, filePathInCache)) {
+        if (this.cacheValid(r.name, filePathInCache)) {
             log.info(`fromCache ${filePathInCache}`)
             return filePathInCache;
         }
@@ -28,7 +38,7 @@ export default class FileCache {
             Deno.removeSync(filePathInCache, { recursive: true })
         }
 
-        return await this.copyToCache(filePath)
+        return await this.copyToCache(r)
     }
 
     cachedFilePath(src: string): string {
@@ -72,9 +82,9 @@ export default class FileCache {
         return true
     }
 
-    async copyToCache(src: string): Promise<string> {
-        log.info(`- COPY TO CACHE ${src}`);
-        const filePathInCache = this.cachedFilePath(src)
+    async copyToCache(src: ProgressReader): Promise<string> {
+        log.info(`- COPY TO CACHE ${src.name}`);
+        const filePathInCache = this.cachedFilePath(src.name)
         await FileUtils.copyWithProgress(src, filePathInCache);
         return filePathInCache
     }

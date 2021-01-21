@@ -23,6 +23,10 @@ export default class FileReader implements ProgressReader {
         }
     }
 
+    get name(): string {
+        return this.filePath
+    }
+
     // Progress
     get progressBar(): ProgressBar | undefined {
         return this.pb;
