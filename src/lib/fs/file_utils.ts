@@ -7,9 +7,7 @@ import OsUtils from '../os/os_utils.ts';
 import DateUtils from '../utils/date_utils.ts';
 import FileReader from '../io/file_reader.ts';
 import FileWriter from '../io/file_writer.ts';
-import RewindReader from "../io/rewind_reader.ts";
-import Timestamps from "../io/timestamps.ts";
-import Progress from "../io/progress.ts";
+import ProgressReader from '../io/progress_reader.ts';
 
 export class FileUtils {
     static getModificationTimestamp(filePath: string): Date | undefined {
@@ -216,7 +214,4 @@ export class FileUtils {
     static exists(path: string): boolean {
         return existsSync(path);
     }
-}
-
-export interface ProgressReader extends Deno.Reader, Progress, RewindReader, Timestamps, Deno.Closer {
 }

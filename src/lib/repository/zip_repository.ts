@@ -6,7 +6,8 @@ import { unZipFromFile } from "https://deno.land/x/zip@v1.1.0/unzip.ts";
 
 import Package from '../package/package.ts'
 import Config from '../config.ts';
-import { FileUtils, ProgressReader } from "../fs/file_utils.ts";
+import { FileUtils } from "../fs/file_utils.ts";
+import ProgressReader from "../io/progress_reader.ts";
 import HttpReader from "../io/http_reader.ts";
 import FileReader from "../io/file_reader.ts";
 

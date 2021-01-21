@@ -5,7 +5,7 @@ import { readerFromStreamReader } from "https://deno.land/std/io/streams.ts";
 import ProgressBar from "https://deno.land/x/progress@v1.1.4/mod.ts";
 
 import HttpUtils from '../utils/http_utils.ts';
-import { ProgressReader } from "../fs/file_utils.ts";
+import ProgressReader from "../io/progress_reader.ts";
 
 export default class HttpReader implements ProgressReader {
     private reader: Deno.Reader | null = null
