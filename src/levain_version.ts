@@ -22,7 +22,7 @@ export default class LevainVersion {
 
     static isHeadVersion(version?: string): boolean {
         let myVersion = version || LevainVersion.levainVersion
-        return "vHEAD" == myVersion
+        return ("vHEAD" == myVersion || "HEAD" == myVersion)
     }
 
     static needsUpdate(newVersion: string): boolean {

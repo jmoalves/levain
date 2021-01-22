@@ -1,6 +1,7 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import {existsSync} from "https://deno.land/std/fs/mod.ts";
 
+import LevainVersion from "../../levain_version.ts";
 import Config from "../config.ts";
 import Package from "../package/package.ts";
 import Loader from '../loader.ts';
@@ -109,7 +110,13 @@ export class OsShell {
             if (this.config.shellPath) {
                 cmd = `cmd /c start ${this.config.shellPath}`;
             } else {
-                cmd = "cmd /c start cmd /u /k prompt [levain]$P$G";
+                let myVersion = LevainVersion.levainVersion;
+                if (!myVersion || LevainVersion.isHeadVersion(myVersion)) {
+                    myVersion = '';
+                } else {
+                    myVersion = '-' + myVersion.replace(/^v/, '');
+                }
+                cmd = `cmd /c start cmd /u /k prompt [levain${myVersion}]$P$G`;
             }
         } else {
             cmd = "cmd /u /c " + args.join(" ");
