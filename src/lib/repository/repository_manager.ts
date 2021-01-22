@@ -62,7 +62,9 @@ export default class RepositoryManager {
 
     set saveState(state: any) {
         this.extraRepos = new Set<string>(state)
-        log.debug(`- Loaded REPOS ${this.extraRepos}`)
+        if (this.extraRepos) {
+            log.debug(`- Loaded REPOS ${JSON.stringify([...this.extraRepos])}`)
+        }
     }
 
     get currentDirPackage(): Package | undefined {
