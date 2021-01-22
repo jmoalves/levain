@@ -17,22 +17,18 @@ export default class InfoCommand implements Command {
             ]
         });
 
-        let pkgNames: string[] = [];
 
-        if (!myArgs._ || myArgs._.length == 0) {
+        if (myArgs._ && myArgs._.length > 0) {
+            let pkgNames: string[] = [];
+
+            this.config.packageManager.resolvePackages(pkgNames, false, false);
+
             log.info("")
-            log.info("You must inform the package(s)")
-            log.info("")
-            log.info(`\t${this.oneLineExample}`)
-            throw Error("You must inform the package(s)")
+            log.info("=== Your packages")
+            pkgNames.forEach(pkg => this.showPackage(myArgs, 0, pkg))
+        } else {
+            this.config.packageManager.resolvePackages(["levain"], false, false);
         }
-
-        pkgNames = myArgs._;
-        this.config.packageManager.resolvePackages(pkgNames, false, false);
-
-        log.info("")
-        log.info("=== Your packages")
-        pkgNames.forEach(pkg => this.showPackage(myArgs, 0, pkg))
 
         log.info("")
         log.info("=== Levain")
