@@ -141,7 +141,7 @@ export default class Config {
     set shellPath(shellPath: string | undefined) {
         log.warning("");
         log.warning("***********************************************************************************");
-        log.warning(`** Changing shell path: ${shellPath}`);
+        log.warning(`** Changing shell path: ${this._shellPath} => ${shellPath}`);
         log.warning("***********************************************************************************");
         log.warning("");
 
@@ -153,13 +153,11 @@ export default class Config {
     }
 
     set defaultPackage(pkgName: string) {
-        if (this._defaultPackage) {
-            log.warning("");
-            log.warning("***********************************************************************************");
-            log.warning(`** Changing default package: ${this._defaultPackage} => ${pkgName}`);
-            log.warning("***********************************************************************************");
-            log.warning("");
-        }
+        log.warning("");
+        log.warning("***********************************************************************************");
+        log.warning(`** Changing default package: ${this._defaultPackage} => ${pkgName}`);
+        log.warning("***********************************************************************************");
+        log.warning("");
 
         this._defaultPackage = pkgName;
     }
@@ -169,6 +167,12 @@ export default class Config {
     }
 
     set lastKnownVersion(version: string|undefined) {
+        log.warning("");
+        log.warning("***********************************************************************************");
+        log.warning(`** Changing last known version: ${this._lastKnownVersion} => ${version}`);
+        log.warning("***********************************************************************************");
+        log.warning("");
+
         this._lastKnownVersion = version
     }
 
