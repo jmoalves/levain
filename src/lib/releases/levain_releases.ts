@@ -10,6 +10,7 @@ export default class LevainReleases {
 
     private static releasesCache: any | undefined;
     private static latestCache: any | undefined;
+    private static latestNotFound: boolean = false;
 
     constructor(private config: Config) {
     }
@@ -22,6 +23,11 @@ export default class LevainReleases {
         return new Promise((resolve, reject) => {
             HttpUtils.get(`${this.apiUrl}`)
                 .then(response => {
+                    if (response.status == 404) {
+                        reject(Error("No release found"))
+                        return
+                    }
+
                     response.json()
                     .then(json => {
                         LevainReleases.releasesCache = json
@@ -45,6 +51,10 @@ export default class LevainReleases {
     async levainZipUrl(version?: string): Promise<string> {
         version = version || await this.latestVersion()
 
+        if (!version) {
+            throw Error(`No zip for undefined version`)
+        }
+
         if (!version.startsWith("v")) {
             version = "v" + version
         }
@@ -54,6 +64,10 @@ export default class LevainReleases {
     }
 
     async latest(): Promise<any> {
+        if (LevainReleases.latestNotFound) {
+            return Promise.resolve(undefined)
+        }
+
         if (LevainReleases.latestCache) {
             return Promise.resolve(LevainReleases.latestCache)
         }
@@ -61,19 +75,28 @@ export default class LevainReleases {
         return new Promise((resolve, reject) => {
             HttpUtils.get(`${this.apiUrl}/latest`)
                 .then(response => {
+                    if (response.status == 404) {
+                        log.debug(`404 at latest release`)
+                        LevainReleases.latestNotFound = true
+                        LevainReleases.latestCache = undefined
+                        resolve(undefined)
+                    }
+
                     response.json()
-                    .then(json => {
-                        LevainReleases.latestCache = json
-                        resolve(json)
-                        return
-                    })
-                    .catch(error => {
-                        log.error(`Error looking for Levain latest release ${error}`)
-                        reject(error)
-                        return
-                    })
+                        .then(json => {
+                            LevainReleases.latestCache = json
+                            resolve(json)
+                            return
+                        })
+                        .catch(error => {
+                            log.debug(`1-Error - ${JSON.stringify(error)}`)
+                            log.error(`Error looking for Levain latest release ${error}`)
+                            reject(error)
+                            return
+                        })
                 })
                 .catch(error => {
+                    log.debug(`2-Error - ${JSON.stringify(error)}`)
                     log.error(`Error looking for Levain latest release ${error}`)
                     reject(error)
                     return
@@ -81,13 +104,14 @@ export default class LevainReleases {
         })
     }
 
-    async latestVersion(): Promise<string> {
+    async latestVersion(): Promise<string|undefined> {
         const obj = this;
         return new Promise((resolve, reject) => {
             obj.latest()
                 .then((release) => {
                     if (!release) {
-                        reject(Error(`No release found`))
+                        log.debug(`No latest release found`)
+                        resolve(undefined)
                         return
                     }
 
@@ -98,14 +122,17 @@ export default class LevainReleases {
                         }
 
                         log.error(`Invalid release tag format - ${release.tag_name}`)
-                        reject(Error(`No release found`))    
+                        resolve(undefined)
                         return
                     }
 
-                    reject(Error(`No release found`))
+                    resolve(undefined)
                     return
                 })
-                .catch((error) => reject(error))
+                .catch((error) => {
+                    log.error(`Error - ${error}`)
+                    reject(error)
+                })
         })
     }
 
