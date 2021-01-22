@@ -9,6 +9,7 @@ export default class LevainReleases {
     private downloadUrl = 'https://github.com/jmoalves/levain/releases/download'
 
     private static releasesCache: any | undefined;
+    private static latestCache: any | undefined;
 
     constructor(private config: Config) {
     }
@@ -53,19 +54,30 @@ export default class LevainReleases {
     }
 
     async latest(): Promise<any> {
-        const obj = this;
-        return new Promise((resolve, reject) => {
-            obj.releases()
-                .then((list) => {
-                    if (!list || list.length == 0) {
-                        reject(Error(`No release found`))
-                        return
-                    }
+        if (LevainReleases.latestCache) {
+            return Promise.resolve(LevainReleases.latestCache)
+        }
 
-                    resolve(list[0])
+        return new Promise((resolve, reject) => {
+            HttpUtils.get(`${this.apiUrl}/latest`)
+                .then(response => {
+                    response.json()
+                    .then(json => {
+                        LevainReleases.latestCache = json
+                        resolve(json)
+                        return
+                    })
+                    .catch(error => {
+                        log.error(`Error looking for Levain latest release ${error}`)
+                        reject(error)
+                        return
+                    })
+                })
+                .catch(error => {
+                    log.error(`Error looking for Levain latest release ${error}`)
+                    reject(error)
                     return
                 })
-                .catch((error) => reject(error))
         })
     }
 
