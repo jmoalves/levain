@@ -174,13 +174,11 @@ export class OsShell {
 
     private versionTag(): string {
         let myVersion = LevainVersion.levainVersion;
-        if (!myVersion || LevainVersion.isHeadVersion(myVersion)) {
-            myVersion = '';
-        } else {
-            myVersion = '-' + myVersion.replace(/^v/, '');
+        if (!myVersion) {
+            return '';
         }
 
-        return myVersion;
+        return '-' + myVersion;
     }
 
     private concatCmd(...parts: (string | undefined)[]): string {
