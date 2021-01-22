@@ -1,5 +1,5 @@
 @echo off
-@setlocal enableextensions enabledelayedexpansion
+setlocal
 
 for /f "usebackq tokens=2,*" %%A in (`reg query HKCU\Environment /v PATH 2^>nul`) do set levainUserPath=%%B
 
