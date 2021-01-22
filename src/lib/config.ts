@@ -37,6 +37,8 @@ export default class Config {
     private _levainBackupDir: string | undefined;
     private _levainCacheDir: string | undefined;
 
+    private _lastKnownVersion: string | undefined;
+
     constructor(args: any) {
         this._pkgManager = new PackageManager(this);
         this._repoManager = new RepositoryManager(this);
@@ -104,7 +106,6 @@ export default class Config {
         return this._levainBackupDir;
     }
 
-
     set levainCacheDir(dir: string) {
         this._levainCacheDir = dir
     }
@@ -161,6 +162,14 @@ export default class Config {
         }
 
         this._defaultPackage = pkgName;
+    }
+
+    get lastKnownVersion(): string|undefined {
+        return this._lastKnownVersion
+    }
+
+    set lastKnownVersion(version: string|undefined) {
+        this._lastKnownVersion = version
     }
 
     setVar(name: string, value: string): void {
@@ -261,6 +270,7 @@ export default class Config {
         cfg.defaultPackage = this._defaultPackage;
         cfg.cacheDir = this.levainCacheDir;
         cfg.shellPath = this._shellPath;
+        cfg.lastKnownVersion = this._lastKnownVersion;
 
         let fileName = this.levainConfigFile;
 
@@ -301,6 +311,10 @@ export default class Config {
 
             if (cfg.shellPath) {
                 this._shellPath = cfg.shellPath;
+            }
+
+            if (cfg.lastKnownVersion) {
+                this._lastKnownVersion = cfg.lastKnownVersion;
             }
         } catch (err) {
             if (err.name != "NotFound") {

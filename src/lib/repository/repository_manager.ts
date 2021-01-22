@@ -18,7 +18,6 @@ class Repositories {
 }
 
 const TURN_OFF_AUTO_UPDATE = true;
-let autoupdate_warning = true;
 
 export default class RepositoryManager {
     private repoFactory: RepositoryFactory
@@ -182,7 +181,7 @@ export default class RepositoryManager {
 
             // Turning off this feature - See https://github.com/jmoalves/levain/issues/57
             if (TURN_OFF_AUTO_UPDATE) {
-                if (autoupdate_warning) {
+                if (this.config.lastKnownVersion != latestVersion) {
                     log.warning("")
                     log.warning("")
                     log.warning("Levain auto-update is disabled")
@@ -193,7 +192,7 @@ export default class RepositoryManager {
                     log.warning("")
                     log.warning("")
                     prompt(`Hit ENTER to continue with your version`)
-                    autoupdate_warning = false
+                    this.config.lastKnownVersion = latestVersion
                 }
 
                 return

@@ -110,12 +110,7 @@ export class OsShell {
             if (this.config.shellPath) {
                 cmd = `cmd /c start ${this.config.shellPath}`;
             } else {
-                let myVersion = LevainVersion.levainVersion;
-                if (!myVersion || LevainVersion.isHeadVersion(myVersion)) {
-                    myVersion = '';
-                } else {
-                    myVersion = '-' + myVersion.replace(/^v/, '');
-                }
+                let myVersion = this.versionTag();
                 cmd = `cmd /c start cmd /u /k prompt [levain${myVersion}]$P$G`;
             }
         } else {
@@ -175,6 +170,17 @@ export class OsShell {
             }
             this.config.setVar(this.saveVar, cmdOutput);
         }
+    }
+
+    private versionTag(): string {
+        let myVersion = LevainVersion.levainVersion;
+        if (!myVersion || LevainVersion.isHeadVersion(myVersion)) {
+            myVersion = '';
+        } else {
+            myVersion = '-' + myVersion.replace(/^v/, '');
+        }
+
+        return myVersion;
     }
 
     private concatCmd(...parts: (string | undefined)[]): string {
