@@ -25,16 +25,15 @@ export default class LevainVersion {
         return ("vHEAD" === myVersion || "HEAD" === myVersion)
     }
 
-    static needsUpdate(newVersion: string): boolean {
-        let myVersion = LevainVersion.levainVersion
-
-        if (LevainVersion.isHeadVersion(myVersion)) {
-            log.debug(`No update needed - vHEAD version`)
+    static needsUpdate(newVersion?: string): boolean {
+        if (!newVersion) {
+            log.debug(`No update needed - no new version`)
             return false
         }
 
-        if (!newVersion) {
-            log.debug(`No update needed - no new version`)
+        let myVersion = LevainVersion.levainVersion
+        if (LevainVersion.isHeadVersion(myVersion)) {
+            log.debug(`No update needed - vHEAD version`)
             return false
         }
 
