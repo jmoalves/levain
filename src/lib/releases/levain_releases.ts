@@ -90,14 +90,14 @@ export default class LevainReleases {
                         })
                         .catch(error => {
                             log.debug(`1-Error - ${JSON.stringify(error)}`)
-                            log.error(`Error looking for Levain latest release ${error}`)
+                            log.debug(`Error looking for Levain latest release ${error}`)
                             reject(error)
                             return
                         })
                 })
                 .catch(error => {
                     log.debug(`2-Error - ${JSON.stringify(error)}`)
-                    log.error(`Error looking for Levain latest release ${error}`)
+                    log.debug(`Error looking for Levain latest release ${error}`)
                     reject(error)
                     return
                 })
@@ -121,7 +121,7 @@ export default class LevainReleases {
                             return
                         }
 
-                        log.error(`Invalid release tag format - ${release.tag_name}`)
+                        log.debug(`Invalid release tag format - ${release.tag_name}`)
                         resolve(undefined)
                         return
                     }
@@ -130,7 +130,7 @@ export default class LevainReleases {
                     return
                 })
                 .catch((error) => {
-                    log.error(`Error - ${error}`)
+                    log.debug(`Error - ${error}`)
                     reject(error)
                 })
         })

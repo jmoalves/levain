@@ -213,7 +213,8 @@ export default class RepositoryManager {
             log.debug(`addRepo DEFAULT ${url} --> Levain releases repo`)
             repos.push(url)
         } catch(error) {
-            log.info(`Ignoring Levain updates - Error ${error}`)
+            log.debug(`Error ${JSON.stringify(error)}`)
+            log.info(`Ignoring Levain updates`)
         }
     }
 
