@@ -29,11 +29,8 @@ export default class Extract implements Action {
             throw new Error("You must inform the file to extract and the destination directory");
         }
 
-        const src = path.resolve(pkg.pkgDir, args._[0]);
-        if (!existsSync(src)) {
-            throw Error(`Cannot find source file "${src}"`)
-        }
-        const dst = path.resolve(pkg.baseDir, args._[1]);
+        const src = this.normalize(pkg.pkgDir, args._[0])
+        const dst = this.normalize(pkg.baseDir, args._[1]);
 
         log.info(`EXTRACT ${src} => ${dst}`);
         const fileCache = new FileCache(this.config)
@@ -41,5 +38,27 @@ export default class Extract implements Action {
         const factory: ExtractorFactory = new ExtractorFactory();
         const extractor: Extractor = factory.createExtractor(this.config, cachedSrc);
         await extractor.extract(args.strip, cachedSrc, dst);
+    }
+
+    private normalize(parent: string, file: string): string {
+        if (file.startsWith("http://") || file.startsWith("https://")) {
+            return file
+        }
+
+        if (file.endsWith(".git")) {
+            return file
+        }
+
+        if (parent) {
+            file = path.resolve(parent, file)
+        } else {
+            file = path.resolve(file)
+        }
+
+        if (!existsSync(file)) {
+            throw Error(`Cannot find "${file}"`)
+        }
+
+        return file
     }
 }

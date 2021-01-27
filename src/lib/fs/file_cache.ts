@@ -7,6 +7,7 @@ import ProgressReader from '../io/progress_reader.ts';
 import FileReader from '../io/file_reader.ts';
 
 import { FileUtils } from './file_utils.ts';
+import ReaderFactory from "../io/reader_factory.ts";
 
 export default class FileCache {
     constructor(
@@ -21,7 +22,7 @@ export default class FileCache {
         let r:ProgressReader | undefined = undefined
 
         if (typeof src == 'string') {
-            r = new FileReader(src)
+            r = ReaderFactory.readerFor(src)
         } else {
             r = src
         }
