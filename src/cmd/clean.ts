@@ -8,6 +8,7 @@ import ConsoleAndFileLogger from "../lib/logger/console_and_file_logger.ts";
 import OsUtils from "../lib/os/os_utils.ts";
 
 import Command from "./command.ts";
+import StringUtils from "../lib/utils/string_utils.ts";
 
 export default class CleanCommand implements Command {
 
@@ -17,8 +18,6 @@ export default class CleanCommand implements Command {
     }
 
     execute(parameters: string[]): void {
-        log.info('CLEAN')
-
         const myArgs = parseArgs(parameters, {
             boolean: [
                 "cache",
@@ -28,79 +27,124 @@ export default class CleanCommand implements Command {
             ]
         });
 
+        let total = 0
+
         const noArgs = !parameters.length
         if (myArgs.cache || noArgs) {
             const cacheDir = this.config.levainCacheDir
-            log.info(`cleaning cacheDir ${cacheDir}`)
-            emptyDirSync(cacheDir)
+            log.debug(`cleaning cacheDir ${cacheDir}`)
+            let size = this.cleanDir(cacheDir)
+            log.info(`CLEAN ${StringUtils.humanizeBytes(size)} - ${cacheDir}`)
+            total += size
         }
 
         if (myArgs.backup || noArgs) {
             const backupDir = this.config.levainBackupDir
-            log.info(`cleaning backupDir ${backupDir}`)
-            emptyDirSync(backupDir)
+            log.debug(`cleaning backupDir ${backupDir}`)
+            let size = this.cleanDir(backupDir)
+            log.info(`CLEAN ${StringUtils.humanizeBytes(size)} - ${backupDir}`)
+            total += size
         }
 
         if (myArgs.temp || noArgs) {
             const tempDir = this.config.levainSafeTempDir
-            log.info(`cleaning tempDir ${tempDir}`)
-            emptyDirSync(tempDir)
+            log.debug(`cleaning tempDir ${tempDir}`)
+            let size = this.cleanDir(tempDir)
+            log.info(`CLEAN ${StringUtils.humanizeBytes(size)} - ${tempDir}`)
+            total += size
 
-            this.cleanOsTempDir();
+            size = this.cleanOsTempDir()
+            total += size
         }
 
         if (myArgs.logs || noArgs) {
-            log.info(`cleaning logs`)
-            this.cleanLogs();
+            log.debug(`cleaning logs`)
+            let size = this.cleanLogs()
+            total += size
         }
+
+        log.info("=================")
+        log.info(`CLEAN ${StringUtils.humanizeBytes(total)} - TOTAL`)
     }
 
-    private cleanOsTempDir() {
-        let tempDir = this.getOsTempDir();
-        if (!tempDir) {
-            return;
-        }
+    private cleanDir(entry: string, include?:((dirEntry:Deno.DirEntry) => boolean)): number {
+        let entryPath = path.resolve(entry)
+        // log.debug(`WALK ${entryPath}`)
 
-        log.info(`cleaning tempDir ${tempDir}`)
-        for (const dirEntry of Deno.readDirSync(tempDir)) {
-            if (dirEntry.name.match("^levain-temp-.*")) {
-                this.removeIgnoringErrors(path.resolve(tempDir, dirEntry.name));
-            } else if (dirEntry.isDirectory && dirEntry.name.match("^levain-.*")) {
-                this.removeIgnoringErrors(path.resolve(tempDir, dirEntry.name));
-            } else if (dirEntry.name.match("^levain$")) {
-                this.removeIgnoringErrors(path.resolve(tempDir, dirEntry.name));
+        let entryInfo = Deno.statSync(entryPath)
+        if (!entryInfo.isDirectory) {
+            try {
+                Deno.removeSync(entryPath)
+            } catch (error) {
+                log.debug(`Error ${error} - Ignoring ${entryPath}`)
             }
+            // log.debug(`DEL-FILE ${entryPath} - ${entryInfo.size}`)
+            return entryInfo.size
         }
+
+        let size = Array.from(Deno.readDirSync(entryPath))
+            .filter((entry) => !include || include(entry))
+            .map((entry) => this.cleanDir(path.resolve(entryPath, entry.name)))
+            .reduce(
+                ( dirsize, filesize ) => dirsize + filesize,
+                0
+            )
+
+        // log.debug(`DEL-DIR  ${entryPath} - ${size}`)
+        return size
     }
 
-    private cleanLogs() {
+    private cleanOsTempDir(): number {
         let tempDir = this.getOsTempDir();
         if (!tempDir) {
-            return;
+            return 0;
+        }
+
+        log.debug(`cleaning tempDir ${tempDir}`)
+        let size = this.cleanDir(tempDir, (dirEntry) => {
+            if (dirEntry.name.match("^levain-temp-.*")) {
+                return true
+            }
+
+            if (dirEntry.isDirectory && dirEntry.name.match("^levain-.*")) {
+                return true
+            }
+
+            if (dirEntry.name.match("^levain$")) {
+                return true
+            }
+
+            return false
+        })
+
+        log.info(`CLEAN ${StringUtils.humanizeBytes(size)} - ${tempDir}`)
+        return size
+    }
+
+    private cleanLogs(): number {
+        let tempDir = this.getOsTempDir();
+        if (!tempDir) {
+            return 0;
         }
 
         log.debug(`cleaning logs at tempDir ${tempDir}`)
-        for (const dirEntry of Deno.readDirSync(tempDir)) {
+        let size = this.cleanDir(tempDir, (dirEntry) => {
             if (dirEntry.isFile && dirEntry.name.match("^levain-.*\.log")) {
                 let dateTag = ConsoleAndFileLogger.logDateTag();
                 if (!dirEntry.name.match(`^levain-${dateTag}-.*`)) { // Do not remove today's logs
-                    this.removeIgnoringErrors(path.resolve(tempDir, dirEntry.name));
+                    return true
                 }
             }
-        }
+
+            return false
+        })
+
+        log.info(`CLEAN ${StringUtils.humanizeBytes(size)} - logs at ${tempDir}`)
+        return size
     }
 
     private getOsTempDir() {
         return OsUtils.tempDir;
-    }
-
-    private removeIgnoringErrors(entryName: string) {
-        log.debug(`DEL ${entryName}`);
-        try {
-            Deno.removeSync(entryName, { recursive: true });
-        } catch (error) {
-            log.debug(`Error ${error} - Ignoring ${entryName}`);
-        }
     }
 
     readonly oneLineExample = "  clean --cache(optional) --backup(optional) --temp(optional) --logs(optional)"
