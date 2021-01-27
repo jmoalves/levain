@@ -67,16 +67,17 @@ Deno.test('StringUtils - padEnd', () => {
 })
 
 Deno.test('StringUtils - humanizeBytes', () => {
-    assertEquals(StringUtils.humanizeBytes(0), "0 B")
-    assertEquals(StringUtils.humanizeBytes(500), "500 B")
-    assertEquals(StringUtils.humanizeBytes(1024), "1 KB")
-    assertEquals(StringUtils.humanizeBytes(1025), "1.001 KB")
-    assertEquals(StringUtils.humanizeBytes(2048), "2 KB")
-    assertEquals(StringUtils.humanizeBytes(2050), "2.002 KB")
-    assertEquals(StringUtils.humanizeBytes(1024 * 1024), "1 MB")
-    assertEquals(StringUtils.humanizeBytes(1024 * 1024 * 1024), "1 GB")
-    assertEquals(StringUtils.humanizeBytes(1024 * 1024 * 1024 * 1024), "1 TB")
-    assertEquals(StringUtils.humanizeBytes(1024 * 1024 * 1024 * 1024 * 1024), "1024 TB")
+    assertEquals(StringUtils.humanizeBytes(0),    "   0.000  B")
+    assertEquals(StringUtils.humanizeBytes(500),  " 500.000  B")
+    assertEquals(StringUtils.humanizeBytes(1024), "   1.000 KB")
+    assertEquals(StringUtils.humanizeBytes(1025), "   1.001 KB")
+    assertEquals(StringUtils.humanizeBytes(2048), "   2.000 KB")
+    assertEquals(StringUtils.humanizeBytes(2050), "   2.002 KB")
+    assertEquals(StringUtils.humanizeBytes(1024 * 1024), "   1.000 MB")
+    assertEquals(StringUtils.humanizeBytes(1024 * 1024 * 1024), "   1.000 GB")
+    assertEquals(StringUtils.humanizeBytes(1024 * 1024 * 1024 * 1024), "   1.000 TB")
+    assertEquals(StringUtils.humanizeBytes(1024 * 1024 * 1024 * 1024 * 1024), "1024.000 TB")
+    assertEquals(StringUtils.humanizeBytes(10240 * 1024 * 1024 * 1024 * 1024), "10240.000 TB")
 })
 
 

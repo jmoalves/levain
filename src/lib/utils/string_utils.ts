@@ -64,10 +64,13 @@ export default class StringUtils {
 
         while ( (idx + 1) < units.length && size >= 1024) {
             size = size / 1024
-            size = Math.round(size * 1000) / 1000
             idx++
         }
 
-        return "" + size + " " + units[idx]
+        size = Math.round(size * 1000)
+        let intPart = Math.round(size / 1000)
+        let decPart = size % 1000
+
+        return `${StringUtils.padNum(intPart, 4)}.${(decPart + "").padStart(3, "0")} ${units[idx].padStart(2)}`
     }
 }
