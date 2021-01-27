@@ -23,6 +23,7 @@ let update_warning = true;
 export default class RepositoryManager {
     private repoFactory: RepositoryFactory
     private extraRepos: Set<string> = new Set<string>()
+    private tempRepos: Set<string> = new Set<string>()
 
     private repositories = new Repositories()
 
@@ -30,12 +31,16 @@ export default class RepositoryManager {
         this.repoFactory = new RepositoryFactory(config)
     }
 
-    async init(repos: string[], skipLevainUpdates: boolean = false) {
+    async init({ repos, tempRepos, skipLevainUpdates = false }: { repos: string[]; tempRepos?: string[]; skipLevainUpdates?: boolean; }) {
         log.debug("")
         log.debug(`=== RepositoryManager.init - extraRepos: ${JSON.stringify(repos)}`)
 
         if (repos) {
             repos.forEach(repo => this.extraRepos.add(repo))
+        }
+
+        if (tempRepos) {
+            tempRepos.forEach(repo => this.tempRepos.add(repo))
         }
 
         await this.createRepositories(skipLevainUpdates)
@@ -138,6 +143,13 @@ export default class RepositoryManager {
                 await repo.init()    
             }
         }
+
+        log.info(`=== REPOS`)
+        for (let key in repos) {
+            if (repos[key]) {
+                log.info(`Repo[${key}] - ${repos[key].name}`)
+            }
+        }
     }
 
     private async createCurrentDirRepo() {
@@ -168,6 +180,7 @@ export default class RepositoryManager {
         if (installedOnly) {
             this.addLevainRegistryRepo(repos)
         } else {
+            this.addTempRepos(repos)
             this.addExtraRepos(repos)
         }
 
@@ -229,7 +242,13 @@ export default class RepositoryManager {
     }
 
     private addExtraRepos(repos: string[]) {
+        log.debug(`addRepo ${[...this.extraRepos]} --> addRepo`)
         this.extraRepos.forEach(repo => repos.push(repo))
+    }
+
+    private addTempRepos(repos: string[]) {
+        log.debug(`addRepo ${[...this.tempRepos]} --> tempRepo`)
+        this.tempRepos.forEach(repo => repos.push(repo))
     }
 
     private createRepos(list: string[]): Repository {

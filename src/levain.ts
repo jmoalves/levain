@@ -26,6 +26,7 @@ export default class Levain {
                 stringMany: [
                     "levainHome",
                     "addRepo",
+                    "tempRepo",
                     "add-log",
                     "add-log-dir",
                 ],

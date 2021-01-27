@@ -62,7 +62,11 @@ export default class LevainCli {
         // Repository Manager
         log.info("");
         log.info("==================================");
-        await config.repositoryManager.init(myArgs.addRepo, myArgs["skip-levain-updates"])
+        await config.repositoryManager.init({
+            repos: myArgs.addRepo,
+            tempRepos: myArgs.tempRepo,
+            skipLevainUpdates: myArgs["skip-levain-updates"]
+        })
 
         const loader = new Loader(config);
         try {
