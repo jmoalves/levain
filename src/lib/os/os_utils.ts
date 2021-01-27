@@ -36,6 +36,17 @@ export default class OsUtils {
         return folderFromEnv
     }
 
+    static get hostname(): string|undefined {
+        const hostEnvStrings = ['COMPUTERNAME', "HOSTNAME"]
+        const hostFromEnv = envChain(...hostEnvStrings)
+        if (!hostFromEnv) {
+            log.debug(`Hostname not found. Looked for env vars ${hostEnvStrings.join()}`)
+            return undefined
+        }
+
+        return hostFromEnv
+    }
+
     static onlyInWindows(isError = true) {
         if (!OsUtils.isWindows()) {
             const message = `${OsUtils.getOs()} not supported`

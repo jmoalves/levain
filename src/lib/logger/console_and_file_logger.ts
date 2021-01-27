@@ -83,7 +83,7 @@ export default class ConsoleAndFileLogger {
     }
 
     static getLogFileInExtraDir(extraDir: string) {
-        const myFileName = `levain-${OsUtils.login?.toLowerCase()}-${ConsoleAndFileLogger.logTag()}.log`
+        const myFileName = `levain-${OsUtils.hostname?.toLowerCase()}-${OsUtils.login?.toLowerCase()}-${ConsoleAndFileLogger.logTag()}.log`
         return path.join(extraDir, myFileName)
     }
 
