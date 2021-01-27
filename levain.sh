@@ -1,5 +1,9 @@
 #!/bin/bash
 
+#################################
+# FIXME: This script should evolve as levain.cmd did
+#################################
+
 myPath="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 export DENO_BIN=/usr/local/bin/deno

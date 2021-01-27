@@ -15,21 +15,13 @@ if not "a%denoPath%" == "a" (
 
 set NO_COLOR=true
 set DENO_DIR=%denoPath%
-if exist %myPath%\levain.bundle.js (
-    echo Running %myPath%\levain.bundle.js
-    %denoPath%deno.exe run ^
-        --cached-only ^
-        --no-check ^
-        --allow-read --allow-write --allow-env --allow-net --allow-run ^
-        --unstable ^
-        %myPath%\levain.bundle.js ^
-        %*
-) else (
-    echo Running %myPath%src\levain.ts
-    %denoPath%deno.exe run ^
-        --no-check ^
-        --allow-read --allow-write --allow-env --allow-net --allow-run ^
-        --unstable ^
-        %myPath%src\levain.ts ^
-        %*
-)
+:::::::::::::::::::::::::::::
+:: FIXME: Use levain bundle
+:::::::::::::::::::::::::::::
+echo Running %myPath%src\levain.ts
+%denoPath%deno.exe run ^
+    --no-check ^
+    --allow-read --allow-write --allow-env --allow-net --allow-run ^
+    --unstable ^
+    %myPath%src\levain.ts ^
+    %*
