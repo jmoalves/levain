@@ -1,6 +1,7 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
 import Config from "../lib/config.ts";
+import StringUtils from "../lib/utils/string_utils.ts";
 
 import Command from "./command.ts";
 
@@ -39,14 +40,10 @@ export default class ListCommand implements Command {
                 log.info(`== Package${filteredPluralChar}`);
                 // TODO: Inform if package is already installed.
                 filteredPackages.forEach(pkg => {
-                    log.info(`   ${this.myPad(pkg.name, 30)} ${this.myPad(pkg.version, 10)} => ${pkg.filePath}`)
+                    log.info(`   ${StringUtils.padEnd(pkg.name, 30)} ${StringUtils.padEnd(pkg.version, 10)} => ${pkg.filePath}`)
                 })
             }
         }
-    }
-
-    private myPad(text: string | undefined, size: number): string {
-        return (text + "" || " ").padEnd(size);
     }
 
     readonly oneLineExample = "  list <optional search text>"
