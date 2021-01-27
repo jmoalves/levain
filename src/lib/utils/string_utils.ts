@@ -1,3 +1,5 @@
+import * as log from "https://deno.land/std/log/mod.ts";
+
 export default class StringUtils {
 
     static textContainsAtLeastOneChar(text: string, chars: string) {
@@ -52,5 +54,20 @@ export default class StringUtils {
 
     static padNum(n: number|undefined, size: number, pad: string = " "): string {
         return (n == undefined ? "" : "" + n).padStart(size, pad);
+    }
+
+    static humanizeBytes(bytes: number): string {
+        const units = ['B', 'KB', 'MB', 'GB', 'TB']
+
+        let size = bytes
+        let idx = 0
+
+        while ( (idx + 1) < units.length && size >= 1024) {
+            size = size / 1024
+            size = Math.round(size * 1000) / 1000
+            idx++
+        }
+
+        return "" + size + " " + units[idx]
     }
 }
