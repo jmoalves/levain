@@ -2,12 +2,12 @@ import {assertEquals} from "https://deno.land/std/testing/asserts.ts";
 
 import StringUtils from './string_utils.ts';
 
-Deno.test('should check if textContainsChars', () => {
+Deno.test('StringUtils - should check if textContainsChars', () => {
     assertEquals(StringUtils.textContainsAtLeastOneChar('abc', 'xyz'), false)
     assertEquals(StringUtils.textContainsAtLeastOneChar('abc', 'cde'), true)
 })
 
-Deno.test('humanizeMillis', () => {
+Deno.test('StringUtils - humanizeMillis', () => {
     assertEquals(StringUtils.humanizeMillis(MillisBuilder.newMillis().hours(50).minutes(35).seconds(28).millis(75).build()),
         "50h 35min 28.075s");
 
@@ -44,6 +44,27 @@ Deno.test('humanizeMillis', () => {
     assertEquals(StringUtils.humanizeMillis(0.029),
         "0.000s");
 });
+
+Deno.test('StringUtils - padNum', () => {
+    assertEquals(StringUtils.padNum(0, 10), '         0')
+    assertEquals(StringUtils.padNum(0, 10, "0"), '0000000000')
+
+    assertEquals(StringUtils.padNum(258, 5), '  258')
+    assertEquals(StringUtils.padNum(258, 5, "0"), '00258')
+
+    let x;
+    assertEquals(StringUtils.padNum(x, 7, " "), '       ')
+    assertEquals(StringUtils.padNum(x, 7, "0"), '0000000')
+})
+
+Deno.test('StringUtils - padEnd', () => {
+    assertEquals(StringUtils.padEnd('0', 10), '0         ')
+
+    assertEquals(StringUtils.padEnd('258', 5), '258  ')
+
+    let x;
+    assertEquals(StringUtils.padEnd(x, 7), '       ')
+})
 
 class MillisBuilder {
     private static readonly SECONDS = 1000;
@@ -90,7 +111,7 @@ class MillisBuilder {
 //
 // parseBoolean
 //
-Deno.test('should parse true', () => {
+Deno.test('StringUtils - parseBoolean - should parse true', () => {
     assertEquals(StringUtils.parseBoolean(true), true)
     assertEquals(StringUtils.parseBoolean('true'), true)
     assertEquals(StringUtils.parseBoolean('1'), true)
@@ -98,7 +119,7 @@ Deno.test('should parse true', () => {
     assertEquals(StringUtils.parseBoolean(123), true)
     assertEquals(StringUtils.parseBoolean('any text'), true)
 })
-Deno.test('should parse false', () => {
+Deno.test('StringUtils - parseBoolean - should parse false', () => {
     assertEquals(StringUtils.parseBoolean(false), false)
     assertEquals(StringUtils.parseBoolean('false'), false)
     assertEquals(StringUtils.parseBoolean('0'), false)

@@ -45,4 +45,12 @@ export default class StringUtils {
             ? false
             : true
     }
+
+    static padEnd(text: string | undefined, size: number): string {
+        return (text == undefined ? "" : text + "").padEnd(size);
+    }
+
+    static padNum(n: number|undefined, size: number, pad: string = " "): string {
+        return (n == undefined ? "" : "" + n).padStart(size, pad);
+    }
 }
