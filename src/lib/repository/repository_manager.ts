@@ -203,7 +203,7 @@ export default class RepositoryManager {
             await levainReleases.newReleaseInfo()
             await levainReleases.prepareNewRelease()
         } catch(error) {
-            log.debug(`Error ${JSON.stringify(error)}`)
+            log.debug(`Error ${error}`)
             log.info(`Ignoring Levain updates`)
         }
     }

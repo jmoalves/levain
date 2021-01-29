@@ -117,7 +117,7 @@ export class SevenZip extends Extractor {
         log.debug(`-- 7z ${src} => ${dst}`);
         OsUtils.onlyInWindows()
 
-        const command = `cmd /u /c path ${ExtraBin.sevenZipDir};%PATH% && ${ExtraBin.sevenZipDir}\\7z.exe x -bsp2 -o${dst} ${src}`;
+        const command = `cmd /u /c path ${ExtraBin.sevenZipDir};%PATH% && ${ExtraBin.sevenZipDir}\\7z.exe x -bsp2 -aoa -o${dst} ${src}`;
         await OsUtils.runAndLog(command);
     }
 }

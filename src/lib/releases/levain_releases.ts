@@ -166,19 +166,23 @@ export default class LevainReleases {
         log.debug(`levain releases dir ${releasesDir}`)
         ensureDirSync(releasesDir)
 
-        try {
-            log.debug(`Extracting levain to ${releasesDir}`)
-            let url = await this.levainZipUrl()
-            let action = `extract ${url} ${releasesDir}`
-            let loader = new Loader(this.config)
-            await loader.action(undefined, action)    
-        } catch (error) {
-            log.error(`Unable to extract levain version - ignoring upgrade (for now) ${JSON.stringify(error)}`)
-            return
+        let newVersionDir = path.resolve(releasesDir, `levain-${await this.latestVersion()}`)
+        log.debug(`Checking (1) levain at ${newVersionDir}`)
+        if (!existsSync(newVersionDir)) {
+            try {
+                log.debug(`Extracting levain to ${releasesDir}`)
+                let url = await this.levainZipUrl()
+                let action = `extract ${url} ${releasesDir}`
+                let loader = new Loader(this.config)
+                await loader.action(undefined, action)    
+            } catch (error) {
+                log.error(`Unable to extract levain version - ignoring upgrade (for now) ${JSON.stringify(error)}`)
+                return
+            }
         }
 
-        let newVersionDir = path.resolve(releasesDir, `levain-${await this.latestVersion()}`)
-        log.debug(`Checking levain at ${newVersionDir}`)
+        // Double check
+        log.debug(`Checking (2) levain at ${newVersionDir}`)
         if (!existsSync(newVersionDir)) {
             log.error("Unable to load new levain version - ignoring upgrade (for now)")
             return

@@ -49,7 +49,6 @@ echo.
 echo Finding new version...
 echo.
 for /d %%l in ( %TEMP%\levain\levain-* ) do (
-    echo %%l
     set levainDir=%%l
 )
 
@@ -60,5 +59,6 @@ if "a%levainDir%" == "a" (
 )
 
 %levainDir%\levain --levain-upgrade %*
+if errorlevel 1 exit /b %ERRORLEVEL%
 
 goto:eof

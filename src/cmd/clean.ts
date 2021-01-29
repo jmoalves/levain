@@ -90,6 +90,12 @@ export default class CleanCommand implements Command {
                 0
             )
 
+        try {
+            Deno.removeSync(entryPath)
+        } catch (error) {
+            log.debug(`${entryPath} - Ignoring ${error}`)
+        }
+
         // log.debug(`DEL-DIR  ${entryPath} - ${size}`)
         return size
     }
