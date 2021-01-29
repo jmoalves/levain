@@ -13,12 +13,9 @@ if not "a%denoPath%" == "a" (
 call:fnRun %*
 if "a%ERRORLEVEL%" == "a42" (
     call:fnUpgrade %*
-    if errorlevel 1 exit /b %ERRORLEVEL%
 )
 
 exit /b 0
-
-goto:eof
 
 
 :fnRun
@@ -58,7 +55,5 @@ if "a%levainDir%" == "a" (
     exit /b 1
 )
 
-call %levainDir%\levain.cmd --levain-upgrade %*
-if errorlevel 1 exit /b %ERRORLEVEL%
-
-goto:eof
+call %levainDir%\levain.cmd --levainHome=%myPath%.. --levain-upgrade %*
+exit /b 0
