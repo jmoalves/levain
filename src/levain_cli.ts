@@ -77,7 +77,11 @@ export default class LevainCli {
         try {
             if (myArgs["levain-upgrade"]) {
                 await loader.command("install", ["levain"])
-                throw Error("Levain upgrade finished. Please rerun your command")
+                log.info("");
+                log.info("Levain upgrade finished. Please rerun your command")
+                log.info("");
+                prompt("Hit ENTER to finish");
+                Deno.exit(0)
             } else {
                 await loader.command(cmd, myArgs._)
             }
