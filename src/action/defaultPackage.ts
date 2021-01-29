@@ -9,7 +9,7 @@ export default class DefaultPackage implements Action {
     constructor(private config: Config) {
     }
 
-    async execute(pkg: Package, parameters: string[]): Promise<void> {
+    async execute(pkg: Package|undefined, parameters: string[]): Promise<void> {
         if (parameters.length != 1) {
             throw `You must inform one package ${parameters}`;
         }

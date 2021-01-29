@@ -1,8 +1,14 @@
 import * as log from "https://deno.land/std/log/mod.ts";
+import * as path from "https://deno.land/std/path/mod.ts";
+import { ensureDirSync, existsSync } from "https://deno.land/std/fs/mod.ts";
 
 import Config from "../config.ts";
 import HttpUtils from "../utils/http_utils.ts";
 import OsUtils from "../os/os_utils.ts";
+import LevainVersion from "../../levain_version.ts";
+import Loader from "../loader.ts";
+
+const UPDATE_REQUEST = 42
 
 export default class LevainReleases { 
     private apiUrl = 'https://api.github.com/repos/jmoalves/levain/releases'
@@ -142,5 +148,46 @@ export default class LevainReleases {
 
     async releasesRepositoryUrl(): Promise<string> {
         return await this.levainZipUrl()
+    }
+
+    async newReleaseInfo() {
+        log.info("")
+        log.info("*********************************************************")
+        log.info("We have a new Levain release available!")
+        log.info("")
+        log.info(`- Your version: ${LevainVersion.levainVersion}`)
+        log.info(`-  New version: ${await this.latestVersion()}`)
+        log.info("*********************************************************")
+        log.info("")
+    }
+
+    async prepareNewRelease() {
+        let releasesDir = path.resolve(OsUtils.tempDir, "levain")
+        log.debug(`levain releases dir ${releasesDir}`)
+        ensureDirSync(releasesDir)
+
+        try {
+            log.debug(`Extracting levain to ${releasesDir}`)
+            let url = await this.levainZipUrl()
+            let action = `extract ${url} ${releasesDir}`
+            let loader = new Loader(this.config)
+            await loader.action(undefined, action)    
+        } catch (error) {
+            log.error(`Unable to extract levain version - ignoring upgrade (for now) ${JSON.stringify(error)}`)
+            return
+        }
+
+        let newVersionDir = path.resolve(releasesDir, `levain-${await this.latestVersion()}`)
+        log.debug(`Checking levain at ${newVersionDir}`)
+        if (!existsSync(newVersionDir)) {
+            log.error("Unable to load new levain version - ignoring upgrade (for now)")
+            return
+        }
+
+        log.info("")
+        log.info("Restarting Levain for upgrade")
+        log.info("")
+
+        Deno.exit(UPDATE_REQUEST)
     }
 }

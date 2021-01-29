@@ -11,7 +11,7 @@ export default class ContextMenu implements Action {
     constructor(private config: Config) {
     }
 
-    async execute(pkg: Package, parameters: string[]) {
+    async execute(pkg: Package|undefined, parameters: string[]) {
         log.info(`CONTEXT-MENU ${parameters}`);
 
         if (!parameters || parameters.length < 1 || parameters[0] != "folders") {
@@ -43,6 +43,10 @@ export default class ContextMenu implements Action {
 
         if (args.id.includes(" ")) {
             throw "contextMenu - The 'id' option must NOT contain spaces";
+        }
+
+        if (!pkg) {
+            throw Error("No package for action contextMenu")
         }
 
         let tempFilename = await this.templateRegistry(pkg, args);

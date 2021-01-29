@@ -27,6 +27,8 @@ export default class FileCache {
             r = src
         }
 
+        await r.rewind()
+
         const filePathInCache = this.cachedFilePath(r.name)
         log.debug(`filePathInCache ${filePathInCache}`);
         if (this.cacheValid(r, filePathInCache)) {

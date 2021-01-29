@@ -11,7 +11,11 @@ export default class LevainShell implements Action {
     constructor(private config: Config) {
     }
 
-    async execute(pkg: Package, parameters: string[]) {
+    async execute(pkg: Package|undefined, parameters: string[]) {
+        if (!pkg) {
+            throw Error("No package for action levainShell")
+        }
+
         log.info(`LEVAIN-SHELL ${pkg.name} ${JSON.stringify(parameters)}`);
 
         const myArgs = parseArgs(parameters, {

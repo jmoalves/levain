@@ -17,7 +17,7 @@ export default class Extract implements Action {
     ) {
     }
 
-    async execute(pkg: Package, parameters: string[]) {
+    async execute(pkg: Package|undefined, parameters: string[]) {
         let args = parseArgs(parameters, {
             boolean: [
                 "strip"
@@ -29,8 +29,8 @@ export default class Extract implements Action {
             throw new Error("You must inform the file to extract and the destination directory");
         }
 
-        const src = this.normalize(pkg.pkgDir, args._[0])
-        const dst = this.normalize(pkg.baseDir, args._[1]);
+        const src = this.normalize(pkg?.pkgDir, args._[0])
+        const dst = this.normalize(pkg?.baseDir, args._[1]);
 
         log.info(`EXTRACT ${src} => ${dst}`);
         const fileCache = new FileCache(this.config)
@@ -40,7 +40,7 @@ export default class Extract implements Action {
         await extractor.extract(args.strip, cachedSrc, dst);
     }
 
-    private normalize(parent: string, file: string): string {
+    private normalize(parent: string|undefined, file: string): string {
         if (file.startsWith("http://") || file.startsWith("https://")) {
             return file
         }

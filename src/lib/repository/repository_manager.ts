@@ -17,8 +17,7 @@ class Repositories {
     currentDir: Repository|undefined = undefined
 }
 
-const TURN_OFF_AUTO_UPDATE = true;
-let update_warning = true;
+let check_update = true;
 
 export default class RepositoryManager {
     private repoFactory: RepositoryFactory
@@ -188,6 +187,11 @@ export default class RepositoryManager {
     }
 
     private async addLevainReleasesRepo(repos: string[]) {
+        if (!check_update) {
+            return
+        }
+        check_update = false
+
         try {
             let levainReleases = new LevainReleases(this.config)
             let latestVersion = await levainReleases.latestVersion()
@@ -195,36 +199,9 @@ export default class RepositoryManager {
                 return
             }
 
-            // Turning off this feature - See https://github.com/jmoalves/levain/issues/57
-            if (TURN_OFF_AUTO_UPDATE) {
-                if (update_warning) {
-                    log.warning("")
-                    log.warning("*********************************************************")
-                    log.warning("We have a new Levain release available!")
-                    log.warning("")
-                    log.warning(`- Your version: ${LevainVersion.levainVersion}`)
-                    log.warning(`-  New version: ${latestVersion}`)
-                    log.warning("*********************************************************")
-                    log.warning("")
-
-                    if (this.config.lastKnownVersion != latestVersion) {
-                        log.warning("However, Levain auto-update is disabled")
-                        log.warning("")
-                        prompt(`Hit ENTER to continue with your version`)
-                        log.warning("")
-
-                        this.config.lastKnownVersion = latestVersion
-                    }
-
-                    update_warning = false
-                }
-
-                return
-            }
-
-            let url = await levainReleases.releasesRepositoryUrl()
-            log.debug(`addRepo DEFAULT ${url} --> Levain releases repo`)
-            repos.push(url)
+            this.config.lastKnownVersion = latestVersion
+            await levainReleases.newReleaseInfo()
+            await levainReleases.prepareNewRelease()
         } catch(error) {
             log.debug(`Error ${JSON.stringify(error)}`)
             log.info(`Ignoring Levain updates`)

@@ -12,7 +12,7 @@ export default class Mkdir implements Action {
     constructor(private config: Config) {
     }
 
-    async execute(pkg: Package, parameters: string[]): Promise<void> {
+    async execute(pkg: Package|undefined, parameters: string[]): Promise<void> {
         let args = parseArgs(parameters, {
             boolean: [
                 "compact"
@@ -23,7 +23,7 @@ export default class Mkdir implements Action {
             throw "Action - mkdir - You should inform a single directory";
         }
 
-        const dirname = path.resolve(pkg.baseDir, args._[0]);
+        const dirname = ( pkg ? path.resolve(pkg.baseDir, args._[0]) : path.resolve(args._[0]));
 
         if (!this.dirExists(dirname)) {
             log.info(`MKDIR ${dirname}`);

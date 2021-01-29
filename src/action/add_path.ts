@@ -12,7 +12,7 @@ export default class AddPathAction implements Action {
     constructor(private config: Config) {
     }
 
-    async execute(pkg: Package, parameters: string[]): Promise<void> {
+    async execute(pkg: Package|undefined, parameters: string[]): Promise<void> {
         const myArgs = parseArgs(parameters, {
             boolean: [
                 "permanent",

@@ -20,7 +20,7 @@ export default class LevainCli {
 
         log.debug("args " + JSON.stringify(myArgs));
 
-        if (myArgs["wait-to-begin"]) {
+        if (myArgs["wait-to-begin"] && !myArgs["levain-upgrade"]) {
             console.log("");
             console.log("");
             CliUtil.askToContinue()
@@ -32,7 +32,7 @@ export default class LevainCli {
         log.info("==================================");
         log.info(`CWD ${Deno.cwd()}`);
 
-        if (myArgs?._?.length == 0) {
+        if (myArgs?._?.length == 0 && !myArgs["levain-upgrade"]) {
             this.showCliHelp()
             return
         }
@@ -70,6 +70,10 @@ export default class LevainCli {
 
         const loader = new Loader(config);
         try {
+            if (myArgs["levain-upgrade"]) {
+                await loader.command("install", ["levain"]);
+            }
+
             await loader.command(cmd, myArgs._);
         } catch (err) {
             if (err instanceof CommandNotFoundError) {

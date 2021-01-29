@@ -11,7 +11,7 @@ export default class SetVarAction implements Action {
     ) {
     }
 
-    async execute(pkg: Package, parameters: string[]): Promise<void> {
+    async execute(pkg: Package|undefined, parameters: string[]): Promise<void> {
         if (parameters.length !== 2) {
             throw new Error('Action - setVar - You should inform the var name and value')
         }

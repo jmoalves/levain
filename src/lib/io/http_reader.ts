@@ -58,8 +58,12 @@ export default class HttpReader implements ProgressReader {
         let response = await HttpUtils.get(this.url)
 
         this.contentLength = Number(response.headers.get('content-length')) || undefined
+        log.debug(`size: ${this.contentLength} - ${this.url}`)
+
         this.lastModified = null
         let strDate = response.headers.get('last-modified')
+        log.debug(`mtime: ${strDate} - ${this.url}`)
+
         if (strDate) {
             this.lastModified = new Date(strDate)
         }
@@ -77,10 +81,10 @@ export default class HttpReader implements ProgressReader {
             return Promise.resolve(null)
         }
 
-        log.debug(`- pre-read ${p.length}`)
+        // log.debug(`- pre-read ${p.length}`)
         return new Promise((resolve, reject) => {
             this.reader?.read(p).then(size => {
-                log.debug(`- read ${size}`)
+                // log.debug(`- read ${size}`)
                 if (size) {
                     this.bytesRead += size;
                     if (this.progressBar) {

@@ -8,7 +8,7 @@ export default class AssertContainsAction implements Action {
     constructor(private config: Config) {
     }
 
-    async execute(pkg: Package, parameters: string[]): Promise<void> {
+    async execute(pkg: Package|undefined, parameters: string[]): Promise<void> {
         const args = parseArgs(parameters, {
             stringOnce: [
                 "message"

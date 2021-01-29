@@ -12,7 +12,7 @@ export default class CopyAction implements Action {
     constructor(private config: Config) {
     }
 
-    async execute(pkg: Package, parameters: string[]): Promise<void> {
+    async execute(pkg: Package|undefined, parameters: string[]): Promise<void> {
         let args = parseArgs(parameters, {
             boolean: [
                 "verbose",
@@ -23,6 +23,10 @@ export default class CopyAction implements Action {
 
         if (args._.length < 2) {
             throw "Action - copy - You should inform the source(s) and the destination";
+        }
+
+        if (!pkg) {
+            throw Error("No package for action copy")
         }
 
         const dst = path.resolve(pkg.baseDir, args._.pop());

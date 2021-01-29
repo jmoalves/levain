@@ -11,7 +11,7 @@ export default class Template implements Action {
     constructor(private config: Config) {
     }
 
-    async execute(pkg: Package, parameters: string[]) {
+    async execute(pkg: Package|undefined, parameters: string[]) {
         log.debug(`TEMPLATE ${parameters}`);
 
         let args = parseArgs(parameters, {
@@ -26,8 +26,8 @@ export default class Template implements Action {
 
         this.verifyArgs(args); // throws
 
-        let src = path.resolve(pkg.pkgDir, args._[0]);
-        let dst = path.resolve(pkg.baseDir, args._[1]);
+        let src = ( pkg ? path.resolve(pkg.pkgDir, args._[0]) : path.resolve(args._[0]) );
+        let dst = ( pkg ? path.resolve(pkg.baseDir, args._[1]) : path.resolve(args._[1]) );
 
         log.info(`TEMPLATE ${src} => ${dst}`);
         let data = Deno.readTextFileSync(src);
