@@ -7,6 +7,7 @@ import Loader from "./lib/loader.ts";
 import UserInfoUtil from "./lib/user_info/userinfo_util.ts";
 import CliUtil from "./lib/cli_util.ts";
 import CommandFactory, { CommandNotFoundError } from "./cmd/command_factory.ts";
+import LevainReleases from "./lib/releases/levain_releases.ts";
 
 import LevainVersion from "./levain_version.ts";
 
@@ -59,13 +60,17 @@ export default class LevainCli {
             config.shellPath = myArgs.shellPath
         }
 
+        if (!myArgs["skip-levain-updates"]) {
+            let levainReleases = new LevainReleases(config)
+            await levainReleases.checkLevainUpdate()
+        }
+        
         // Repository Manager
         log.info("");
         log.info("==================================");
         await config.repositoryManager.init({
             repos: myArgs.addRepo,
-            tempRepos: myArgs.tempRepo,
-            skipLevainUpdates: myArgs["skip-levain-updates"]
+            tempRepos: myArgs.tempRepo
         })
 
         const loader = new Loader(config);

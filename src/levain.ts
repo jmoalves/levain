@@ -46,6 +46,9 @@ export default class Levain {
             await this.prepareLogs(this.myArgs);
 
             log.info("");
+            log.info(`levain ${cmdArgs.join(' ')}`)
+            log.info("==================================");
+            log.info("");
             await new LevainCli().execute(this.myArgs);
 
         } catch (err) {

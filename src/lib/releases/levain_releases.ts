@@ -150,6 +150,23 @@ export default class LevainReleases {
         return await this.levainZipUrl()
     }
 
+    async checkLevainUpdate() {
+        try {
+            let levainReleases = new LevainReleases(this.config)
+            let latestVersion = await levainReleases.latestVersion()
+            if (!LevainVersion.needsUpdate(latestVersion)) {
+                return
+            }
+
+            this.config.lastKnownVersion = latestVersion
+            await levainReleases.newReleaseInfo()
+            await levainReleases.prepareNewRelease()
+        } catch(error) {
+            log.debug(`Error ${error}`)
+            log.info(`Ignoring Levain updates`)
+        }
+    }
+
     async newReleaseInfo() {
         log.info("")
         log.info("*********************************************************")
