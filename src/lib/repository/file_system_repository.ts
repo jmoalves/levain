@@ -13,7 +13,7 @@ import AbstractRepository from './abstract_repository.ts';
 export default class FileSystemRepository extends AbstractRepository {
     readonly name;
 
-    readonly excludeDirs = ['.git', 'node_modules', 'npm-cache', '$Recycle.Bin', 'temp', 'tmp', 'windows', 'system', 'system32']
+    readonly excludeDirs = ['.git', 'node_modules', 'npm-cache', '$Recycle.Bin', 'temp', 'tmp', 'windows', 'system', 'system32', 'bin', 'extra-bin']
 
     constructor(
         private config: Config,
@@ -133,7 +133,7 @@ export default class FileSystemRepository extends AbstractRepository {
 
         log.debug(`crawlPackages ${dirname}`)
         if (!FileUtils.canReadSync(dirname)) {
-            log.debug(`not crawling ${dirname}`)
+            log.debug(`not crawling ${dirname} - can't read`)
             return []
         }
 
@@ -145,9 +145,12 @@ export default class FileSystemRepository extends AbstractRepository {
         }
 
         if (!entries) {
-            log.debug(`not crawling ${dirname}`)
+            log.debug(`not crawling ${dirname} - no entries`)
             return []
         }
+
+        // User feedback
+        Deno.stdout.writeSync(new TextEncoder().encode("."));
 
         let packages: Array<FileSystemPackage> = [];
         for (const entry of entries) {
@@ -182,10 +185,12 @@ export default class FileSystemRepository extends AbstractRepository {
         const packages = []
         const packageFiles = expandGlobSync(packagesGlob, globOptions);
         for (const file of packageFiles) {
-            console.log(`## checking file ${JSON.stringify(file)}`)
+            log.debug(`## checking file ${JSON.stringify(file)}`)
             const pkg = this.readPackage(file.path)
             if (pkg) {
-                console.log(`## adding package ${pkg}`)
+                log.debug(`## adding package ${pkg}`)
+                // User feedback
+                Deno.stdout.writeSync(new TextEncoder().encode("+"));
                 packages.push(pkg)
             }
         }

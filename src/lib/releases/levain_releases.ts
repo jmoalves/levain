@@ -151,10 +151,17 @@ export default class LevainReleases {
     }
 
     async checkLevainUpdate() {
+        if (!this.allowsUpdate()) {
+            log.debug("")
+            log.debug(`My version does not allow updates - ${LevainVersion.levainVersion}`)
+            log.debug("")
+            return
+        }
+
         try {
             let levainReleases = new LevainReleases(this.config)
             let latestVersion = await levainReleases.latestVersion()
-            if (!LevainVersion.needsUpdate(latestVersion)) {
+            if (!this.needsUpdate(latestVersion)) {
                 return
             }
 
@@ -165,6 +172,31 @@ export default class LevainReleases {
             log.debug(`Error ${error}`)
             log.info(`Ignoring Levain updates`)
         }
+    }
+
+    allowsUpdate(): boolean {
+        return !LevainVersion.isHeadVersion()
+    }
+
+    needsUpdate(newVersion?: string): boolean {
+        if (!newVersion) {
+            log.debug(`No update needed - no new version`)
+            return false
+        }
+
+        let myVersion = LevainVersion.levainVersion
+        if (LevainVersion.isHeadVersion(myVersion)) {
+            log.debug(`No update needed - vHEAD version`)
+            return false
+        }
+
+        if (newVersion == myVersion) {
+            log.debug(`No update needed - same version ${newVersion}`)
+            return false
+        }
+
+        log.debug(`UPDATE needed - my version ${myVersion} != new version ${newVersion}`)
+        return true
     }
 
     async newReleaseInfo() {
