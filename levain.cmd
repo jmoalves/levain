@@ -13,6 +13,10 @@ if not "a%denoPath%" == "a" (
 call:fnRun %*
 if "a%ERRORLEVEL%" == "a42" (
     call:fnUpgrade %*
+    echo.
+    echo After upgrade finish, please rerun your previous command
+    echo %0 %*
+    echo.
 )
 
 exit /b 0
@@ -43,8 +47,6 @@ goto:eof
 echo.
 echo LEVAIN UPGRADE!
 echo.
-echo Finding new version...
-echo.
 for /d %%l in ( %TEMP%\levain\levain-* ) do (
     set levainDir=%%l
 )
@@ -55,5 +57,5 @@ if "a%levainDir%" == "a" (
     exit /b 1
 )
 
-call %levainDir%\levain.cmd --levainHome=%myPath%.. --levain-upgrade %*
+START /max "Levain Upgrade" CMD /c %levainDir%\levain.cmd --levainHome=%myPath%.. --levain-upgrade %*
 exit /b 0

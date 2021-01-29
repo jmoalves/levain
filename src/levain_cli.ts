@@ -76,10 +76,11 @@ export default class LevainCli {
         const loader = new Loader(config);
         try {
             if (myArgs["levain-upgrade"]) {
-                await loader.command("install", ["levain"]);
+                await loader.command("install", ["levain"])
+                throw Error("Levain upgrade finished. Please rerun your command")
+            } else {
+                await loader.command(cmd, myArgs._)
             }
-
-            await loader.command(cmd, myArgs._);
         } catch (err) {
             if (err instanceof CommandNotFoundError) {
                 log.info("");
