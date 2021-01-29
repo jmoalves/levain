@@ -14,7 +14,7 @@ call:fnRun %*
 if "a%ERRORLEVEL%" == "a42" (
     call:fnUpgrade %*
     echo.
-    echo After upgrade finish, please rerun your previous command
+    echo After levain upgrade, please rerun your previous command
     echo %0 %*
     echo.
 )
