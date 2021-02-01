@@ -38,6 +38,8 @@ export default class Config {
     private _levainCacheDir: string | undefined;
 
     private _lastKnownVersion: string | undefined;
+    private _lastUpdateQuestion: string | undefined;
+    private _autoUpdate:boolean|undefined
 
     constructor(args: any) {
         this._pkgManager = new PackageManager(this);
@@ -139,11 +141,13 @@ export default class Config {
     }
 
     set shellPath(shellPath: string | undefined) {
-        log.warning("");
-        log.warning("***********************************************************************************");
-        log.warning(`** Changing shell path: ${this._shellPath} => ${shellPath}`);
-        log.warning("***********************************************************************************");
-        log.warning("");
+        if (this._shellPath != shellPath) {
+            log.warning("");
+            log.warning("***********************************************************************************");
+            log.warning(`** Changing shell path: ${this._shellPath} => ${shellPath}`);
+            log.warning("***********************************************************************************");
+            log.warning("");
+        }
 
         this._shellPath = shellPath;
     }
@@ -153,11 +157,13 @@ export default class Config {
     }
 
     set defaultPackage(pkgName: string) {
-        log.warning("");
-        log.warning("***********************************************************************************");
-        log.warning(`** Changing default package: ${this._defaultPackage} => ${pkgName}`);
-        log.warning("***********************************************************************************");
-        log.warning("");
+        if (this._defaultPackage != pkgName) {
+            log.warning("");
+            log.warning("***********************************************************************************");
+            log.warning(`** Changing default package: ${this._defaultPackage} => ${pkgName}`);
+            log.warning("***********************************************************************************");
+            log.warning("");
+        }
 
         this._defaultPackage = pkgName;
     }
@@ -167,13 +173,26 @@ export default class Config {
     }
 
     set lastKnownVersion(version: string|undefined) {
-        log.warning("");
-        log.warning("***********************************************************************************");
-        log.warning(`** Changing last known version: ${this._lastKnownVersion} => ${version}`);
-        log.warning("***********************************************************************************");
-        log.warning("");
-
+        log.debug(`lastKnownVersion: ${this._lastKnownVersion} => ${version}`);
         this._lastKnownVersion = version
+    }
+
+    get lastUpdateQuestion(): string|undefined {
+        return this._lastUpdateQuestion
+    }
+
+    set lastUpdateQuestion(dateTag: string|undefined) {
+        log.debug(`lastUpdateQuestion: ${this._lastUpdateQuestion} => ${dateTag}`);
+        this._lastUpdateQuestion = dateTag
+    }
+
+    get autoUpdate(): boolean|undefined {
+        return this._autoUpdate
+    }
+
+    set autoUpdate(autoUpdate: boolean|undefined) {
+        log.debug(`autoUpdate: ${this._autoUpdate} => ${autoUpdate}`);
+        this._autoUpdate = autoUpdate
     }
 
     setVar(name: string, value: string): void {
@@ -275,6 +294,8 @@ export default class Config {
         cfg.cacheDir = this.levainCacheDir;
         cfg.shellPath = this._shellPath;
         cfg.lastKnownVersion = this._lastKnownVersion;
+        cfg.lastUpdateQuestion = this._lastUpdateQuestion;
+        cfg.autoUpdate = this._autoUpdate;
 
         let fileName = this.levainConfigFile;
 
@@ -319,6 +340,14 @@ export default class Config {
 
             if (cfg.lastKnownVersion) {
                 this._lastKnownVersion = cfg.lastKnownVersion;
+            }
+
+            if (cfg.lastUpdateQuestion) {
+                this._lastUpdateQuestion = cfg.lastUpdateQuestion;
+            }
+
+            if (cfg.autoUpdate) {
+                this._autoUpdate = cfg.autoUpdate;
             }
         } catch (err) {
             if (err.name != "NotFound") {

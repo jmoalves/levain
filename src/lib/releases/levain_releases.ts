@@ -4,6 +4,7 @@ import { ensureDirSync, existsSync } from "https://deno.land/std/fs/mod.ts";
 
 import Config from "../config.ts";
 import HttpUtils from "../utils/http_utils.ts";
+import DateUtils from "../utils/date_utils.ts";
 import OsUtils from "../os/os_utils.ts";
 import LevainVersion from "../../levain_version.ts";
 import Loader from "../loader.ts";
@@ -167,6 +168,27 @@ export default class LevainReleases {
 
             this.config.lastKnownVersion = latestVersion
             await levainReleases.newReleaseInfo()
+
+            if (!this.config.autoUpdate) {
+                if (this.config.lastUpdateQuestion == DateUtils.dateTag()) {
+                    log.info("We are ignoring the Levain update. We will ask you again another day.")
+                    return
+                }
+
+                console.log("")
+                this.config.lastUpdateQuestion = DateUtils.dateTag()
+                let answer = prompt("Update now (Y,n)?", "Y")
+                if (!answer || !["Y", "YES"].includes(answer.toUpperCase())) {
+                    log.info("Ok. We will ask again later.")
+                    this.config.autoUpdate = false
+                    return
+                }
+            }
+
+            log.info("")
+            log.info("Upgrading Levain")
+            log.info("")
+
             await levainReleases.prepareNewRelease()
         } catch(error) {
             log.debug(`Error ${error}`)
@@ -212,28 +234,28 @@ export default class LevainReleases {
 
     async prepareNewRelease() {
         let releasesDir = path.resolve(OsUtils.tempDir, "levain")
-        log.debug(`levain releases dir ${releasesDir}`)
+        log.debug(`Levain releases dir ${releasesDir}`)
         ensureDirSync(releasesDir)
 
         let newVersionDir = path.resolve(releasesDir, `levain-${await this.latestVersion()}`)
-        log.debug(`Checking (1) levain at ${newVersionDir}`)
+        log.debug(`Checking (1) Levain at ${newVersionDir}`)
         if (!existsSync(newVersionDir)) {
             try {
-                log.debug(`Extracting levain to ${releasesDir}`)
+                log.debug(`Extracting Levain to ${releasesDir}`)
                 let url = await this.levainZipUrl()
                 let action = `extract ${url} ${releasesDir}`
                 let loader = new Loader(this.config)
                 await loader.action(undefined, action)    
             } catch (error) {
-                log.error(`Unable to extract levain version - ignoring upgrade (for now) ${JSON.stringify(error)}`)
+                log.error(`Unable to extract Levain version - ignoring upgrade (for now) ${JSON.stringify(error)}`)
                 return
             }
         }
 
         // Double check
-        log.debug(`Checking (2) levain at ${newVersionDir}`)
+        log.debug(`Checking (2) Levain at ${newVersionDir}`)
         if (!existsSync(newVersionDir)) {
-            log.error("Unable to load new levain version - ignoring upgrade (for now)")
+            log.error("Unable to load new Levain version - ignoring upgrade (for now)")
             return
         }
 
