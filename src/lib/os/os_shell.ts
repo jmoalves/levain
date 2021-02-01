@@ -22,7 +22,7 @@ export class OsShell {
 
         let pkgs: Package[] | null = this.config.packageManager.resolvePackages(pkgNames, installedOnly, false);
         if (!pkgs) {
-            throw new Error("Unable to load dependencies for a levain shell. Aborting...");
+            throw new Error("Unable to load dependencies for a Levain shell. Aborting...");
         }
 
         this.dependencies = pkgs;
