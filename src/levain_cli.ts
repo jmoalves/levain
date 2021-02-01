@@ -16,7 +16,7 @@ export default class LevainCli {
     async execute(myArgs: any = {}): Promise<void> {
         const __filename = path.fromFileUrl(import.meta.url);
 
-        log.info(`levain ${LevainVersion.levainVersion}    (${__filename})`);
+        log.info(`Levain ${LevainVersion.levainVersion}    (${__filename})`);
         log.info(`Deno   v${Deno.version.deno}`);
 
         log.debug("args " + JSON.stringify(myArgs));
@@ -78,9 +78,13 @@ export default class LevainCli {
             if (myArgs["levain-upgrade"]) {
                 await loader.command("install", ["levain"])
                 log.info("");
-                log.info("Levain upgrade finished. Please rerun your command")
+                log.info("");
+                log.info("");
+                log.info("Levain upgrade completed. Please re-execute your previous command")
                 log.info("");
                 prompt("Hit ENTER to finish");
+                log.info("");
+                log.info("Bye.");
                 Deno.exit(0)
             } else {
                 await loader.command(cmd, myArgs._)
