@@ -8,11 +8,11 @@ import {assertNumberEquals} from "../test/more_asserts.ts";
 
 import { FileUtils } from "./file_utils.ts";
 
-const readOnlyFolder = '../testdata/file_utils/read_only_folder';
-const folderThatDoesNotExist = '../testdata/file_utils/--does_not_exist--';
-const readOnlyFile = '../testdata/file_utils/read_only.txt';
+const readOnlyFolder = './testdata/file_utils/read_only_folder';
+const folderThatDoesNotExist = './testdata/file_utils/--does_not_exist--';
+const readOnlyFile = './testdata/file_utils/read_only.txt';
 
-Deno.test('should create a backup for a given file in the same dir', () => {
+Deno.test('FileUtils - should create a backup for a given file in the same dir', () => {
     let src = Deno.makeTempFileSync();
     let myData = "some string data";
     Deno.writeTextFileSync(src, myData);
@@ -38,7 +38,7 @@ Deno.test('should create a backup for a given file in the same dir', () => {
     Deno.removeSync(bkp2);
 })
 
-Deno.test('should NOT create a backup for a given file that does NOT exist', () => {
+Deno.test('FileUtils - should NOT create a backup for a given file that does NOT exist', () => {
     let src = "/tmp/doesNotExist";
     assert(!existsSync(src));
 
@@ -47,7 +47,7 @@ Deno.test('should NOT create a backup for a given file that does NOT exist', () 
     assert(bkp == undefined);
 })
 
-Deno.test('should get file permissions in Windows', () => {
+Deno.test('FileUtils - should get file permissions in Windows', () => {
     if (OsUtils.isWindows()) {
         const mode = Deno.statSync(readOnlyFile).mode;
         if (mode) {
@@ -66,28 +66,28 @@ function verifyFileReadWrite(fileUri: string, shouldRead: boolean, shouldWrite: 
     }
 }
 
-Deno.test('should detect a RW permission on a folder', () => {
+Deno.test('FileUtils - should detect a RW permission on a folder', () => {
     const fileUri = './testdata/file_utils/'
     verifyFileReadWrite(fileUri, true, true);
 })
 
-Deno.test('should detect a RW permission on a file', () => {
+Deno.test('FileUtils - should detect a RW permission on a file', () => {
     const fileUri = './testdata/file_utils/can_read_and_write_this_file.txt'
     verifyFileReadWrite(fileUri, true, true);
 })
 if (!OsUtils.isWindows()) {
-    Deno.test('should detect read only folder', () => {
+    Deno.test('FileUtils - should detect read only folder', () => {
         const path = readOnlyFolder
         OsUtils.makeReadOnly(path)
         verifyFileReadWrite(path, true, false);
     })
-    Deno.test('should detect read only file', () => {
+    Deno.test('FileUtils - should detect read only file', () => {
         const path = readOnlyFile
         OsUtils.makeReadOnly(path)
         verifyFileReadWrite(path, true, false);
     })
 }
-Deno.test('should detect a folder without permissions', () => {
+Deno.test('FileUtils - should detect a folder without permissions', () => {
     // FIXME Will not need the folowing line when Deno.statSync.mode is fully implemented for Windows
     const fileUri = OsUtils.isWindows()
         ? 'd:\\Config.Msi'
@@ -97,21 +97,21 @@ Deno.test('should detect a folder without permissions', () => {
     }
     verifyFileReadWrite(fileUri, false, false);
 })
-Deno.test('should not read or write a folder that does not exist', () => {
+Deno.test('FileUtils - should not read or write a folder that does not exist', () => {
     const fileUri = folderThatDoesNotExist
     verifyFileReadWrite(fileUri, false, false);
 })
 //
 // isDir
 //
-Deno.test('should detect that a file is not a dir', () => {
+Deno.test('FileUtils - should detect that a file is not a dir', () => {
     const file = './testdata/file_utils/file.txt'
 
     const isDir = FileUtils.isDir(file)
 
     assertEquals(isDir, false)
 })
-Deno.test('should detect that a dir is a dir', () => {
+Deno.test('FileUtils - should detect that a dir is a dir', () => {
     const file = './testdata/file_utils'
 
     const isDir = FileUtils.isDir(file)
@@ -121,7 +121,7 @@ Deno.test('should detect that a dir is a dir', () => {
 //
 // canCreateTempFileInDir
 //
-Deno.test('canCreateTempFileInDir should be able to write in a temp dir', () => {
+Deno.test('FileUtils - canCreateTempFileInDir should be able to write in a temp dir', () => {
     const tempDir = Deno.makeTempDirSync()
 
     const canWrite = FileUtils.canCreateTempFileInDir(tempDir)
@@ -129,7 +129,7 @@ Deno.test('canCreateTempFileInDir should be able to write in a temp dir', () => 
     assertEquals(canWrite, true)
 })
 if (OsUtils.isWindows()) {
-    Deno.test('adjust test when chmodSync is implemented in Windows', () => {
+    Deno.test('FileUtils - adjust test when chmodSync is implemented in Windows', () => {
         ensureDirSync(readOnlyFolder)
         assertThrows(
             () => {
@@ -140,7 +140,7 @@ if (OsUtils.isWindows()) {
         )
     })
 } else {
-    Deno.test('canCreateTempFileInDir should not be able to write in a read only dir', () => {
+    Deno.test('FileUtils - canCreateTempFileInDir should not be able to write in a read only dir', () => {
         ensureDirSync(readOnlyFolder)
         Deno.chmodSync(readOnlyFolder, 0o000)
 
@@ -149,18 +149,18 @@ if (OsUtils.isWindows()) {
         assertEquals(canWrite, false)
     })
 }
-Deno.test('canCreateTempFileInDir should not be able to write in a dir that does not exist', () => {
+Deno.test('FileUtils - canCreateTempFileInDir should not be able to write in a dir that does not exist', () => {
     const canWrite = FileUtils.canCreateTempFileInDir(TestHelper.folderThatDoesNotExist)
 
     assertEquals(canWrite, false)
 })
-Deno.test('getSize should get file size', () => {
+Deno.test('FileUtils - getSize should get file size', () => {
     const filePath = path.join('testdata', 'file_utils', 'file.txt')
     const fileSize = FileUtils.getSize(filePath)
 
     assertNumberEquals(fileSize, 615, 0.1)
 })
-Deno.test('throwIfNotExists should throw error when file does not exist', () => {
+Deno.test('FileUtils - throwIfNotExists should throw error when file does not exist', () => {
     const filePath = TestHelper.fileThatDoesNotExist
 
     assertThrows(
@@ -170,4 +170,12 @@ Deno.test('throwIfNotExists should throw error when file does not exist', () => 
         Error,
         `File ${filePath} does not exist`
     )
+})
+
+Deno.test('FileUtils - isFileSystemUrl', () => {
+    assert(!FileUtils.isFileSystemUrl("http://www.test.com/file.zip"))
+    assert(!FileUtils.isFileSystemUrl("https://www.test.com/file.zip"))
+    assert(!FileUtils.isFileSystemUrl("git@github.com:jmoalves/levain.git"))
+    assert(FileUtils.isFileSystemUrl("src\\lib\\fs\\file_utils.test.ts"))
+    assert(FileUtils.isFileSystemUrl("src/lib/fs/file_utils.test.ts"))
 })

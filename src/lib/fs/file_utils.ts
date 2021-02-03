@@ -1,5 +1,6 @@
 import * as log from "https://deno.land/std/log/mod.ts";
-import {existsSync,} from "https://deno.land/std/fs/mod.ts";
+import * as path from "https://deno.land/std/path/mod.ts";
+import {existsSync} from "https://deno.land/std/fs/mod.ts";
 
 import ProgressBar from "https://deno.land/x/progress@v1.1.4/mod.ts";
 
@@ -100,6 +101,36 @@ export class FileUtils {
     static isFile(filePath: string) {
         const fileInfo = this.getFileInfoSync(filePath);
         return fileInfo.isFile
+    }
+
+    static resolve(parent: string|undefined, url: string): string {
+        if (!FileUtils.isFileSystemUrl(url)) {
+            return url
+        }
+
+        if (parent) {
+            url = path.resolve(parent, url)
+        } else {
+            url = path.resolve(url)
+        }
+
+        return url
+    }
+
+    static isFileSystemUrl(url: string|undefined) : boolean {
+        if (!url) {
+            return false
+        }
+
+        if (url.startsWith("http://") || url.startsWith("https://")) {
+            return false
+        }
+
+        if (url.match(/.*@.*:.*\/.*\.git/)) {
+            return false
+        }
+
+        return true
     }
 
     static canCreateTempFileInDir(dir: string): boolean {

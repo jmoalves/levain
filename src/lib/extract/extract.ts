@@ -68,6 +68,7 @@ export abstract class Extractor {
 
 }
 
+// TODO: Use native TS/JS implementation instead of extra-bin files.
 export class ExtractorFactory {
     createExtractor(config: Config, src: string): Extractor {
         if (src.endsWith(".zip")) {
