@@ -9,6 +9,7 @@ import DateUtils from '../utils/date_utils.ts';
 import FileReader from '../io/file_reader.ts';
 import FileWriter from '../io/file_writer.ts';
 import ProgressReader from '../io/progress_reader.ts';
+import ReaderFactory from "../io/reader_factory.ts";
 
 export class FileUtils {
     static getModificationTimestamp(filePath: string): Date | undefined {
@@ -153,7 +154,7 @@ export class FileUtils {
         let r:ProgressReader | undefined = undefined
 
         if (typeof src == 'string') {
-            r = new FileReader(src)
+            r = ReaderFactory.readerFor(src)
         } else {
             r = src
         }

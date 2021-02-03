@@ -7,6 +7,7 @@ import Package from '../lib/package/package.ts';
 import {parseArgs} from "../lib/parse_args.ts";
 
 import Action from "./action.ts";
+import { FileUtils } from "../lib/fs/file_utils.ts";
 
 export default class CopyAction implements Action {
     constructor(private config: Config) {
@@ -29,8 +30,8 @@ export default class CopyAction implements Action {
             throw Error("No package for action copy")
         }
 
-        const dst = path.resolve(pkg.baseDir, args._.pop());
-        const src = args._.map((element: string) => path.resolve(pkg.pkgDir, element));
+        const dst = FileUtils.resolve(pkg.baseDir, args._.pop());
+        const src = args._.map((element: string) => FileUtils.resolve(pkg.pkgDir, element));
 
         let copyToDir = false;
         try {
@@ -53,29 +54,46 @@ export default class CopyAction implements Action {
         for (let item of src) {
             log.debug(`- CHECK ${item}`);
             try {
-                const fileInfo = Deno.statSync(item);
-                if (args.strip && fileInfo.isDirectory) {
-                    for (const entry of walkSync(item)) {
-                        if (entry.path == item) {
-                            continue;
-                        }
-
-                        const writeTo = path.resolve(dst, entry.name)
-                        this.doCopy(args, entry.path, writeTo);
-                    }
+                if (FileUtils.isFileSystemUrl(item)) {
+                    this.copySrcFromFileSystem(item, dst, copyToDir, args)
                 } else {
-                    let realDst = dst;
-                    if (copyToDir) {
-                        realDst = path.resolve(dst, path.basename(item));
-                    }
-
-                    this.doCopy(args, item, realDst);
+                    await this.copySrcFromUrl(item, dst, copyToDir, args)
                 }
             } catch (err) {
                 log.error(`Error in ${item}`);
                 throw err;
             }
         }
+    }
+
+    private copySrcFromFileSystem(item: string, dst: string, copyToDir: boolean, args: any) {
+        const fileInfo = Deno.statSync(item);
+        if (args.strip && fileInfo.isDirectory) {
+            for (const entry of walkSync(item)) {
+                if (entry.path == item) {
+                    continue;
+                }
+
+                const writeTo = path.resolve(dst, entry.name)
+                this.doCopy(args, entry.path, writeTo);
+            }
+        } else {
+            let realDst = dst;
+            if (copyToDir) {
+                realDst = path.resolve(dst, path.basename(item));
+            }
+
+            this.doCopy(args, item, realDst);
+        }
+    }
+
+    private async copySrcFromUrl(url: string, dst: string, copyToDir: boolean, args: any) {
+        let realDst = dst;
+        if (copyToDir) {
+            realDst = path.resolve(dst, path.basename(url));
+        }
+
+        await FileUtils.copyWithProgress(url, realDst)
     }
 
     private doCopy(args: any, src: string, dst: string) {
