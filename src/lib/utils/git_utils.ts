@@ -33,6 +33,9 @@ export default class GitUtils {
 
             try {
                 await OsUtils.runAndLog(command);
+
+                log.info(`-- GIT - PULL - ${dir} - OK`);
+                log.info("");
                 return;
             } catch (error) {
                 log.info(`${tries} - git error - ${error}`)
