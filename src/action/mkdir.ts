@@ -31,7 +31,7 @@ export default class Mkdir implements Action {
         }
 
         if (args.compact) {
-            this.compactSync(dirname);
+            await this.compactSync(dirname);
         }
     }
 
