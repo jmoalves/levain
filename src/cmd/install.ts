@@ -7,6 +7,7 @@ import Package from "../lib/package/package.ts";
 import Loader from '../lib/loader.ts';
 import {Timer} from "../lib/timer.ts";
 import Registry from '../lib/repository/registry.ts';
+import {parseArgs} from "../lib/parse_args.ts";
 
 import Command from "./command.ts";
 
@@ -18,7 +19,13 @@ export default class Install implements Command {
     }
 
     async execute(args: string[]) {
-        let pkgNames: string[] = args;
+        const myArgs = parseArgs(args, {
+            boolean: [
+                "force"
+            ]
+        });
+
+        let pkgNames: string[] = myArgs._;
 
         if (pkgNames.length == 0) {
             let curDirPkg = this.config.repositoryManager.currentDirPackage
@@ -41,7 +48,7 @@ export default class Install implements Command {
         log.info("-----------------");
         let bkpTag = this.bkpTag();
         for (let pkg of pkgs) {
-            await this.installPackage(bkpTag, pkg);
+            await this.installPackage(bkpTag, pkg, myArgs.force);
         }
 
         log.info("");
@@ -51,7 +58,7 @@ export default class Install implements Command {
         this.cleanupSaveDir();
     }
 
-    private async installPackage(bkpTag: string, pkg: Package) {
+    private async installPackage(bkpTag: string, pkg: Package, force: boolean = false) {
         if (!this.config) {
             return;
         }
@@ -65,6 +72,8 @@ export default class Install implements Command {
                 verb = 'UPDATE';
             } else if (!existsSync(pkg.baseDir)) {
                 verb = 'MISSING';
+            } else if (force) {
+                verb = 'FORCE';
             } else {
                 verb = 'ENV (already installed)';
                 shouldInstall = false;
