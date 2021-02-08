@@ -63,6 +63,8 @@ export default class Install implements Command {
         if (pkg.installed) {
             if (pkg.updateAvailable) {
                 verb = 'UPDATE';
+            } else if (!existsSync(pkg.baseDir)) {
+                verb = 'MISSING';
             } else {
                 verb = 'ENV (already installed)';
                 shouldInstall = false;
