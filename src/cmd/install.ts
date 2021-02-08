@@ -75,8 +75,8 @@ export default class Install implements Command {
         if (shouldInstall) {
             /* FIXME: 
              * Move this to another class. Perhaps a class to manage the installed environment
-             * Perhaps the better approach is to install the packages to a temp dir and move upon sucessful installation
-             * However, this "tempDir" change could EASILY break all the recipes
+             * Perhaps the better approach is to install the packages to a temp dir and move upon successful installation
+             * However, this "tempDir" change could EASILY BREAK all the recipes
              */
 
             shouldInstall = this.savePreviousInstall(bkpTag, pkg);
@@ -127,26 +127,35 @@ export default class Install implements Command {
             return true;
         }
 
+
         try {
             let bkpDir = path.resolve(this.config.levainBackupDir, bkpTag);
+            let src = pkg.baseDir;
+            let dst = path.resolve(bkpDir, path.basename(src));
+
+            log.info(`SAVING ${src} => ${dst}`);
+
             if (!existsSync(bkpDir)) {
-                log.info(`SAVE-MKDIR ${bkpDir}`);
+                log.info(`- SAVE-MKDIR ${bkpDir}`);
                 Deno.mkdirSync(bkpDir, {recursive: true});
             }
 
-            let src = pkg.baseDir;
-            let dst = path.resolve(bkpDir, path.basename(src));
-            log.info(`SAVE-COPY ${src} => ${dst}`);
+            log.info(`- SAVE-COPY  ${src} => ${dst}`);
             copySync(src, dst);
 
-            log.info(`SAVE-DEL ${src}`);
-            Deno.removeSync(src, { recursive: true })
+            let renameDir = Deno.makeTempDirSync({ dir: path.dirname(src), prefix: ".rename." + path.basename(src) + ".", suffix: ".tmp" });
+            log.info(`- SAVE-REN   ${src} => ${renameDir}`);
+            Deno.removeSync(renameDir, { recursive: true });
+            Deno.renameSync(src, renameDir);
 
-            log.debug(`- MOVED ${src} => ${dst}`);
+            log.info(`- SAVE-DEL   ${renameDir}`);
+            Deno.removeSync(renameDir, { recursive: true })
+
+            log.info(`SAVED ${src} => ${dst}`);
             return true;
 
         } catch (err) {
-            log.error(`Found error saving ${pkg.name}. Aborting upgrade`);
+            log.error(`- Found error saving ${pkg.name}. Ignoring upgrade`);
             log.debug(`SAVE error -> ${err}`);
             // Upon any error saving, abort installation
             return false;
@@ -173,5 +182,4 @@ export default class Install implements Command {
     }
 
     readonly oneLineExample = "  install <package name>"
-
 }
