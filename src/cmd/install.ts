@@ -127,7 +127,6 @@ export default class Install implements Command {
             return true;
         }
 
-
         try {
             let bkpDir = path.resolve(this.config.levainBackupDir, bkpTag);
             let src = pkg.baseDir;
@@ -142,6 +141,11 @@ export default class Install implements Command {
 
             log.info(`- SAVE-COPY  ${src} => ${dst}`);
             copySync(src, dst);
+
+            if (pkg.yamlItem("levain.preserveBaseDirOnUpdate")) {
+                log.info(`- Keeping the baseDir for ${pkg.name} as requested`);
+                return true;
+            }
 
             let renameDir = Deno.makeTempDirSync({ dir: path.dirname(src), prefix: ".rename." + path.basename(src) + ".", suffix: ".tmp" });
             log.info(`- SAVE-REN   ${src} => ${renameDir}`);
