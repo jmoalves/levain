@@ -25,10 +25,12 @@ export default class Mkdir implements Action {
 
         const dirname = ( pkg ? path.resolve(pkg.baseDir, args._[0]) : path.resolve(args._[0]));
 
-        if (!this.dirExists(dirname)) {
-            log.info(`MKDIR ${dirname}`);
-            Deno.mkdirSync(dirname, {recursive: true});
+        if (this.dirExists(dirname)) {
+            return;
         }
+
+        log.info(`MKDIR ${dirname}`);
+        Deno.mkdirSync(dirname, {recursive: true});
 
         if (args.compact) {
             await this.compactSync(dirname);
