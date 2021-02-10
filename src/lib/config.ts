@@ -213,6 +213,7 @@ export default class Config {
                 let vName = v.replace("$", "").replace("{", "").replace("}", "");
                 let value: string | undefined = undefined;
 
+                // We handle reserved words first
                 if (!value && vName.match(/^levain\./)) {
                     switch (vName) {
                         case "levain.login":
@@ -250,28 +251,26 @@ export default class Config {
                     if (!value) {
                         throw new Error(`Global attribute ${vName} is undefined`);
                     }
-                }
-
-                if (!value && vName.search(/^pkg\.(.+)\.([^.]*)/) != -1) {
+                } else if (!value && vName == "home") {
+                    value = homedir();
+                } else if (!value && vName.search(/^pkg\.(.+)\.([^.]*)/) != -1) {
                     let pkgVarPkg = vName.replace(/^pkg\.(.+)\.([^.]*)/, "$1");
                     let pkgVarName = vName.replace(/^pkg\.(.+)\.([^.]*)/, "$2");
                     value = this.packageManager.getVar(pkgVarPkg, pkgVarName);
-                }
+                } else {
+                    // General items
 
-                if (!value) {
-                    value = Deno.env.get(vName);
-                }
+                    if (!value && pkgName) {
+                        value = this.packageManager.getVar(pkgName, vName);
+                    }
 
-                if (!value && this._env) {
-                    value = this._env[vName];
-                }
+                    if (!value && this._env) {
+                        value = this._env[vName];
+                    }
 
-                if (!value && pkgName) {
-                    value = this.packageManager.getVar(pkgName, vName);
-                }
-
-                if (!value && vName == "home") {
-                    value = homedir();
+                    if (!value) {
+                        value = Deno.env.get(vName);
+                    }
                 }
 
                 if (value) {
