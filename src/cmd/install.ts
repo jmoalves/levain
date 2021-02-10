@@ -70,7 +70,7 @@ export default class Install implements Command {
         if (pkg.installed) {
             if (pkg.updateAvailable) {
                 verb = 'UPDATE';
-            } else if (!existsSync(pkg.baseDir)) {
+            } else if (!pkg.skipInstallDir() && !existsSync(pkg.baseDir)) {
                 verb = 'MISSING';
             } else if (force) {
                 verb = 'FORCE';
