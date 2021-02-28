@@ -8,6 +8,7 @@ import DateUtils from "../utils/date_utils.ts";
 import OsUtils from "../os/os_utils.ts";
 import LevainVersion from "../../levain_version.ts";
 import Loader from "../loader.ts";
+import VersionNumber from "../utils/version_number.ts";
 
 const UPDATE_REQUEST = 42
 
@@ -55,19 +56,20 @@ export default class LevainReleases {
         })
     }
 
-    async levainZipUrl(version?: string): Promise<string> {
+    async levainZipUrl(version?: VersionNumber): Promise<string> {
         version = version || await this.latestVersion()
 
         if (!version) {
             throw Error(`No zip for undefined version`)
         }
 
-        if (!version.startsWith("v")) {
-            version = "v" + version
+        let versionPath = version.versionNumber
+        if (!versionPath.startsWith("v")) {
+            versionPath = "v" + versionPath
         }
 
         OsUtils.isWindows()
-        return `${this.downloadUrl}/${version}/levain-${version}-windows-x86_64.zip`
+        return `${this.downloadUrl}/${versionPath}/levain-${version}-windows-x86_64.zip`
     }
 
     async latest(): Promise<any> {
@@ -111,7 +113,7 @@ export default class LevainReleases {
         })
     }
 
-    async latestVersion(): Promise<string|undefined> {
+    async latestVersion(): Promise<VersionNumber|undefined> {
         const obj = this;
         return new Promise((resolve, reject) => {
             obj.latest()
@@ -124,7 +126,7 @@ export default class LevainReleases {
 
                     if (release.tag_name) {
                         if (LevainReleases.isValidReleaseTag(release.tag_name)) {
-                            resolve(release.tag_name.replace("v", ""))
+                            resolve(new VersionNumber(release.tag_name.replace("v", "")))
                             return
                         }
 
@@ -166,7 +168,11 @@ export default class LevainReleases {
                 return
             }
 
-            this.config.lastKnownVersion = latestVersion
+            if (!latestVersion) {
+                return
+            }
+
+            this.config.lastKnownVersion = latestVersion.versionNumber
             await levainReleases.newReleaseInfo()
 
             if (!this.config.autoUpdate) {
@@ -200,24 +206,24 @@ export default class LevainReleases {
         return !LevainVersion.isHeadVersion()
     }
 
-    needsUpdate(newVersion?: string): boolean {
+    needsUpdate(newVersion?: VersionNumber): boolean {
         if (!newVersion) {
             log.debug(`No update needed - no new version`)
             return false
         }
 
         let myVersion = LevainVersion.levainVersion
-        if (LevainVersion.isHeadVersion(myVersion)) {
+        if (myVersion.isHEAD) {
             log.debug(`No update needed - vHEAD version`)
             return false
         }
 
-        if (newVersion == myVersion) {
-            log.debug(`No update needed - same version ${newVersion}`)
+        if (!newVersion.isNewerThan(myVersion)) {
+            log.debug(`No update needed - latest version ${newVersion} isn't newer than my version ${myVersion}`)
             return false
         }
 
-        log.debug(`UPDATE needed - my version ${myVersion} != new version ${newVersion}`)
+        log.debug(`UPDATE needed - my version ${myVersion} is older than ${newVersion}`)
         return true
     }
 
