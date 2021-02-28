@@ -15,16 +15,19 @@ export default class VersionNumber {
         return true
     }
 
-
+    public readonly versionNumber: string
     public readonly isHEAD: boolean
 
-    constructor(public readonly version: string) {
-        const matches = version.match(VersionNumber.VER_REGEXP)
+    constructor(strVersion: string) {
+        this.versionNumber = '' + strVersion
+
+        // log.info(`VersionNumber - ${JSON.stringify(this.versionNumber)}`)
+        const matches = this.versionNumber.match(VersionNumber.VER_REGEXP)
         if (matches == null) {
-            throw new Error(`Invalid version number - ${version}`)
+            throw new Error(`Invalid version number - ${this.versionNumber}`)
         }
 
-        if (version == "HEAD" || version == "vHEAD") {
+        if (this.versionNumber == "HEAD" || this.versionNumber == "vHEAD") {
             this.isHEAD = true            
         } else {
             this.isHEAD = false
@@ -32,7 +35,7 @@ export default class VersionNumber {
     }
 
     toString(): string {
-        return this.version
+        return this.versionNumber
     }
 
     public static readonly OLDER = -1
@@ -66,8 +69,8 @@ export default class VersionNumber {
             return VersionNumber.OLDER
         }
 
-        const myComponents = this.version.split(VersionNumber.COMPONENT_SEPARATOR)
-        const otherComponents = other.version.split(VersionNumber.COMPONENT_SEPARATOR)
+        const myComponents = this.versionNumber.split(VersionNumber.COMPONENT_SEPARATOR)
+        const otherComponents = other.versionNumber.split(VersionNumber.COMPONENT_SEPARATOR)
 
         return this.chainCompareComponents(myComponents, otherComponents)
     }
