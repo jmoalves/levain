@@ -12,7 +12,7 @@ import SetEnv from "./set_env.ts";
 import Template from "./template.ts";
 import AssertContainsAction from "./assert_contains_action.ts";
 import Config from "../lib/config.ts";
-import CheckChainDirExists from "./check_chain_dir_exists.ts";
+import CheckChainDirExists from "./check/check_chain_dir_exists.ts";
 import Echo from "./echo.ts";
 import RemoveFromRegistry from './remove_from_registry.ts';
 import SetVarAction from './set_var.ts';
@@ -23,9 +23,9 @@ import JsonRemove from "./json/json_remove.ts";
 import PropertyGetAction from "./property/property_get.ts";
 import BackupFile from "./backup_file.ts";
 import PropertySetAction from "./property/property_set.ts";
-import CheckPort from "./check_port.ts";
+import CheckPort from "./check/check_port.ts";
 import ShellPath from "./shell_path.ts";
-import CheckUrl from "./check_url.ts";
+import CheckUrl from "./check/check_url.ts";
 
 const actionMap = new Map<string, (config: Config) => Action>([
     ['addPath', (config: Config) => new AddPathAction(config)],

@@ -1,6 +1,6 @@
 import {assertEquals, assertThrowsAsync} from "https://deno.land/std/testing/asserts.ts";
 
-import TestHelper from "../lib/test/test_helper.ts";
+import TestHelper from "../../lib/test/test_helper.ts";
 
 import CheckChainDirExists from "./check_chain_dir_exists.ts";
 
