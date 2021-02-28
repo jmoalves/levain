@@ -1,3 +1,5 @@
+import * as log from "https://deno.land/std/log/mod.ts";
+
 import StringUtils from '../utils/string_utils.ts';
 import Repository from '../repository/repository.ts';
 
@@ -20,8 +22,21 @@ export default abstract class AbstractPackage implements Package {
 
     abstract yamlItem(key: string): any | undefined;
 
-    get levainTag(): any | undefined{
-        return this.yamlItem("levain");
+    get levainTag(): any {
+        let levainTag:any = this.yamlItem("levain");
+        if (!levainTag) {
+            levainTag = {}
+        }
+
+        // Load all "levain." elements in the levainTag
+        for (let property in this.yamlStruct) {
+            if (property.startsWith('levain.')) {
+                let item = property.replace('levain.', '')
+                levainTag[item] = this.yamlStruct[property]
+            }
+        }
+
+        return levainTag
     }
 
     skipRegistry(): Boolean {
