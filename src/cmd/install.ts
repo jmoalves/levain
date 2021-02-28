@@ -49,9 +49,42 @@ export default class Install implements Command {
 
         log.info("");
         log.info("-----------------");
+
+        let shouldUpdate = true
+        if (!myArgs.force) {
+            // Check updates
+            let willUpdate = []
+            for (let pkg of pkgs) {
+                if (pkg.updateAvailable) {
+                    willUpdate.push(pkg.name)
+                }
+            }
+
+            if (willUpdate.length > 0) {
+                log.info("")
+                log.info("")
+                log.info(`Some packages will be updated.`)
+                log.info(`${JSON.stringify(willUpdate, null, 3)}`)
+                log.info("")
+
+                let answer = prompt("Should we update them now (Y,n)?", "Y")
+                if (!answer || !["Y", "YES"].includes(answer.toUpperCase())) {
+                    log.info("Ok. We will ask again later.")
+                    shouldUpdate = false
+
+                    log.info("")
+                    log.info("Reloading packages - installed only.")
+                    pkgs = this.config.packageManager.resolvePackages(pkgNames, true);
+                    if (!pkgs) {
+                        throw new Error(`install - Nothing to install. Aborting...`);
+                    }
+                }
+            }
+        }
+
         let bkpTag = this.bkpTag();
         for (let pkg of pkgs) {
-            await this.installPackage(bkpTag, pkg, myArgs.force);
+            await this.installPackage(bkpTag, pkg, myArgs.force, shouldUpdate);
         }
 
         log.info("");
@@ -61,7 +94,7 @@ export default class Install implements Command {
         this.cleanupSaveDir();
     }
 
-    private async installPackage(bkpTag: string, pkg: Package, force: boolean = false) {
+    private async installPackage(bkpTag: string, pkg: Package, force: boolean = false, shouldUpdate: boolean = true) {
         if (!this.config) {
             return;
         }
@@ -71,7 +104,7 @@ export default class Install implements Command {
         let shouldInstall = true;
         let verb = 'INSTALL'
         if (pkg.installed) {
-            if (pkg.updateAvailable) {
+            if (shouldUpdate && pkg.updateAvailable) {
                 verb = 'UPDATE';
             } else if (!pkg.skipInstallDir() && !existsSync(pkg.baseDir)) {
                 verb = 'MISSING';
