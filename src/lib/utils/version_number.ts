@@ -1,8 +1,9 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
 export default class VersionNumber {
-    // https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
-    private static readonly VER_REGEXP = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/
+    public static readonly VER_REGEXP = /^[0-9A-Za-z\._\-]+$/
+    public static readonly COMPONENT_SEPARATOR = '-'
+    public static readonly ELEMENT_SEPARATOR = '.'
 
     public static isValid(strVersion: string): boolean {
         try {
@@ -14,31 +15,29 @@ export default class VersionNumber {
         return true
     }
 
-    public readonly version: string
-    public readonly major: number
-    public readonly minor: number
-    public readonly patch: number
-    public readonly prerelease: string|undefined
-    public readonly build: string|undefined
 
-    constructor(strVersion: string) {
-        const matches = strVersion.match(VersionNumber.VER_REGEXP)
+    public readonly isHEAD: boolean
 
+    constructor(public readonly version: string) {
+        const matches = version.match(VersionNumber.VER_REGEXP)
         if (matches == null) {
-            throw new Error(`Invalid version number - ${strVersion}`)
+            throw new Error(`Invalid version number - ${version}`)
         }
 
-        this.version = matches[0]
-        this.major = Number.parseInt(matches[1])
-        this.minor = Number.parseInt(matches[2])
-        this.patch = Number.parseInt(matches[3])
-        this.prerelease = matches[4]
-        this.build = matches[5]
+        if (version == "HEAD" || version == "vHEAD") {
+            this.isHEAD = true            
+        } else {
+            this.isHEAD = false
+        }
     }
 
-    public static readonly OLDER = -1;
-    public static readonly SAME = 0;
-    public static readonly NEWER = 1;
+    toString(): string {
+        return this.version
+    }
+
+    public static readonly OLDER = -1
+    public static readonly SAME = 0
+    public static readonly NEWER = 1
 
     // SemVer - 11. Precedence - https://semver.org/#spec-item-11
     isOlderThan(other:VersionNumber): boolean {
@@ -54,86 +53,102 @@ export default class VersionNumber {
     }
 
     compareTo(other: VersionNumber): number {
-        const versionCompare = this.chainCompareTo(
-            this, other, ['major', 'minor', 'patch']
-        )
-
-        // Is versionCompare enough?
-        if (versionCompare != 0) {
-            return versionCompare
-        }
-
-        return this.comparePrereleases(this.prerelease, other.prerelease)
-    }
-
-    private chainCompareTo(p1: any, p2: any, properties: string[]): number {
-        for (const property of properties) {
-            if (p1[property] < p2[property]) {
-                return VersionNumber.OLDER
-            }
-
-            if (p1[property] > p2[property]) {
-                return VersionNumber.NEWER
-            }
-        }
-
-        return VersionNumber.SAME
-    }
-
-    private comparePrereleases(mine: string|undefined, other: string|undefined) : number {
-        if (!mine && !other) {
+        // Compare HEAD versions
+        if (this.isHEAD && other.isHEAD) {
             return VersionNumber.SAME
         }
 
-        if (!mine && other) {
+        if (this.isHEAD && !other.isHEAD) {
             return VersionNumber.NEWER
         }
 
-        if (mine && !other) {
+        if (!this.isHEAD && other.isHEAD) {
             return VersionNumber.OLDER
         }
 
-        // We must compare the prereleases
-        let myComponents = mine!.split('.')
-        let otherComponents = other!.split('.')
+        const myComponents = this.version.split(VersionNumber.COMPONENT_SEPARATOR)
+        const otherComponents = other.version.split(VersionNumber.COMPONENT_SEPARATOR)
 
         return this.chainCompareComponents(myComponents, otherComponents)
     }
 
     private chainCompareComponents(mine: string[], other: string[]): number {
+        // log.info(`Components = mine: ${mine} - other: ${other}`)
         for (let i = 0; i < mine.length; i++) {
-            if (i > other.length) {
+            if (i >= other.length) {
+                // 11.4.4. A larger set of pre-release fields has a higher precedence than a smaller set, if all of the preceding identifiers are equal.
+
+                // However... We must check if we are dealing with de MAJOR.MINOR.PATCH component (the first one)
+                if (i == 1) {
+                    return VersionNumber.OLDER
+                } else {
+                    return VersionNumber.NEWER
+                }
+            }
+
+            const myElements = mine[i].split(VersionNumber.ELEMENT_SEPARATOR)
+            const otherElements = other[i].split(VersionNumber.ELEMENT_SEPARATOR)
+            const elementCompare = this.chainCompareElements(myElements, otherElements)
+
+            if (elementCompare != VersionNumber.SAME) {
+                return elementCompare
+            }
+        }
+
+        if (other.length > mine.length) {
+            // 11.4.4. A larger set of pre-release fields has a higher precedence than a smaller set, if all of the preceding identifiers are equal.
+
+            // However... We must check if we are dealing with de MAJOR.MINOR.PATCH component (the first one)
+            if (mine.length == 1) {
+                return VersionNumber.NEWER
+            } else {
+                return VersionNumber.OLDER
+            }
+        }
+
+        return VersionNumber.SAME        
+    }
+
+    private chainCompareElements(mine: string[], other: string[]): number {
+        // log.info(`Elements = mine: ${mine} - other: ${other}`)
+        for (let i = 0; i < mine.length; i++) {
+            if (i >= other.length) {
                 // 11.4.4. A larger set of pre-release fields has a higher precedence than a smaller set, if all of the preceding identifiers are equal.
                 return VersionNumber.NEWER
             }
 
             function isNumeric(s: string): boolean {
-                return s.match(/^d+$/) != null
+                return s.match(/^\d+$/) != null
             }
 
             const myComp = mine[i]
             const otherComp = other[i]
 
+            // log.info(`Element = mine: ${myComp} - other: ${otherComp}`)
             if (isNumeric(myComp)) {
                 const myNum = Number(myComp)
                 if (isNumeric(otherComp)) {
                     const otherNum = Number(otherComp)
                     // 11.4.1. Identifiers consisting of only digits are compared numerically.
+                    // log.info(`Element[NUM] = mine: ${myComp} - other: ${otherComp}`)
                     if (myNum > otherNum) {
                         return VersionNumber.NEWER
                     } else if (myNum < otherNum) {
-                        return VersionNumber.NEWER
+                        return VersionNumber.OLDER
                     }
                 } else {
+                    // log.info(`Element[MY-NUM] = mine: ${myComp} - other: ${otherComp}`)
                     // 11.4.3. Numeric identifiers always have lower precedence than non-numeric identifiers.
                     return VersionNumber.OLDER
                 }
             } else {
                 if (isNumeric(otherComp)) {
+                    // log.info(`Element[OTHER-NUM] = mine: ${myComp} - other: ${otherComp}`)
                     // 11.4.3. Numeric identifiers always have lower precedence than non-numeric identifiers.
                     return VersionNumber.NEWER
                 }
 
+                // log.info(`Element[STR] = mine: ${myComp} - other: ${otherComp}`)
                 const compCompare = myComp.localeCompare(otherComp)
                 if (compCompare != 0) {
                     return compCompare
