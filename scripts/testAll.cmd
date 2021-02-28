@@ -6,6 +6,10 @@ for /R . %%f in (*.test.ts) do (
     echo.
     echo === %%f 
     deno test --allow-all --unstable %%f
-    if errorlevel 1 pause
+    if errorlevel 1 (
+        echo.
+        echo ERROR - %%f
+        pause
+    )
 )
 popd
