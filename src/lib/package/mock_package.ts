@@ -1,11 +1,12 @@
 import Package from "./package.ts";
 import Repository from "../repository/repository.ts";
+import VersionNumber from "../utils/version_number.ts";
 
 export class MockPackage implements Package {
 
     constructor(
         public name: string = 'mockPackage',
-        public version: string = '1.0.0',
+        public version: VersionNumber = new VersionNumber('1.0.0'),
         public filePath: string = `/mock/${name}-${version}.yml`,
     ) {
     }
@@ -17,8 +18,9 @@ export class MockPackage implements Package {
     readonly repo: Repository | undefined;
     readonly updateAvailable = false;
     readonly yamlStruct: any;
+    readonly levainTag: any | undefined;
 
-    yamlItem(key: string): any {
+    yamlItem(key: string): any | undefined {
     }
 
     skipRegistry(): Boolean {

@@ -34,7 +34,6 @@ export default class Install implements Command {
             }
         }
 
-
         if (pkgNames.length == 0) {
             throw new Error(`install - Nothing to install. Aborting...`);
         }

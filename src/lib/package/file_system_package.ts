@@ -6,9 +6,10 @@ import Repository from '../repository/repository.ts'
 import Config from "../config.ts";
 import { FileUtils } from '../fs/file_utils.ts';
 import AbstractPackage from './abstract_package.ts';
+import VersionNumber from "../utils/version_number.ts";
 
 export default class FileSystemPackage extends AbstractPackage {
-    private readonly _version: string;
+    private readonly _version: VersionNumber;
     private readonly _dependencies: string[] | undefined = undefined;
     private readonly _yamlStruct: any;
 
@@ -23,14 +24,14 @@ export default class FileSystemPackage extends AbstractPackage {
         super();
         this._yamlStruct = yaml.parse(yamlStr);
 
-        this._version = this._yamlStruct?.version;
+        this._version = new VersionNumber(this._yamlStruct?.version);
         if (this._yamlStruct?.dependencies) {
             this._dependencies = this._yamlStruct?.dependencies;
         }
         this._dependencies = this.normalizeDeps(this._dependencies);
     }
 
-    get version(): string {
+    get version(): VersionNumber {
         return this._version;
     }
 
