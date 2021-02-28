@@ -8,14 +8,18 @@ import Loader from '../lib/loader.ts';
 import {Timer} from "../lib/timer.ts";
 import Registry from '../lib/repository/registry.ts';
 import {parseArgs} from "../lib/parse_args.ts";
+import VersionNumber from "../lib/utils/version_number.ts";
+import LevainVersion from "../levain_version.ts";
 
 import Command from "./command.ts";
 
 export default class Install implements Command {
     private registry: Registry;
+    private readonly currentLevainVersion: VersionNumber;
 
     constructor(private config: Config) {
         this.registry = new Registry(config, config.levainRegistryDir)
+        this.currentLevainVersion = LevainVersion.levainVersion;
     }
 
     async execute(args: string[]) {
@@ -83,6 +87,23 @@ export default class Install implements Command {
         log.info(`=== ${verb} ${pkg.name} - ${pkg.version}`);
 
         if (shouldInstall) {
+            const levainTag = pkg.levainTag;
+            log.debug(`- ${pkg.name} - levainTag: ${JSON.stringify(levainTag)}`)
+
+            if (levainTag?.minVersion) {
+                const minVersion = new VersionNumber(levainTag?.minVersion)
+                if (minVersion.isNewerThan(this.currentLevainVersion)) {
+                    log.warning(`- We will IGNORE the upgrade for package ${pkg.name}. It needs a newer levain version ${minVersion} - Your version is ${this.currentLevainVersion}`)
+                    shouldInstall = false
+                }
+            }
+
+            if (!shouldInstall && !pkg.installed) {
+                log.error(`You must upgrade your levain (or fix the package ${pkg.name} configuration)`)
+            }
+        }
+
+        if (shouldInstall) {
             /* FIXME: 
              * Move this to another class. Perhaps a class to manage the installed environment
              * Perhaps the better approach is to install the packages to a temp dir and move upon successful installation
@@ -129,6 +150,7 @@ export default class Install implements Command {
         }
 
         log.info(`--> ${pkg.name} took ${timer.humanize()}`);
+        return;
     }
 
     savePreviousInstall(bkpTag: string, pkg: Package): boolean {
