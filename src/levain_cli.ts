@@ -87,6 +87,10 @@ export default class LevainCli {
                 log.info("Bye.");
                 Deno.exit(0)
             } else {
+                if (cmd != "clean") {
+                    await loader.command("clean", [])
+                }
+
                 await loader.command(cmd, myArgs._)
             }
         } catch (err) {
