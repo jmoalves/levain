@@ -23,7 +23,10 @@ export default class Shell implements Command {
             }
         }
 
-        let pkgs: Package[] | null = this.config.packageManager.resolvePackages(pkgNames);
+        const installedOnly = !this.config.shellCheckForUpdate
+        log.debug(`shell must check for updates? ${this.config.shellCheckForUpdate}`)
+
+        let pkgs: Package[] | null = this.config.packageManager.resolvePackages(pkgNames, installedOnly);
         if (pkgs) {
             let needInstall = pkgs
                 .map(pkg => !pkg.installed || pkg.updateAvailable)

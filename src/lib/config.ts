@@ -34,6 +34,7 @@ export default class Config {
     private _lastKnownVersion: string | undefined;
     private _lastUpdateQuestion: string | undefined;
     private _autoUpdate:boolean|undefined
+    private _shellCheckForUpdate:boolean|undefined
 
     constructor(args: any) {
         this._pkgManager = new PackageManager(this);
@@ -189,6 +190,15 @@ export default class Config {
         this._autoUpdate = autoUpdate
     }
 
+    get shellCheckForUpdate(): boolean|undefined {
+        return this._shellCheckForUpdate
+    }
+
+    set shellCheckForUpdate(shellCheckForUpdate: boolean|undefined) {
+        log.debug(`shellCheckForUpdate: ${this._shellCheckForUpdate} => ${shellCheckForUpdate}`);
+        this._shellCheckForUpdate = shellCheckForUpdate
+    }
+
     setVar(name: string, value: string): void {
         this._env[name] = value;
     }
@@ -289,6 +299,7 @@ export default class Config {
         cfg.lastKnownVersion = this._lastKnownVersion;
         cfg.lastUpdateQuestion = this._lastUpdateQuestion;
         cfg.autoUpdate = this._autoUpdate;
+        cfg.shellCheckForUpdate = this._shellCheckForUpdate;
 
         let fileName = this.levainConfigFile;
 
@@ -341,6 +352,12 @@ export default class Config {
 
             if (cfg.autoUpdate) {
                 this._autoUpdate = cfg.autoUpdate;
+            }
+
+            if (cfg.hasOwnProperty('shellCheckForUpdate')) {
+                this._shellCheckForUpdate = cfg.shellCheckForUpdate;
+            } else {
+                this._shellCheckForUpdate = true
             }
         } catch (err) {
             if (err.name != "NotFound") {
