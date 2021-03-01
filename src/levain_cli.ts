@@ -76,7 +76,7 @@ export default class LevainCli {
         const loader = new Loader(config);
         try {
             if (myArgs["levain-upgrade"]) {
-                await loader.command("install", ["levain"])
+                await loader.command("install", ["--force", "levain"])
                 log.info("");
                 log.info("");
                 log.info("");

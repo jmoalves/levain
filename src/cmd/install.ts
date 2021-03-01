@@ -10,6 +10,7 @@ import Registry from '../lib/repository/registry.ts';
 import {parseArgs} from "../lib/parse_args.ts";
 import VersionNumber from "../lib/utils/version_number.ts";
 import LevainVersion from "../levain_version.ts";
+import DateUtils from "../lib/utils/date_utils.ts";
 
 import Command from "./command.ts";
 
@@ -55,7 +56,7 @@ export default class Install implements Command {
             // Check updates
             let willUpdate = []
             for (let pkg of pkgs) {
-                if (pkg.updateAvailable) {
+                if (pkg.installed && pkg.updateAvailable) {
                     willUpdate.push(pkg.name)
                 }
             }
@@ -90,8 +91,6 @@ export default class Install implements Command {
         log.info("");
         log.info("-----------------");
         log.info(`install ${JSON.stringify(pkgNames)} - FINISHED`);
-
-        this.cleanupSaveDir();
     }
 
     private async installPackage(bkpTag: string, pkg: Package, force: boolean = false, shouldUpdate: boolean = true) {
@@ -232,22 +231,7 @@ export default class Install implements Command {
     }
 
     bkpTag(dt: Date = new Date()): string {
-        let tag: string = "bkp-";
-        tag += dt.getFullYear() + "";
-        tag += (dt.getMonth() < 10 ? "0" : "") + dt.getMonth();
-        tag += (dt.getDate() < 10 ? "0" : "") + dt.getDate();
-        tag += "-";
-        tag += (dt.getHours() < 10 ? "0" : "") + dt.getHours();
-        tag += (dt.getMinutes() < 10 ? "0" : "") + dt.getMinutes();
-        tag += (dt.getSeconds() < 10 ? "0" : "") + dt.getSeconds();
-        return tag;
-    }
-
-    cleanupSaveDir(): void {
-        // TODO: Implement this!
-        // Keep backup directories create until X days ago
-        // Or a maximum of N directories
-        // Or a combination of both approches
+        return `bkp-${DateUtils.dateTimeTag(dt)}`;
     }
 
     readonly oneLineExample = "  install <package name>"

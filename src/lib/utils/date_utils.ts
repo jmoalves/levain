@@ -1,4 +1,8 @@
 export default class DateUtils {
+    static dateTimeTag(dt: Date = new Date()): string {
+        return `${DateUtils.dateTag(dt)}-${DateUtils.timeTag(dt)}`
+    }
+
     static dateTag(dt: Date = new Date()): string {
         let month = dt.getMonth() + 1; // Date month starts with zero!
 

@@ -1,14 +1,16 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
-import {emptyDirSync} from "https://deno.land/std/fs/mod.ts";
+import {existsSync} from "https://deno.land/std/fs/mod.ts";
 
 import Config from "../lib/config.ts";
 import {parseArgs} from "../lib/parse_args.ts";
 import ConsoleAndFileLogger from "../lib/logger/console_and_file_logger.ts";
 import OsUtils from "../lib/os/os_utils.ts";
+import StringUtils from "../lib/utils/string_utils.ts";
+import DateUtils from "../lib/utils/date_utils.ts";
+import LevainVersion from "../levain_version.ts";
 
 import Command from "./command.ts";
-import StringUtils from "../lib/utils/string_utils.ts";
 
 export default class CleanCommand implements Command {
 
@@ -23,14 +25,31 @@ export default class CleanCommand implements Command {
                 "cache",
                 "backup",
                 "temp",
-                "logs"
+                "logs",
+                "all",
+                "deep"
             ]
         });
 
+        const noArgs = !parameters.length
+        if (noArgs) {
+            myArgs.cache = false
+            myArgs.backup = true
+            myArgs.temp = true
+            myArgs.logs = true
+        } else if (myArgs.all) {
+            myArgs.cache = true
+            myArgs.backup = true
+            myArgs.temp = true
+            myArgs.logs = true
+        }
+
+        let shallow = !myArgs.deep
+
+        //////////////////////////////////////////////////////////////////
         let total = 0
 
-        const noArgs = !parameters.length
-        if (myArgs.cache || noArgs) {
+        if (myArgs.cache) {
             const cacheDir = this.config.levainCacheDir
             log.debug(`cleaning cacheDir ${cacheDir}`)
             let size = this.cleanDir(cacheDir)
@@ -38,26 +57,39 @@ export default class CleanCommand implements Command {
             total += size
         }
 
-        if (myArgs.backup || noArgs) {
+        if (myArgs.backup) {
             const backupDir = this.config.levainBackupDir
             log.debug(`cleaning backupDir ${backupDir}`)
-            let size = this.cleanDir(backupDir)
+
+            let checkFile = undefined
+            if (shallow) {
+                checkFile = ((dirEntry:any) => {
+                    // Keep today's backup
+                    if (!dirEntry.name.match(`^bkp-${DateUtils.dateTag()}-`)) {
+                        return true
+                    }
+        
+                    return false
+                })
+            }
+
+            let size = this.cleanDir(backupDir, checkFile)
             log.info(`CLEAN ${StringUtils.humanizeBytes(size)} - ${backupDir}`)
             total += size
         }
 
-        if (myArgs.temp || noArgs) {
+        if (myArgs.temp) {
             const tempDir = this.config.levainSafeTempDir
             log.debug(`cleaning tempDir ${tempDir}`)
             let size = this.cleanDir(tempDir)
             log.info(`CLEAN ${StringUtils.humanizeBytes(size)} - ${tempDir}`)
             total += size
 
-            size = this.cleanOsTempDir()
+            size = this.cleanOsTempDir(shallow)
             total += size
         }
 
-        if (myArgs.logs || noArgs) {
+        if (myArgs.logs) {
             log.debug(`cleaning logs`)
             let size = this.cleanLogs()
             total += size
@@ -67,7 +99,7 @@ export default class CleanCommand implements Command {
         log.info(`CLEAN ${StringUtils.humanizeBytes(total)} - TOTAL`)
     }
 
-    private cleanDir(entry: string, include?:((dirEntry:Deno.DirEntry) => boolean)): number {
+    private cleanDir(entry: string, includeResolver?:((dirEntry:Deno.DirEntry) => boolean)): number {
         let entryPath = path.resolve(entry)
         // log.debug(`WALK ${entryPath}`)
 
@@ -83,7 +115,7 @@ export default class CleanCommand implements Command {
         }
 
         let size = Array.from(Deno.readDirSync(entryPath))
-            .filter((entry) => !include || include(entry))
+            .filter((entry) => !includeResolver || includeResolver(entry))
             .map((entry) => this.cleanDir(path.resolve(entryPath, entry.name)))
             .reduce(
                 ( dirsize, filesize ) => dirsize + filesize,
@@ -100,28 +132,36 @@ export default class CleanCommand implements Command {
         return size
     }
 
-    private cleanOsTempDir(): number {
+    private cleanOsTempDir(shallow: boolean): number {
         let tempDir = this.getOsTempDir();
         if (!tempDir) {
             return 0;
         }
 
         log.debug(`cleaning tempDir ${tempDir}`)
-        let size = this.cleanDir(tempDir, (dirEntry) => {
-            if (dirEntry.name.match("^levain-temp-.*")) {
+        let size = this.cleanDir(tempDir, (dirEntry:any) => {
+            if (dirEntry.name.match("^levain-temp-")) {
                 return true
             }
 
-            if (dirEntry.isDirectory && dirEntry.name.match("^levain-.*")) {
-                return true
-            }
-
-            if (dirEntry.name.match("^levain$")) {
+            if (dirEntry.isDirectory && dirEntry.name.match("^levain-")) {
                 return true
             }
 
             return false
         })
+
+        const levainReleasesDir = path.resolve(tempDir, 'levain')
+        if (existsSync(levainReleasesDir)) {
+            log.debug(`cleaning tempDir ${levainReleasesDir} - levain releases`)
+            size += this.cleanDir(levainReleasesDir, (dirEntry:any) => {
+                if (!shallow || !dirEntry.name.match(`^levain-${LevainVersion.levainVersion.versionNumber}$`)) {
+                    return true
+                }
+    
+                return false
+            })    
+        }
 
         log.info(`CLEAN ${StringUtils.humanizeBytes(size)} - ${tempDir}`)
         return size

@@ -69,7 +69,7 @@ export default class LevainReleases {
         }
 
         OsUtils.isWindows()
-        return `${this.downloadUrl}/${versionPath}/levain-${version}-windows-x86_64.zip`
+        return `${this.downloadUrl}/${versionPath}/levain-${versionPath}-windows-x86_64.zip`
     }
 
     async latest(): Promise<any> {

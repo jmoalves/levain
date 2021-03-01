@@ -46,7 +46,7 @@ export default class ConsoleAndFileLogger {
     }
 
     static logTag(dt: Date = new Date()): string {
-        return this.logDateTag(dt) + "-" + this.logTimeTag(dt);
+        return DateUtils.dateTimeTag(dt);
     }
 
     static logDateTag(dt: Date = new Date()): string {
