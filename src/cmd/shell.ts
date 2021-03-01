@@ -23,24 +23,17 @@ export default class Shell implements Command {
             }
         }
 
-        const installedOnly = !this.config.shellCheckForUpdate
+        let loader = new Loader(this.config);
+
         log.debug(`shell must check for updates? ${this.config.shellCheckForUpdate}`)
-
-        let pkgs: Package[] | null = this.config.packageManager.resolvePackages(pkgNames, installedOnly);
-        if (pkgs) {
-            let needInstall = pkgs
-                .map(pkg => !pkg.installed || pkg.updateAvailable)
-                .reduce((acc, value) => acc || value);
-
-            if (needInstall) {
-                let loader = new Loader(this.config);
-                await loader.command("install", pkgNames);
-                this.config.repositoryManager.invalidatePackages();
-            } else {
-                log.debug("No package to install or upgrade");
-            }
+        if (this.config.shellCheckForUpdate) {
+            await loader.command("install", pkgNames);
+        } else {
+            await loader.command("install", ["--noUpdate"].concat(pkgNames));
         }
+        this.config.repositoryManager.invalidatePackages();
 
+        // Running shell
         let osShell: OsShell = new OsShell(this.config, pkgNames, true);
         osShell.interactive = true;
 

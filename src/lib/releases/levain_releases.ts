@@ -186,7 +186,6 @@ export default class LevainReleases {
                 let answer = prompt("Update now (Y,n)?", "Y")
                 if (!answer || !["Y", "YES"].includes(answer.toUpperCase())) {
                     log.info("Ok. We will ask again later.")
-                    this.config.autoUpdate = false
                     return
                 }
             }
@@ -194,6 +193,8 @@ export default class LevainReleases {
             log.info("")
             log.info("Upgrading Levain")
             log.info("")
+
+            this.config.shellCheckForUpdate = true
 
             await levainReleases.prepareNewRelease()
         } catch(error) {

@@ -26,7 +26,8 @@ export default class Install implements Command {
     async execute(args: string[]) {
         const myArgs = parseArgs(args, {
             boolean: [
-                "force"
+                "force",
+                "noUpdate"
             ]
         });
 
@@ -51,20 +52,34 @@ export default class Install implements Command {
         log.info("");
         log.info("-----------------");
 
+        if (myArgs.force) {
+            myArgs.noUpdate = false
+        }
+
         let shouldUpdate = true
-        if (!myArgs.force) {
+        if (myArgs.noUpdate) {
+            shouldUpdate = false
+        }
+
+        if (!myArgs.force && !myArgs.noUpdate) {
             // Check updates
             let willUpdate = []
+            let willInstall = []
             for (let pkg of pkgs) {
-                if (pkg.installed && pkg.updateAvailable) {
+                if (!pkg.installed) {
+                    willInstall.push(pkg.name)
+                } else if (pkg.updateAvailable) {
                     willUpdate.push(pkg.name)
                 }
             }
 
-            if (willUpdate.length > 0) {
+            if (willInstall.length > 0) {
+                log.debug(`- Installing - ${JSON.stringify(willInstall)}`)
+                log.debug(`- Updating - ${JSON.stringify(willUpdate)}`)
+            } else if (willUpdate.length > 0) {
                 log.info("")
                 log.info("")
-                log.info(`Some packages will be updated.`)
+                log.info(`Some packages have an update available.`)
                 log.info(`${JSON.stringify(willUpdate, null, 3)}`)
                 log.info("")
 
@@ -125,7 +140,7 @@ export default class Install implements Command {
             if (levainTag?.minVersion) {
                 const minVersion = new VersionNumber(levainTag?.minVersion)
                 if (minVersion.isNewerThan(this.currentLevainVersion)) {
-                    log.warning(`- We will IGNORE the upgrade for package ${pkg.name}. It needs a newer levain version ${minVersion} - Your version is ${this.currentLevainVersion}`)
+                    log.warning(`- We will IGNORE the package ${pkg.name} installation. It needs a newer levain version ${minVersion} - Your version is ${this.currentLevainVersion}`)
                     shouldInstall = false
                 }
             }
