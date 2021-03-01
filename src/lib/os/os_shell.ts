@@ -95,6 +95,11 @@ export class OsShell {
         log.info(`=== ENV ${pkg.name} - ${pkg.version}`);
         const loader = new Loader(this.config);
         for (let action of actions) {
+            // Infinite loop protection - https://github.com/jmoalves/levain/issues/111
+            if (action.startsWith('levainShell ')) {
+                throw new Error(`levainShell action is not allowed here. Check your recipe - pkg: ${pkg.name} action: ${action}`)
+            }
+
             await loader.action(pkg, action);
         }
     }
