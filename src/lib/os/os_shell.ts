@@ -226,7 +226,10 @@ export class OsShell {
             return undefined;
         }
 
+        myPath.reverse(); // Issue https://github.com/jmoalves/levain/issues/115
+        myPath.unshift(this.config.levainBaseDir);
         myPath = [...new Set(myPath)]; // Remove duplicates
+
         let pathStr = myPath.join(";");
         let envPath = Deno.env.get("PATH");
         if (!envPath) {

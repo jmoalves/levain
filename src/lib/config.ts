@@ -62,6 +62,10 @@ export default class Config {
         return this._env["levainHome"];
     }
 
+    get levainBaseDir(): string {
+        return path.resolve(this.levainHome, "levain");
+    }
+
     get levainConfigDir(): string {
         const dir = path.resolve(this.levainHome, ".levain");
         ensureDirSync(dir)
