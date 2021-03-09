@@ -37,6 +37,9 @@ export default class TestHelper {
     static readonly folderThatDoesNotExist = 'this-folder-does-not-exist';
     static readonly anotherFolderThatDoesNotExist = 'another-folder-that-does-not-exist';
     static readonly fileThatDoesNotExist = path.join(TestHelper.folderThatAlwaysExists, 'this-file-does-not-exist.txt');
+    static readonly anotherFileThatDoesNotExist = path.join(TestHelper.folderThatAlwaysExists, 'this-file-also-does-not-exist.txt');
+    static readonly fileThatExists = path.resolve('testdata/file_utils/can_read_and_write_this_file.txt');
+    static readonly anotherFileThatExists = path.resolve('testdata/file_utils/file.txt');
     static readonly validZipFile = path.resolve('testdata/extract/test.zip')
 
     static getTestPkg(yamlStr: string) {

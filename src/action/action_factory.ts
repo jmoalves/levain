@@ -1,5 +1,6 @@
 import Action from "./action.ts";
 import AddPathAction from "./add_path.ts";
+import CheckFileExists from "./check/check_file_exists.ts";
 import CopyAction from "./copy.ts";
 import ContextMenu from "./context_menu.ts";
 import DefaultPackage from "./defaultPackage.ts";
@@ -41,6 +42,7 @@ const actionMap = new Map<string, (config: Config) => Action>([
     ['template', (config: Config) => new Template(config)],
     ['assertContains', (config: Config) => new AssertContainsAction(config)],
     ['checkChainDirExists', (config: Config) => new CheckChainDirExists(config)],
+    ['checkFileExists', (config: Config) => new CheckFileExists(config)],
     ['echo', (config: Config) => new Echo(config)],
     ['removeFromRegistry', (config: Config) => new RemoveFromRegistry(config.levainRegistry)],
     ['setVar', (config: Config) => new SetVarAction(config)],

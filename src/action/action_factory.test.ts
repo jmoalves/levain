@@ -25,6 +25,7 @@ Deno.test('ActionFactory should list actions', () => {
         'setEnv',
         'template',
         'checkChainDirExists',
+        'checkFileExists',
         'echo',
         'removeFromRegistry',
         'setVar',
