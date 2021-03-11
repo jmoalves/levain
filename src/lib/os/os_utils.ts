@@ -75,7 +75,7 @@ export default class OsUtils {
 
     static async addPathPermanent(newPathItem: any, config: Config) {
         OsUtils.onlyInWindows()
-        const userPathCMD = path.resolve(config.levainSrcDir, 'src', 'userPath.cmd')
+        const userPathCMD = path.resolve(config.levainSrcDir, 'userPath.cmd')
         FileUtils.throwIfNotExists(userPathCMD)
         const resolvedPathItem = path.resolve(newPathItem);
         FileUtils.throwIfNotExists(resolvedPathItem)
