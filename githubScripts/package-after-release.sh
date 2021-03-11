@@ -143,6 +143,8 @@ rm ${distDir}/levain.zip
 rm -rf ${distDir}/jmoalves-levain-*
 rm -rf ${distDir}/src
 rm -rf ${distDir}/testdata
+rm -rf ${distDir}/bin/deps
+rm -rf ${distDir}/bin/gen
 find ${distDir} -name '*.test.ts' -exec rm {} \;
 
 ## Create Levain zip
