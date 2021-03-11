@@ -23,12 +23,12 @@ if exist %levainRoot%\dist rmdir /q/s %levainRoot%\dist
 
 set DENO_DIR=%levainRoot%\bin
 %levainRoot%\bin\deno.exe -V info
-%levainRoot%\bin\deno.exe cache --unstable --reload %levainRoot%\src\levain.ts
-::%levainRoot%\bin\deno.exe bundle --unstable --reload %levainRoot%\src\levain.ts %levainRoot%\levain.bundle.js
+::%levainRoot%\bin\deno.exe cache --unstable --reload %levainRoot%\src\levain.ts
+%levainRoot%\bin\deno.exe bundle --unstable --reload %levainRoot%\src\levain.ts %levainRoot%\levain.bundle.js
 if errorlevel 1 exit /b %ERRORLEVEL%
 
-::rmdir %levainRoot%\bin\deps /q /s
-::rmdir %levainRoot%\bin\gen /q /s
+rmdir %levainRoot%\bin\deps /q /s
+rmdir %levainRoot%\bin\gen /q /s
 
 echo.
 echo Deno cache ok
