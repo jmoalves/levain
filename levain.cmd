@@ -24,7 +24,11 @@ exit /b 0
 
 :fnRun
 set levainMain=%myPath%levain.bundle.js
-if not exist %levainMain% set levainMain=%myPath%src\levain.ts
+set levainOpt=--cached-only
+if not exist %levainMain% (
+    set levainMain=%myPath%src\levain.ts
+    set levainOpt=
+)
 
 echo.
 echo Running %levainMain%
@@ -32,6 +36,7 @@ set NO_COLOR=true
 set DENO_DIR=%denoPath%
 %denoPath%deno.exe run ^
     --no-check ^
+    %levainOpt% ^
     --allow-read --allow-write --allow-env --allow-net --allow-run ^
     --unstable ^
     %levainMain% ^
