@@ -31,6 +31,7 @@ export default class RepositoryManager {
         log.debug(`=== RepositoryManager.init - extraRepos: ${JSON.stringify(repos)}`)
 
         if (repos) {
+            this.extraRepos.clear()
             repos.forEach(repo => this.extraRepos.add(repo))
         }
 
