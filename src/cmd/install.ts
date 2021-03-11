@@ -231,8 +231,12 @@ export default class Install implements Command {
             Deno.removeSync(renameDir, { recursive: true });
             Deno.renameSync(src, renameDir);
 
-            log.info(`- SAVE-DEL   ${renameDir}`);
-            Deno.removeSync(renameDir, { recursive: true })
+            try {
+                log.info(`- SAVE-DEL   ${renameDir}`);
+                Deno.removeSync(renameDir, { recursive: true })
+            } catch (error) {
+                log.debug(`Ignoring - ${error}`)
+            }
 
             log.info(`SAVED ${src} => ${dst}`);
             return true;
