@@ -23,19 +23,18 @@ exit /b 0
 
 
 :fnRun
-:::::::::::::::::::::::::::::
-:: FIXME: Use levain bundle
-:::::::::::::::::::::::::::::
+set levainMain=%myPath%levain.bundle.js
+if not exist %levainMain% set levainMain=%myPath%src\levain.ts
 
 echo.
-echo Running %myPath%src\levain.ts
+echo Running %levainMain%
 set NO_COLOR=true
 set DENO_DIR=%denoPath%
 %denoPath%deno.exe run ^
     --no-check ^
     --allow-read --allow-write --allow-env --allow-net --allow-run ^
     --unstable ^
-    %myPath%src\levain.ts ^
+    %levainMain% ^
     %*
 if errorlevel 1 exit /b %ERRORLEVEL%
 

@@ -130,9 +130,8 @@ myDeno=${utilLinux}/deno
 export DENO_DIR=${distDir}/bin
 mkdir -p ${DENO_DIR}
 ${myDeno} info
-${myDeno} cache --unstable --reload ${distDir}/src/levain.ts
-#${myDeno} bundle --unstable --reload ${distDir}/src/levain.ts ${distDir}/levain.bundle.js
-# Bundle issue - https://github.com/denoland/deno/issues/8486
+#${myDeno} cache --unstable --reload ${distDir}/src/levain.ts
+${myDeno} bundle --unstable --reload ${distDir}/src/levain.ts ${distDir}/levain.bundle.js
 
 ### levain cleanup
 cp ${distDir}/bootstrap/levainBootstrap.cmd ${distRoot}
@@ -142,7 +141,7 @@ rm -rf ${distDir}/githubScripts
 rm -rf ${distDir}/ci
 rm ${distDir}/levain.zip
 rm -rf ${distDir}/jmoalves-levain-*
-# rm -rf ${distDir}/src
+rm -rf ${distDir}/src
 rm -rf ${distDir}/testdata
 find ${distDir} -name '*.test.ts' -exec rm {} \;
 

@@ -5,3 +5,4 @@ sonarLint
 *.log
 .DS_Store
 cannot_read_this_folder
+levain.bundle.js
