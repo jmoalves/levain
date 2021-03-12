@@ -3,6 +3,7 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import Package from '../package/package.ts'
 import Config from '../config.ts';
 import OsUtils from "../os/os_utils.ts";
+import GitUtils from "../utils/git_utils.ts";
 
 import Repository from './repository.ts'
 import NullRepository from './null_repository.ts';
@@ -17,7 +18,7 @@ export default class RepositoryFactory {
     }
 
     static isGitPath(repoPath: string): boolean {
-        return repoPath.endsWith(".git")
+        return GitUtils.isGitPath(repoPath)
     }
 
     static isZipPath(repoPath: string): boolean {

@@ -5,17 +5,30 @@ import ExtraBin from "../extra_bin.ts";
 import OsUtils from "../os/os_utils.ts";
 
 export default class GitUtils {
+    static readonly GIT_REG_EXP = /(?<url>.*\.git)(:?#(?<branch>.+))?$/
     readonly gitCmd: string;
 
     constructor(private config: Config) {
         this.gitCmd = `${ExtraBin.gitDir}\\cmd\\git.exe`;
     }
 
-    async clone(url: string, dst: string, options?: any) {
-        log.info(`-- GIT - CLONE - ${url} => ${dst}`);
+    static isGitPath(gitUrl: string): boolean {
+        return GitUtils.parseGitPath(gitUrl) != null
+    }
+
+    static parseGitPath(gitUrl: string): any {
+        return gitUrl.match(GitUtils.GIT_REG_EXP)?.groups
+    }
+
+    async clone(gitUrl: string, dst: string, options?: any) {
+        this.checkGitPath(gitUrl)
+
+        const gitPath = GitUtils.parseGitPath(gitUrl)
+        log.info(`-- GIT - CLONE - ${gitPath} => ${dst}`);
         OsUtils.onlyInWindows();
 
-        const command = `cmd /u /c ${this.gitCmd} clone --progress --single-branch --no-tags --depth 1 ${url} ${dst}`;
+        const branchOption = ( gitPath.branch ? `--branch ${gitPath.branch} ` : '')
+        const command = `cmd /u /c ${this.gitCmd} clone --progress ${branchOption} --single-branch --no-tags --depth 1 ${gitPath.url} ${dst}`;
         await OsUtils.runAndLog(command);
     }
 
@@ -43,5 +56,11 @@ export default class GitUtils {
         } while (tries < 3)
 
         throw Error(`Unable to GIT PULL ${dir}`)
+    }
+
+    checkGitPath(url: string) {
+        if (!GitUtils.isGitPath(url)) {
+            throw new Error(`Invalid git url - ${url}`)
+        }
     }
 }
