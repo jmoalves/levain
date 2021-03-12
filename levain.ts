@@ -1,13 +1,20 @@
 import * as log from "https://deno.land/std/log/mod.ts";
+import * as path from "https://deno.land/std/path/mod.ts";
 
-import ConsoleAndFileLogger from './lib/logger/console_and_file_logger.ts'
-import {parseArgs} from "./lib/parse_args.ts";
-import {Timer} from "./lib/timer.ts";
-import CliUtil from "./lib/cli_util.ts";
+import ConsoleAndFileLogger from './src/lib/logger/console_and_file_logger.ts'
+import {parseArgs} from "./src/lib/parse_args.ts";
+import {Timer} from "./src/lib/timer.ts";
+import CliUtil from "./src/lib/cli_util.ts";
 
-import LevainCli from "./levain_cli.ts";
+import LevainCli from "./src/levain_cli.ts";
 
 export default class Levain {
+    static get levainRootDir(): string {
+        // https://stackoverflow.com/questions/61829367/node-js-dirname-filename-equivalent-in-deno
+        return path.resolve(path.dirname(path.fromFileUrl(import.meta.url)))
+    }
+
+
     logFiles: string[] = [];
     timer = new Timer()
     logger: ConsoleAndFileLogger | undefined;

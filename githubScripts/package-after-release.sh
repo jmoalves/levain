@@ -130,8 +130,8 @@ myDeno=${utilLinux}/deno
 export DENO_DIR=${distDir}/bin
 mkdir -p ${DENO_DIR}
 ${myDeno} info
-#${myDeno} cache --unstable --reload ${distDir}/src/levain.ts
-${myDeno} bundle --unstable --reload ${distDir}/src/levain.ts ${distDir}/levain.bundle.js
+#${myDeno} cache --unstable --reload ${distDir}/levain.ts
+${myDeno} bundle --unstable --reload ${distDir}/levain.ts ${distDir}/levain.bundle.js
 
 ### levain cleanup
 cp ${distDir}/bootstrap/levainBootstrap.cmd ${distRoot}
@@ -142,6 +142,7 @@ rm -rf ${distDir}/ci
 rm ${distDir}/levain.zip
 rm -rf ${distDir}/jmoalves-levain-*
 rm -rf ${distDir}/src
+rm -rf ${distDir}/levain.ts
 rm -rf ${distDir}/testdata
 rm -rf ${distDir}/bin/deps
 rm -rf ${distDir}/bin/gen

@@ -4,10 +4,11 @@ import * as yaml from "https://deno.land/std/encoding/yaml.ts";
 
 import VersionNumber from './lib/utils/version_number.ts';
 
+import Levain from '../levain.ts';
+
 export default class LevainVersion {
     static get levainSrcDir(): string {
-        // https://stackoverflow.com/questions/61829367/node-js-dirname-filename-equivalent-in-deno
-        return path.resolve(path.dirname(path.fromFileUrl(import.meta.url)), "..")
+        return path.resolve(Levain.levainRootDir)
     }
 
 

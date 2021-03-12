@@ -1,9 +1,9 @@
 import {assertEquals,} from "https://deno.land/std/testing/asserts.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 
-import {assertFind} from "./lib/test/more_asserts.ts";
-import OsUtils from "./lib/os/os_utils.ts";
-import CliUtil from "./lib/cli_util.ts";
+import {assertFind} from "./src/lib/test/more_asserts.ts";
+import OsUtils from "./src/lib/os/os_utils.ts";
+import CliUtil from "./src/lib/cli_util.ts";
 
 import Levain from "./levain.ts";
 
@@ -39,7 +39,7 @@ Deno.test('should add an extra log file', async () => {
         logger = await levain.runLevinWithLog(params.split(' '))
         const logFiles = logger?.logFiles || []
         assertEquals(logFiles.length, 3)
-        assertFind(logFiles, it => it === extraLogFile, 'didn\'t use extra log')
+        assertFind(logFiles, it => it === extraLogFile, `didn\'t use extra log ${extraLogFile}`)
     } finally {
         await logger?.close()
     }
@@ -57,8 +57,8 @@ Deno.test('should add an extra log dir', async () => {
         assertEquals(logFiles.length, 3)
         assertFind(
             logFiles,
-            it => it.includes(extraLogDir) && !!it.match(/levain-\w+-\d{8}-\w{6}.log$/),
-            'didn\'t use extra log dir'
+            it => it.includes(extraLogDir),
+            `didn\'t use extra log dir ${extraLogDir}`
         )
     } finally {
         await logger?.close()

@@ -26,7 +26,7 @@ exit /b 0
 set levainMain=%myPath%levain.bundle.js
 set levainOpt=--cached-only
 if not exist %levainMain% (
-    set levainMain=%myPath%src\levain.ts
+    set levainMain=%myPath%levain.ts
     set levainOpt=
 )
 

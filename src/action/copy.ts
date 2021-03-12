@@ -19,12 +19,11 @@ export default class CopyAction implements Action {
                 "verbose",
                 "strip",
                 'ifNotExists',
+            ],
+            stringMany: [
+                "ifExists"
             ]
         });
-
-        if (args._.length < 2) {
-            throw "Action - copy - You should inform the source(s) and the destination";
-        }
 
         if (!pkg) {
             throw Error("No package for action copy")
@@ -32,6 +31,15 @@ export default class CopyAction implements Action {
 
         const dst = FileUtils.resolve(pkg.baseDir, args._.pop());
         const src = args._.map((element: string) => FileUtils.resolve(pkg.pkgDir, element));
+        const optSrc = args.ifExists?.map((element: string) => FileUtils.resolve(pkg.pkgDir, element));
+
+        if (!dst) {
+            throw "Action - copy - You must inform the destination";
+        }
+
+        if (optSrc?.length < 1 && src?.length < 1) {
+            throw "Action - copy - You must inform the source(s)";
+        }
 
         let copyToDir = false;
         try {
@@ -39,17 +47,32 @@ export default class CopyAction implements Action {
             if (args.ifNotExists && existsSync(dst)) {
                 return
             }
+
             if (fileInfo.isDirectory) {
                 copyToDir = true;
             }
         } catch (err) {
         }
 
-        if (src.length > 1 && !copyToDir) {
+        const len = (src?.length || 0) + (optSrc?.length || 0);
+        if (len > 1 && !copyToDir) {
             throw "Action - copy - Unable to copy multiple sources to a single file";
         }
 
-        log.info(`COPY ${src} => ${dst}`);
+        await this.copy(src, dst, false, copyToDir, args)
+        await this.copy(optSrc, dst, true, copyToDir, args)
+    }
+
+    private async copy(src: string[], dst: string, ifExists:boolean, copyToDir:boolean, args: any) {
+        if (!src) {
+            return
+        }
+
+        if (ifExists) {
+            log.info(`COPY (ifExists) ${src} => ${dst}`);
+        } else {
+            log.info(`COPY ${src} => ${dst}`);
+        }
 
         for (let item of src) {
             log.debug(`- CHECK ${item}`);
@@ -60,8 +83,12 @@ export default class CopyAction implements Action {
                     await this.copySrcFromUrl(item, dst, copyToDir, args)
                 }
             } catch (err) {
-                log.error(`Error in ${item}`);
-                throw err;
+                if (!ifExists) {
+                    log.error(`Error in ${item}`);
+                    throw err;    
+                } else {
+                    log.debug(`Error in ${item} - ignoring (ifExists)`);
+                }
             }
         }
     }

@@ -1,7 +1,7 @@
 version: vHEAD
 
 cmd.install:
-  - copy --verbose ../levain.bundle.js ../bin ../extra-bin ../levain.cmd ../levain.sh ../userPath.cmd ../recipes ${baseDir}
+  - copy --verbose --ifExists=../levain.bundle.js --ifExists=../src --ifExists=../levain.ts ../bin ../extra-bin ../levain.cmd ../levain.sh ../userPath.cmd ../recipes ${baseDir}
   - addPath --permanent ${baseDir}/bin
   - addPath --permanent ${baseDir}
   # Tab completion

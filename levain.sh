@@ -11,5 +11,5 @@ export DENO_BIN=/usr/local/bin/deno
 $DENO_BIN run \
     --allow-read --allow-write --allow-env --allow-net --allow-run \
     --unstable \
-    $myPath/src/levain.ts \
+    $myPath/levain.ts \
     $@
