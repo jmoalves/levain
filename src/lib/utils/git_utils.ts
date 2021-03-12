@@ -24,11 +24,12 @@ export default class GitUtils {
         this.checkGitPath(gitUrl)
 
         const gitPath = GitUtils.parseGitPath(gitUrl)
-        log.info(`-- GIT - CLONE - ${gitPath} => ${dst}`);
+        log.info(`-- GIT - CLONE - ${JSON.stringify(gitPath)} => ${dst}`);
         OsUtils.onlyInWindows();
 
         const branchOption = ( gitPath.branch ? `--branch ${gitPath.branch} ` : '')
-        const command = `cmd /u /c ${this.gitCmd} clone --progress ${branchOption} --single-branch --no-tags --depth 1 ${gitPath.url} ${dst}`;
+        // We must have NO spaces after ${branchOption} in the command below
+        const command = `cmd /u /c ${this.gitCmd} clone --progress ${branchOption}--single-branch --no-tags --depth 1 ${gitPath.url} ${dst}`;
         await OsUtils.runAndLog(command);
     }
 
