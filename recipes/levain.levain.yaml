@@ -1,4 +1,4 @@
-version: vHEAD
+version: 0.50.1
 
 cmd.install:
   - copy --verbose --ifExists=../levain.bundle.js --ifExists=../src --ifExists=../levain.ts ../bin ../extra-bin ../levain.cmd ../levain.sh ../userPath.cmd ../recipes ${baseDir}
