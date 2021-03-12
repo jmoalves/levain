@@ -163,12 +163,11 @@ export default class Install implements Command {
         let actions = [];
 
         if (shouldInstall) {
-            let installActions = pkg.yamlItem("cmd.install");
-            if (installActions) {
-                if (!pkg.skipInstallDir()) {
-                    installActions.unshift("mkdir ${baseDir}");
-                }
+            let installActions = pkg.yamlItem("cmd.install") || [];
+            if (!pkg.skipInstallDir()) {
+                installActions.unshift("mkdir ${baseDir}");
             }
+
             // Standard actions - At the head (unshift), they are in reverse order (like a STACK)
             actions.unshift("mkdir " + this.config.levainSafeTempDir);
             actions.unshift("mkdir " + this.config.levainRegistryDir);
