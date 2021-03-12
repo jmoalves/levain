@@ -76,6 +76,9 @@ export default class CleanCommand implements Command {
             let size = this.cleanDir(backupDir, checkFile)
             log.info(`CLEAN ${StringUtils.humanizeBytes(size)} - ${backupDir}`)
             total += size
+
+            size = this.cleanFailedSaves()
+            total += size
         }
 
         if (myArgs.temp) {
@@ -107,11 +110,12 @@ export default class CleanCommand implements Command {
         if (!entryInfo.isDirectory) {
             try {
                 Deno.removeSync(entryPath)
+                // log.debug(`DEL-FILE ${entryPath} - ${entryInfo.size}`)
+                return entryInfo.size
             } catch (error) {
                 log.debug(`Error ${error} - Ignoring ${entryPath}`)
+                return 0
             }
-            // log.debug(`DEL-FILE ${entryPath} - ${entryInfo.size}`)
-            return entryInfo.size
         }
 
         let size = Array.from(Deno.readDirSync(entryPath))
@@ -129,6 +133,26 @@ export default class CleanCommand implements Command {
         }
 
         // log.debug(`DEL-DIR  ${entryPath} - ${size}`)
+        return size
+    }
+
+    private cleanFailedSaves(): number {
+        let saveDir = this.config.levainHome
+        if (!saveDir) {
+            return 0;
+        }
+
+        log.debug(`cleaning failed saves at ${saveDir}`)
+        let size = this.cleanDir(saveDir, (dirEntry:any) => {
+            if (dirEntry.name.match(/^\.rename\./)) {
+                // log.debug(`RM ${dirEntry.name}`)
+                return true
+            }
+
+            return false
+        })
+
+        log.info(`CLEAN ${StringUtils.humanizeBytes(size)} - ${saveDir} - failed saves`)
         return size
     }
 
