@@ -77,7 +77,7 @@ if "a%levainUrl%" == "a" (
 )
 
 :: Download Levain Zip
-set url=%levainUrl%/download/v%levainVersion%/%levainZipFile%
+set url=%levainUrl%/v%levainVersion%/%levainZipFile%
 echo Downloading Levain zip from %url%
 %currentFileDir%\extra-bin\windows\curl\bin\curl.exe -L -f %url% -o%levainZipPath%\%levainZipFile%
 if errorlevel 1 (
