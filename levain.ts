@@ -9,9 +9,14 @@ import CliUtil from "./src/lib/cli_util.ts";
 import LevainCli from "./src/levain_cli.ts";
 
 export default class Levain {
+    static get levainRootFile(): string {
+        // https://stackoverflow.com/questions/61829367/node-js-dirname-filename-equivalent-in-deno
+        return path.fromFileUrl(import.meta.url)
+    }
+
     static get levainRootDir(): string {
         // https://stackoverflow.com/questions/61829367/node-js-dirname-filename-equivalent-in-deno
-        return path.resolve(path.dirname(path.fromFileUrl(import.meta.url)))
+        return path.dirname(Levain.levainRootFile)
     }
 
 

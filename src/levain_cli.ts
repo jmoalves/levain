@@ -8,15 +8,14 @@ import UserInfoUtil from "./lib/user_info/userinfo_util.ts";
 import CliUtil from "./lib/cli_util.ts";
 import CommandFactory, { CommandNotFoundError } from "./cmd/command_factory.ts";
 import LevainReleases from "./lib/releases/levain_releases.ts";
+import Levain from "../levain.ts";
 
 import LevainVersion from "./levain_version.ts";
 
 export default class LevainCli {
 
     async execute(myArgs: any = {}): Promise<void> {
-        const __filename = path.fromFileUrl(import.meta.url);
-
-        log.info(`Levain ${LevainVersion.levainVersion}    (${__filename})`);
+        log.info(`Levain ${LevainVersion.levainVersion}    (${Levain.levainRootFile})`);
         log.info(`Deno   v${Deno.version.deno}`);
 
         log.debug("args " + JSON.stringify(myArgs));
