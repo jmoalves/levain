@@ -1,4 +1,5 @@
 import * as log from "https://deno.land/std/log/mod.ts";
+import * as path from "https://deno.land/std/path/mod.ts";
 
 import Config from "../config.ts";
 import ExtraBin from "../extra_bin.ts";
@@ -18,6 +19,15 @@ export default class GitUtils {
 
     static parseGitPath(gitUrl: string): any {
         return gitUrl.match(GitUtils.GIT_REG_EXP)?.groups
+    }
+
+    static localBaseDir(gitUrl: string): string {
+        let gitPath = GitUtils.parseGitPath(gitUrl)
+        let gitBase = gitPath.url.replace(/\.git$/, '')
+        if (gitPath.branch) {
+            gitBase += '_' + gitPath.branch
+        }
+        return gitBase.replace(/(?:\/|\\|:|@| )+/g, '_')
     }
 
     async clone(gitUrl: string, dst: string, options?: any) {

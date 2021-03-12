@@ -38,3 +38,10 @@ Deno.test(`GitUtils - parseGitPath('git@github.com:jmoalves/levain.git')`, () =>
     assertEquals(gitPath.url, 'git@github.com:jmoalves/levain.git')
     assertEquals(gitPath.branch, undefined)
 })
+
+Deno.test(`GitUtils - localBaseDir()`, () => {
+    assertEquals(GitUtils.localBaseDir('git@github.com:jmoalves/levain.git'), 'git_github.com_jmoalves_levain')
+    assertEquals(GitUtils.localBaseDir('git@github.com:jmoalves/levain.git#develop'), 'git_github.com_jmoalves_levain_develop')
+    assertEquals(GitUtils.localBaseDir('https://gitlab.com/scout-manager/scout-manager-app.git'), 'https_gitlab.com_scout-manager_scout-manager-app')
+    assertEquals(GitUtils.localBaseDir('https://gitlab.com/scout-manager/scout-manager-app.git#develop'), 'https_gitlab.com_scout-manager_scout-manager-app_develop')
+})
