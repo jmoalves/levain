@@ -118,10 +118,10 @@ export default class Install implements Command {
         let shouldInstall = true;
         let verb = 'INSTALL'
         if (pkg.installed) {
-            if (shouldUpdate && pkg.updateAvailable) {
-                verb = 'UPDATE';
-            } else if (!pkg.skipInstallDir() && !existsSync(pkg.baseDir)) {
+            if (!pkg.skipInstallDir() && !existsSync(pkg.baseDir)) {
                 verb = 'MISSING';
+            } else if (shouldUpdate && pkg.updateAvailable) {
+                verb = 'UPDATE';
             } else if (force) {
                 verb = 'FORCE';
             } else {
