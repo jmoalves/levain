@@ -142,7 +142,7 @@ export default class CleanCommand implements Command {
             return 0;
         }
 
-        log.debug(`cleaning failed saves at ${saveDir}`)
+        log.debug(`cleaning .rename.* at ${saveDir}`)
         let size = this.cleanDir(saveDir, (dirEntry:any) => {
             if (dirEntry.name.match(/^\.rename\./)) {
                 // log.debug(`RM ${dirEntry.name}`)
@@ -152,7 +152,7 @@ export default class CleanCommand implements Command {
             return false
         })
 
-        log.info(`CLEAN ${StringUtils.humanizeBytes(size)} - ${saveDir} - failed saves`)
+        log.info(`CLEAN ${StringUtils.humanizeBytes(size)} - ${saveDir} - .rename.*`)
         return size
     }
 

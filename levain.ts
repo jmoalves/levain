@@ -60,7 +60,6 @@ export default class Levain {
             log.info("");
             log.info(`levain ${cmdArgs.join(' ')}`)
             log.info("==================================");
-            log.info("");
             await new LevainCli().execute(this.myArgs);
 
         } catch (err) {
@@ -76,7 +75,6 @@ export default class Levain {
             this.error = true;
         } finally {
 
-            log.info("");
             this.logger?.showLogFiles(this.logFiles);
 
             log.info("");
@@ -86,7 +84,7 @@ export default class Levain {
             if (this.error) {
                 log.error('execution FAILED')
             } else {
-                log.info('execution SUCCESS')
+                log.debug('execution SUCCESS')
             }
 
             if (this.error || (this.myArgs && this.myArgs["wait-after-end"])) {
@@ -101,8 +99,6 @@ export default class Levain {
     async prepareLogs(myArgs: any): Promise<ConsoleAndFileLogger> {
         this.logFiles = this.getLogFiles(myArgs['add-log'], myArgs['add-log-dir'])
         this.logger = await ConsoleAndFileLogger.setup(this.logFiles);
-        log.info('')
-        log.info('Hi!')
         this.logger.showLogFiles(this.logFiles);
         if (myArgs['add-log'] || myArgs['add-log-dir']) {
             CliUtil.askToContinue()
@@ -132,5 +128,4 @@ export default class Levain {
 // https://deno.land/manual/tools/script_installer
 if (import.meta.main) {
     await new Levain().runLevinWithLog(Deno.args);
-    console.log("Bye!");
 }

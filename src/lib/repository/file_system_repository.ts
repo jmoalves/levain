@@ -92,8 +92,7 @@ export default class FileSystemRepository extends AbstractRepository {
             return [];
         }
 
-        log.info(`# Scanning ${this.rootDir} - rootDirOnly: ${this.rootOnly}`);
-        log.info(`# Please wait...`);
+        log.info(`# Scanning ${this.rootDir} - rootDirOnly: ${this.rootOnly}. Please wait...`);
         const timer = new Timer()
 
         const packagesGlob = `**/*.levain.{yaml,yml}`.replace(/\\/g, '/');
@@ -161,9 +160,6 @@ export default class FileSystemRepository extends AbstractRepository {
             }
 
             if (entry.isDirectory && !rootDirOnly) {
-                // User feedback
-                Deno.stdout.writeSync(new TextEncoder().encode("."));
-
                 if (currentLevel > maxLevels) {
                     log.debug(`skipping ${fullUri}, more then ${maxLevels} levels deep`)
                 } else {
