@@ -2,7 +2,7 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import { existsSync } from "https://deno.land/std/fs/exists.ts";
 
-import ProgressBar from "https://deno.land/x/progress@v1.1.4/mod.ts";
+import ProgressBar from "https://deno.land/x/progress@v1.2.3/mod.ts";
 
 import ProgressReader from "./progress_reader.ts";
 
