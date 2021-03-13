@@ -307,7 +307,7 @@ export default class Config {
 
         let fileName = this.levainConfigFile;
 
-        log.info(`SAVE ${fileName}`);
+        log.debug(`SAVE ${fileName}`);
         log.debug(`${JSON.stringify(cfg, null, 3)}`);
 
         ensureDirSync(this.levainConfigDir)
@@ -322,7 +322,7 @@ export default class Config {
         }
 
         try {
-            log.info(`LOAD ${filename}`);
+            log.debug(`LOAD ${filename}`);
 
             let data = Deno.readTextFileSync(filename);
             log.debug(`- DATA ${data}`);
@@ -424,7 +424,7 @@ export default class Config {
             }
 
             this._env["levainHome"] = path.resolve(Deno.cwd(), homeDir);
-            log.info(`ARG levainHome=${this._env["levainHome"]}`)
+            log.debug(`ARG levainHome=${this._env["levainHome"]}`)
             return;
         }
 

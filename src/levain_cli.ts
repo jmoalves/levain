@@ -15,6 +15,7 @@ import LevainVersion from "./levain_version.ts";
 export default class LevainCli {
 
     async execute(myArgs: any = {}): Promise<void> {
+        log.info("");
         log.info(`Levain ${LevainVersion.levainVersion}    (${Levain.levainRootFile})`);
         log.info(`Deno   v${Deno.version.deno}`);
 
@@ -28,9 +29,9 @@ export default class LevainCli {
         }
 
         // Time to do business!
-        log.info("");
         log.info("==================================");
-        log.info(`CWD ${Deno.cwd()}`);
+        log.debug("");
+        log.debug(`CWD ${Deno.cwd()}`);
 
         if (myArgs?._?.length == 0 && !myArgs["levain-upgrade"]) {
             this.showCliHelp()
@@ -65,8 +66,6 @@ export default class LevainCli {
         }
         
         // Repository Manager
-        log.info("");
-        log.info("==================================");
         await config.repositoryManager.init({
             repos: myArgs.addRepo,
             tempRepos: myArgs.tempRepo
@@ -104,7 +103,6 @@ export default class LevainCli {
         
         /////////////////////////////////////////////////////////////////////////////////
         log.info("==================================");
-        log.info("");
 
         config.save();
     }

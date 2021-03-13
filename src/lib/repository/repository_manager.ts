@@ -28,7 +28,7 @@ export default class RepositoryManager {
 
     async init({ repos, tempRepos }: { repos: string[]; tempRepos?: string[]; }) {
         log.debug("")
-        log.debug(`=== RepositoryManager.init - extraRepos: ${JSON.stringify(repos)}`)
+        log.debug(`=== RepositoryManager.init - extraRepos: ${JSON.stringify(repos)} tempRepos: ${JSON.stringify(tempRepos)}`)
 
         if (repos) {
             this.extraRepos.clear()

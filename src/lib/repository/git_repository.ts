@@ -21,7 +21,7 @@ export default class GitRepository extends AbstractRepository {
     constructor(private config: Config, private rootUrl: string, private rootOnly: boolean = false) {
         super()
 
-        log.info(`GitRepo: Root=${this.rootUrl}`)
+        log.debug(`GitRepo: Root=${this.rootUrl}`)
         this.name = `gitRepo for ${this.rootUrl}`
         this.repoFactory = new RepositoryFactory(config)
 
