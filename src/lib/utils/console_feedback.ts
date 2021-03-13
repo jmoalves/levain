@@ -18,16 +18,17 @@ export default class ConsoleFeedback {
         Deno.stdout.writeSync(new TextEncoder().encode(`\r${ConsoleFeedback.text[this.idx]}`))
         this.inc()
 
-        // busy wait
-        let ini = new Date().getTime()
-        while ((new Date().getTime() - ini) < 10);
+        // // busy wait - NO!!
+        // let ini = new Date().getTime()
+        // while ((new Date().getTime() - ini) < 10);
     }
 
     reset(msg: string|undefined = undefined) {
         this.idx = 0
         if (msg) {
-            Deno.stdout.writeSync(new TextEncoder().encode(`\r${msg}\r\n`))
+            Deno.stdout.writeSync(new TextEncoder().encode(`\r${msg}`))
         }
+        Deno.stdout.writeSync(new TextEncoder().encode(`\r\n`))
     }
 
     private inc() {

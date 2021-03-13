@@ -3,9 +3,12 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import Config from "../config.ts";
 import Package from "./package.ts";
 import Repository from "../repository/repository.ts";
+import ConsoleFeedback from "../utils/console_feedback.ts";
 
 export default class PackageManager {
     private knownPackages: Map<string, Package> = new Map();
+
+    private readonly feedback = new ConsoleFeedback();
 
     constructor(private config: Config) {
     }
@@ -19,8 +22,10 @@ export default class PackageManager {
         PackageManager.removeExtension(pkgNames);
 
         if (showLog) {
+            let msg = `# Resolving ${pkgNames}`;
             log.info("");
-            log.info(`=== Resolving ${pkgNames}`);    
+            log.debug(msg);
+            this.feedback.start(msg);
         }
 
         let pkgs: Map<string, Package> = new Map();
@@ -31,15 +36,14 @@ export default class PackageManager {
             let myError: boolean = this.resolvePkgs(repo, pkgs, names, pkgName, showLog);
             error = error || myError;
         }
-        Deno.stdout.writeSync(new TextEncoder().encode("\n")); // User feedback
-
+        this.feedback.reset("#");
+        
         if (error) {
             return null;
         }
 
         if (showLog) {
-            log.info("");
-            log.info("=== Package list (in order):");    
+            log.info("# Package list (in order):");    
         }
 
         let result: Package[] = [];
@@ -105,7 +109,7 @@ export default class PackageManager {
     private resolvePkgs(repo: Repository, pkgs: Map<string, Package>, names: Set<String>, pkgName: string, showLog: boolean): boolean {
         // User feedback
         if (showLog) {
-            Deno.stdout.writeSync(new TextEncoder().encode("."));
+            this.feedback.show();
         }
 
         if (pkgs.has(pkgName)) {
@@ -128,7 +132,7 @@ export default class PackageManager {
         const pkgDef = repo.resolvePackage(pkgName);
         if (!pkgDef) {
             if (showLog) {
-                Deno.stdout.writeSync(new TextEncoder().encode("\n")); // User feedback
+                this.feedback.reset("#")
             }
 
             log.error("PACKAGE NOT FOUND: " + pkgName);
