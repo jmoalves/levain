@@ -7,6 +7,7 @@ import Package from '../package/package.ts'
 import FileSystemPackage from '../package/file_system_package.ts'
 import {Timer} from "../timer.ts";
 import { FileUtils } from "../fs/file_utils.ts";
+import ConsoleFeedback from "../utils/console_feedback.ts";
 
 import AbstractRepository from './abstract_repository.ts';
 
@@ -14,6 +15,8 @@ export default class FileSystemRepository extends AbstractRepository {
     readonly name;
 
     readonly excludeDirs = ['.git', 'node_modules', 'npm-cache', '$Recycle.Bin', 'temp', 'tmp', 'windows', 'system', 'system32', 'bin', 'extra-bin']
+
+    readonly feedback = new ConsoleFeedback();
 
     constructor(
         private config: Config,
@@ -92,7 +95,10 @@ export default class FileSystemRepository extends AbstractRepository {
             return [];
         }
 
-        log.info(`# Scanning ${this.rootDir} - rootDirOnly: ${this.rootOnly}. Please wait...`);
+        let msg = `# Scanning ${this.rootDir} - rootDirOnly: ${this.rootOnly}. Please wait...`;
+        log.debug(msg);
+        this.feedback.start(msg);
+
         const timer = new Timer()
 
         const packagesGlob = `**/*.levain.{yaml,yml}`.replace(/\\/g, '/');
@@ -105,7 +111,7 @@ export default class FileSystemRepository extends AbstractRepository {
         log.debug(`# listPackages: ${packagesGlob} ${JSON.stringify(globOptions)}`)
         const packages: Array<FileSystemPackage> = this.getPackageFiles(packagesGlob, globOptions, this.rootOnly)
 
-        log.info("")
+        this.feedback.reset("#");
         log.info(`added ${packages.length} packages in ${timer.humanize()}`)
         log.info("")
         return packages;
@@ -124,6 +130,9 @@ export default class FileSystemRepository extends AbstractRepository {
     crawlPackages(dirname: string, options: ExpandGlobOptions, rootDirOnly: boolean = false, currentLevel = 0): Array<FileSystemPackage> {
         const maxLevels = 5
         const nextLevel = currentLevel + 1;
+
+        // User feedback
+        this.feedback.show();
 
         if (this.excludeDirs.find(ignoreDir => dirname.toLowerCase().endsWith(ignoreDir.toLowerCase()))) {
             log.debug(`ignoring ${dirname}`)
@@ -148,11 +157,11 @@ export default class FileSystemRepository extends AbstractRepository {
             return []
         }
 
-        // User feedback
-        Deno.stdout.writeSync(new TextEncoder().encode("."));
-
         let packages: Array<FileSystemPackage> = [];
         for (const entry of entries) {
+            // User feedback
+            this.feedback.show();
+
             const fullUri = path.resolve(dirname, entry.name);
             if (!FileUtils.canReadSync(fullUri)) {
                 log.debug(`not crawling ${fullUri}`)
@@ -185,8 +194,6 @@ export default class FileSystemRepository extends AbstractRepository {
             const pkg = this.readPackage(file.path)
             if (pkg) {
                 log.debug(`## adding package ${pkg}`)
-                // User feedback
-                Deno.stdout.writeSync(new TextEncoder().encode("+"));
                 packages.push(pkg)
             }
         }
