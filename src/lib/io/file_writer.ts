@@ -3,7 +3,7 @@ import * as path from "https://deno.land/std/path/mod.ts";
 import { ensureDirSync } from "https://deno.land/std/fs/ensure_dir.ts";
 import { existsSync } from "https://deno.land/std/fs/exists.ts";
 
-import ProgressBar from "https://deno.land/x/progress@v1.1.4/mod.ts";
+import ProgressBar from "https://deno.land/x/progress@v1.2.3/mod.ts";
 
 import Progress from "./progress.ts";
 import Timestamps from "./timestamps.ts";
