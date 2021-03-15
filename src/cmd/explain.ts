@@ -6,6 +6,11 @@ import Package from "../lib/package/package.ts";
 
 import Command from "./command.ts";
 
+/*
+ * TODO:
+ * - Handle password (don't ask, don't show)
+ * - Show package sourceDir and baseDir
+ */
 export default class ExplainCommand implements Command {
     constructor(private config: Config) {
     }
