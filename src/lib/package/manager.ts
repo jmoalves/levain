@@ -22,10 +22,8 @@ export default class PackageManager {
         PackageManager.removeExtension(pkgNames);
 
         if (showLog) {
-            let msg = `# Resolving ${pkgNames}`;
             log.info("");
-            log.debug(msg);
-            this.feedback.start(msg);
+            this.feedback.start(`# Resolving ${pkgNames}`);
         }
 
         let pkgs: Map<string, Package> = new Map();

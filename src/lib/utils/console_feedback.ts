@@ -1,3 +1,5 @@
+import * as log from "https://deno.land/std/log/mod.ts";
+
 export default class ConsoleFeedback {
     private static readonly text = ["-", "\\", "|", "/"]
     private static readonly MIN_INC = 50
@@ -9,6 +11,7 @@ export default class ConsoleFeedback {
 
     start(msg: string|undefined = undefined) {
         if (msg) {
+            log.debug(msg)
             Deno.stdout.writeSync(new TextEncoder().encode(`${msg}`))
         }
         this.idx = 0

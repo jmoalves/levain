@@ -9,10 +9,12 @@ import OsUtils from "../lib/os/os_utils.ts";
 import StringUtils from "../lib/utils/string_utils.ts";
 import DateUtils from "../lib/utils/date_utils.ts";
 import LevainVersion from "../levain_version.ts";
+import ConsoleFeedback from "../lib/utils/console_feedback.ts";
 
 import Command from "./command.ts";
 
 export default class CleanCommand implements Command {
+    readonly feedback = new ConsoleFeedback();
 
     constructor(
         private config: Config,
@@ -51,15 +53,15 @@ export default class CleanCommand implements Command {
 
         if (myArgs.cache) {
             const cacheDir = this.config.levainCacheDir
-            log.debug(`cleaning cacheDir ${cacheDir}`)
+
+            this.feedback.start(`# CLEAN ${cacheDir}`)
             let size = this.cleanDir(cacheDir)
-            log.info(`CLEAN ${StringUtils.humanizeBytes(size)} - ${cacheDir}`)
             total += size
+            this.feedback.reset(`# CLEAN ${cacheDir} - ${StringUtils.humanizeBytes(size)}`)
         }
 
         if (myArgs.backup) {
             const backupDir = this.config.levainBackupDir
-            log.debug(`cleaning backupDir ${backupDir}`)
 
             let checkFile = undefined
             if (shallow) {
@@ -73,9 +75,10 @@ export default class CleanCommand implements Command {
                 })
             }
 
+            this.feedback.start(`# CLEAN ${backupDir}`)
             let size = this.cleanDir(backupDir, checkFile)
-            log.info(`CLEAN ${StringUtils.humanizeBytes(size)} - ${backupDir}`)
             total += size
+            this.feedback.reset(`# CLEAN ${backupDir} - ${StringUtils.humanizeBytes(size)}`)
 
             size = this.cleanFailedSaves()
             total += size
@@ -83,10 +86,11 @@ export default class CleanCommand implements Command {
 
         if (myArgs.temp) {
             const tempDir = this.config.levainSafeTempDir
-            log.debug(`cleaning tempDir ${tempDir}`)
+
+            this.feedback.start(`# CLEAN ${tempDir}`)
             let size = this.cleanDir(tempDir)
-            log.info(`CLEAN ${StringUtils.humanizeBytes(size)} - ${tempDir}`)
             total += size
+            this.feedback.reset(`# CLEAN ${tempDir} - ${StringUtils.humanizeBytes(size)}`)
 
             size = this.cleanOsTempDir(shallow)
             total += size
@@ -99,12 +103,14 @@ export default class CleanCommand implements Command {
         }
 
         log.info("=================")
-        log.info(`CLEAN ${StringUtils.humanizeBytes(total)} - TOTAL`)
+        log.info(`Cleaned ${StringUtils.humanizeBytes(total)}`)
     }
 
     private cleanDir(entry: string, includeResolver?:((dirEntry:Deno.DirEntry) => boolean)): number {
         let entryPath = path.resolve(entry)
         // log.debug(`WALK ${entryPath}`)
+
+        this.feedback.show()
 
         let entryInfo = Deno.statSync(entryPath)
         if (!entryInfo.isDirectory) {
@@ -142,7 +148,8 @@ export default class CleanCommand implements Command {
             return 0;
         }
 
-        log.debug(`cleaning .rename.* at ${saveDir}`)
+        this.feedback.start(`# CLEAN ${saveDir} - .rename.*`)
+
         let size = this.cleanDir(saveDir, (dirEntry:any) => {
             if (dirEntry.name.match(/^\.rename\./)) {
                 // log.debug(`RM ${dirEntry.name}`)
@@ -152,7 +159,7 @@ export default class CleanCommand implements Command {
             return false
         })
 
-        log.info(`CLEAN ${StringUtils.humanizeBytes(size)} - ${saveDir} - .rename.*`)
+        this.feedback.reset(`# CLEAN ${saveDir} - .rename.* - ${StringUtils.humanizeBytes(size)}`)
         return size
     }
 
@@ -162,7 +169,7 @@ export default class CleanCommand implements Command {
             return 0;
         }
 
-        log.debug(`cleaning tempDir ${tempDir}`)
+        this.feedback.start(`# CLEAN ${tempDir}`)
         let size = this.cleanDir(tempDir, (dirEntry:any) => {
             if (dirEntry.name.match("^levain-temp-")) {
                 return true
@@ -177,7 +184,6 @@ export default class CleanCommand implements Command {
 
         const levainReleasesDir = path.resolve(tempDir, 'levain')
         if (existsSync(levainReleasesDir)) {
-            log.debug(`cleaning tempDir ${levainReleasesDir} - levain releases`)
             size += this.cleanDir(levainReleasesDir, (dirEntry:any) => {
                 if (!shallow || !dirEntry.name.match(`^levain-${LevainVersion.levainVersion.versionNumber}$`)) {
                     return true
@@ -187,7 +193,7 @@ export default class CleanCommand implements Command {
             })    
         }
 
-        log.info(`CLEAN ${StringUtils.humanizeBytes(size)} - ${tempDir}`)
+        this.feedback.reset(`# CLEAN ${tempDir} - ${StringUtils.humanizeBytes(size)}`)
         return size
     }
 
@@ -197,7 +203,7 @@ export default class CleanCommand implements Command {
             return 0;
         }
 
-        log.debug(`cleaning logs at tempDir ${tempDir}`)
+        this.feedback.start(`# CLEAN logs at ${tempDir}`)
         let size = this.cleanDir(tempDir, (dirEntry) => {
             if (dirEntry.isFile && dirEntry.name.match("^levain-.*\.log")) {
                 let dateTag = ConsoleAndFileLogger.logDateTag();
@@ -209,7 +215,7 @@ export default class CleanCommand implements Command {
             return false
         })
 
-        log.info(`CLEAN ${StringUtils.humanizeBytes(size)} - logs at ${tempDir}`)
+        this.feedback.reset(`# CLEAN logs at ${tempDir} - ${StringUtils.humanizeBytes(size)}`)
         return size
     }
 

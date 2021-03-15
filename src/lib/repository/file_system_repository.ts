@@ -95,9 +95,7 @@ export default class FileSystemRepository extends AbstractRepository {
             return [];
         }
 
-        let msg = `# Scanning ${this.rootDir} - rootDirOnly: ${this.rootOnly}. Please wait...`;
-        log.debug(msg);
-        this.feedback.start(msg);
+        this.feedback.start(`# Scanning ${this.rootDir} - rootDirOnly: ${this.rootOnly}. Please wait...`);
 
         const timer = new Timer()
 
