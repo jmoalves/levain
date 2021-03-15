@@ -432,7 +432,7 @@ export default class Config {
         try {
             if (Deno.statSync(config)) {
                 this._env["levainHome"] = path.resolve(this.levainSrcDir, "..");
-                log.info(`CFG levainHome=${this._env["levainHome"]}`)
+                log.debug(`CFG levainHome=${this._env["levainHome"]}`)
                 return;
             }
         } catch (err) {
@@ -442,14 +442,14 @@ export default class Config {
         let levainHome = Deno.env.get("levainHome");
         if (levainHome) {
             this._env["levainHome"] = path.resolve(levainHome);
-            log.info(`ENV levainHome=${this._env["levainHome"]}`)
+            log.debug(`ENV levainHome=${this._env["levainHome"]}`)
             return;
         }
 
         let home = homedir();
         if (home) {
             this._env["levainHome"] = path.resolve(home, "levain");
-            log.info(`DEFAULT levainHome=${this._env["levainHome"]}`)
+            log.debug(`DEFAULT levainHome=${this._env["levainHome"]}`)
             return;
         }
     }
