@@ -19,9 +19,6 @@ export default class CopyAction implements Action {
                 "verbose",
                 "strip",
                 'ifNotExists',
-            ],
-            stringMany: [
-                "ifExists"
             ]
         });
 
@@ -31,13 +28,12 @@ export default class CopyAction implements Action {
 
         const dst = FileUtils.resolve(pkg.baseDir, args._.pop());
         const src = args._.map((element: string) => FileUtils.resolve(pkg.pkgDir, element));
-        const optSrc = args.ifExists?.map((element: string) => FileUtils.resolve(pkg.pkgDir, element));
 
         if (!dst) {
             throw "Action - copy - You must inform the destination";
         }
 
-        if (optSrc?.length < 1 && src?.length < 1) {
+        if (!src || src?.length < 1) {
             throw "Action - copy - You must inform the source(s)";
         }
 
@@ -54,25 +50,20 @@ export default class CopyAction implements Action {
         } catch (err) {
         }
 
-        const len = (src?.length || 0) + (optSrc?.length || 0);
+        const len = (src?.length || 0);
         if (len > 1 && !copyToDir) {
             throw "Action - copy - Unable to copy multiple sources to a single file";
         }
 
-        await this.copy(src, dst, false, copyToDir, args)
-        await this.copy(optSrc, dst, true, copyToDir, args)
+        await this.copy(src, dst, copyToDir, args)
     }
 
-    private async copy(src: string[], dst: string, ifExists:boolean, copyToDir:boolean, args: any) {
+    private async copy(src: string[], dst: string, copyToDir:boolean, args: any) {
         if (!src) {
             return
         }
 
-        if (ifExists) {
-            log.info(`COPY (ifExists) ${src} => ${dst}`);
-        } else {
-            log.info(`COPY ${src} => ${dst}`);
-        }
+        log.info(`COPY ${src} => ${dst}`);
 
         for (let item of src) {
             log.debug(`- CHECK ${item}`);
@@ -83,12 +74,8 @@ export default class CopyAction implements Action {
                     await this.copySrcFromUrl(item, dst, copyToDir, args)
                 }
             } catch (err) {
-                if (!ifExists) {
-                    log.error(`Error in ${item}`);
-                    throw err;    
-                } else {
-                    log.debug(`Error in ${item} - ignoring (ifExists)`);
-                }
+                log.error(`Error in ${item}`);
+                throw err;    
             }
         }
     }
