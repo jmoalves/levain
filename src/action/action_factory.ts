@@ -46,7 +46,7 @@ const actionMap = new Map<string, (config: Config) => Action>([
     ['echo', (config: Config) => new Echo(config)],
     ['removeFromRegistry', (config: Config) => new RemoveFromRegistry(config.levainRegistry)],
     ['setVar', (config: Config) => new SetVarAction(config)],
-    ['addToStartup', (config: Config) => new AddToStartupAction()],
+    ['addToStartup', (config: Config) => new AddToStartupAction(config)],
     ['jsonGet', (config: Config) => new JsonGet(config)],
     ['jsonSet', (config: Config) => new JsonSet(config)],
     ['jsonRemove', (config: Config) => new JsonRemove(config)],

@@ -103,6 +103,10 @@ export function assertFileDoesNotExist(filePath: string) {
     assert(!existsSync(filePath), `File ${filePath} should not exist`)
 }
 
+export function assertFileExists(filePath: string) { 
+    assert(existsSync(filePath), 'File already exists');
+}
+
 export function assertNumberEquals(current: number, expected: number, tolerance: number = 0.10) {
     if (expected === 0) {
         assertEquals(current, expected)
