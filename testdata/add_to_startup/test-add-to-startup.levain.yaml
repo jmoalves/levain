@@ -1,0 +1,5 @@
+levain.pkg.skipInstallDir: true
+levain.pkg.skipRegistry: true
+
+cmd.env:
+  - addToStartup document.txt
