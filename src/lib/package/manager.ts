@@ -34,7 +34,10 @@ export default class PackageManager {
             let myError: boolean = this.resolvePkgs(repo, pkgs, names, pkgName, showLog);
             error = error || myError;
         }
-        this.feedback.reset("#");
+
+        if (showLog) {
+            this.feedback.reset("#");
+        }
         
         if (error) {
             return null;
