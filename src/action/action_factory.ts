@@ -27,6 +27,7 @@ import PropertySetAction from "./property/property_set.ts";
 import CheckPort from "./check/check_port.ts";
 import ShellPath from "./shell_path.ts";
 import CheckUrl from "./check/check_url.ts";
+import AddToStartMenuAction from "./add-to-start-menu.ts";
 
 const actionMap = new Map<string, (config: Config) => Action>([
     ['addPath', (config: Config) => new AddPathAction(config)],
@@ -47,6 +48,7 @@ const actionMap = new Map<string, (config: Config) => Action>([
     ['removeFromRegistry', (config: Config) => new RemoveFromRegistry(config.levainRegistry)],
     ['setVar', (config: Config) => new SetVarAction(config)],
     ['addToStartup', (config: Config) => new AddToStartupAction(config)],
+    ['addToStartMenu', (config:Config) => new AddToStartMenuAction(config)],
     ['jsonGet', (config: Config) => new JsonGet(config)],
     ['jsonSet', (config: Config) => new JsonSet(config)],
     ['jsonRemove', (config: Config) => new JsonRemove(config)],
