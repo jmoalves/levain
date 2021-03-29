@@ -28,6 +28,7 @@ import CheckPort from "./check/check_port.ts";
 import ShellPath from "./shell_path.ts";
 import CheckUrl from "./check/check_url.ts";
 import AddToStartMenuAction from "./add-to-start-menu.ts";
+import AddToDesktopAction from "./add-to-desktop.ts";
 
 const actionMap = new Map<string, (config: Config) => Action>([
     ['addPath', (config: Config) => new AddPathAction(config)],
@@ -58,6 +59,7 @@ const actionMap = new Map<string, (config: Config) => Action>([
     ['checkPort', (config: Config) => new CheckPort(config)],
     ['shellPath', (config: Config) => new ShellPath(config)],
     ['checkUrl',  (config: Config) => new CheckUrl(config)],
+    ['addToDesktop', (config: Config) => new AddToDesktopAction(config)]
 ])
 
 export default class ActionFactory {
