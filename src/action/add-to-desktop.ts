@@ -6,7 +6,7 @@ import Config from "../lib/config.ts";
 
 
 
-export default class AddToStartupAction implements Action {
+export default class AddToDesktopAction implements Action {
 
     constructor(private config: Config) {
     }
@@ -18,7 +18,7 @@ export default class AddToStartupAction implements Action {
         const targetFile:string = args._[0];
         const windowsFile = targetFile.replace("file:///", '');
         const resolvedTargetFile = path.resolve(windowsFile);
-        const cmd = Deno.run({cmd:["extra-bin/windows/os-utils/addToStartup.cmd", resolvedTargetFile]});
+        const cmd = Deno.run({cmd:["extra-bin/windows/os-utils/addToDesktop.cmd", resolvedTargetFile]});
         const result = await cmd.status();
         cmd.close();
     }
