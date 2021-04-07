@@ -35,10 +35,37 @@ if (OsUtils.isWindows()) {
         const action = getStartMenuAction(); 
         await action.execute(TestHelper.mockPackage(), [filePath]);
 
-        //Then the shortcut should exist in the startup folder
+        //Then the shortcut should exist in the start menu folder
         assertFileExists(shortcutPath);
     })   
 }
+
+if (OsUtils.isWindows()) { 
+    Deno.test("Should be able to create folder in the start menu with a file inside", async () => { 
+        //Given the folder doesn't exist in the start menu already
+        const userProfile = Deno.env.get("USERPROFILE");
+        const startMenuPath = `${userProfile}/AppData/Roaming/Microsoft/Windows/Start Menu/Programs`;
+        const folderName = "dev-env";
+        const fileName = "document.txt";
+        const folderPath = path.resolve(startMenuPath, `${folderName}`);
+
+        if (existsSync(folderPath)) { 
+            Deno.removeSync(folderPath, {recursive:true});
+        }
+
+        //It should get the file
+        const currentFileDir = path.dirname(import.meta.url);
+        const filePath = `${currentFileDir}/../../testdata/add_to_startup/${fileName}`;
+
+        //when I execute the action
+        const action = getStartMenuAction(); 
+        await action.execute(TestHelper.mockPackage(), [filePath, folderName]);
+
+        //Then the shortcut should exist in the new created folder
+        //assertFileExists(folderPath);
+    })   
+}
+
 
 function getStartMenuAction() {
     const config = TestHelper.getConfig()
