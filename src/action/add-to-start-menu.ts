@@ -10,12 +10,27 @@ export default class AddToStartMenuAction implements Action {
     }
     async execute(pkg: Package|undefined, parameters: string[]): Promise<void> {
         const args = parseArgs(parameters);
-
+        
         const targetFile:string = args._[0];
         const windowsFile = targetFile.replace("file:///", '');
         const resolvedTargetFile = path.resolve(windowsFile);
-        const cmd = Deno.run({cmd:["extra-bin/windows/os-utils/addToStartMenu.cmd", resolvedTargetFile]});
-        const result = await cmd.status();
-        cmd.close();    
-    }
+        //With Folder
+        if (parameters.length == 2) { 
+            const userProfile = Deno.env.get("USERPROFILE");
+            const startMenuPath = `${userProfile}\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs`;
+            const folderName = args._[1];
+            const addFolder = Deno.run({cmd:["extra-bin/windows/os-utils/addFolder.cmd", startMenuPath, folderName]});
+            let result = await addFolder.status();
+            addFolder.close();
+            const createShortcut = Deno.run({cmd:["extra-bin/windows/os-utils/addToStartMenuWithinFolder.cmd", resolvedTargetFile, folderName]});
+            result = await createShortcut.status();
+            createShortcut.close();
+        }
+    
+        else { 
+            const cmd = Deno.run({cmd:["extra-bin/windows/os-utils/addToStartMenu.cmd", resolvedTargetFile]});
+            const result = await cmd.status();
+            cmd.close();    
+        }
+    } 
 }
