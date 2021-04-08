@@ -3,7 +3,7 @@ import {existsSync} from "https://deno.land/std/fs/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 
 import DirUtils from "../fs/dir_utils.ts";
-import { FileUtils } from '../fs/file_utils.ts';
+import {FileUtils} from '../fs/file_utils.ts';
 import OsUtils from '../os/os_utils.ts';
 
 export function assertArrayIncludesElements<T>(array: T[], elements: T[]) {
@@ -103,7 +103,7 @@ export function assertFileDoesNotExist(filePath: string) {
     assert(!existsSync(filePath), `File ${filePath} should not exist`)
 }
 
-export function assertFileExists(filePath: string) { 
+export function assertFileExists(filePath: string) {
     assert(existsSync(filePath), 'File already exists');
 }
 
@@ -117,4 +117,8 @@ export function assertNumberEquals(current: number, expected: number, tolerance:
     if (Math.abs(diff) > tolerance) {
         assertEquals(current, expected)
     }
+}
+
+export function assertGreaterThan(number: number, otherNumber: number) {
+    assert(number > otherNumber, `Expected ${number} to be greater than ${otherNumber}`)
 }
