@@ -11,12 +11,12 @@ export default class SetEnv implements Action {
     constructor(private config: Config) {
     }
 
-    async execute(pkg: Package|undefined, parameters: string[]): Promise<void> {
+    async execute(pkg: Package | undefined, parameters: string[]): Promise<void> {
         const myArgs = parseArgs(parameters, {
             boolean: [
                 "permanent",
             ]
-            
+
         });
 
         if (myArgs?._?.length !== 2) {
@@ -40,6 +40,7 @@ export default class SetEnv implements Action {
         log.info(`ENV ${key} = ${value}`);
         this.config.setVar(key, value);
         this.config.context.action.setEnv.env[key] = value;
+        OsUtils.setEnv(key, value)
 
         if (myArgs['permanent']) {
             await OsUtils.setEnvPermanent(key, value)

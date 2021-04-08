@@ -2,7 +2,7 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 
 import Config from "../config.ts";
-import { FileUtils } from "../fs/file_utils.ts";
+import {FileUtils} from "../fs/file_utils.ts";
 import {envChain} from "../utils/utils.ts";
 
 export default class OsUtils {
@@ -36,7 +36,7 @@ export default class OsUtils {
         return folderFromEnv
     }
 
-    static get hostname(): string|undefined {
+    static get hostname(): string | undefined {
         const hostEnvStrings = ['COMPUTERNAME', "HOSTNAME"]
         const hostFromEnv = envChain(...hostEnvStrings)
         if (!hostFromEnv) {
@@ -68,9 +68,13 @@ export default class OsUtils {
 
     static async setEnvPermanent(key: string, value: string) {
         OsUtils.onlyInWindows()
-        Deno.env.set(key, value)
+        this.setEnv(key, value);
 
         await this.runAndLog(`setx ${key} ${value}`)
+    }
+
+    static setEnv(key: string, value: string) {
+        Deno.env.set(key, value)
     }
 
     static async addPathPermanent(newPathItem: any, config: Config) {
@@ -92,6 +96,7 @@ export default class OsUtils {
             // stderr: 'piped',
             stdout: 'piped',
         });
+
         const [
             // stderr,
             stdout,
