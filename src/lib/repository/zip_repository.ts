@@ -1,17 +1,11 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
-import { ensureDirSync, existsSync } from "https://deno.land/std/fs/mod.ts";
-
-import { unZipFromFile } from "https://deno.land/x/zip@v1.1.0/unzip.ts";
+import {ensureDirSync, existsSync} from "https://deno.land/std/fs/mod.ts";
 
 import Package from '../package/package.ts'
 import Config from '../config.ts';
-import { FileUtils } from "../fs/file_utils.ts";
 import FileCache from "../fs/file_cache.ts";
-import ProgressReader from "../io/progress_reader.ts";
-import HttpReader from "../io/http_reader.ts";
-import FileReader from "../io/file_reader.ts";
-import { ExtractorFactory, Extractor } from "../extract/extract.ts"
+import {Extractor, ExtractorFactory} from "../extract/extractor.ts"
 
 import Repository from "./repository.ts";
 import AbstractRepository from './abstract_repository.ts';
@@ -25,7 +19,7 @@ export default class ZipRepository extends AbstractRepository {
 
     private readonly localZip: string
     private readonly localDir: string
-    private localRepo: Repository|undefined
+    private localRepo: Repository | undefined
 
     constructor(private config: Config, private rootUrl: string, private rootOnly: boolean = false) {
         super()
@@ -86,7 +80,7 @@ export default class ZipRepository extends AbstractRepository {
 
 
     /////////////////////////////////////////////////////////////////////
-    private async copyLocalZip(): Promise<string>  {
+    private async copyLocalZip(): Promise<string> {
         let reader = ReaderFactory.readerFor(this.rootUrl)
         const fileCache = new FileCache(this.config)
         const cachedSrc = await fileCache.get(reader)

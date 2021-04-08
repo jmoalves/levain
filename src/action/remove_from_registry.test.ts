@@ -5,7 +5,7 @@ import {MockPackage} from '../lib/package/mock_package.ts';
 
 import RemoveFromRegistry from './remove_from_registry.ts';
 
-Deno.test('should remove package from registry', async () => {
+Deno.test('RemoveFromRegistry should remove package from registry', async () => {
     const registry = TestHelper.getNewTempRegistry()
     const pkg = TestHelper.getTestFilePackage();
     registry.add(pkg)
@@ -16,7 +16,7 @@ Deno.test('should remove package from registry', async () => {
 
     assertEquals(registry.length, 0)
 })
-Deno.test('should throw when no package was passed as parameter', async () => {
+Deno.test('RemoveFromRegistry should throw when no package was passed as parameter', async () => {
     await assertThrowsAsync(
         async () => {
             const registry = TestHelper.getNewTempRegistry()
@@ -28,7 +28,7 @@ Deno.test('should throw when no package was passed as parameter', async () => {
         'Action - removeFromRegistry - You should inform at least one package to be removed'
     )
 })
-Deno.test('should remove multiple packages', async () => {
+Deno.test('RemoveFromRegistry should remove multiple packages', async () => {
     const registry = TestHelper.getNewTempRegistry()
     const pkg = TestHelper.getTestFilePackage();
     registry.add(pkg)

@@ -4,10 +4,10 @@ import Config from "../lib/config.ts";
 import Package from '../lib/package/package.ts';
 import {parseArgs} from "../lib/parse_args.ts";
 import FileCache from '../lib/fs/file_cache.ts';
-import { ExtractorFactory, Extractor } from "../lib/extract/extract.ts"
+import {Extractor, ExtractorFactory} from "../lib/extract/extractor.ts"
 
 import Action from "./action.ts";
-import { FileUtils } from "../lib/fs/file_utils.ts";
+import {FileUtils} from "../lib/fs/file_utils.ts";
 
 export default class Extract implements Action {
     constructor(
@@ -15,7 +15,7 @@ export default class Extract implements Action {
     ) {
     }
 
-    async execute(pkg: Package|undefined, parameters: string[]) {
+    async execute(pkg: Package | undefined, parameters: string[]) {
         let args = parseArgs(parameters, {
             boolean: [
                 "strip"

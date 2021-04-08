@@ -5,14 +5,14 @@ import TestHelper from '../lib/test/test_helper.ts';
 import ActionFactory from './action_factory.ts';
 import SetVarAction from './set_var.ts';
 
-Deno.test('should be obtainable with action factory', () => {
+Deno.test('SetVarAction should be obtainable with action factory', () => {
     const config = TestHelper.getConfig()
     const factory = new ActionFactory()
     const action = factory.get("setVar", config)
 
     assert(action instanceof SetVarAction)
 })
-Deno.test('should set var in config', async () => {
+Deno.test('SetVarAction should set var in config', async () => {
     const config = TestHelper.getConfig()
     const action = new SetVarAction(config)
 
@@ -20,7 +20,7 @@ Deno.test('should set var in config', async () => {
 
     assertEquals(config.getVar('nova.var'), 'abc123')
 })
-Deno.test('should ask for two parameters', async () => {
+Deno.test('SetVarAction should ask for two parameters', async () => {
     const config = TestHelper.getConfig()
     const action = new SetVarAction(config)
 
