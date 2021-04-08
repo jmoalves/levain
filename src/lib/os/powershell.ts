@@ -1,4 +1,5 @@
 import * as log from "https://deno.land/std/log/mod.ts";
+import * as path from "https://deno.land/std/path/mod.ts";
 
 export class Powershell {
 
@@ -19,9 +20,12 @@ export class Powershell {
 
         if (script.endsWith('.ps1')) {
             args.push('-File')
+            const resolvedFile = path.resolve(script)
+            args.push(resolvedFile)
+        } else {
+            args.push(script)
         }
 
-        args.push(script)
 
         // const cmd = Deno.run({cmd:["extra-bin/windows/os-utils/addToDesktop.cmd", resolvedTargetFile]});
         // %PWS% -File %currentFileDir%createShortcut.ps1 "%TARGET_FILE%" "%SHORTCUT_DIR%"
@@ -54,9 +58,8 @@ export class Powershell {
 
         if (stripCRLF) {
             output = output
-                .replace(/\r\n$/, '')
-                .replace(/\r$/, '')
-                .replace(/\n$/, '');
+                .replace(/\r/g, '')
+                .replace(/\n/g, '');
         }
 
         return output

@@ -4,6 +4,7 @@ import * as path from "https://deno.land/std/path/mod.ts";
 import Config from "../config.ts";
 import {FileUtils} from "../fs/file_utils.ts";
 import {envChain} from "../utils/utils.ts";
+import {Powershell} from "./powershell.ts";
 
 export default class OsUtils {
 
@@ -136,5 +137,11 @@ export default class OsUtils {
 
     static makeReadWrite(path: string) {
         Deno.chmodSync(path, 0o777)
+    }
+
+    static async getUserPath(): Promise<string[]> {
+        this.onlyInWindows()
+        const rawPath = await Powershell.run('extra-bin/windows/os-utils/getUserPath.ps1', true)
+        return rawPath.split(';')
     }
 }

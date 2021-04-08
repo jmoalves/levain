@@ -1,7 +1,8 @@
 import {assert, assertEquals, assertNotEquals} from "https://deno.land/std/testing/asserts.ts";
-import { existsSync } from "https://deno.land/std/fs/exists.ts";
+import {existsSync} from "https://deno.land/std/fs/exists.ts";
 
 import OsUtils from "./os_utils.ts";
+import {assertGreaterThan} from "../test/more_asserts.ts";
 
 Deno.test('should know where is the temp folder', () => {
     assertNotEquals(OsUtils.tempDir, undefined);
@@ -22,3 +23,13 @@ Deno.test('should know if we are running in Windows', () => {
     const shouldBeWindows = (os === 'windows')
     assertEquals(OsUtils.isWindows(), shouldBeWindows)
 })
+
+if (OsUtils.isWindows()) {
+    Deno.test({
+        name: 'should get path',
+        async fn() {
+            const path = await OsUtils.getUserPath()
+            assertGreaterThan(path?.length, 5)
+        }
+    })
+}
