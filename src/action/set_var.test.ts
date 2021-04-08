@@ -9,7 +9,7 @@ Deno.test('SetVarAction should be obtainable with action factory', () => {
     const config = TestHelper.getConfig()
     const factory = new ActionFactory()
     const action = factory.get("setVar", config)
-
+    
     assert(action instanceof SetVarAction)
 })
 Deno.test('SetVarAction should set var in config', async () => {
