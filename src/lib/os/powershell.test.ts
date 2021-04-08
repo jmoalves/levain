@@ -3,13 +3,23 @@ import {assertEquals} from "https://deno.land/std/testing/asserts.ts";
 import {Powershell} from "./powershell.ts";
 
 Deno.test({
-    name: 'should run script',
+    name: 'should run a command',
     async fn() {
-        const helloWorldScript = 'return \'Hello Powershell\'';
-        const result = await Powershell.run(helloWorldScript)
+        const powershellCommand = 'return \'Hello Powershell\'';
+
+        const result = await Powershell.run(powershellCommand, true)
 
         assertEquals(result, 'Hello Powershell')
     }
 });
 
-// should run file
+Deno.test({
+    name: 'should run a file',
+    async fn() {
+        const scriptFile = 'extra-bin/windows/os-utils/helloWorld.ps1'
+
+        const result = await Powershell.run(scriptFile, true)
+
+        assertEquals(result, 'Hello, powershell scripts!')
+    }
+})

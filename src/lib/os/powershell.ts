@@ -2,38 +2,54 @@ import * as log from "https://deno.land/std/log/mod.ts";
 
 export class Powershell {
 
-    static async run(script: string, stripCRLF = true): Promise<string> {
-        const args = [
+    static async run(
+        script: string,
+        stripCRLF = false,
+        ignoreErrors = false,
+    ): Promise<string> {
+
+        let args = [
             'powershell.exe',
             '-ExecutionPolicy',
             'Bypass',
             '-NoLogo',
             '-NonInteractive',
             '-NoProfile',
-            'return "hello world"'
         ]
+
+        if (script.endsWith('.ps1')) {
+            args.push('-File')
+        }
+
+        args.push(script)
 
         // const cmd = Deno.run({cmd:["extra-bin/windows/os-utils/addToDesktop.cmd", resolvedTargetFile]});
         // %PWS% -File %currentFileDir%createShortcut.ps1 "%TARGET_FILE%" "%SHORTCUT_DIR%"
 
         const process = Deno.run({
-            cmd: ["powershell.exe", script],
+            cmd: args,
+            stderr: 'piped',
             stdout: 'piped',
         })
 
         const [
-            // stderr,
+            stderr,
             stdout,
             status
         ] = await Promise.all([
-            // proc.stderrOutput(),
+            process.stderrOutput(),
             process.output(),
             process.status()
         ]);
 
         process.close()
 
-        let output = new TextDecoder().decode(stdout)
+        if (!ignoreErrors && !status?.success) {
+            let stderrOutput = this.decodeOutput(stderr)
+            throw new Error(`CMD terminated with code ${status?.code}\n${stderrOutput}`);
+        }
+
+        let output = this.decodeOutput(stdout)
         log.debug(`stdout ${output}`)
 
         if (stripCRLF) {
@@ -44,5 +60,9 @@ export class Powershell {
         }
 
         return output
+    }
+
+    private static decodeOutput(output: Uint8Array) {
+        return new TextDecoder().decode(output);
     }
 }

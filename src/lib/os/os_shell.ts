@@ -1,5 +1,4 @@
 import * as log from "https://deno.land/std/log/mod.ts";
-import {existsSync} from "https://deno.land/std/fs/mod.ts";
 
 import LevainVersion from "../../levain_version.ts";
 import Config from "../config.ts";
@@ -106,9 +105,7 @@ export class OsShell {
 
     async openShell(args: string[]) {
         // TODO: Handle other os's
-        if (!OsUtils.isWindows()) {
-            throw `${Deno.build.os} not supported`;
-        }
+        OsUtils.onlyInWindows()
 
         let cmd = "";
         if (this.interactive) {
