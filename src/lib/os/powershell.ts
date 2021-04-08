@@ -7,6 +7,7 @@ export class Powershell {
         script: string,
         stripCRLF = false,
         ignoreErrors = false,
+        params?:string[]
     ): Promise<string> {
 
         let args = [
@@ -26,6 +27,12 @@ export class Powershell {
             args.push(script)
         }
 
+
+        if (params) { 
+            params.forEach(param => { 
+                args.push(param);
+            })
+        }
 
         // const cmd = Deno.run({cmd:["extra-bin/windows/os-utils/addToDesktop.cmd", resolvedTargetFile]});
         // %PWS% -File %currentFileDir%createShortcut.ps1 "%TARGET_FILE%" "%SHORTCUT_DIR%"
