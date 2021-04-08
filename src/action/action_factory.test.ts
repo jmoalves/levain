@@ -13,35 +13,37 @@ Deno.test('ActionFactory should list actions', () => {
 
     assertArrayContainsInAnyOrder(actions, [
         'addPath',
+        'addToDesktop',
+        'addToStartMenu',
+        'addToStartup',
         'assertContains',
+        'backupFile',
+        'checkChainDirExists',
+        'checkFileExists',
+        'checkPort',
+        'checkUrl',
         'contextMenu',
         'copy',
         'defaultPackage',
+        'echo',
         'extract',
         'inspect',
-        'levainShell',
-        'mkdir',
-        'saveConfig',
-        'setEnv',
-        'template',
-        'checkChainDirExists',
-        'checkFileExists',
-        'echo',
-        'removeFromRegistry',
-        'setVar',
-        'addToStartup',
         'jsonGet',
         'jsonSet',
         'jsonRemove',
+        'levainShell',
+        'mkdir',
         'propertyGet',
-        'backupFile',
         'propertySet',
-        'checkPort',
+        'removeFromRegistry',
+        'saveConfig',
+        'setEnv',
+        'setVar',
         'shellPath',
-        'checkUrl',
+        'template',
     ])
 })
-Deno.test('should know the assertContains action', () => {
+Deno.test('ActionFactory should know the assertContains action', () => {
     const factory = getActionFactory()
     const config = TestHelper.getConfig()
 
@@ -49,7 +51,7 @@ Deno.test('should know the assertContains action', () => {
 
     assert(action instanceof AssertContainsAction)
 })
-Deno.test('should throw exception when Action does not exist', () => {
+Deno.test('ActionFactory should throw exception when Action does not exist', () => {
     const factory = getActionFactory()
     const config = TestHelper.getConfig()
 
