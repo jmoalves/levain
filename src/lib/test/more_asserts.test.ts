@@ -9,9 +9,10 @@ import {
     assertFileSizeAprox,
     assertFind,
     assertFolderIncludes,
+    assertGreaterThan,
     assertNotFind,
     assertNumberEquals,
-    assertStringEndsWith
+    assertStringEndsWith,
 } from "./more_asserts.ts";
 import TestHelper from "./test_helper.ts";
 
@@ -73,7 +74,7 @@ Deno.test('should throw AssertionError when nothing is found', () => {
     )
 })
 //
-// asserNotFind
+// assertNotFind
 //
 Deno.test('should not find and assert', () => {
     assertNotFind([1, 2, 3], it => it === 3.1416)
@@ -177,4 +178,10 @@ Deno.test('assertNumberEquals should throw when diff is above tolerance', () => 
 })
 Deno.test('assertNumberEquals should work with zeros', () => {
     assertNumberEquals(0, 0)
+})
+//
+// assertGreaterThan
+//
+Deno.test('assertGreaterThan should work with numbers', () => {
+    assertGreaterThan(4, 1)
 })
