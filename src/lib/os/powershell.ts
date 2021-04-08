@@ -50,7 +50,7 @@ export class Powershell {
 
         if (!ignoreErrors && !status?.success) {
             let stderrOutput = this.decodeOutput(stderr)
-            throw new Error(`CMD terminated with code ${status?.code}\n${stderrOutput}`);
+            throw new Error(`Powershell.run(${script}) terminated with code ${status?.code}\n${stderrOutput}`);
         }
 
         let output = this.decodeOutput(stdout)
