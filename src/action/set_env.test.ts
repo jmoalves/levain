@@ -6,7 +6,7 @@ import OsUtils from "../lib/os/os_utils.ts";
 import Action from "./action.ts";
 import SetEnv from "./set_env.ts";
 
-Deno.test('should tell you which params are expected', async () => {
+Deno.test('SetEnv should tell you which params are expected', async () => {
     try {
         const config = TestHelper.getConfig();
         const action: Action = new SetEnv(config)
@@ -19,7 +19,7 @@ Deno.test('should tell you which params are expected', async () => {
         assertEquals(err, "You must inform the var and the value")
     }
 })
-Deno.test('should setEnv in config', async () => {
+Deno.test('SetEnv should setEnv in config', async () => {
     const config = TestHelper.getConfig();
     const action: Action = new SetEnv(config)
     const mockPackage = TestHelper.mockPackage()
@@ -30,7 +30,7 @@ Deno.test('should setEnv in config', async () => {
 
     assertEquals(config.context.action.setEnv.env[envKey], envValue)
 })
-Deno.test('should throw exception on unexpected param', async () => {
+Deno.test('SetEnv should throw exception on unexpected param', async () => {
     await assertThrowsAsync(
         async () => {
             const config = TestHelper.getConfig();
@@ -43,7 +43,7 @@ Deno.test('should throw exception on unexpected param', async () => {
         "Unknown option --this-option-does-not-exist",
     )
 })
-Deno.test('should allow --permanent option', async () => {
+Deno.test('SetEnv should allow --permanent option', async () => {
     const config = TestHelper.getConfig();
     const action: Action = new SetEnv(config)
     const mockPackage = TestHelper.mockPackage()

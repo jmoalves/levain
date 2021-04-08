@@ -4,12 +4,12 @@ import {assertStringEndsWith} from "../test/more_asserts.ts";
 
 import UserInfoUtil from "./userinfo_util.ts";
 
-Deno.test('should use user_info file in $HOME/credentials_jdoe.yaml', () => {
+Deno.test('UserInfoUtil should use user_info file in $HOME/credentials_jdoe.yaml', () => {
     const userInfoUtil = new UserInfoUtil()
     assertStringEndsWith(userInfoUtil.userinfoFileUri, `/.levain.yaml`)
 })
 
-Deno.test('should load user info', async () => {
+Deno.test('UserInfoUtil should load user info', async () => {
     const userInfoUtil = new UserInfoUtil('./testData/home/credentials_jdoe.yaml')
 
     await userInfoUtil.load()
@@ -19,7 +19,7 @@ Deno.test('should load user info', async () => {
     assertEquals(userInfoUtil.userInfo.fullName, 'John Doe')
 })
 
-Deno.test('should work when user info is not found', async () => {
+Deno.test('UserInfoUtil should work when user info is not found', async () => {
     const userInfoUtil = new UserInfoUtil('./credentials_not_found')
 
     userInfoUtil.load()
