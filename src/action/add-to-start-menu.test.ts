@@ -48,21 +48,22 @@ if (OsUtils.isWindows()) {
         const folderName = "dev-env";
         const fileName = "document.txt";
         const folderPath = path.resolve(startMenuPath, `${folderName}`);
-
+        
         if (existsSync(folderPath)) { 
             Deno.removeSync(folderPath, {recursive:true});
         }
-
-        //It should get the file
+        
+        //And it should get the file
         const currentFileDir = path.dirname(import.meta.url);
         const filePath = `${currentFileDir}/../../testdata/add_to_startup/${fileName}`;
-
+        
         //when I execute the action
         const action = getStartMenuAction(); 
         await action.execute(TestHelper.mockPackage(), [filePath, folderName]);
-
+        
         //Then the shortcut should exist in the new created folder
-        //assertFileExists(folderPath);
+        const shortcutPath = path.resolve(startMenuPath, folderName, `${fileName}.lnk`);
+        assertFileExists(shortcutPath);
     })   
 }
 

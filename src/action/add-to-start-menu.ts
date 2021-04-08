@@ -3,6 +3,7 @@ import Package from "../lib/package/package.ts";
 import Action from "./action.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import { parseArgs } from "../lib/parse_args.ts";
+import { ensureDirSync } from "https://deno.land/std/fs/mod.ts";
 
 export default class AddToStartMenuAction implements Action {
 
@@ -19,11 +20,10 @@ export default class AddToStartMenuAction implements Action {
             const userProfile = Deno.env.get("USERPROFILE");
             const startMenuPath = `${userProfile}\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs`;
             const folderName = args._[1];
-            const addFolder = Deno.run({cmd:["extra-bin/windows/os-utils/addFolder.cmd", startMenuPath, folderName]});
-            let result = await addFolder.status();
-            addFolder.close();
+            const folderPath = path.resolve(startMenuPath, folderName);
+            ensureDirSync(folderPath);
             const createShortcut = Deno.run({cmd:["extra-bin/windows/os-utils/addToStartMenuWithinFolder.cmd", resolvedTargetFile, folderName]});
-            result = await createShortcut.status();
+            const result = await createShortcut.status();
             createShortcut.close();
         }
     
