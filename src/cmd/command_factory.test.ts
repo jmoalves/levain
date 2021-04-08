@@ -17,10 +17,11 @@ Deno.test('CommandFactory should list commands', () => {
         'list',
         'clean',
         'actions',
-        'info'
+        'info',
+        'explain',
     ])
 })
-Deno.test('loadCommand should know the list command', () => {
+Deno.test('CommandFactory should know the list command', () => {
     const factory = getCommandFactory()
     const config = TestHelper.getConfig()
 
@@ -28,7 +29,7 @@ Deno.test('loadCommand should know the list command', () => {
 
     assert(command instanceof ListCommand)
 })
-Deno.test('should throw exception when command was not found', () => {
+Deno.test('CommandFactory should throw exception when command was not found', () => {
     const factory = getCommandFactory()
     const config = TestHelper.getConfig()
 
