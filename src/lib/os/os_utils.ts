@@ -1,8 +1,5 @@
 import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-
-import Config from "../config.ts";
-import {FileUtils} from "../fs/file_utils.ts";
+import { ArrayUtils } from "../utils/array_utils.ts";
 import {envChain} from "../utils/utils.ts";
 import {Powershell} from "./powershell.ts";
 
@@ -78,14 +75,29 @@ export default class OsUtils {
         Deno.env.set(key, value)
     }
 
-    static async addPathPermanent(newPathItem: any, config: Config) {
+    static async addPathPermanent(newPathItem: string) {
         OsUtils.onlyInWindows()
-        const userPathCMD = path.resolve(config.levainSrcDir, 'userPath.cmd')
-        FileUtils.throwIfNotExists(userPathCMD)
-        const resolvedPathItem = path.resolve(newPathItem);
-        FileUtils.throwIfNotExists(resolvedPathItem)
-        await this.runAndLog(`${userPathCMD} ${resolvedPathItem}`)
+
+        const path = await this.getUserPath();
+        let newPath = ArrayUtils.remove(path, newPathItem)
+
+        newPath.unshift(newPathItem);
+
+        this.setUserPath(newPath);
+    }   
+
+    static async removePathPermanent(itemToRemove:string) { 
+        const path = await this.getUserPath();
+        let newPath = ArrayUtils.remove(path, itemToRemove)
+        this.setUserPath(newPath);
     }
+
+
+    static async isInUserPath(pathItem:string) { 
+        const path = await this.getUserPath();
+        return path.includes(pathItem);
+    }
+
 
     static async runAndLog(command: string): Promise<void> {
         log.debug(`runAndLog\n${command}`)
@@ -143,5 +155,11 @@ export default class OsUtils {
         this.onlyInWindows()
         const rawPath = await Powershell.run('extra-bin/windows/os-utils/getUserPath.ps1', true)
         return rawPath.split(';')
+    }
+
+    static async setUserPath(newPath:string[]) { 
+        const newPathString = newPath.join(';');
+        const setUserPathScript = "extra-bin/windows/os-utils/setUserPath.ps1"
+        await Powershell.run(setUserPathScript, false, false, [newPathString]);
     }
 }
