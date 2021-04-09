@@ -38,8 +38,16 @@ if (OsUtils.isWindows()) {
 
 if (OsUtils.isWindows()) { 
     Deno.test('Should set path permanently', async () => { 
-        const config = TestHelper.getConfig();
-        
-        await OsUtils.addPathPermanent(TestHelper.folderThatAlwaysExists, config);
+        const folder = TestHelper.folderThatAlwaysExists;
+        //Given the users folder is not in the path
+        await OsUtils.removePathPermanent(folder);
+
+        let newPath = await OsUtils.getUserPath(); //wait for new Path to be written before asserting
+        assert(!await OsUtils.isInUserPath(folder), `Shouldn't had the folder ${folder} in path - ${newPath}`);
+        //When I add to the path
+        await OsUtils.addPathPermanent(folder);
+        //Then it should be there
+        newPath = await OsUtils.getUserPath(); //wait for new Path to be written before asserting
+        assert(await OsUtils.isInUserPath(folder), `Should had the folder ${folder} in path - ${newPath}`);
     })
 }

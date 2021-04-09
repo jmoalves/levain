@@ -30,7 +30,7 @@ export default class AddPathAction implements Action {
         this.addPathToCurrentShell(newPathItem);
 
         if (myArgs['permanent']) {
-            await OsUtils.addPathPermanent(newPathItem, this.config)
+            await OsUtils.addPathPermanent(newPathItem)
         }
     }
 

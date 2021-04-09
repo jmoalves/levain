@@ -122,3 +122,4 @@ export function assertNumberEquals(current: number, expected: number, tolerance:
 export function assertGreaterThan(number: number, otherNumber: number) {
     assert(number > otherNumber, `Expected ${number} to be greater than ${otherNumber}`)
 }
+
