@@ -79,16 +79,16 @@ export default class OsUtils {
     }
 
     static async addPathPermanent(newPathItem: any, config: Config) {
-    OsUtils.onlyInWindows()
+        OsUtils.onlyInWindows()
 
-    const path = await this.getUserPath();
-    let newPath = path.filter((pathItem) => { 
-        return newPathItem != pathItem;
-    });
-    newPath.unshift(newPathItem);
-    const newPathString = newPath.join(";");
-    const psScript = "extra-bin/windows/os-utils/setUserPath.ps1"
-    await Powershell.run(psScript, false, false, [newPathString]);
+        const path = await this.getUserPath();
+        let newPath = path.filter((pathItem) => { 
+            return newPathItem != pathItem;
+        });
+        newPath.unshift(newPathItem);
+        const newPathString = newPath.join(";");
+        const psScript = "extra-bin/windows/os-utils/setUserPath.ps1"
+        await Powershell.run(psScript, false, false, [newPathString]);
     }   
 
     static async runAndLog(command: string): Promise<void> {
