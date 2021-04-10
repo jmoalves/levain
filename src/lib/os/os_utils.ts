@@ -4,11 +4,12 @@ import __ from 'https://deno.land/x/dirname/mod.ts';
 import {ArrayUtils} from "../utils/array_utils.ts";
 import {envChain} from "../utils/utils.ts";
 import {Powershell} from "./powershell.ts";
+import ExtraBin from "../extra_bin.ts";
 
 const {__filename, __dirname} = __(import.meta);
 
 export default class OsUtils {
-    static readonly scriptsDir = path.resolve(__dirname, 'scripts')
+    static readonly scriptsDir = ExtraBin.osUtilsDir
 
     static get tempDir(): string {
         const tempDirEnvVars = ['TEMP', 'TMPDIR', 'TMP'];

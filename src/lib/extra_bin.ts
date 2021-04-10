@@ -4,8 +4,6 @@ import LevainVersion from "../levain_version.ts";
 
 import OsUtils from "../lib/os/os_utils.ts";
 
-import Config from "./config.ts";
-
 export default class ExtraBin {
     static get extraBinDir(): string {
         return path.resolve(LevainVersion.levainSrcDir, "extra-bin", Deno.build.os);
@@ -24,5 +22,10 @@ export default class ExtraBin {
     static get curlDir(): string {
         OsUtils.onlyInWindows()
         return path.resolve(ExtraBin.extraBinDir, "curl");
+    }
+
+    static get osUtilsDir(): string {
+        OsUtils.onlyInWindows()
+        return path.resolve(ExtraBin.extraBinDir, "os-utils");
     }
 }
