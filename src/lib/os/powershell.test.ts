@@ -18,9 +18,9 @@ if (OsUtils.isWindows()) {
     Deno.test({
         name: 'Powershell should run a file',
         async fn() {
-            const scriptFile = 'extra-bin/windows/os-utils/helloWorld.ps1'
+            const script = OsUtils.getScriptUri('helloWorld.ps1')
 
-            const result = await Powershell.run(scriptFile, true)
+            const result = await Powershell.run(script, true)
 
             assertEquals(result, 'Hello, powershell scripts!')
         }

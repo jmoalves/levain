@@ -1,9 +1,14 @@
+import * as path from "https://deno.land/std/path/mod.ts";
 import * as log from "https://deno.land/std/log/mod.ts";
-import { ArrayUtils } from "../utils/array_utils.ts";
+import __ from 'https://deno.land/x/dirname/mod.ts';
+import {ArrayUtils} from "../utils/array_utils.ts";
 import {envChain} from "../utils/utils.ts";
 import {Powershell} from "./powershell.ts";
 
+const {__filename, __dirname} = __(import.meta);
+
 export default class OsUtils {
+    static readonly scriptsDir = path.resolve(__dirname, 'scripts')
 
     static get tempDir(): string {
         const tempDirEnvVars = ['TEMP', 'TMPDIR', 'TMP'];
@@ -84,16 +89,16 @@ export default class OsUtils {
         newPath.unshift(newPathItem);
 
         this.setUserPath(newPath);
-    }   
+    }
 
-    static async removePathPermanent(itemToRemove:string) { 
+    static async removePathPermanent(itemToRemove: string) {
         const path = await this.getUserPath();
         let newPath = ArrayUtils.remove(path, itemToRemove)
         this.setUserPath(newPath);
     }
 
 
-    static async isInUserPath(pathItem:string) { 
+    static async isInUserPath(pathItem: string) {
         const path = await this.getUserPath();
         return path.includes(pathItem);
     }
@@ -153,13 +158,22 @@ export default class OsUtils {
 
     static async getUserPath(): Promise<string[]> {
         this.onlyInWindows()
-        const rawPath = await Powershell.run('extra-bin/windows/os-utils/getUserPath.ps1', true)
+        const script = this.getScriptUri('getUserPath.ps1')
+
+        const rawPath = await Powershell.run(script, true)
+
         return rawPath.split(';')
     }
 
-    static async setUserPath(newPath:string[]) { 
-        const newPathString = newPath.join(';');
-        const setUserPathScript = "extra-bin/windows/os-utils/setUserPath.ps1"
-        await Powershell.run(setUserPathScript, false, false, [newPathString]);
+    static async setUserPath(newPath: string[]) {
+        this.onlyInWindows()
+        const newPathString = newPath.join(';')
+        const script = this.getScriptUri('setUserPath.ps1')
+
+        await Powershell.run(script, false, false, [newPathString]);
+    }
+
+    static getScriptUri(scriptName: string) {
+        return path.resolve(OsUtils.scriptsDir, scriptName);
     }
 }

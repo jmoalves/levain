@@ -1,7 +1,7 @@
 version: vHEAD
 
 cmd.install:
-  - copy --verbose ../src ../levain.ts ../bin ../extra-bin ../levain.cmd ../levain.sh ../userPath.cmd ../recipes ${baseDir}
+  - copy --verbose ../src ../levain.ts ../bin ../extra-bin ../levain.cmd ../levain.sh ../recipes ${baseDir}
   - addPath --permanent ${baseDir}/bin
   - addPath --permanent ${baseDir}
   # Tab completion
