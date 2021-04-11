@@ -17,31 +17,29 @@ export default class AddToStartMenuAction implements Action {
 
         const targetFile: string = args._[0];
         const folderName = args._[1];
-        if (folderName) {
-            log.info(`ADD-TO-START-MENU ${targetFile} ${folderName}`);
-        } else {
-            log.info(`ADD-TO-START-MENU ${targetFile}`);
-        }
 
         const windowsFile = targetFile.replace("file:///", '');
         const resolvedTargetFile = path.resolve(windowsFile);
 
+        if (folderName) {
+            log.info(`ADD-TO-START-MENU ${resolvedTargetFile} ${folderName}`);
+        } else {
+            log.info(`ADD-TO-START-MENU ${resolvedTargetFile}`);
+        }
+
         //With Folder
         if (parameters.length == 2) {
+            const script = OsUtils.getScriptUri('addToStartMenuWithinFolder.cmd')
+
             const userProfile = Deno.env.get("USERPROFILE");
             const startMenuPath = `${userProfile}\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs`;
             const folderPath = path.resolve(startMenuPath, folderName);
             ensureDirSync(folderPath);
 
-            const script = OsUtils.getScriptUri('addToStartMenuWithinFolder.cmd')
-            const createShortcut = Deno.run({cmd: [script, resolvedTargetFile, folderName]});
-            const result = await createShortcut.status();
-            createShortcut.close();
+            await OsUtils.runAndLog([script, resolvedTargetFile, folderName])
         } else {
             const script = OsUtils.getScriptUri('addToStartMenu.cmd')
-            const cmd = Deno.run({cmd: [script, resolvedTargetFile]});
-            const result = await cmd.status();
-            cmd.close();
+            await OsUtils.runAndLog([script, resolvedTargetFile])
         }
     }
 }

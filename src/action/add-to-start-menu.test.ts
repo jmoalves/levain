@@ -5,7 +5,7 @@ import {assert} from "https://deno.land/std/testing/asserts.ts";
 import OsUtils from "../lib/os/os_utils.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import {existsSync} from "https://deno.land/std/fs/mod.ts";
-import {assertFileExists} from "../lib/test/more_asserts.ts";
+import {assertFileDoesNotExist, assertFileExists} from "../lib/test/more_asserts.ts";
 
 
 Deno.test('AddToStartMenuAction should be obtainable with action factory', () => {
@@ -45,17 +45,18 @@ if (OsUtils.isWindows()) {
         //Given the folder doesn't exist in the start menu already
         const userProfile = Deno.env.get("USERPROFILE");
         const startMenuPath = `${userProfile}/AppData/Roaming/Microsoft/Windows/Start Menu/Programs`;
-        const folderName = "dev-env";
+        const folderName = "dev-env-test";
         const fileName = "document.txt";
-        const folderPath = path.resolve(startMenuPath, `${folderName}`);
+        const folderPath = path.resolve(startMenuPath, folderName);
 
         if (existsSync(folderPath)) {
             Deno.removeSync(folderPath, {recursive: true});
         }
+        assertFileDoesNotExist(folderPath);
 
         //And it should get the file
         const currentFileDir = path.dirname(import.meta.url);
-        const filePath = `${currentFileDir}/../../testdata/add_to_startup/${fileName}`;
+        const filePath = path.resolve(currentFileDir, '../../testdata/add_to_startup', fileName);
 
         //when I execute the action
         const action = getStartMenuAction();
@@ -73,4 +74,5 @@ function getStartMenuAction() {
     const factory = new ActionFactory()
     const action = factory.get("addToStartMenu", config)
     return action;
+
 }

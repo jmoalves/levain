@@ -1,15 +1,11 @@
 import * as path from "https://deno.land/std/path/mod.ts";
 import * as log from "https://deno.land/std/log/mod.ts";
-import __ from 'https://deno.land/x/dirname/mod.ts';
 import {ArrayUtils} from "../utils/array_utils.ts";
 import {envChain} from "../utils/utils.ts";
 import {Powershell} from "./powershell.ts";
 import ExtraBin from "../extra_bin.ts";
 
-const {__filename, __dirname} = __(import.meta);
-
 export default class OsUtils {
-    static readonly scriptsDir = ExtraBin.osUtilsDir
 
     static get tempDir(): string {
         const tempDirEnvVars = ['TEMP', 'TMPDIR', 'TMP'];
@@ -105,23 +101,33 @@ export default class OsUtils {
     }
 
 
-    static async runAndLog(command: string): Promise<void> {
+    static async runAndLog(command: string | string[]): Promise<string> {
         log.debug(`runAndLog\n${command}`)
-        let args = command.split(" ");
+
+        let args: string[];
+
+        if (typeof command === "string") {
+            args = command.split(' ')
+        } else if (command instanceof Array) {
+            args = command
+        } else {
+            log.error(command)
+            throw `********** Unkown command type ${typeof command}`
+        }
 
         // https://github.com/denoland/deno/issues/4568
         const proc = Deno.run({
             cmd: args,
-            // stderr: 'piped',
+            stderr: 'piped',
             stdout: 'piped',
         });
 
         const [
-            // stderr,
+            stderr,
             stdout,
             status
         ] = await Promise.all([
-            // proc.stderrOutput(),
+            proc.stderrOutput(),
             proc.output(),
             proc.status()
         ]);
@@ -130,15 +136,18 @@ export default class OsUtils {
 
         log.debug(`status ${JSON.stringify(status)}`)
 
-        if (status.success) {
-            const output = new TextDecoder().decode(stdout)
-            log.debug(`stdout ${output}`)
-        } else {
-            // const errorString = new TextDecoder().decode(stderr)
-            // log.error(`stderr ${errorString}`)
-
-            throw `Error ${status.code} running "${command}"`;
+        if (!status.success) {
+            let stderrOutput = this.decodeOutput(stderr)
+            throw `Error ${status.code} running "${command}\n${stderrOutput}"`;
         }
+
+        const output = OsUtils.decodeOutput(stdout)
+        log.debug(`stdout ${output}`)
+        return output
+    }
+
+    static decodeOutput(output: Uint8Array) {
+        return new TextDecoder().decode(output);
     }
 
     static async clearConsole() {
@@ -175,6 +184,7 @@ export default class OsUtils {
     }
 
     static getScriptUri(scriptName: string) {
-        return path.resolve(OsUtils.scriptsDir, scriptName);
+        const scriptsDir = ExtraBin.osUtilsDir
+        return path.resolve(scriptsDir, scriptName);
     }
 }

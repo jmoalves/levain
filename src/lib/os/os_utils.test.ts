@@ -42,6 +42,7 @@ if (OsUtils.isWindows()) {
         //Given the users folder is not in the path
         await OsUtils.removePathPermanent(folder);
 
+        
         let newPath = await OsUtils.getUserPath(); //wait for new Path to be written before asserting
         assert(!await OsUtils.isInUserPath(folder), `Shouldn't have the folder ${folder} in path - ${newPath}`);
         //When I add to the path
