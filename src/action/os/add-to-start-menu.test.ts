@@ -1,11 +1,11 @@
-import TestHelper from "../lib/test/test_helper.ts";
-import ActionFactory from "./action_factory.ts";
+import TestHelper from "../../lib/test/test_helper.ts";
+import ActionFactory from "../action_factory.ts";
 import AddToStartMenuAction from "./add-to-start-menu.ts";
 import {assert} from "https://deno.land/std/testing/asserts.ts";
-import OsUtils from "../lib/os/os_utils.ts";
+import OsUtils from "../../lib/os/os_utils.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import {existsSync} from "https://deno.land/std/fs/mod.ts";
-import {assertFileDoesNotExist, assertFileExists} from "../lib/test/more_asserts.ts";
+import {assertFileDoesNotExist, assertFileExists} from "../../lib/test/more_asserts.ts";
 
 
 Deno.test('AddToStartMenuAction should be obtainable with action factory', () => {

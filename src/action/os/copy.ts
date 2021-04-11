@@ -2,18 +2,18 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import {copySync, existsSync, walkSync} from "https://deno.land/std/fs/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 
-import Config from "../lib/config.ts";
-import Package from '../lib/package/package.ts';
-import {parseArgs} from "../lib/parse_args.ts";
+import Config from "../../lib/config.ts";
+import Package from '../../lib/package/package.ts';
+import {parseArgs} from "../../lib/parse_args.ts";
 
-import Action from "./action.ts";
-import { FileUtils } from "../lib/fs/file_utils.ts";
+import Action from "../action.ts";
+import {FileUtils} from "../../lib/fs/file_utils.ts";
 
 export default class CopyAction implements Action {
     constructor(private config: Config) {
     }
 
-    async execute(pkg: Package|undefined, parameters: string[]): Promise<void> {
+    async execute(pkg: Package | undefined, parameters: string[]): Promise<void> {
         let args = parseArgs(parameters, {
             boolean: [
                 "verbose",
@@ -58,7 +58,7 @@ export default class CopyAction implements Action {
         await this.copy(src, dst, copyToDir, args)
     }
 
-    private async copy(src: string[], dst: string, copyToDir:boolean, args: any) {
+    private async copy(src: string[], dst: string, copyToDir: boolean, args: any) {
         if (!src) {
             return
         }
@@ -75,7 +75,7 @@ export default class CopyAction implements Action {
                 }
             } catch (err) {
                 log.error(`Error in ${item}`);
-                throw err;    
+                throw err;
             }
         }
     }

@@ -1,11 +1,11 @@
 import {assert} from "https://deno.land/std/testing/asserts.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import {existsSync} from "https://deno.land/std/fs/mod.ts";
-import TestHelper from '../lib/test/test_helper.ts';
-import OsUtils from '../lib/os/os_utils.ts';
-import ActionFactory from './action_factory.ts';
+import TestHelper from '../../lib/test/test_helper.ts';
+import OsUtils from '../../lib/os/os_utils.ts';
+import ActionFactory from '../action_factory.ts';
 import AddToStartupAction from './add_to_startup.ts';
-import {assertFileExists} from "../lib/test/more_asserts.ts";
+import {assertFileExists} from "../../lib/test/more_asserts.ts";
 
 
 Deno.test('AddToStartupAction should be obtainable with action factory', () => {

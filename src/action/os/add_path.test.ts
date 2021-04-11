@@ -1,9 +1,9 @@
 import {assert, assertArrayIncludes,} from "https://deno.land/std/testing/asserts.ts";
-import OsUtils from "../lib/os/os_utils.ts";
+import OsUtils from "../../lib/os/os_utils.ts";
 
-import TestHelper from '../lib/test/test_helper.ts';
+import TestHelper from '../../lib/test/test_helper.ts';
 
-import ActionFactory from './action_factory.ts';
+import ActionFactory from '../action_factory.ts';
 import AddPathAction from "./add_path.ts";
 
 Deno.test('AddPathAction should be obtainable with action factory', () => {
@@ -22,7 +22,7 @@ Deno.test('AddPathAction should add to path config', async () => {
     assertArrayIncludes(config.context.action.addpath.path, [TestHelper.folderThatAlwaysExists])
 })
 
-Deno.test('AddPathAction should add to path permanently', async () => { 
+Deno.test('AddPathAction should add to path permanently', async () => {
     const config = TestHelper.getConfig()
     const action = new AddPathAction(config)
 
@@ -31,7 +31,7 @@ Deno.test('AddPathAction should add to path permanently', async () => {
     await OsUtils.removePathPermanent(folder);
     let newPath = await OsUtils.getUserPath(); //wait for new Path to be written before asserting
     assert(!await OsUtils.isInUserPath(folder), `Shouldn't had the folder ${folder} in path - ${newPath}`);
-    
+
     //When I execute the action
     await action.execute(TestHelper.mockPackage(), ['--permanent', folder]);
 

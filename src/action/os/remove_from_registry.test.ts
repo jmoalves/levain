@@ -1,7 +1,7 @@
 import {assertEquals, assertThrowsAsync,} from "https://deno.land/std/testing/asserts.ts";
 
-import TestHelper from '../lib/test/test_helper.ts';
-import {MockPackage} from '../lib/package/mock_package.ts';
+import TestHelper from '../../lib/test/test_helper.ts';
+import {MockPackage} from '../../lib/package/mock_package.ts';
 
 import RemoveFromRegistry from './remove_from_registry.ts';
 

@@ -1,17 +1,17 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
-import Config from "../lib/config.ts";
-import Package from '../lib/package/package.ts';
-import { parseArgs } from "../lib/parse_args.ts";
-import Loader from '../lib/loader.ts';
+import Config from "../../lib/config.ts";
+import Package from '../../lib/package/package.ts';
+import {parseArgs} from "../../lib/parse_args.ts";
+import Loader from '../../lib/loader.ts';
 
-import Action from "./action.ts";
+import Action from "../action.ts";
 
 export default class ContextMenu implements Action {
     constructor(private config: Config) {
     }
 
-    async execute(pkg: Package|undefined, parameters: string[]) {
+    async execute(pkg: Package | undefined, parameters: string[]) {
         log.info(`CONTEXT-MENU ${parameters}`);
 
         if (!parameters || parameters.length < 1 || parameters[0] != "folders") {
@@ -54,8 +54,8 @@ export default class ContextMenu implements Action {
     }
 
     private async templateRegistry(pkg: Package, args: any) {
-        const tempFilename = Deno.makeTempFileSync({ prefix: 'levain-temp-' });
-        log.debug(`- tempReg - ${tempFilename}`);  
+        const tempFilename = Deno.makeTempFileSync({prefix: 'levain-temp-'});
+        log.debug(`- tempReg - ${tempFilename}`);
         let action = `template --replace=/@@shellID@@/g --with="${args.id}" --replace=/@@shellName@@/g --with="${args.name}" --replace=/@@shellCmd@@/g --with="${args.cmd}" --doubleBackslash \${pkg.levain.baseDir}/recipes/levain-shell.reg ${tempFilename}`;
         let loader = new Loader(this.config);
         await loader.action(pkg, action);

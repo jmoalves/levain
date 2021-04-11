@@ -1,12 +1,12 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 
-import Config from "../lib/config.ts";
-import Package from '../lib/package/package.ts';
-import { parseArgs } from "../lib/parse_args.ts";
-import OsUtils from "../lib/os/os_utils.ts";
+import Config from "../../lib/config.ts";
+import Package from '../../lib/package/package.ts';
+import { parseArgs } from "../../lib/parse_args.ts";
+import OsUtils from "../../lib/os/os_utils.ts";
 
-import Action from "./action.ts";
+import Action from "../action.ts";
 
 export default class AddPathAction implements Action {
     constructor(private config: Config) {

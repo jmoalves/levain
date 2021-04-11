@@ -1,11 +1,11 @@
-import Config from "../lib/config.ts";
-import Package from "../lib/package/package.ts";
-import Action from "./action.ts";
+import Config from "../../lib/config.ts";
+import Package from "../../lib/package/package.ts";
+import Action from "../action.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import * as log from "https://deno.land/std/log/mod.ts";
-import {parseArgs} from "../lib/parse_args.ts";
+import {parseArgs} from "../../lib/parse_args.ts";
 import {ensureDirSync} from "https://deno.land/std/fs/mod.ts";
-import OsUtils from "../lib/os/os_utils.ts";
+import OsUtils from "../../lib/os/os_utils.ts";
 
 export default class AddToStartMenuAction implements Action {
 

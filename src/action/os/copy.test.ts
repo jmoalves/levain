@@ -1,10 +1,10 @@
 import * as path from "https://deno.land/std/path/mod.ts";
 import {assert,} from "https://deno.land/std/testing/asserts.ts";
 
-import TestHelper from '../lib/test/test_helper.ts';
-import {assertFileDoesNotExist, assertFileSizeAprox} from '../lib/test/more_asserts.ts';
+import TestHelper from '../../lib/test/test_helper.ts';
+import {assertFileDoesNotExist, assertFileSizeAprox} from '../../lib/test/more_asserts.ts';
 
-import ActionFactory from './action_factory.ts';
+import ActionFactory from '../action_factory.ts';
 import CopyAction from './copy.ts';
 
 const emptyFile = path.join('testdata', 'copyAction', 'emptyFile.txt')
