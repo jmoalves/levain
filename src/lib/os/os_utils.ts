@@ -77,7 +77,7 @@ export default class OsUtils {
         Deno.env.set(key, value)
     }
 
-    static async addPathPermanent(newPathItem: string) {
+    static async addPathPermanent(newPathItem: string): Promise<string> {
         OsUtils.onlyInWindows()
 
         const path = await this.getUserPath();
@@ -85,13 +85,13 @@ export default class OsUtils {
 
         newPath.unshift(newPathItem);
 
-        this.setUserPath(newPath);
+        return await this.setUserPath(newPath);
     }
 
-    static async removePathPermanent(itemToRemove: string) {
+    static async removePathPermanent(itemToRemove: string): Promise<string> {
         const path = await this.getUserPath();
         let newPath = ArrayUtils.remove(path, itemToRemove)
-        this.setUserPath(newPath);
+        return await this.setUserPath(newPath);
     }
 
 
@@ -153,9 +153,7 @@ export default class OsUtils {
     static async clearConsole() {
         const cmdLine = OsUtils.isWindows() ? 'cmd /c cls' : 'clear';
         const cmd = cmdLine.split(' ')
-        let proc = Deno.run({cmd})
-        await proc.status();
-        proc.close();
+        return await OsUtils.runAndLog(cmd)
     }
 
     static makeReadOnly(path: string) {
@@ -175,12 +173,12 @@ export default class OsUtils {
         return rawPath.split(';')
     }
 
-    static async setUserPath(newPath: string[]) {
+    static async setUserPath(newPath: string[]): Promise<string> {
         this.onlyInWindows()
         const newPathString = newPath.join(';')
         const script = this.getScriptUri('setUserPath.ps1')
 
-        await Powershell.run(script, false, false, [newPathString]);
+        return await Powershell.run(script, false, false, [newPathString]);
     }
 
     static getScriptUri(scriptName: string) {
