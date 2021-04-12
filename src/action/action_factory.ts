@@ -29,37 +29,39 @@ import ShellPath from "./shell_path.ts";
 import CheckUrl from "./check/check_url.ts";
 import AddToStartMenuAction from "./os/add-to-start-menu.ts";
 import AddToDesktopAction from "./os/add-to-desktop.ts";
+import KillProcessAction from "./os/killProcess.ts";
 
 const actionMap = new Map<string, (config: Config) => Action>([
     ['addPath', (config: Config) => new AddPathAction(config)],
+    ['addToDesktop', (config: Config) => new AddToDesktopAction(config)],
+    ['addToStartup', (config: Config) => new AddToStartupAction(config)],
+    ['addToStartMenu', (config: Config) => new AddToStartMenuAction(config)],
+    ['assertContains', (config: Config) => new AssertContainsAction(config)],
+    ['backupFile', (config: Config) => new BackupFile(config)],
+    ['checkChainDirExists', (config: Config) => new CheckChainDirExists(config)],
+    ['checkFileExists', (config: Config) => new CheckFileExists(config)],
+    ['checkPort', (config: Config) => new CheckPort(config)],
+    ['checkUrl', (config: Config) => new CheckUrl(config)],
     ['copy', (config: Config) => new CopyAction(config)],
     ['contextMenu', (config: Config) => new ContextMenu(config)],
     ['defaultPackage', (config: Config) => new DefaultPackage(config)],
+    ['echo', (config: Config) => new Echo(config)],
     ['extract', (config: Config) => new Extract(config)],
     ['inspect', (config: Config) => new Inspect(config)],
-    ['levainShell', (config: Config) => new LevainShell(config)],
-    ['mkdir', (config: Config) => new Mkdir(config)],
-    ['saveConfig', (config: Config) => new Noop(config, 'saveConfig')],
-    ['setEnv', (config: Config) => new SetEnv(config)],
-    ['template', (config: Config) => new Template(config)],
-    ['assertContains', (config: Config) => new AssertContainsAction(config)],
-    ['checkChainDirExists', (config: Config) => new CheckChainDirExists(config)],
-    ['checkFileExists', (config: Config) => new CheckFileExists(config)],
-    ['echo', (config: Config) => new Echo(config)],
-    ['removeFromRegistry', (config: Config) => new RemoveFromRegistry(config.levainRegistry)],
-    ['setVar', (config: Config) => new SetVarAction(config)],
-    ['addToStartup', (config: Config) => new AddToStartupAction(config)],
-    ['addToStartMenu', (config: Config) => new AddToStartMenuAction(config)],
     ['jsonGet', (config: Config) => new JsonGet(config)],
     ['jsonSet', (config: Config) => new JsonSet(config)],
     ['jsonRemove', (config: Config) => new JsonRemove(config)],
+    ['killProcess', () => new KillProcessAction()],
+    ['levainShell', (config: Config) => new LevainShell(config)],
+    ['mkdir', (config: Config) => new Mkdir(config)],
     ['propertyGet', (config: Config) => new PropertyGetAction(config)],
-    ['backupFile', (config: Config) => new BackupFile(config)],
     ['propertySet', (config: Config) => new PropertySetAction(config)],
-    ['checkPort', (config: Config) => new CheckPort(config)],
+    ['saveConfig', (config: Config) => new Noop(config, 'saveConfig')],
+    ['setEnv', (config: Config) => new SetEnv(config)],
+    ['template', (config: Config) => new Template(config)],
+    ['removeFromRegistry', (config: Config) => new RemoveFromRegistry(config.levainRegistry)],
+    ['setVar', (config: Config) => new SetVarAction(config)],
     ['shellPath', (config: Config) => new ShellPath(config)],
-    ['checkUrl', (config: Config) => new CheckUrl(config)],
-    ['addToDesktop', (config: Config) => new AddToDesktopAction(config)]
 ])
 
 export default class ActionFactory {

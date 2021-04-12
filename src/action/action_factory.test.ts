@@ -31,6 +31,7 @@ Deno.test('ActionFactory should list actions', () => {
         'jsonGet',
         'jsonSet',
         'jsonRemove',
+        'killProcess',
         'levainShell',
         'mkdir',
         'propertyGet',
