@@ -11,6 +11,7 @@ import AddToDesktopAction from "./add-to-desktop.ts";
 Deno.test('AddToDesktopAction should be obtainable with action factory', () => {
     const config = TestHelper.getConfig()
     const factory = new ActionFactory()
+
     const action = factory.get("addToDesktop", config)
 
     assert(action instanceof AddToDesktopAction)

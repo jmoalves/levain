@@ -11,7 +11,7 @@ export default class Inspect implements Action {
     constructor(private config: Config) {
     }
 
-    async execute(pkg: Package|undefined, parameters: string[]) {
+    async execute(pkg: Package | undefined, parameters: string[]) {
         let args = parseArgs(parameters, {
             stringMany: [
                 "regExp",

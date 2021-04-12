@@ -9,7 +9,7 @@ export default class Echo implements Action {
     constructor(config: Config) {
     }
 
-    async execute(pkg: Package|undefined, parameters: string[]) {
+    async execute(pkg: Package | undefined, parameters: string[]) {
         log.info(`ECHO ${parameters.join(' ')}`);
     }
 }

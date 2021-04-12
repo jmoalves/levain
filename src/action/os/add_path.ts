@@ -3,7 +3,7 @@ import * as path from "https://deno.land/std/path/mod.ts";
 
 import Config from "../../lib/config.ts";
 import Package from '../../lib/package/package.ts';
-import { parseArgs } from "../../lib/parse_args.ts";
+import {parseArgs} from "../../lib/parse_args.ts";
 import OsUtils from "../../lib/os/os_utils.ts";
 
 import Action from "../action.ts";
@@ -12,12 +12,12 @@ export default class AddPathAction implements Action {
     constructor(private config: Config) {
     }
 
-    async execute(pkg: Package|undefined, parameters: string[]): Promise<void> {
+    async execute(pkg: Package | undefined, parameters: string[]): Promise<void> {
         const myArgs = parseArgs(parameters, {
             boolean: [
                 "permanent",
             ]
-            
+
         });
 
         if (myArgs?._?.length !== 1) {

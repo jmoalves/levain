@@ -30,7 +30,7 @@ export default class Loader {
 
     private actionFactory = new ActionFactory();
 
-    async action(pkg: Package|undefined, cmdline: string) {
+    async action(pkg: Package | undefined, cmdline: string) {
         log.debug('')
         log.debug(`+ ACTION: ${JSON.stringify(cmdline)}`)
 

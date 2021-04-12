@@ -11,7 +11,7 @@ export default class CheckChainDirExists implements Action {
     constructor(private config: Config) {
     }
 
-    async execute(pkg: Package|undefined, parameters: string[]) {
+    async execute(pkg: Package | undefined, parameters: string[]) {
         log.info(`CHECK CHAIN DIRS EXIST ${parameters.join(' ')}`)
 
         let args = parseArgs(parameters, {

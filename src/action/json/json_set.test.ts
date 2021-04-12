@@ -251,7 +251,7 @@ Deno.test('JsonSet should create file when it doesnt exist', () => {
     assertEquals(newFileText, '{\n   "newProperty": "newValue"\n}')
 })
 Deno.test('JsonSet should set an attr when file is empty', () => {
-    
+
     let emptyTempFile = Deno.makeTempFileSync();
     const action = getJsonSetAction()
 

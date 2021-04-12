@@ -11,14 +11,13 @@ export default class CheckUrl implements Action {
     }
 
     // deno-lint-ignore require-await
-    async execute(pkg: Package|undefined, parameters: string[]): Promise<void> {
-        const args = parseArgs(parameters, {
-        })
+    async execute(pkg: Package | undefined, parameters: string[]): Promise<void> {
+        const args = parseArgs(parameters, {})
 
         if (!args._ || args._.length < 1) {
             throw new Error(`You must inform the URL to check`)
         }
-        
+
         const url = args._[0]
         log.info(`CHECK-URL ${url}`)
 

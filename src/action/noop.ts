@@ -9,7 +9,7 @@ export default class Noop implements Action {
     constructor(private config: Config, private actionName: string) {
     }
 
-    async execute(pkg: Package|undefined, parameters: string[]): Promise<void> {
+    async execute(pkg: Package | undefined, parameters: string[]): Promise<void> {
         log.info(`NOOP[${this.actionName}] ${parameters}`);
     }
 }
