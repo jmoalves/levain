@@ -204,7 +204,7 @@ export default class UserInfoUtil {
                 }
 
                 console.log("");
-                console.log("Double checked password, but we did NOT validate it with the server");
+                console.log("Perfect, the typed passwords are the same.");
                 console.log("");
                 config.password = password;
                 return;
