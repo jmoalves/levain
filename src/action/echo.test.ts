@@ -4,7 +4,7 @@ import {assertArrayEndsWith} from "../lib/test/more_asserts.ts";
 
 import Echo from "./echo.ts";
 
-Deno.test('should show a text', async () => {
+Deno.test('Echo should show a text', async () => {
     const testLogger = await TestLogger.setup()
     const config = TestHelper.getConfig()
     const action = new Echo(config)

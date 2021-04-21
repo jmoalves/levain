@@ -19,7 +19,7 @@ import TestHelper from "./test_helper.ts";
 //
 // assertsStringEndsWith
 //
-Deno.test('should raise error when string doesnt end the expected way', () => {
+Deno.test('MoreAsserts.assertsStringEndsWith should raise error when string doesnt end the expected way', () => {
     assertThrows(
         () => {
             assertStringEndsWith('abc', 'yz')
@@ -29,13 +29,13 @@ Deno.test('should raise error when string doesnt end the expected way', () => {
     )
 })
 
-Deno.test('should raise error when string doesnt end the expected way', () => {
+Deno.test('MoreAsserts.assertsStringEndsWith should raise error when string doesnt end the expected way', () => {
     assertStringEndsWith('supercalifragilisticexpialidocious', 'docious')
 })
 //
 // assertArrayEndsWith
 //
-Deno.test('should raise error when arrays are completly different', () => {
+Deno.test('MoreAsserts.assertArrayEndsWith should raise error when arrays are completly different', () => {
     assertThrows(
         () => {
             assertArrayEndsWith([1, 2, 3], [6, 7, 8])
@@ -44,10 +44,10 @@ Deno.test('should raise error when arrays are completly different', () => {
         "expected [1,2,3] to end with [6,7,8]"
     )
 })
-Deno.test('should detect numeric array ending', () => {
+Deno.test('MoreAsserts.assertArrayEndsWith should detect numeric array ending', () => {
     assertArrayEndsWith([1, 2, 3], [2, 3])
 })
-Deno.test('should raise error when string array ends are different', () => {
+Deno.test('MoreAsserts.assertArrayEndsWith should raise error when string array ends are different', () => {
     assertThrows(
         () => {
             assertArrayEndsWith(['abc', 'xyz'], ['abc'])
@@ -56,17 +56,17 @@ Deno.test('should raise error when string array ends are different', () => {
         `expected ["abc","xyz"] to end with ["abc"]`
     )
 })
-Deno.test('should detect string array ending', () => {
+Deno.test('MoreAsserts.assertArrayEndsWith should detect string array ending', () => {
     assertArrayEndsWith(['abc', '123', 'do re mi'], ['123', 'do re mi'])
 })
 //
 // assertFind
 //
-Deno.test('should find and assert', () => {
+Deno.test('MoreAsserts.assertFind should find and assert', () => {
     assertFind([1, 2, 3], it => it === 2)
 })
 
-Deno.test('should throw AssertionError when nothing is found', () => {
+Deno.test('MoreAsserts.assertFind should throw AssertionError when nothing is found', () => {
     assertThrows(
         () => assertFind([1, 2, 3], it => it === 3.1416),
         AssertionError,
@@ -76,11 +76,11 @@ Deno.test('should throw AssertionError when nothing is found', () => {
 //
 // assertNotFind
 //
-Deno.test('should not find and assert', () => {
+Deno.test('MoreAsserts.assertNotFind should not find and assert', () => {
     assertNotFind([1, 2, 3], it => it === 3.1416)
 })
 
-Deno.test('should throw AssertionError when element is found', () => {
+Deno.test('MoreAsserts.assertNotFind should throw AssertionError when element is found', () => {
     assertThrows(
         () => assertNotFind([1, 2, 3], it => it === 2),
         AssertionError,
@@ -90,10 +90,10 @@ Deno.test('should throw AssertionError when element is found', () => {
 //
 // assertArrayContainsInAnyOrder
 //
-Deno.test('should assert that elements are equal, even in different order', () => {
+Deno.test('MoreAsserts.assertArrayContainsInAnyOrder should assert that elements are equal, even in different order', () => {
     assertArrayContainsInAnyOrder([1, 2, 3], [2, 3, 1])
 })
-Deno.test('should find out that one element is missing', () => {
+Deno.test('MoreAsserts.assertArrayContainsInAnyOrder should find out that one element is missing', () => {
     assertThrows(
         () => {
             assertArrayContainsInAnyOrder([1, 2], [1, 2, 3])
@@ -104,10 +104,10 @@ Deno.test('should find out that one element is missing', () => {
 //
 // assertFolderIncludes
 //
-Deno.test('should assert a file is in a folder', () => {
+Deno.test('MoreAsserts.assertFolderIncludes should assert a file is in a folder', () => {
     assertFolderIncludes('testdata/assertFolderIncludes', ['file.txt'])
 })
-Deno.test('should find out that a file is missing', () => {
+Deno.test('MoreAsserts.assertFolderIncludes should find out that a file is missing', () => {
     assertThrows(
         () => {
             assertFolderIncludes('testdata/assertFolderIncludes', ['abc123.doc'])
@@ -119,10 +119,10 @@ Deno.test('should find out that a file is missing', () => {
 //
 // assertDirCount
 //
-Deno.test('assertDirCount should verify element count', () => {
+Deno.test('MoreAsserts.assertDirCount should verify element count', () => {
     assertDirCount('testdata/more_asserts', 3)
 })
-Deno.test('assertDirCount should throw when folder does not exist', () => {
+Deno.test('MoreAsserts.assertDirCount should throw when folder does not exist', () => {
     assertThrows(
         () => {
             assertDirCount(TestHelper.folderThatDoesNotExist, 1)
@@ -134,10 +134,10 @@ Deno.test('assertDirCount should throw when folder does not exist', () => {
 //
 // assertFileSize
 //
-Deno.test('assertFileSize should check file size', () => {
+Deno.test('MoreAsserts.assertFileSize should check file size', () => {
     assertFileSizeAprox(path.join('testdata', 'more_asserts', 'file.txt'), 29)
 })
-Deno.test('assertFileSize should throw if file size doesnt match', () => {
+Deno.test('MoreAsserts.assertFileSize should throw if file size doesnt match', () => {
     assertThrows(
         () => {
             assertFileSizeAprox(path.join('testdata', 'more_asserts', 'file.txt'), 10)
@@ -149,10 +149,10 @@ Deno.test('assertFileSize should throw if file size doesnt match', () => {
 //
 // assertFileDoesNotExist
 //
-Deno.test('assertFileDoesNotExist should identify that file does not exist', () => {
+Deno.test('MoreAsserts.assertFileDoesNotExist should identify that file does not exist', () => {
     assertFileDoesNotExist(TestHelper.fileThatDoesNotExist)
 })
-Deno.test('assertFileDoesNotExist should raise when file exists', () => {
+Deno.test('MoreAsserts.assertFileDoesNotExist should raise when file exists', () => {
     const filePath = path.join('testdata', 'more_asserts', 'file.txt')
 
     assertThrows(
@@ -166,22 +166,22 @@ Deno.test('assertFileDoesNotExist should raise when file exists', () => {
 //
 // assertNumberEquals
 //
-Deno.test('assertNumberEquals should have a tolerance', () => {
+Deno.test('MoreAsserts.assertNumberEquals should have a tolerance', () => {
     assertNumberEquals(600, 615, 0.1)
 })
-Deno.test('assertNumberEquals should throw when diff is above tolerance', () => {
+Deno.test('MoreAsserts.assertNumberEquals should throw when diff is above tolerance', () => {
     assertThrows(
         () => {
             assertNumberEquals(100, 1000, 0.01)
         }
     )
 })
-Deno.test('assertNumberEquals should work with zeros', () => {
+Deno.test('MoreAsserts.assertNumberEquals should work with zeros', () => {
     assertNumberEquals(0, 0)
 })
 //
 // assertGreaterThan
 //
-Deno.test('assertGreaterThan should work with numbers', () => {
+Deno.test('MoreAsserts.assertGreaterThan should work with numbers', () => {
     assertGreaterThan(4, 1)
 })

@@ -6,21 +6,21 @@ import OsUtils from "./os_utils.ts";
 import {assertGreaterThan} from "../test/more_asserts.ts";
 import TestHelper from "../test/test_helper.ts";
 
-Deno.test('should know where is the temp folder', () => {
+Deno.test('OsUtils should know where is the temp folder', () => {
     assertNotEquals(OsUtils.tempDir, undefined);
     assert(existsSync(OsUtils.tempDir));
 })
 
-Deno.test('should know where is the home folder', () => {
+Deno.test('OsUtils should know where is the home folder', () => {
     assertNotEquals(OsUtils.homeDir, undefined)
     assert(existsSync(OsUtils.homeDir));
 })
 
-Deno.test('should know the users login', () => {
+Deno.test('OsUtils should know the users login', () => {
     assertNotEquals(OsUtils.login, undefined)
 })
 
-Deno.test('should know if we are running in Windows', () => {
+Deno.test('OsUtils should know if we are running in Windows', () => {
     const os = Deno.build.os
     const shouldBeWindows = (os === 'windows')
     assertEquals(OsUtils.isWindows(), shouldBeWindows)
@@ -28,16 +28,14 @@ Deno.test('should know if we are running in Windows', () => {
 
 if (OsUtils.isWindows()) {
     Deno.test({
-        name: 'should get path',
+        name: 'OsUtils.getUserPath should get path',
         async fn() {
             const path = await OsUtils.getUserPath()
             assertGreaterThan(path?.length, 5)
         }
     })
-}
 
-if (OsUtils.isWindows()) {
-    Deno.test('Should set path permanently', async () => {
+    Deno.test('OsUtils.addPathPermanent should set path permanently', async () => {
 
         //Given the users folder is not in the path
         const folder = TestHelper.folderThatAlwaysExists;
