@@ -1,5 +1,6 @@
 import * as path from "https://deno.land/std/path/mod.ts";
 import * as log from "https://deno.land/std/log/mod.ts";
+import {ensureDirSync} from "https://deno.land/std/fs/mod.ts";
 import {ArrayUtils} from "../utils/array_utils.ts";
 import {envChain} from "../utils/utils.ts";
 import {Powershell} from "./powershell.ts";
@@ -194,11 +195,83 @@ export default class OsUtils {
     }
 
     static resolvePath(unresolvedPath: string | string[]): string {
-        const pathArray =
-            unresolvedPath instanceof Array
-                ? (unresolvedPath as string[])
-                : [unresolvedPath as string]
+        if (!unresolvedPath) {
+            return ''
+        }
+
+        let pathArray = []
+
+        if (unresolvedPath instanceof Array) {
+            pathArray = (unresolvedPath as string[])
+            if (pathArray[0]) {
+                pathArray[0] = pathArray[0].replace("file:///", '')
+            }
+        } else {
+            const stringPath = unresolvedPath as string;
+            const windowsFile = stringPath.replace("file:///", '');
+            pathArray = [windowsFile]
+        }
 
         return path.resolve(...pathArray)
+    }
+
+    static async addToStartup(targetFile: string) {
+        OsUtils.onlyInWindows()
+
+        // TODO replace
+        const windowsFile = targetFile.replace("file:///", '');
+        const resolvedTargetFile = path.resolve(windowsFile);
+        const cmd = Deno.run({cmd: ["extra-bin/windows/os-utils/addToStartup.cmd", resolvedTargetFile]});
+        const result = await cmd.status();
+        cmd.close()
+        // TODO with this
+        // const userProfile = OsUtils.homeDir
+        // const startupDir = path.resolve(userProfile, 'AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup')
+        // OsUtils.createShortcut(targetFile, startupDir)
+        //
+    }
+
+    static async addToDesktop(targetFile: string) {
+        OsUtils.onlyInWindows()
+
+        // TODO replace
+        const windowsFile = targetFile.replace("file:///", '');
+        const resolvedTargetFile = path.resolve(windowsFile);
+        const cmd = Deno.run({cmd: ["extra-bin/windows/os-utils/addToDesktop.cmd", resolvedTargetFile]});
+        const result = await cmd.status();
+        cmd.close();
+        // TODO with this
+        // const userProfile = OsUtils.homeDir
+        // const desktopDir = path.resolve(userProfile, 'Desktop')
+        // OsUtils.createShortcut(targetFile, desktopDir)
+    }
+
+    static async addToStartMenu(targetFile: string, folderName: string | undefined) {
+        OsUtils.onlyInWindows()
+
+        // TODO replace
+        const windowsFile = targetFile.replace("file:///", '');
+        const resolvedTargetFile = path.resolve(windowsFile);
+        if (folderName) {
+            const script = OsUtils.getScriptUri('addToStartMenuWithinFolder.cmd')
+
+            const userProfile = Deno.env.get("USERPROFILE");
+            const startMenuPath = `${userProfile}\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs`;
+            const folderPath = path.resolve(startMenuPath, folderName);
+            ensureDirSync(folderPath);
+
+            await OsUtils.runAndLog([script, resolvedTargetFile, folderName])
+        } else {
+            const script = OsUtils.getScriptUri('addToStartMenu.cmd')
+            await OsUtils.runAndLog([script, resolvedTargetFile])
+        }
+        // TODO with this
+        // const userProfile = OsUtils.homeDir
+        // const startMenuDir = path.resolve(userProfile, '\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs')
+        // const shortcutDir =
+        //     folderName
+        //         ? [startMenuDir, folderName]
+        //         : startMenuDir
+        // OsUtils.createShortcut(targetFile, shortcutDir)
     }
 }
