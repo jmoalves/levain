@@ -185,4 +185,20 @@ export default class OsUtils {
         const scriptsDir = ExtraBin.osUtilsDir
         return path.resolve(scriptsDir, scriptName);
     }
+
+    static createShortcut(oldPath: string | string[], newPath: string | string[]) {
+        const oldPathResolved = OsUtils.resolvePath(oldPath)
+        const newPathResolved = OsUtils.resolvePath(newPath)
+
+        return Deno.symlinkSync(oldPathResolved, newPathResolved)
+    }
+
+    static resolvePath(unresolvedPath: string | string[]): string {
+        const pathArray =
+            unresolvedPath instanceof Array
+                ? (unresolvedPath as string[])
+                : [unresolvedPath as string]
+
+        return path.resolve(...pathArray)
+    }
 }
