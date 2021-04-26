@@ -6,7 +6,7 @@ import Config from '../config.ts';
 import Package from '../package/package.ts'
 import FileSystemPackage from '../package/file_system_package.ts'
 import {Timer} from "../timer.ts";
-import { FileUtils } from "../fs/file_utils.ts";
+import {FileUtils} from "../fs/file_utils.ts";
 import ConsoleFeedback from "../utils/console_feedback.ts";
 
 import AbstractRepository from './abstract_repository.ts';
@@ -67,7 +67,7 @@ export default class FileSystemRepository extends AbstractRepository {
 
     private readPackageFromList(packageName: string): Package | undefined {
         return this.packages
-            .find(pkg => pkg.name == packageName);
+            ?.find(pkg => pkg.name == packageName);
     }
 
     _packages: Array<FileSystemPackage> | undefined;
