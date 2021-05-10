@@ -2,7 +2,7 @@ import * as path from "https://deno.land/std/path/mod.ts";
 import {assert,} from "https://deno.land/std/testing/asserts.ts";
 
 import TestHelper from '../../lib/test/test_helper.ts';
-import {assertFileDoesNotExist, assertFileSizeAprox} from '../../lib/test/more_asserts.ts';
+import {assertFileSizeAprox, assertPathDoesNotExist} from '../../lib/test/more_asserts.ts';
 
 import ActionFactory from '../action_factory.ts';
 import CopyAction from './copy.ts';
@@ -32,7 +32,7 @@ Deno.test('CopyAction should replace file', async () => {
 Deno.test('CopyAction --ifNotExists should copy a new file', async () => {
     const tempDir = TestHelper.getNewTempDir()
     const dstFile = path.resolve(tempDir, 'newFile.txt')
-    assertFileDoesNotExist(dstFile)
+    assertPathDoesNotExist(dstFile)
 
     const action = getCopyAction()
     await action.execute(TestHelper.mockPackage(), [

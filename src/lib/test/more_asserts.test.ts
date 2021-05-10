@@ -5,13 +5,13 @@ import {
     assertArrayContainsInAnyOrder,
     assertArrayEndsWith,
     assertDirCount,
-    assertFileDoesNotExist,
     assertFileSizeAprox,
     assertFind,
     assertFolderIncludes,
     assertGreaterThan,
     assertNotFind,
     assertNumberEquals,
+    assertPathDoesNotExist,
     assertStringEndsWith,
 } from "./more_asserts.ts";
 import TestHelper from "./test_helper.ts";
@@ -150,17 +150,17 @@ Deno.test('MoreAsserts.assertFileSize should throw if file size doesnt match', (
 // assertFileDoesNotExist
 //
 Deno.test('MoreAsserts.assertFileDoesNotExist should identify that file does not exist', () => {
-    assertFileDoesNotExist(TestHelper.fileThatDoesNotExist)
+    assertPathDoesNotExist(TestHelper.fileThatDoesNotExist)
 })
 Deno.test('MoreAsserts.assertFileDoesNotExist should raise when file exists', () => {
     const filePath = path.join('testdata', 'more_asserts', 'file.txt')
 
     assertThrows(
         () => {
-            assertFileDoesNotExist(filePath)
+            assertPathDoesNotExist(filePath)
         },
         AssertionError,
-        `File ${filePath} should not exist`
+        `Path ${filePath} should not exist`
     )
 })
 //

@@ -4,7 +4,7 @@ import {existsSync} from "https://deno.land/std/fs/mod.ts";
 import TestHelper from '../../lib/test/test_helper.ts';
 import OsUtils from '../../lib/os/os_utils.ts';
 import ActionFactory from '../action_factory.ts';
-import {assertFileExists} from "../../lib/test/more_asserts.ts";
+import {assertPathExists} from "../../lib/test/more_asserts.ts";
 import AddToDesktopAction from "./add-to-desktop.ts";
 
 
@@ -37,7 +37,7 @@ if (OsUtils.isWindows()) {
         await action.execute(TestHelper.mockPackage(), [filePath]);
 
         //Then the shortcut should exist in the desktop
-        assertFileExists(shortcutPath);
+        assertPathExists(shortcutPath);
     })
 }
 

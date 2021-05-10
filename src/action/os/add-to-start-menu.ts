@@ -16,11 +16,11 @@ export default class AddToStartMenuAction implements Action {
         const targetFile: string = args._[0];
         const folderName = args._[1];
 
+        let message = `ADD-TO-START-MENU ${targetFile}`;
         if (folderName) {
-            log.info(`ADD-TO-START-MENU ${targetFile} ${folderName}`);
-        } else {
-            log.info(`ADD-TO-START-MENU ${targetFile}`);
+            message += ` ${folderName}`;
         }
+        log.info(message);
 
         return await OsUtils.addToStartMenu(targetFile, folderName);
     }

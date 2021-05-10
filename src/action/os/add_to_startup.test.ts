@@ -5,7 +5,7 @@ import TestHelper from '../../lib/test/test_helper.ts';
 import OsUtils from '../../lib/os/os_utils.ts';
 import ActionFactory from '../action_factory.ts';
 import AddToStartupAction from './add_to_startup.ts';
-import {assertFileExists} from "../../lib/test/more_asserts.ts";
+import {assertPathExists} from "../../lib/test/more_asserts.ts";
 
 
 Deno.test('AddToStartupAction should be obtainable with action factory', () => {
@@ -36,7 +36,7 @@ if (OsUtils.isWindows()) {
         await action.execute(TestHelper.mockPackage(), [filePath]);
 
         //Then the shortcut should exist in the startup folder
-        assertFileExists(shortcutPath);
+        assertPathExists(shortcutPath);
     })
 }
 

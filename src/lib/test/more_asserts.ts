@@ -99,12 +99,12 @@ export function assertFileSizeAprox(path: string, expectedSize: number) {
     assertNumberEquals(size, expectedSize, 0.10)
 }
 
-export function assertFileDoesNotExist(filePath: string) {
-    assert(!existsSync(filePath), `File ${filePath} should not exist`)
+export function assertPathDoesNotExist(path: string) {
+    assert(!existsSync(path), `Path ${path} should not exist`)
 }
 
-export function assertFileExists(filePath: string) {
-    assert(existsSync(filePath), `File ${filePath} should exist`);
+export function assertPathExists(path: string) {
+    assert(existsSync(path), `Path ${path} should exist`);
 }
 
 export function assertNumberEquals(current: number, expected: number, tolerance: number = 0.10) {

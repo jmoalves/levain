@@ -4,8 +4,7 @@ import AddToStartMenuAction from "./add-to-start-menu.ts";
 import {assert} from "https://deno.land/std/testing/asserts.ts";
 import OsUtils from "../../lib/os/os_utils.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
-import {existsSync} from "https://deno.land/std/fs/mod.ts";
-import {assertFileDoesNotExist, assertFileExists} from "../../lib/test/more_asserts.ts";
+import {assertPathDoesNotExist, assertPathExists} from "../../lib/test/more_asserts.ts";
 
 
 Deno.test('AddToStartMenuAction should be obtainable with action factory', () => {
@@ -23,36 +22,28 @@ if (OsUtils.isWindows()) {
         const startMenuPath = `${userProfile}/AppData/Roaming/Microsoft/Windows/Start Menu/Programs`;
         const fileName = "document.txt";
         const shortcutPath = path.resolve(startMenuPath, `${fileName}.lnk`);
+        OsUtils.removeFile(shortcutPath)
 
         const currentFileDir = path.dirname(import.meta.url);
         const filePath = `${currentFileDir}/../../testdata/add_to_startup/${fileName}`;
-
-        if (existsSync(shortcutPath)) {
-            Deno.removeSync(shortcutPath);
-        }
 
         //when I execute the action
         const action = getStartMenuAction();
         await action.execute(TestHelper.mockPackage(), [filePath]);
 
         //Then the shortcut should exist in the start menu folder
-        assertFileExists(shortcutPath);
+        assertPathExists(shortcutPath);
     })
-}
 
-if (OsUtils.isWindows()) {
     Deno.test("AddToStartMenuAction should be able to create folder in the start menu with a file inside", async () => {
         //Given the folder doesn't exist in the start menu already
         const userProfile = Deno.env.get("USERPROFILE");
         const startMenuPath = `${userProfile}/AppData/Roaming/Microsoft/Windows/Start Menu/Programs`;
         const folderName = "dev-env-test";
         const fileName = "document.txt";
-        const folderPath = path.resolve(startMenuPath, folderName);
-
-        if (existsSync(folderPath)) {
-            Deno.removeSync(folderPath, {recursive: true});
-        }
-        assertFileDoesNotExist(folderPath);
+        const folderPath = path.resolve(startMenuPath, folderName)
+        OsUtils.removeDir(folderPath)
+        assertPathDoesNotExist(folderPath);
 
         //And it should get the file
         const currentFileDir = path.dirname(import.meta.url);
@@ -64,15 +55,11 @@ if (OsUtils.isWindows()) {
 
         //Then the shortcut should exist in the new created folder
         const shortcutPath = path.resolve(startMenuPath, folderName, `${fileName}.lnk`);
-        assertFileExists(shortcutPath);
+        assertPathExists(shortcutPath);
     })
 }
 
-
 function getStartMenuAction() {
     const config = TestHelper.getConfig()
-    const factory = new ActionFactory()
-    const action = factory.get("addToStartMenu", config)
-    return action;
-
+    return new AddToStartMenuAction(config)
 }

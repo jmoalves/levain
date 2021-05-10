@@ -7,7 +7,7 @@ export class Powershell {
         script: string,
         stripCRLF = false,
         ignoreErrors = false,
-        params?:string[]
+        params?: string[]
     ): Promise<string> {
 
         let args = [
@@ -28,8 +28,8 @@ export class Powershell {
         }
 
 
-        if (params) { 
-            params.forEach(param => { 
+        if (params) {
+            params.forEach(param => {
                 args.push(param);
             })
         }
