@@ -98,13 +98,14 @@ export default class OsUtils {
 
         const path = await this.getUserPath();
         let newPath = ArrayUtils.remove(path, newPathItem)
-
         newPath.unshift(newPathItem);
 
         return await this.setUserPath(newPath);
     }
 
     static async removePathPermanent(itemToRemove: string): Promise<string> {
+        OsUtils.onlyInWindows()
+
         const path = await this.getUserPath();
         let newPath = ArrayUtils.remove(path, itemToRemove)
         return await this.setUserPath(newPath);
@@ -180,21 +181,38 @@ export default class OsUtils {
         Deno.chmodSync(path, 0o777)
     }
 
+    static async sanitizeUserPath() {
+        const path = await this.getUserPath()
+        const sanitizedPath = this.sanitizePathArray(path)
+        if (path != sanitizedPath) {
+            await this.setUserPath(sanitizedPath)
+        }
+    }
+
+    static sanitizePathArray(path: string[]): string[] {
+        return path.map(part => this.sanitizePathString(part))
+    }
+
+    static sanitizePathString(path: string): string {
+        return path.replace(/"/g, '')
+    }
+
     static async getUserPath(): Promise<string[]> {
         this.onlyInWindows()
         const script = this.getScriptUri('getUserPath.ps1')
 
-        const rawPath = await Powershell.run(script, true)
+        const rawPath = (await Powershell.run(script, true))
 
         return rawPath.split(';')
     }
 
-    static async setUserPath(newPath: string[]): Promise<string> {
+    static async setUserPath(path: string[]): Promise<string> {
         this.onlyInWindows()
-        const newPathString = newPath.join(';')
+        const pathString = path.join(';')
+        const sanitizedPath = this.sanitizePathString(pathString)
         const script = this.getScriptUri('setUserPath.ps1')
 
-        return await Powershell.run(script, false, false, [newPathString]);
+        return await Powershell.run(script, false, false, [sanitizedPath]);
     }
 
     static getScriptUri(scriptName: string) {

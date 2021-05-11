@@ -219,6 +219,24 @@ if (OsUtils.isWindows()) {
         }
     })
 
+    Deno.test({
+        name: 'OsUtils.sanitizePathString should remove invalid chars',
+        async fn() {
+            const path = 'C:\\src\\dev-env\\levain";"C:\\Program Files (x86)\\Common Files\\Oracle\\Java\\javapath"'
+            const sanitizedPath = OsUtils.sanitizePathString(path)
+            assertEquals(sanitizedPath, 'C:\\src\\dev-env\\levain;C:\\Program Files (x86)\\Common Files\\Oracle\\Java\\javapath')
+        }
+    })
+
+    Deno.test({
+        name: 'OsUtils.sanitizePathArray should remove invalid chars',
+        async fn() {
+            const pathArray = ['%USERPROFILE%\\AppData\\Local\\Microsoft\\WindowsApps"', '"C:\\Program Files\\Docker\\Docker\\resources\\bin"']
+            const sanitizedPathArray = OsUtils.sanitizePathArray(pathArray)
+            assertEquals(sanitizedPathArray, ['%USERPROFILE%\\AppData\\Local\\Microsoft\\WindowsApps', 'C:\\Program Files\\Docker\\Docker\\resources\\bin'])
+        }
+    })
+
     Deno.test('OsUtils.addPathPermanent should set path permanently', async () => {
 
         //Given the users folder is not in the path

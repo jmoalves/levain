@@ -1,16 +1,16 @@
 import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
 
 import Config from "./lib/config.ts";
 import ConsoleAndFileLogger from "./lib/logger/console_and_file_logger.ts";
 import Loader from "./lib/loader.ts";
 import UserInfoUtil from "./lib/user_info/userinfo_util.ts";
 import CliUtil from "./lib/cli_util.ts";
-import CommandFactory, { CommandNotFoundError } from "./cmd/command_factory.ts";
+import CommandFactory, {CommandNotFoundError} from "./cmd/command_factory.ts";
 import LevainReleases from "./lib/releases/levain_releases.ts";
 import Levain from "../levain.ts";
 
 import LevainVersion from "./levain_version.ts";
+import OsUtils from "./lib/os/os_utils.ts";
 
 export default class LevainCli {
 
@@ -48,7 +48,7 @@ export default class LevainCli {
 
         // First parameter is the command
         let cmd: string = getCmdFromArgs();
-        
+
         // Ask for user_info
         if (cmd === 'install') {
             const userInfoUtil = new UserInfoUtil()
@@ -64,12 +64,15 @@ export default class LevainCli {
             let levainReleases = new LevainReleases(config)
             await levainReleases.checkLevainUpdate()
         }
-        
+
         // Repository Manager
         await config.repositoryManager.init({
             repos: myArgs.addRepo,
             tempRepos: myArgs.tempRepo
         })
+
+        // sanitize path for clean execution
+        await OsUtils.sanitizeUserPath()
 
         const loader = new Loader(config);
         try {
@@ -100,7 +103,7 @@ export default class LevainCli {
             }
             throw err
         }
-        
+
         /////////////////////////////////////////////////////////////////////////////////
         log.info("==================================");
 
