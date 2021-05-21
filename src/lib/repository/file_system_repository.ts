@@ -46,6 +46,7 @@ export default class FileSystemRepository extends AbstractRepository {
         }
 
         this.packages; // Force load packages
+        log.debug(`FSRepo: Root=${this.rootDir} - pkgs: ${this.packages}`);
     }
 
     get absoluteURI(): string {
