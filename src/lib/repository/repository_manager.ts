@@ -1,5 +1,4 @@
 import * as log from "https://deno.land/std/log/mod.ts";
-import { dirname } from "https://deno.land/std/path/mod.ts";
 
 import Config from "../config.ts";
 import Package from "../package/package.ts";
@@ -10,9 +9,9 @@ import ChainRepository from "./chain_repository.ts";
 import RepositoryFactory from "./repository_factory.ts";
 
 class Repositories {
-    regular: Repository|undefined = undefined
-    installed: Repository|undefined = undefined
-    currentDir: Repository|undefined = undefined
+    regular: Repository | undefined = undefined
+    installed: Repository | undefined = undefined
+    currentDir: Repository | undefined = undefined
 }
 
 export default class RepositoryManager {
@@ -26,7 +25,7 @@ export default class RepositoryManager {
         this.repoFactory = new RepositoryFactory(config)
     }
 
-    async init({ repos, tempRepos }: { repos: string[]; tempRepos?: string[]; }) {
+    async init({repos, tempRepos}: { repos: string[]; tempRepos?: string[]; }) {
         log.debug("")
         log.debug(`=== RepositoryManager.init - extraRepos: ${JSON.stringify(repos)} tempRepos: ${JSON.stringify(tempRepos)}`)
 
@@ -51,7 +50,7 @@ export default class RepositoryManager {
         let repos: any = this.repositories;
         for (let key in repos) {
             if (repos[key]) {
-                let repo:Repository = repos[key]
+                let repo: Repository = repos[key]
                 log.debug(`INVALIDATE-PACKAGES Repo[${key}] - ${repo.name}`)
                 repo.invalidatePackages()
             }
@@ -75,7 +74,7 @@ export default class RepositoryManager {
         }
 
         // Looking for package at current dir
-        let pkgs = this.repositories.currentDir.listPackages()
+        let pkgs = this.repositories.currentDir.readPackages()
         if (pkgs && pkgs.length == 1) {
             return this.repositories.currentDir.resolvePackage(pkgs[0].name)
         }
@@ -103,7 +102,7 @@ export default class RepositoryManager {
     set repository(repo: Repository) {
         log.warning(`RepositoryManager.repository(${repo.name}) - TEST ONLY!`);
         this.repositories.regular = repo;
-    }    
+    }
 
     get repositoryInstalled(): Repository {
         if (!this.repositories.installed) {
@@ -135,9 +134,9 @@ export default class RepositoryManager {
         let repos: any = this.repositories;
         for (let key in repos) {
             if (repos[key]) {
-                let repo:Repository = repos[key]
+                let repo: Repository = repos[key]
                 log.debug(`Repo[${key}] - ${repo.name}`)
-                await repo.init()    
+                await repo.init()
             }
         }
 
@@ -203,7 +202,7 @@ export default class RepositoryManager {
     private createRepos(list: string[]): Repository {
         let repoArr: Repository[] = []
         for (let repoPath of RepositoryFactory.normalizeList(list)) {
-            repoArr.push(this.repoFactory.create(repoPath))        
+            repoArr.push(this.repoFactory.create(repoPath))
         }
 
         return new CacheRepository(this.config,

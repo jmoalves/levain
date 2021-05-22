@@ -1,7 +1,5 @@
 import {assertEquals} from "https://deno.land/std/testing/asserts.ts";
 
-import Config from "../config.ts";
-
 import AbstractRepository from "./abstract_repository.ts";
 import Package from '../package/package.ts';
 
@@ -19,13 +17,14 @@ class TestRepository extends AbstractRepository {
         return 'URI'
     }
 
-    init(): void {
+    async init(): Promise<void> {
+        return
     }
 
     invalidatePackages(): void {
     }
 
-    listPackages(): Array<Package> {
+    readPackages(): Array<Package> {
         return this.packages
     }
 

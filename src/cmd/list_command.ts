@@ -40,7 +40,7 @@ export default class ListCommand implements Command {
                 log.info(`== Package${filteredPluralChar}`);
                 // TODO: Inform if package is already installed.
                 filteredPackages.forEach(pkg => {
-                    log.info(`   ${StringUtils.padEnd(pkg.name, 30)} ${StringUtils.padEnd(pkg.version.versionNumber, 10)} => ${pkg.filePath}`)
+                    log.info(`   ${StringUtils.padEnd(pkg?.name, 30)} ${StringUtils.padEnd(pkg?.version?.versionNumber, 10)} => ${pkg?.filePath}`)
                 })
             }
         }

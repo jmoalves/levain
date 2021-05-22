@@ -1,6 +1,6 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
-import { existsSync } from "https://deno.land/std/fs/exists.ts";
+import {existsSync} from "https://deno.land/std/fs/exists.ts";
 
 import Package from '../package/package.ts'
 import Config from '../config.ts';
@@ -16,7 +16,7 @@ export default class GitRepository extends AbstractRepository {
 
     private repoFactory: RepositoryFactory
     private readonly localDir: string
-    private localRepo: Repository|undefined
+    private localRepo: Repository | undefined
 
     constructor(private config: Config, private rootUrl: string, private rootOnly: boolean = false) {
         super()
@@ -64,11 +64,11 @@ export default class GitRepository extends AbstractRepository {
         return this.localRepo.resolvePackage(packageName);
     }
 
-    listPackages(): Array<Package> {
+    readPackages(): Array<Package> {
         if (!this.localRepo) {
             throw Error(`${this.name} not loaded`)
         }
 
-        return this.localRepo.listPackages();
+        return this.localRepo.readPackages();
     }
 }

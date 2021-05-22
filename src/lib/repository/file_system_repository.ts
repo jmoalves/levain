@@ -24,7 +24,7 @@ export default class FileSystemRepository extends AbstractRepository {
         private rootOnly: boolean = false
     ) {
         super();
-        this.name = `fileSystemRepo for ${this.rootDir}`;
+        this.name = `fileSystemRepo (${this.rootDir})`;
     }
 
     async init(): Promise<void> {
@@ -33,21 +33,26 @@ export default class FileSystemRepository extends AbstractRepository {
             return;
         }
 
-        log.debug(`FSRepo: Root=${this.rootDir}`);
-        try {
-            const fileInfo = Deno.statSync(this.rootDir);
-            if (!fileInfo || !fileInfo.isDirectory) {
-                throw `addRepo - invalid dir ${this.rootDir}`;
-            }
-        } catch (err) {
-            if (err.name != "NotFound") {
-                throw err;
-            }
+        log.debug(`FSRepo init: Root=${this.rootDir}`)
+
+        if (!existsSync(this.rootDir)) {
+            throw new Error(`addRepo - dir not found: ${this.rootDir}`)
         }
 
-        this.packages; // Force load packages
-        log.debug(`FSRepo: Root=${this.rootDir} - pkgs: ${this.packages}`);
-        log.debug(``);
+        const fileInfo = Deno.statSync(this.rootDir)
+        if (!fileInfo || !fileInfo.isDirectory) {
+            throw new Error(`addRepo - repository should be a dir: ${this.rootDir}`)
+        }
+
+        this.loadPackages()
+    }
+
+    loadPackages() {
+        this._packages = this.readPackages()
+            .sort((a, b) => a?.name?.localeCompare(b?.name));
+
+        log.debug(`FSRepo: Root=${this.rootDir} - pkgs: ${this.packages}`)
+        log.debug(``)
     }
 
     get absoluteURI(): string {
@@ -59,27 +64,28 @@ export default class FileSystemRepository extends AbstractRepository {
             return undefined;
         }
 
-        const pkg = this.readPackageFromList(packageName);
+        const pkg = this._packages
+            ?.find(pkg => pkg.name === packageName);
+
         if (pkg) {
-            log.debug(`FSRepo: ${packageName} => ${pkg.toString()}`);
+            log.debug(`FSRepo: found package ${packageName} => ${pkg.toString()}`);
+        } else {
+            log.debug(`FSRepo: package ${packageName} not found in ${this.name} - ${this.rootDir}`);
+            log.debug(`packages: ${this.packages}`)
+            log.debug(`_packages: ${this._packages}`)
         }
 
         return pkg;
     }
 
-    private readPackageFromList(packageName: string): Package | undefined {
-        return this.packages
-            ?.find(pkg => pkg.name == packageName);
-    }
-
     _packages: Array<FileSystemPackage> | undefined;
+
     get packages(): Array<Package> {
         if (!this._packages) {
-            this._packages = this.listPackages()
-                .sort((a, b) => a.name.localeCompare(b.name));
+            this.loadPackages()
         }
-
-        return this._packages;
+        log.debug(`get packages _packages: ${this._packages}`)
+        return this._packages || [];
     }
 
     invalidatePackages() {
@@ -87,13 +93,9 @@ export default class FileSystemRepository extends AbstractRepository {
         this._packages = undefined
     }
 
-    listPackages(): Array<FileSystemPackage> {
-        if (this._packages) {
-            return this._packages;
-        }
-
+    readPackages(): Array<FileSystemPackage> {
         if (!existsSync(`${this.rootDir}`)) {
-            log.debug(`# listPackages: rootDir not found ${this.rootDir}`);
+            log.debug(`# readPackages: rootDir not found ${this.rootDir}`);
             return [];
         }
 
@@ -108,13 +110,14 @@ export default class FileSystemRepository extends AbstractRepository {
             includeDirs: true,
             exclude: this.excludeDirs,
         }
-        log.debug(`# listPackages: ${packagesGlob} ${JSON.stringify(globOptions)}`)
+        log.debug(`# readPackages: ${packagesGlob} ${JSON.stringify(globOptions)}`)
         const packages: Array<FileSystemPackage> = this.getPackageFiles(packagesGlob, globOptions, this.rootOnly)
 
         this.feedback.reset("#");
         log.info(`added ${packages.length} packages in ${timer.humanize()}`)
         log.info("")
-        return packages;
+
+        return packages
     }
 
     private getPackageFiles(packagesGlob: string, globOptions: ExpandGlobOptions, rootDirOnly: boolean = false): Array<FileSystemPackage> {
@@ -178,7 +181,7 @@ export default class FileSystemRepository extends AbstractRepository {
                 const pkg = this.readPackage(fullUri);
                 if (pkg) {
                     packages.push(pkg);
-                    log.debug(`added package ${entry.name}`)
+                    log.debug(`added package ${pkg?.name} ${pkg?.version}`)
                 }
             }
         }
@@ -209,6 +212,7 @@ export default class FileSystemRepository extends AbstractRepository {
         try {
             fileinfo = Deno.lstatSync(yamlFile)
         } catch (error) {
+            log.error(`!!! error loading package ${yamlFile}: ${error}`)
         }
 
         if (!fileinfo || !fileinfo.isFile) {

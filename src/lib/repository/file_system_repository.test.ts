@@ -1,30 +1,50 @@
-import {assert, assertEquals} from "https://deno.land/std/testing/asserts.ts";
-import {existsSync} from "https://deno.land/std/fs/mod.ts";
+import {assert, assertEquals, assertNotEquals, assertThrowsAsync,} from "https://deno.land/std/testing/asserts.ts";
 
 import Config from "../config.ts";
-import OsUtils from "../os/os_utils.ts";
 import FileSystemPackage from "../package/file_system_package.ts";
-import {assertArrayContainsInAnyOrder, assertArrayIncludesElements} from '../test/more_asserts.ts';
+import {assertArrayContainsInAnyOrder} from '../test/more_asserts.ts';
 
 import FileSystemRepository from "./file_system_repository.ts";
+import Repository from "./repository.ts";
 
-Deno.test('fileSystemRepo should have a name', () => {
+Deno.test('FileSystemRepository should have a name', () => {
     const repo = new FileSystemRepository(new Config([]), '.')
 
-    assertEquals(repo.name, 'fileSystemRepo for .')
+    assertEquals(repo.name, 'fileSystemRepo (.)')
 })
 
 //
 // List
 //
-Deno.test('fileSystemRepo should list packages when root folder does not exist', () => {
-    const repo = getTestRepo('thisFolderDoesNotExist')
+Deno.test({
+    name: 'FileSystemRepository should throw an error when root folder does not exist',
+    // only: true,
+    fn: async () => {
 
-    assertEquals(repo.packages, [])
+        await assertThrowsAsync(
+            async () => {
+                const repo = getRepo('thisFolderDoesNotExist')
+                await repo.init()
+            },
+            Error,
+            'addRepo - dir not found: thisFolderDoesNotExist',
+        )
+    },
 })
 
-Deno.test('fileSystemRepo should list .yml and .yaml packages, and include subfolder', () => {
-    const repo = getTestRepo()
+Deno.test({
+    name: 'FileSystemRepository should list packages from an empty dir',
+    // only: true,
+    fn: async () => {
+        const repo = getRepo('testdata/file_system_repo/empty')
+        await repo.init()
+        const packagesFound = repo.packages;
+        assertEquals([], packagesFound)
+    },
+})
+
+Deno.test('FileSystemRepository should list .yml and .yaml packages, and include subfolder', () => {
+    const repo = getRepo()
 
     const packages = repo.packages
 
@@ -32,8 +52,8 @@ Deno.test('fileSystemRepo should list .yml and .yaml packages, and include subfo
     assertArrayContainsInAnyOrder(packageNames, ['amazingYml', 'awesomeYaml', 'insideSubfolder'])
 })
 
-Deno.test('fileSystemRepo should ignore node_modules', () => {
-    const repo = getTestRepo()
+Deno.test('FileSystemRepository should ignore node_modules', () => {
+    const repo = getRepo()
 
     const packages = repo.packages
 
@@ -41,18 +61,20 @@ Deno.test('fileSystemRepo should ignore node_modules', () => {
     assert(!packageNames.includes('hidden-by-folder'))
 })
 
-Deno.test('fileSystemRepo should list FileSystemPackages', () => {
-    const repo = getTestRepo()
+Deno.test('FileSystemRepository should list FileSystemPackages', () => {
+    const repo = getRepo()
 
     const packages = repo.packages
+
+    assertNotEquals(0, packages?.length, 'packages should not be empty')
     packages.forEach(pkg => assert(pkg instanceof FileSystemPackage))
 })
 
 //
 // resolvePackage
 //
-Deno.test('fileSystemRepo should resolve package by name', () => {
-    const repo = getTestRepo()
+Deno.test('FileSystemRepository should resolve package by name', () => {
+    const repo = getRepo()
 
     const pkg = repo.resolvePackage('amazingYml')
 
@@ -60,14 +82,14 @@ Deno.test('fileSystemRepo should resolve package by name', () => {
     assertEquals(pkg.name, 'amazingYml')
 })
 
-Deno.test('fileSystemRepo should resolve package that does not exists as undefined', () => {
-    const repo = getTestRepo()
+Deno.test('FileSystemRepository should resolve package that does not exists as undefined', () => {
+    const repo = getRepo()
 
     const pkg = repo.resolvePackage('--this-package-does-not-exist--')
 
     assertEquals(pkg, undefined)
 })
 
-function getTestRepo(rootDir: string = './testdata/testRepo') {
+function getRepo(rootDir: string = './testdata/file_system_repo/testRepo'): Repository {
     return new FileSystemRepository(new Config([]), rootDir)
 }

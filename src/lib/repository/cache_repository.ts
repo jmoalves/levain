@@ -1,5 +1,3 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-
 import Config from "../config.ts";
 import Package from "../package/package.ts";
 
@@ -56,7 +54,7 @@ export default class CacheRepository extends AbstractRepository {
         return pkg;
     }
 
-    listPackages(): Array<Package> {
+    readPackages(): Array<Package> {
         return this.packages;
     }
 }

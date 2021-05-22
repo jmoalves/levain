@@ -1,5 +1,3 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-
 import Config from "../config.ts";
 import Package from "../package/package.ts";
 
@@ -27,7 +25,7 @@ export default class ChainRepository extends AbstractRepository {
             await repo.init()
         }
 
-        this.packages = this.listPackages()
+        this.packages = this.readPackages()
     }
 
     invalidatePackages() {
@@ -35,7 +33,7 @@ export default class ChainRepository extends AbstractRepository {
             repo.invalidatePackages()
         }
 
-        this.packages = this.listPackages()
+        this.packages = this.readPackages()
     }
 
     get absoluteURI(): string {
@@ -57,9 +55,9 @@ export default class ChainRepository extends AbstractRepository {
         return undefined;
     }
 
-    listPackages(): Array<Package> {
+    readPackages(): Array<Package> {
         return this.repositories
-            .flatMap(repo => repo.listPackages())
+            .flatMap(repo => repo.readPackages())
             .reduce((uniquePkgs, pkg) =>
                     uniquePkgs.find(includedPkg => includedPkg.name === pkg.name)
                         ? uniquePkgs

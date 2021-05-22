@@ -1,6 +1,6 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
-import {existsSync, copySync} from "https://deno.land/std/fs/mod.ts";
+import {copySync, existsSync} from "https://deno.land/std/fs/mod.ts";
 
 import Config from "../lib/config.ts";
 import Package from "../lib/package/package.ts";
@@ -41,12 +41,12 @@ export default class Install implements Command {
         }
 
         if (pkgNames.length == 0) {
-            throw new Error(`install - Nothing to install. Aborting...`);
+            throw new Error(`What packages do your want to install? Aborting...`);
         }
 
         let pkgs: Package[] | null = this.config.packageManager.resolvePackages(pkgNames);
         if (!pkgs) {
-            throw new Error(`install - Nothing to install. Aborting...`);
+            throw new Error(`Couldn't find package ${pkgNames} to install. Aborting...`);
         }
 
         log.info("");
@@ -65,9 +65,11 @@ export default class Install implements Command {
             // Check updates
             let willUpdate = []
             let willInstall = []
+
             for (let pkg of pkgs) {
+                const name = pkg.name
                 if (!pkg.installed) {
-                    willInstall.push(pkg.name)
+                    willInstall.push(name)
                 } else if (pkg.updateAvailable) {
                     willUpdate.push(pkg.name)
                 }
@@ -225,14 +227,18 @@ export default class Install implements Command {
                 return true;
             }
 
-            let renameDir = Deno.makeTempDirSync({ dir: path.dirname(src), prefix: ".rename." + path.basename(src) + ".", suffix: ".tmp" });
+            let renameDir = Deno.makeTempDirSync({
+                dir: path.dirname(src),
+                prefix: ".rename." + path.basename(src) + ".",
+                suffix: ".tmp"
+            });
             log.info(`- SAVE-REN   ${src} => ${renameDir}`);
-            Deno.removeSync(renameDir, { recursive: true });
+            Deno.removeSync(renameDir, {recursive: true});
             Deno.renameSync(src, renameDir);
 
             try {
                 log.info(`- SAVE-DEL   ${renameDir}`);
-                Deno.removeSync(renameDir, { recursive: true })
+                Deno.removeSync(renameDir, {recursive: true})
             } catch (error) {
                 log.debug(`Ignoring - ${error}`)
             }

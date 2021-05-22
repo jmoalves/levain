@@ -31,20 +31,20 @@ export default class PackageManager {
         let error: boolean = false;
         for (const pkgName of pkgNames) {
             let repo = (installedOnly ? this.config.repositoryManager.repositoryInstalled : this.config.repositoryManager.repository);
-            let myError: boolean = this.resolvePkgs(repo, pkgs, names, pkgName, showLog);
+            let myError: boolean = this.resolveInRepo(repo, pkgs, names, pkgName, showLog);
             error = error || myError;
         }
 
         if (showLog) {
             this.feedback.reset("#");
         }
-        
+
         if (error) {
             return null;
         }
 
         if (showLog) {
-            log.info("# Package list (in order):");    
+            log.info("# Package list (in order):");
         }
 
         let result: Package[] = [];
@@ -107,7 +107,7 @@ export default class PackageManager {
         return this.config.replaceVars(value!, pkgName);
     }
 
-    private resolvePkgs(repo: Repository, pkgs: Map<string, Package>, names: Set<String>, pkgName: string, showLog: boolean): boolean {
+    private resolveInRepo(repo: Repository, pkgs: Map<string, Package>, names: Set<String>, pkgName: string, showLog: boolean): boolean {
         // User feedback
         if (showLog) {
             this.feedback.show();
@@ -121,7 +121,7 @@ export default class PackageManager {
             log.debug(msg);
             log.debug("Packages seen:");
             names.forEach(name => {
-                log.debug(` - ${name}`);                
+                log.debug(` - ${name}`);
             });
             log.debug("");
 
@@ -129,7 +129,7 @@ export default class PackageManager {
         }
 
         names.add(pkgName);
-        log.debug(`resolving package ${pkgName}`)
+        log.debug(`resolving package ${pkgName} in ${repo.name}`)
         const pkgDef = repo.resolvePackage(pkgName);
         if (!pkgDef) {
             if (showLog) {
@@ -144,7 +144,7 @@ export default class PackageManager {
         let error: boolean = false;
         if (pkgDef.dependencies) {
             for (let dep of pkgDef.dependencies) {
-                let myError: boolean = this.resolvePkgs(repo, pkgs, names, dep, showLog);
+                let myError: boolean = this.resolveInRepo(repo, pkgs, names, dep, showLog);
                 error = error || myError;
             }
         }
