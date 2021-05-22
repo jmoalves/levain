@@ -55,12 +55,12 @@ export default class ZipRepository extends AbstractRepository {
         return this.rootUrl;
     }
 
-    get packages(): Array<Package> {
+    listPackages(): Array<Package> {
         if (!this.localRepo) {
             throw Error(`${this.name} not loaded`)
         }
 
-        return this.localRepo.packages;
+        return this.localRepo.listPackages();
     }
 
     resolvePackage(packageName: string): Package | undefined {

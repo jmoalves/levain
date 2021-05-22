@@ -8,11 +8,11 @@ export class MockPackage implements Package {
         public name: string = 'mockPackage',
         public version: VersionNumber = new VersionNumber('1.0.0'),
         public filePath: string = `/mock/${name}-${version}.yml`,
+        public dependencies: string[] = [],
     ) {
     }
 
     readonly baseDir = 'mockBaseDir';
-    readonly dependencies: string[] | undefined;
     readonly installed = false;
     readonly pkgDir = 'mockPkgDir';
     readonly repo: Repository | undefined;

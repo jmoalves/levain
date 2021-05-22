@@ -4,7 +4,7 @@ import TestHelper from "./lib/test/test_helper.ts";
 
 import LevainCli from './levain_cli.ts';
 
-Deno.test('should be able to list packages', async () => {
+Deno.test('LevainCli should be able to list packages', async () => {
     const logger = await TestHelper.setupTestLogger()
     const levainCli = new LevainCli()
     const myArgs = {
@@ -13,7 +13,7 @@ Deno.test('should be able to list packages', async () => {
 
     levainCli.execute(myArgs)
 })
-Deno.test('levainCli should list commands available', async () => {
+Deno.test('LevainCli should list commands available', async () => {
     const logger = await TestHelper.setupTestLogger()
     const levainCli = new LevainCli()
 
@@ -24,11 +24,11 @@ Deno.test('levainCli should list commands available', async () => {
         commandHelp
     )
 })
-Deno.test('levainCli should list commands available when invalid command', async () => {
+Deno.test('LevainCli should list commands available when invalid command', async () => {
     const logger = await TestHelper.setupTestLogger()
     const levainCli = new LevainCli()
 
-    await levainCli.execute({_:["commandNotFound"]})
+    await levainCli.execute({_: ["commandNotFound"]})
 
     assertArrayIncludes(
         logger.messages,

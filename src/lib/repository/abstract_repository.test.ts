@@ -8,9 +8,9 @@ class TestRepository extends AbstractRepository {
         return 'TestRepository'
     }
 
-    get packages(): Array<Package> {
+    listPackages(): Array<Package> {
         console.log("packages()")
-        return [];
+        return []
     }
 
     get absoluteURI(): string {
@@ -25,7 +25,7 @@ class TestRepository extends AbstractRepository {
     }
 
     readPackages(): Array<Package> {
-        return this.packages
+        return []
     }
 
     resolvePackage(packageName: string): Package | undefined {
@@ -35,5 +35,5 @@ class TestRepository extends AbstractRepository {
 
 Deno.test('AbstractRepository - packages must work', async () => {
     const repo = new TestRepository();
-    assertEquals(repo.packages, [])
+    assertEquals(repo.listPackages(), [])
 })

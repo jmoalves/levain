@@ -17,7 +17,7 @@ Deno.test('ChainRepository should have a name', async () => {
 Deno.test('ChainRepository should list packages from repos', async () => {
     const repo = await getRepo()
 
-    const packages = repo.packages
+    const packages = repo.listPackages()
 
     const packageNames = packages.map(pkg => pkg.name)
     assertEquals(packageNames, ['package 1', 'package 2', 'package 3'])

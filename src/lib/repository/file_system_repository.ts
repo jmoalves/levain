@@ -47,14 +47,6 @@ export default class FileSystemRepository extends AbstractRepository {
         this.loadPackages()
     }
 
-    loadPackages() {
-        this._packages = this.readPackages()
-            .sort((a, b) => a?.name?.localeCompare(b?.name));
-
-        log.debug(`FSRepo: Root=${this.rootDir} - pkgs: ${this.packages}`)
-        log.debug(``)
-    }
-
     get absoluteURI(): string {
         return this.rootDir;
     }
@@ -64,28 +56,35 @@ export default class FileSystemRepository extends AbstractRepository {
             return undefined;
         }
 
-        const pkg = this._packages
+        const pkg = this.listPackages()
             ?.find(pkg => pkg.name === packageName);
 
         if (pkg) {
             log.debug(`FSRepo: found package ${packageName} => ${pkg.toString()}`);
         } else {
             log.debug(`FSRepo: package ${packageName} not found in ${this.name} - ${this.rootDir}`);
-            log.debug(`packages: ${this.packages}`)
             log.debug(`_packages: ${this._packages}`)
         }
 
         return pkg;
     }
 
-    _packages: Array<FileSystemPackage> | undefined;
+    private _packages: Array<FileSystemPackage> | undefined;
 
-    get packages(): Array<Package> {
+    listPackages(): Array<Package> {
         if (!this._packages) {
             this.loadPackages()
         }
         log.debug(`get packages _packages: ${this._packages}`)
         return this._packages || [];
+    }
+
+    loadPackages() {
+        this._packages = this.readPackages()
+            .sort((a, b) => a?.name?.localeCompare(b?.name));
+
+        log.debug(`FSRepo: Root=${this.rootDir} - pkgs: ${this._packages}`)
+        log.debug(``)
     }
 
     invalidatePackages() {

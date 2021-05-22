@@ -4,7 +4,7 @@ import {existsSync} from "https://deno.land/std/fs/mod.ts";
 
 import Repository from '../repository/repository.ts'
 import Config from "../config.ts";
-import { FileUtils } from '../fs/file_utils.ts';
+import {FileUtils} from '../fs/file_utils.ts';
 import AbstractPackage from './abstract_package.ts';
 import VersionNumber from "../utils/version_number.ts";
 
@@ -12,6 +12,7 @@ export default class FileSystemPackage extends AbstractPackage {
     private readonly _version: VersionNumber;
     private readonly _dependencies: string[] | undefined = undefined;
     private readonly _yamlStruct: any;
+    readonly baseDir: string
 
     constructor(
         private config: Config,
@@ -29,14 +30,12 @@ export default class FileSystemPackage extends AbstractPackage {
             this._dependencies = this._yamlStruct?.dependencies;
         }
         this._dependencies = this.normalizeDeps(this._dependencies);
+
+        this.baseDir = path.resolve(this._baseDir)
     }
 
     get version(): VersionNumber {
         return this._version;
-    }
-
-    get baseDir(): string {
-        return path.resolve(this._baseDir);
     }
 
     get pkgDir(): string {
@@ -48,6 +47,12 @@ export default class FileSystemPackage extends AbstractPackage {
     }
 
     get fullPath(): string {
+        if (!this.baseDir) {
+            return 'baseDir undefined'
+        }
+        if (!this.filePath) {
+            return 'filePath undefined'
+        }
         return path.resolve(path.join(this.baseDir, this.filePath));
     }
 

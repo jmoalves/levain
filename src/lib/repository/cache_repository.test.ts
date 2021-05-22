@@ -15,7 +15,7 @@ Deno.test('CacheRepository should have a name', async () => {
 Deno.test('CacheRepository should list packages from cached repo', async () => {
     const repo = await getRepo()
 
-    const packages = repo.packages
+    const packages = repo.listPackages()
     const packageNames = packages.map(pkg => pkg.name)
 
     assertEquals(packageNames, ['aPackage', 'anotherPackage'])

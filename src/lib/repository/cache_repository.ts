@@ -6,7 +6,7 @@ import AbstractRepository from './abstract_repository.ts';
 
 export default class CacheRepository extends AbstractRepository {
     readonly name;
-    packages: Array<Package> = [];
+    private _packages: Array<Package> = [];
 
     private cache: Map<string, Package> = new Map();
 
@@ -25,12 +25,12 @@ export default class CacheRepository extends AbstractRepository {
         }
 
         await this.repository.init()
-        this.packages = this.repository.packages;
+        this._packages = this.repository.listPackages();
     }
 
     invalidatePackages() {
         this.repository.invalidatePackages();
-        this.packages = this.repository.packages;
+        this._packages = this.repository.listPackages();
     }
 
     get absoluteURI(): string {
@@ -54,7 +54,11 @@ export default class CacheRepository extends AbstractRepository {
         return pkg;
     }
 
+    listPackages(): Array<Package> {
+        return this._packages;
+    }
+
     readPackages(): Array<Package> {
-        return this.packages;
+        return this._packages;
     }
 }

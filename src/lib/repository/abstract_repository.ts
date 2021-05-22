@@ -4,7 +4,6 @@ import Repository from './repository.ts';
 
 export default abstract class AbstractRepository implements Repository {
     abstract name: string
-    abstract packages: Array<Package>
     abstract absoluteURI: string
 
     abstract init(): Promise<void>
@@ -15,7 +14,9 @@ export default abstract class AbstractRepository implements Repository {
 
     abstract resolvePackage(packageName: string): Package | undefined
 
+    abstract listPackages(): Array<Package>
+
     get length(): number {
-        return this.packages?.length
+        return this.listPackages()?.length
     }
 }

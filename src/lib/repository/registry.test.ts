@@ -4,13 +4,13 @@ import {assertEquals, assertThrows,} from "https://deno.land/std/testing/asserts
 import TestHelper from '../test/test_helper.ts';
 import FileSystemPackage from '../package/file_system_package.ts';
 
-Deno.test('should start empty', () => {
+Deno.test('Registry should start empty', () => {
     const registry = TestHelper.getNewTempRegistry()
     try {
         ensureDirSync(registry.rootDir)
 
         assertEquals(registry.length, 0)
-        assertEquals(registry.packages, [])
+        assertEquals(registry.listPackages(), [])
     } finally {
         Deno.removeSync(registry.rootDir)
     }
@@ -18,7 +18,7 @@ Deno.test('should start empty', () => {
 //
 // addPackage
 //
-Deno.test('should throw when package file does not exist', () => {
+Deno.test('Registry should throw when package file does not exist', () => {
     const registry = TestHelper.getNewTempRegistry()
     try {
         ensureDirSync(registry.rootDir)
@@ -34,7 +34,9 @@ Deno.test('should throw when package file does not exist', () => {
         Deno.removeSync(registry.rootDir)
     }
 })
-Deno.test('should add package', () => {
+
+Deno.test('Registry should add package', () => {
+
     const registry = TestHelper.getNewTempRegistry()
     try {
         ensureDirSync(registry.rootDir)
@@ -43,14 +45,15 @@ Deno.test('should add package', () => {
 
         registry.add(pkg)
 
-        const pkgNames = registry.packages
+        const pkgNames = registry.listPackages()
             .map(it => (it as FileSystemPackage).fileName);
         assertEquals(pkgNames, [pkg.fileName])
     } finally {
         Deno.removeSync(registry.rootDir, {recursive: true})
     }
 })
-Deno.test('should remove package', () => {
+
+Deno.test('Registry should remove package', () => {
     const registry = TestHelper.getNewTempRegistry()
     try {
         ensureDirSync(registry.rootDir)
@@ -64,4 +67,3 @@ Deno.test('should remove package', () => {
         Deno.removeSync(registry.rootDir, {recursive: true})
     }
 })
-

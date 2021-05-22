@@ -56,7 +56,7 @@ export default class TestHelper {
         return new FileSystemPackage(
             TestHelper.getConfig(),
             'awesomeYaml',
-            './testdata/testRepo',
+            'testdata/file_system_repo/testRepo',
             filePath,
             '',
         )

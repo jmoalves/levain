@@ -5,6 +5,7 @@ import Repository from './repository.ts'
 import AbstractRepository from './abstract_repository.ts';
 
 export default class ChainRepository extends AbstractRepository {
+
     constructor(
         public config: Config,
         public repositories: Repository[],
@@ -14,7 +15,7 @@ export default class ChainRepository extends AbstractRepository {
     }
 
     readonly name;
-    packages: Array<Package> = [];
+    private _packages: Array<Package> = [];
 
     async init(): Promise<void> {
         if (!this.repositories) {
@@ -24,8 +25,18 @@ export default class ChainRepository extends AbstractRepository {
         for (let repo of this.repositories) {
             await repo.init()
         }
+        this.loadPackages();
+    }
 
-        this.packages = this.readPackages()
+    private loadPackages() {
+        this._packages = this.readPackages()
+    }
+
+    listPackages(): Array<Package> {
+        if (!this._packages) {
+            this.loadPackages()
+        }
+        return this._packages
     }
 
     invalidatePackages() {
@@ -33,7 +44,7 @@ export default class ChainRepository extends AbstractRepository {
             repo.invalidatePackages()
         }
 
-        this.packages = this.readPackages()
+        this._packages = this.readPackages()
     }
 
     get absoluteURI(): string {

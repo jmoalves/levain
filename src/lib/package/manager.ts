@@ -15,7 +15,7 @@ export default class PackageManager {
 
     resolvePackages(pkgNames: string[], installedOnly = false, showLog = true): Package[] | null {
         if (!pkgNames || pkgNames.length == 0) {
-            return null;
+            return [];
         }
 
         // See https://github.com/jmoalves/levain/issues/92
@@ -129,7 +129,7 @@ export default class PackageManager {
         }
 
         names.add(pkgName);
-        log.debug(`resolving package ${pkgName} in ${repo.name}`)
+        log.debug(`## resolving package ${pkgName} in ${repo.name}`)
         const pkgDef = repo.resolvePackage(pkgName);
         if (!pkgDef) {
             if (showLog) {

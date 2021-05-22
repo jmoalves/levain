@@ -2,7 +2,9 @@ import Package from "../package/package.ts";
 
 export default interface Repository {
     name: string;
-    packages: Array<Package>;
+
+    listPackages(): Array<Package>;
+
     length: number;
 
     readonly absoluteURI: string;

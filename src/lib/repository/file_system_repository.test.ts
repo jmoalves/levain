@@ -38,7 +38,7 @@ Deno.test({
     fn: async () => {
         const repo = getRepo('testdata/file_system_repo/empty')
         await repo.init()
-        const packagesFound = repo.packages;
+        const packagesFound = repo.listPackages()
         assertEquals([], packagesFound)
     },
 })
@@ -46,7 +46,7 @@ Deno.test({
 Deno.test('FileSystemRepository should list .yml and .yaml packages, and include subfolder', () => {
     const repo = getRepo()
 
-    const packages = repo.packages
+    const packages = repo.listPackages()
 
     const packageNames = packages.map(pkg => pkg.name)
     assertArrayContainsInAnyOrder(packageNames, ['amazingYml', 'awesomeYaml', 'insideSubfolder'])
@@ -55,7 +55,7 @@ Deno.test('FileSystemRepository should list .yml and .yaml packages, and include
 Deno.test('FileSystemRepository should ignore node_modules', () => {
     const repo = getRepo()
 
-    const packages = repo.packages
+    const packages = repo.listPackages()
 
     const packageNames = packages.map(pkg => pkg.name)
     assert(!packageNames.includes('hidden-by-folder'))
@@ -64,7 +64,7 @@ Deno.test('FileSystemRepository should ignore node_modules', () => {
 Deno.test('FileSystemRepository should list FileSystemPackages', () => {
     const repo = getRepo()
 
-    const packages = repo.packages
+    const packages = repo.listPackages()
 
     assertNotEquals(0, packages?.length, 'packages should not be empty')
     packages.forEach(pkg => assert(pkg instanceof FileSystemPackage))

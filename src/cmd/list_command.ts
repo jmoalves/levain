@@ -18,7 +18,7 @@ export default class ListCommand implements Command {
         log.info(`= Repository:`)
         log.info(`  ${repo.name}`)
 
-        const packages = repo.packages
+        const packages = repo.listPackages()
         const filteredPackages = args
             ? packages?.filter(it => it.name.includes(searchText))
             : packages

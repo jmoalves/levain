@@ -27,6 +27,10 @@ export default class MockRepository extends AbstractRepository {
 
     readonly absoluteURI = 'mockURI';
 
+    listPackages(): Array<Package> {
+        return this.readPackages()
+    }
+
     readPackages(): Array<Package> {
         return this.packages;
     }

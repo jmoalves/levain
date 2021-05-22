@@ -26,6 +26,10 @@ export default class NullRepository extends AbstractRepository {
         return undefined;
     }
 
+    listPackages(): Array<Package> {
+        return [];
+    }
+    
     readPackages(): Array<Package> {
         return [];
     }

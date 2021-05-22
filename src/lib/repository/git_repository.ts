@@ -48,12 +48,12 @@ export default class GitRepository extends AbstractRepository {
         return this.rootUrl;
     }
 
-    get packages(): Array<Package> {
+    listPackages(): Array<Package> {
         if (!this.localRepo) {
             throw Error(`${this.name} not loaded`)
         }
 
-        return this.localRepo.packages;
+        return this.localRepo.listPackages()
     }
 
     resolvePackage(packageName: string): Package | undefined {
@@ -61,7 +61,7 @@ export default class GitRepository extends AbstractRepository {
             throw Error(`${this.name} not loaded`)
         }
 
-        return this.localRepo.resolvePackage(packageName);
+        return this.localRepo.resolvePackage(packageName)
     }
 
     readPackages(): Array<Package> {
