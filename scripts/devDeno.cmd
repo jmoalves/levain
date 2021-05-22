@@ -1,9 +1,9 @@
 @echo off
 
-set denoPath=%1
-if "a%denoPath%" == "a" (
+set denoVersion=%1
+if "a%denoVersion%" == "a" (
     echo.
-    echo Where should I find deno.exe?
+    echo Which deno version should I use?
     exit /b 1
 )
 
@@ -13,6 +13,17 @@ set levainRoot=%myPath%..
 
 if not exist %levainRoot%\bin (
     mkdir %levainRoot%\bin
+)
+
+set denoPath=%TEMP%\deno\v%denoVersion%
+echo %denoPath%\deno.exe
+if not exist %denoPath%\deno.exe (
+    if exist %denoPath% rmdir /q /s %denoPath%
+    mkdir %denoPath%
+    pushd %denoPath%
+    %levainRoot%\extra-bin\windows\curl\bin\curl -L -O https://github.com/denoland/deno/releases/download/v%denoVersion%/deno-x86_64-pc-windows-msvc.zip
+    %levainRoot%\extra-bin\windows\7-zip\7z.exe x -bsp2 -aoa deno-x86_64-pc-windows-msvc.zip
+    popd
 )
 
 REM if not exist %levainRoot%\bin\deno.exe (
