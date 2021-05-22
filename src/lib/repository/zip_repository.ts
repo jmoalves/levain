@@ -5,12 +5,13 @@ import {ensureDirSync, existsSync} from "https://deno.land/std/fs/mod.ts";
 import Package from '../package/package.ts'
 import Config from '../config.ts';
 import FileCache from "../fs/file_cache.ts";
-import {Extractor, ExtractorFactory} from "../extract/extractor.ts"
+import {Extractor} from "../extract/extractor.ts"
 
 import Repository from "./repository.ts";
 import AbstractRepository from './abstract_repository.ts';
 import RepositoryFactory from "./repository_factory.ts";
 import ReaderFactory from "../io/reader_factory.ts";
+import {ExtractorFactory} from "../extract/extractor_factory.ts";
 
 export default class ZipRepository extends AbstractRepository {
     readonly name

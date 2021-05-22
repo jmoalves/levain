@@ -4,10 +4,11 @@ import Config from "../lib/config.ts";
 import Package from '../lib/package/package.ts';
 import {parseArgs} from "../lib/parse_args.ts";
 import FileCache from '../lib/fs/file_cache.ts';
-import {Extractor, ExtractorFactory} from "../lib/extract/extractor.ts"
+import {Extractor} from "../lib/extract/extractor.ts"
 
 import Action from "./action.ts";
 import {FileUtils} from "../lib/fs/file_utils.ts";
+import {ExtractorFactory} from "../lib/extract/extractor_factory.ts";
 
 export default class Extract implements Action {
     constructor(

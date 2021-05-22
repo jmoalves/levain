@@ -1,14 +1,9 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
-import {unZipFromFile} from 'https://deno.land/x/zip@v1.1.0/mod.ts'
 
 import Config from "../config.ts";
-import ExtraBin from "../extra_bin.ts";
 import {Timer} from "../timer.ts";
 import {FileUtils} from "../fs/file_utils.ts";
-import OsUtils from "../os/os_utils.ts";
-import {SevenZip} from "./sevenzip_extractor.ts";
-
 
 export abstract class Extractor {
     constructor(protected config: Config) {
@@ -68,70 +63,4 @@ export abstract class Extractor {
         return tempDir
     }
 
-}
-
-// TODO: Use native TS/JS implementation instead of extra-bin files.
-export class ExtractorFactory {
-    createExtractor(config: Config, src: string): Extractor {
-        if (src.endsWith(".zip")) {
-            if (OsUtils.isWindows()) {
-                return new SevenZip(config);
-            } else {
-                return new DenoZip(config)
-            }
-        }
-
-        if (src.endsWith(".7z.exe")) {
-            return new SevenZip(config);
-        }
-
-        if (src.endsWith(".tar.gz")) {
-            return new UnTar(config);
-        }
-
-        throw `${src} - file not supported.`;
-    }
-}
-
-export class DenoZip extends Extractor {
-    constructor(config: Config) {
-        super(config);
-    }
-
-    async extractImpl(src: string, dst: string) {
-        log.debug(`-- Deno unZIP ${src} => ${dst}`);
-
-        return await unZipFromFile(
-            src,
-            dst,
-            {includeFileName: false}
-        )
-    }
-}
-
-export class UnTar extends Extractor {
-    constructor(config: Config) {
-        super(config);
-    }
-
-    async extractImpl(src: string, dst: string) {
-        // TODO: Handle other os's
-        if (Deno.build.os != "windows") {
-            throw `${Deno.build.os} not supported`;
-        }
-
-        log.debug(`-- UNTAR ${src} => ${dst}`);
-
-        let args = `cmd /u /c path ${ExtraBin.sevenZipDir};%PATH% && ( ${ExtraBin.sevenZipDir}\\7z.exe x ${src} -bsp2 -so | ${ExtraBin.sevenZipDir}\\7z.exe x -si -bd -ttar -o${dst} )`.split(" ");
-
-        const p = Deno.run({
-            stdout: "null",
-            cmd: args
-        });
-
-        let status = await p.status();
-        if (!status.success) {
-            throw "CMD terminated with code " + status.code;
-        }
-    }
 }
