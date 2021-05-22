@@ -1,2 +1,2 @@
-rem deno test --allow-all --unstable --watch
-deno run --allow-all --unstable scripts\testWatch.ts
+deno test --allow-all --unstable --watch
+rem deno run --allow-all --unstable scripts\testWatch.ts
