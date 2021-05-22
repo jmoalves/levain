@@ -4,9 +4,11 @@ import {unZipFromFile} from 'https://deno.land/x/zip@v1.1.0/mod.ts'
 
 import Config from "../config.ts";
 import ExtraBin from "../extra_bin.ts";
-import { Timer } from "../timer.ts";
-import { FileUtils } from "../fs/file_utils.ts";
+import {Timer} from "../timer.ts";
+import {FileUtils} from "../fs/file_utils.ts";
 import OsUtils from "../os/os_utils.ts";
+import {SevenZip} from "./sevenzip_extractor.ts";
+
 
 export abstract class Extractor {
     constructor(protected config: Config) {
@@ -104,22 +106,6 @@ export class DenoZip extends Extractor {
             dst,
             {includeFileName: false}
         )
-    }
-}
-
-
-export class SevenZip extends Extractor {
-    constructor(config: Config) {
-        super(config);
-    }
-
-    async extractImpl(src: string, dst: string) {
-        // TODO: Handle other os's
-        log.debug(`-- 7z ${src} => ${dst}`);
-        OsUtils.onlyInWindows()
-
-        const command = `cmd /u /c path ${ExtraBin.sevenZipDir};%PATH% && ${ExtraBin.sevenZipDir}\\7z.exe x -bsp2 -aoa -o${dst} ${src}`;
-        await OsUtils.runAndLog(command);
     }
 }
 
