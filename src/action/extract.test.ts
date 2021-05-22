@@ -5,7 +5,6 @@ import TestHelper from "../lib/test/test_helper.ts";
 import {assertFolderIncludes} from "../lib/test/more_asserts.ts";
 import FileCache from '../lib/fs/file_cache.ts';
 import Extract from "./extract.ts";
-import {DenoZip} from "../lib/extract/denozip_extractor.ts";
 
 Deno.test('ExtractAction should check if source exists', async () => {
     const src = TestHelper.fileThatDoesNotExist
@@ -62,36 +61,3 @@ Deno.test({
     sanitizeResources: false,
     sanitizeOps: false,
 })
-//
-// Extractor
-//
-
-// Deno.test('Extractor should copy file to folder', async () => {
-//     const extractor = getExtractor();
-//     const src = 'testdata/extract/test.zip'
-//     const srcFileName = path.basename(src)
-//     const dst = TestHelper.getNewTempDir()
-//
-//     await extractor.copy(src, dst)
-//
-//
-//     assertFolderIncludes(dst, [srcFileName])
-// })
-
-Deno.test('Extractor should copy srcFile to dstFile', async () => {
-    const extractor = getExtractor();
-    const srcFile = 'testdata/extract/test.zip'
-    const srcFileName = path.basename(srcFile)
-    const dst = TestHelper.getNewTempDir()
-    const dstFile = path.join(dst, srcFileName)
-
-    await extractor.copy(srcFile, dstFile)
-
-    assertFolderIncludes(dst, [dstFile])
-})
-
-function getExtractor() {
-    const config = TestHelper.getConfig()
-    const extractor = new DenoZip(config)
-    return extractor;
-}
