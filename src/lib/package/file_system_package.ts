@@ -1,3 +1,4 @@
+import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import * as yaml from "https://deno.land/std/encoding/yaml.ts";
 import {existsSync} from "https://deno.land/std/fs/mod.ts";
@@ -9,99 +10,75 @@ import AbstractPackage from './abstract_package.ts';
 import VersionNumber from "../utils/version_number.ts";
 
 export default class FileSystemPackage extends AbstractPackage {
-    private readonly _version: VersionNumber;
-    private readonly _dependencies: string[] | undefined = undefined;
-    private readonly _yamlStruct: any;
+    readonly name: string
+    readonly version: VersionNumber|undefined
+    readonly filePath: string
     readonly baseDir: string
+    readonly pkgDir: string
+    readonly dependencies: string[] | undefined
+    readonly repo: Repository | undefined
+    readonly installed: boolean
+    readonly updateAvailable: boolean
+    readonly yamlStruct: any
+
+    readonly fileName: string
+    readonly fullPath: string
 
     constructor(
         private config: Config,
-        public readonly name: string,
-        private _baseDir: string,
-        public readonly filePath: string,
+        name: string,
+        baseDir: string,
+        filePath: string,
         yamlStr: string,
-        private _repo?: Repository
+        repo?: Repository
     ) {
         super();
-        this._yamlStruct = yaml.parse(yamlStr);
+        this.name = name
+        this.baseDir = path.resolve(baseDir)
+        this.filePath = filePath
+        this.pkgDir = path.resolve(path.dirname(this.filePath))
+        this.repo = repo
 
-        this._version = new VersionNumber(this._yamlStruct?.version);
-        if (this._yamlStruct?.dependencies) {
-            this._dependencies = this._yamlStruct?.dependencies;
+        this.yamlStruct = yaml.parse(yamlStr)
+
+        const versionStr = this.yamlStruct?.version;
+        this.version = ( versionStr ? new VersionNumber(versionStr) : undefined );
+        this.dependencies = this.normalizeDeps(this.yamlStruct?.dependencies);
+
+        // check installed
+        this.installed = existsSync(this.installedRecipeFilepath())
+
+        // check updateAvailable
+        if (!this.installed) {
+            this.updateAvailable = true
+        } else {
+            let installedRecipe = Deno.readTextFileSync(this.installedRecipeFilepath());
+            installedRecipe = JSON.stringify(yaml.parse(installedRecipe));
+    
+            const currentRecipe = JSON.stringify(this.yamlStruct);
+            this.updateAvailable =  currentRecipe !== installedRecipe;    
         }
-        this._dependencies = this.normalizeDeps(this._dependencies);
 
-        this.baseDir = path.resolve(this._baseDir)
-    }
-
-    get version(): VersionNumber {
-        return this._version;
-    }
-
-    get pkgDir(): string {
-        return path.resolve(path.dirname(this.filePath));
-    }
-
-    get fileName(): string {
-        return path.basename(this.filePath)
-    }
-
-    get fullPath(): string {
-        if (!this.baseDir) {
-            return 'baseDir undefined'
-        }
-        if (!this.filePath) {
-            return 'filePath undefined'
-        }
-        return path.resolve(path.join(this.baseDir, this.filePath));
-    }
-
-    get dependencies(): string[] | undefined {
-        return this._dependencies;
-    }
-
-    get repo(): Repository | undefined {
-        return this._repo;
-    }
-
-    get installed(): boolean {
-        let registry = this.installedRecipeFilepath();
-        return existsSync(registry);
+        this.fileName = path.basename(this.filePath)
+        this.fullPath = path.resolve(path.join(this.baseDir, this.filePath))
     }
 
     private installedRecipeFilepath() {
-        let registry = path.resolve(this.config.levainRegistryDir, path.basename(this.filePath));
-        return registry;
-    }
-
-    get updateAvailable(): boolean {
-        if (!existsSync(this.installedRecipeFilepath())) {
-            return true;
-        }
-
-        let installedRecipe = Deno.readTextFileSync(this.installedRecipeFilepath());
-        installedRecipe = JSON.stringify(yaml.parse(installedRecipe));
-
-        let currentRecipe = JSON.stringify(this._yamlStruct);
-        return currentRecipe !== installedRecipe;
-    }
-
-    get yamlStruct(): any {
-        return this._yamlStruct;
+        return path.resolve(this.config.levainRegistryDir, path.basename(this.filePath));
     }
 
     yamlItem(key: string): any | undefined {
-        if (this._yamlStruct) {
-            return this._yamlStruct[key];
+        if (this.yamlStruct) {
+            return this.yamlStruct[key];
         }
 
         return undefined;
     }
 
     toString(): string {
-        return "Package["
+        return "FSPackage["
             + this.name
-            + " v" + this.version
+            + ( this.version ? ` v${this.version}` : "")
             + ", baseDir=" + this.baseDir
             + (this.dependencies ? ", deps=" + this.dependencies : "")
             + ", yaml=" + this.filePath
@@ -128,9 +105,7 @@ export default class FileSystemPackage extends AbstractPackage {
     }
 
     getInstalledTimestamp() {
-        let registry = this.installedRecipeFilepath();
+        const registry = this.installedRecipeFilepath();
         return FileUtils.getModificationTimestamp(registry);
     }
-
-
 }

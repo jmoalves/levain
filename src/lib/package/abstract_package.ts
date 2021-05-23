@@ -8,17 +8,16 @@ import Package from './package.ts';
 import VersionNumber from "../utils/version_number.ts";
 
 export default abstract class AbstractPackage implements Package {
-
-    abstract baseDir: string;
-    abstract dependencies: string[] | undefined;
-    abstract filePath: string;
-    abstract installed: boolean;
-    abstract name: string;
-    abstract pkgDir: string;
-    abstract repo: Repository | undefined;
-    abstract updateAvailable: boolean;
-    abstract version: VersionNumber;
-    abstract yamlStruct: any;
+    abstract readonly name: string;
+    abstract readonly version: VersionNumber|undefined;
+    abstract readonly filePath: string;
+    abstract readonly baseDir: string;
+    abstract readonly pkgDir: string;
+    abstract readonly dependencies: string[] | undefined;
+    abstract readonly repo: Repository | undefined;
+    abstract readonly installed: boolean;
+    abstract readonly updateAvailable: boolean;
+    abstract readonly yamlStruct: any;
 
     abstract yamlItem(key: string): any | undefined;
 
@@ -39,11 +38,11 @@ export default abstract class AbstractPackage implements Package {
         return levainTag
     }
 
-    skipRegistry(): Boolean {
+    skipRegistry(): boolean {
         return StringUtils.parseBoolean(this.yamlItem("levain.pkg.skipRegistry"))
     }
 
-    skipInstallDir(): Boolean {
+    skipInstallDir(): boolean {
         return StringUtils.parseBoolean(this.yamlItem('levain.pkg.skipInstallDir'))
     }
 }

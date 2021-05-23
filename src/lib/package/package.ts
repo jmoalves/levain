@@ -3,7 +3,7 @@ import VersionNumber from "../utils/version_number.ts";
 
 export default interface Package {
     readonly name: string;
-    readonly version: VersionNumber;
+    readonly version: VersionNumber|undefined;
     readonly filePath: string;
     readonly baseDir: string;
     readonly pkgDir: string;
@@ -16,7 +16,7 @@ export default interface Package {
 
     yamlItem(key: string): any | undefined;
 
-    skipRegistry(): Boolean;
+    skipRegistry(): boolean;
 
-    skipInstallDir(): Boolean;
+    skipInstallDir(): boolean;
 }

@@ -69,7 +69,7 @@ export default class FileSystemRepository extends AbstractRepository {
         return pkg;
     }
 
-    private _packages: Array<FileSystemPackage> | undefined;
+    private _packages: Array<Package> | undefined;
 
     listPackages(): Array<Package> {
         if (!this._packages) {
@@ -92,7 +92,7 @@ export default class FileSystemRepository extends AbstractRepository {
         this._packages = undefined
     }
 
-    readPackages(): Array<FileSystemPackage> {
+    readPackages(): Array<Package> {
         if (!existsSync(`${this.rootDir}`)) {
             log.debug(`# readPackages: rootDir not found ${this.rootDir}`);
             return [];
@@ -110,7 +110,7 @@ export default class FileSystemRepository extends AbstractRepository {
             exclude: this.excludeDirs,
         }
         log.debug(`# readPackages: ${packagesGlob} ${JSON.stringify(globOptions)}`)
-        const packages: Array<FileSystemPackage> = this.getPackageFiles(packagesGlob, globOptions, this.rootOnly)
+        const packages: Array<Package> = this.getPackageFiles(packagesGlob, globOptions, this.rootOnly)
 
         this.feedback.reset("#");
         log.info(`added ${packages.length} packages in ${timer.humanize()}`)
@@ -119,7 +119,7 @@ export default class FileSystemRepository extends AbstractRepository {
         return packages
     }
 
-    private getPackageFiles(packagesGlob: string, globOptions: ExpandGlobOptions, rootDirOnly: boolean = false): Array<FileSystemPackage> {
+    private getPackageFiles(packagesGlob: string, globOptions: ExpandGlobOptions, rootDirOnly: boolean = false): Array<Package> {
         // FIXME Why, oh my...
         // FIXME globPackages throws error when folder is readonly in Deno 1.5.4
         // if (OsUtils.isWindows()) {
@@ -129,7 +129,7 @@ export default class FileSystemRepository extends AbstractRepository {
         // }
     }
 
-    crawlPackages(dirname: string, options: ExpandGlobOptions, rootDirOnly: boolean = false, currentLevel = 0): Array<FileSystemPackage> {
+    crawlPackages(dirname: string, options: ExpandGlobOptions, rootDirOnly: boolean = false, currentLevel = 0): Array<Package> {
         const maxLevels = 5
         const nextLevel = currentLevel + 1;
 
@@ -159,7 +159,7 @@ export default class FileSystemRepository extends AbstractRepository {
             return []
         }
 
-        let packages: Array<FileSystemPackage> = [];
+        let packages: Array<Package> = [];
         for (const entry of entries) {
             // User feedback
             this.feedback.show();
@@ -188,7 +188,7 @@ export default class FileSystemRepository extends AbstractRepository {
         return packages;
     }
 
-    globPackages(packagesGlob: string, globOptions: ExpandGlobOptions): Array<FileSystemPackage> {
+    globPackages(packagesGlob: string, globOptions: ExpandGlobOptions): Array<Package> {
         const packages = []
         const packageFiles = expandGlobSync(packagesGlob, globOptions);
         for (const file of packageFiles) {
@@ -202,7 +202,7 @@ export default class FileSystemRepository extends AbstractRepository {
         return packages
     }
 
-    private readPackage(yamlFile: string): FileSystemPackage | undefined {
+    private readPackage(yamlFile: string): Package | undefined {
         if (!yamlFile.match(/\.levain\.ya?ml$/)) {
             return undefined;
         }
@@ -219,8 +219,10 @@ export default class FileSystemRepository extends AbstractRepository {
         }
 
         const packageName = yamlFile.replace(/.*[\/|\\]/g, '').replace(/\.levain\.ya?ml/, '')
-        log.debug(`readPackage ${packageName} ${yamlFile}`);
-        const yamlStr: string = Deno.readTextFileSync(yamlFile);
+        log.debug(`readPackage ${packageName} ${yamlFile}`)
+        
+        const yamlStr: string = Deno.readTextFileSync(yamlFile)
+        // log.debug(`yaml ${packageName} -> ${yamlStr}`)
 
         const pkg = new FileSystemPackage(
             this.config,
@@ -229,7 +231,8 @@ export default class FileSystemRepository extends AbstractRepository {
             yamlFile,
             yamlStr,
             this);
+        // log.debug(`pkg ${packageName} -> ${pkg}`)
 
-        return pkg;
+        return pkg
     }
 }
