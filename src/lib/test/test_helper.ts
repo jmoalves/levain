@@ -9,8 +9,16 @@ import OsUtils from '../os/os_utils.ts';
 import FileSystemPackage from '../package/file_system_package.ts';
 import Registry from '../repository/registry.ts';
 import TestLogger from "../logger/test_logger.ts";
+import ActionFactory from "../../action/action_factory.ts";
+import Action from "../../action/action.ts";
 
 export default class TestHelper {
+
+    static getActionFromFactory(actionName: string): Action {
+        const config = TestHelper.getConfig()
+        const factory = new ActionFactory()
+        return factory.get(actionName, config)
+    };
 
     static getConfig(): Config {
         const myArgs = {};

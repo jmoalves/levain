@@ -2,14 +2,10 @@ import {assert, assertArrayIncludes,} from "https://deno.land/std/testing/assert
 import OsUtils from "../../lib/os/os_utils.ts";
 
 import TestHelper from '../../lib/test/test_helper.ts';
-
-import ActionFactory from '../action_factory.ts';
 import AddPathAction from "./add_path.ts";
 
 Deno.test('AddPathAction should be obtainable with action factory', () => {
-    const config = TestHelper.getConfig()
-    const factory = new ActionFactory()
-    const action = factory.get("addPath", config)
+    const action = TestHelper.getActionFromFactory("addPath", config)
 
     assert(action instanceof AddPathAction)
 })
