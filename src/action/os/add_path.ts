@@ -47,7 +47,7 @@ export default class AddPathAction implements Action {
             this.config.context.action.addpath.path = [];
         }
 
-        let newPath = path.resolve(newPathItem);
+        const newPath = path.resolve(newPathItem);
         log.info(`ADD-PATH ${newPath}`);
         this.config.context.action.addpath.path.push(newPath);
     }
