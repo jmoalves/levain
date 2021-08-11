@@ -171,6 +171,7 @@ export default class UserInfoUtil {
 
     askPassword(config: Config): void {
         const forbiddenPasswordChars = '^&'
+        // const allowedAndTestedPasswordChars = '#!@'
 
         let tries = 0;
         do {
