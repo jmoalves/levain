@@ -5,12 +5,12 @@ import {copySync, exists} from "https://deno.land/std/fs/mod.ts"
 
 import Config from "../config.ts";
 import {MockPackage} from "../package/mock_package.ts";
-import OsUtils from '../os/os_utils.ts';
 import FileSystemPackage from '../package/file_system_package.ts';
 import Registry from '../repository/registry.ts';
 import TestLogger from "../logger/test_logger.ts";
 import ActionFactory from "../../action/action_factory.ts";
 import Action from "../../action/action.ts";
+import {envChain} from "../utils/utils.ts";
 
 export default class TestHelper {
 
@@ -41,7 +41,7 @@ export default class TestHelper {
         return new MockPackage()
     }
 
-    static readonly folderThatAlwaysExists = OsUtils.homeDir;
+    static readonly folderThatAlwaysExists = TestHelper.homeDir();
     static readonly folderThatDoesNotExist = 'this-folder-does-not-exist';
     static readonly anotherFolderThatDoesNotExist = 'another-folder-that-does-not-exist';
     static readonly fileThatDoesNotExist = path.join(TestHelper.folderThatAlwaysExists, 'this-file-does-not-exist.txt');
@@ -49,6 +49,16 @@ export default class TestHelper {
     static readonly fileThatExists = path.resolve('testdata/file_utils/can_read_and_write_this_file.txt');
     static readonly anotherFileThatExists = path.resolve('testdata/file_utils/file.txt');
     static readonly validZipFile = path.resolve('testdata/extract/test.zip')
+
+    // FIXME Use OsUtils.homeDir
+    static homeDir(): string {
+        const homeEnvStrings = ['HOME', 'USERPROFILE'];
+        const folderFromEnv = envChain(...homeEnvStrings);
+        if (!folderFromEnv) {
+            throw `Home folder not found. Looked for env vars ${homeEnvStrings.join()}`
+        }
+        return path.resolve(folderFromEnv)
+    }
 
     static getTestPkg(yamlStr: string) {
         return new FileSystemPackage(
