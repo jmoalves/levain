@@ -11,7 +11,7 @@ import Repository from "./repository.ts";
 import RepositoryFactory from "./repository_factory.ts";
 
 export default class GitRepository extends AbstractRepository {
-    readonly name
+    readonly name: string
     private readonly gitUtils: GitUtils
 
     private repoFactory: RepositoryFactory

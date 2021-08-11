@@ -2,8 +2,9 @@ import Repository from "../repository/repository.ts";
 import VersionNumber from "../utils/version_number.ts";
 
 export default interface Package {
+    
     readonly name: string;
-    readonly version: VersionNumber|undefined;
+    readonly version: VersionNumber | undefined;
     readonly filePath: string;
     readonly baseDir: string;
     readonly pkgDir: string;

@@ -12,7 +12,7 @@ import ConsoleFeedback from "../utils/console_feedback.ts";
 import AbstractRepository from './abstract_repository.ts';
 
 export default class FileSystemRepository extends AbstractRepository {
-    readonly name;
+    readonly name: string
 
     readonly excludeDirs = ['.git', 'node_modules', 'npm-cache', '$Recycle.Bin', 'temp', 'tmp', 'windows', 'system', 'system32', 'bin', 'extra-bin']
 
@@ -220,19 +220,18 @@ export default class FileSystemRepository extends AbstractRepository {
 
         const packageName = yamlFile.replace(/.*[\/|\\]/g, '').replace(/\.levain\.ya?ml/, '')
         log.debug(`readPackage ${packageName} ${yamlFile}`)
-        
+
         const yamlStr: string = Deno.readTextFileSync(yamlFile)
         // log.debug(`yaml ${packageName} -> ${yamlStr}`)
 
-        const pkg = new FileSystemPackage(
+        // log.debug(`pkg ${packageName} -> ${pkg}`)
+
+        return new FileSystemPackage(
             this.config,
             packageName,
             this.config.replaceVars(`\${levainHome}/${packageName}`),
             yamlFile,
             yamlStr,
-            this);
-        // log.debug(`pkg ${packageName} -> ${pkg}`)
-
-        return pkg
+            this)
     }
 }

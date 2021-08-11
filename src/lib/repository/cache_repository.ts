@@ -5,7 +5,7 @@ import Repository from './repository.ts'
 import AbstractRepository from './abstract_repository.ts';
 
 export default class CacheRepository extends AbstractRepository {
-    readonly name;
+    readonly name: string
     private _packages: Array<Package> = [];
 
     private cache: Map<string, Package> = new Map();

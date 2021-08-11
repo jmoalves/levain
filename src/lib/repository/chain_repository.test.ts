@@ -33,7 +33,7 @@ Deno.test('ChainRepository should resolve package by name', async () => {
     const pkg = repo.resolvePackage('package 2')
     // Then
     assertEquals(pkg?.name, 'package 2')
-    assertEquals(pkg?.version.versionNumber, '2.0.0')
+    assertEquals(pkg?.version?.versionNumber, '2.0.0')
 })
 
 Deno.test('ChainRepository should resolve package that only exists in second repository', async () => {
@@ -43,7 +43,7 @@ Deno.test('ChainRepository should resolve package that only exists in second rep
     const pkg = repo.resolvePackage('package 3')
     // Then
     assertEquals(pkg?.name, 'package 3')
-    assertEquals(pkg?.version.versionNumber, '3.0.0')
+    assertEquals(pkg?.version?.versionNumber, '3.0.0')
 })
 
 async function getRepo(): Promise<Repository> {

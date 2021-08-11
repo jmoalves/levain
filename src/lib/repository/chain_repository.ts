@@ -14,7 +14,7 @@ export default class ChainRepository extends AbstractRepository {
         this.name = `chainRepo for ${this.repositories?.map(repo => repo.name).join(', ')}`;
     }
 
-    readonly name;
+    readonly name: string;
     private _packages: Array<Package> = [];
 
     async init(): Promise<void> {

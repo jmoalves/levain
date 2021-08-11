@@ -69,18 +69,16 @@ export function assertArrayContainsInAnyOrder<T>(
     )
 }
 
-export function assertFolderIncludes(dst: string, expectedFiles: string[]) {
+export function assertFolderIncludes(folder: string, expectedFiles: string[]) {
     let separator = path.SEP
     if (OsUtils.isWindows()) {
         if (separator === "\\\\") throw "fixed in Deno, please remove this code block"
-        separator = '\\\\'
     }
-    const dstWithSlash = dst.endsWith(separator) ? dst : dst + separator
-    const dstRelativeFiles = DirUtils.listFileNames(dst)
+    const dstRelativeFiles = DirUtils.listFileNames(folder)
         .map(it => path.resolve(it))
     // .map(it => it.toString().replace(dstWithSlash, ''))
     const expectedRelativeFiles = expectedFiles
-        .map(it => path.resolve(dst, it))
+        .map(it => path.resolve(folder, it))
     // .map(it => it.toString().replace(dstWithSlash, ''))
 
     assertArrayIncludes(

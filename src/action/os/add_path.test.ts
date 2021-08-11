@@ -5,7 +5,7 @@ import TestHelper from '../../lib/test/test_helper.ts';
 import AddPathAction from "./add_path.ts";
 
 Deno.test('AddPathAction should be obtainable with action factory', () => {
-    const action = TestHelper.getActionFromFactory("addPath", config)
+    const action = TestHelper.getActionFromFactory("addPath")
 
     assert(action instanceof AddPathAction)
 })

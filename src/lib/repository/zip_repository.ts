@@ -14,7 +14,7 @@ import ReaderFactory from "../io/reader_factory.ts";
 import {ExtractorFactory} from "../extract/extractor_factory.ts";
 
 export default class ZipRepository extends AbstractRepository {
-    readonly name
+    readonly name: string
 
     private repoFactory: RepositoryFactory
 
@@ -84,8 +84,7 @@ export default class ZipRepository extends AbstractRepository {
     private async copyLocalZip(): Promise<string> {
         let reader = ReaderFactory.readerFor(this.rootUrl)
         const fileCache = new FileCache(this.config)
-        const cachedSrc = await fileCache.get(reader)
-        return cachedSrc
+        return await fileCache.get(reader)
     }
 
     private async extractLocalZip(zipfile: string) {
