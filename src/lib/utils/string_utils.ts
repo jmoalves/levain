@@ -1,5 +1,3 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-
 export default class StringUtils {
 
     static textContainsAtLeastOneChar(text: string, chars: string) {
@@ -52,7 +50,7 @@ export default class StringUtils {
         return (text == undefined ? "" : text + "").padEnd(size);
     }
 
-    static padNum(n: number|undefined, size: number, pad: string = " "): string {
+    static padNum(n: number | undefined, size: number, pad: string = " "): string {
         return (n == undefined ? "" : "" + n).padStart(size, pad);
     }
 
@@ -62,7 +60,7 @@ export default class StringUtils {
         let size = bytes
         let idx = 0
 
-        while ( (idx + 1) < units.length && size >= 1024) {
+        while ((idx + 1) < units.length && size >= 1024) {
             size = size / 1024
             idx++
         }
@@ -72,5 +70,10 @@ export default class StringUtils {
         let decPart = size % 1000
 
         return `${StringUtils.padNum(intPart, 4)}.${(decPart + "").padStart(3, "0")} ${units[idx].padStart(2)}`
+    }
+
+    static removeAccentMarks(text: string) {
+        return text.normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
     }
 }

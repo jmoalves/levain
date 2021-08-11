@@ -67,8 +67,8 @@ Deno.test('StringUtils - padEnd', () => {
 })
 
 Deno.test('StringUtils - humanizeBytes', () => {
-    assertEquals(StringUtils.humanizeBytes(0),    "   0.000  B")
-    assertEquals(StringUtils.humanizeBytes(500),  " 500.000  B")
+    assertEquals(StringUtils.humanizeBytes(0), "   0.000  B")
+    assertEquals(StringUtils.humanizeBytes(500), " 500.000  B")
     assertEquals(StringUtils.humanizeBytes(1024), "   1.000 KB")
     assertEquals(StringUtils.humanizeBytes(1025), "   1.001 KB")
     assertEquals(StringUtils.humanizeBytes(2048), "   2.000 KB")
@@ -141,4 +141,12 @@ Deno.test('StringUtils - parseBoolean - should parse false', () => {
     assertEquals(StringUtils.parseBoolean(0), false)
     assertEquals(StringUtils.parseBoolean(undefined), false)
     assertEquals(StringUtils.parseBoolean(null), false)
+})
+
+//
+// removeAccentMarks
+//
+Deno.test('StringUtils.removeAccentMarks', () => {
+    assertEquals(StringUtils.removeAccentMarks('João'), 'Joao')
+    assertEquals(StringUtils.removeAccentMarks('espaços'), 'espacos')
 })
