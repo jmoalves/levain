@@ -16,6 +16,16 @@ export function assertArrayIncludesElements<T>(array: T[], elements: T[]) {
     assertEquals(0, notFound.length, `Expected to find elements ${notFound} in ${array}`)
 }
 
+export function assertArrayDoesNotInclude<T>(array: T[], elements: T[]) {
+    let found: T[] = []
+    elements.forEach(element => {
+        if (array.includes(element)) {
+            found.push(element)
+        }
+    })
+    assertEquals(0, found.length, `Expected to find elements ${found} in ${array}`)
+}
+
 export function assertStringEndsWith(
     text: string,
     ending: string,
@@ -82,6 +92,24 @@ export function assertFolderIncludes(folder: string, expectedFiles: string[]) {
     // .map(it => it.toString().replace(dstWithSlash, ''))
 
     assertArrayIncludes(
+        dstRelativeFiles,
+        expectedRelativeFiles,
+    )
+}
+
+export function assertFolderDoesNotInclude(folder: string, expectedFiles: string[]) {
+    let separator = path.SEP
+    if (OsUtils.isWindows()) {
+        if (separator === "\\\\") throw "fixed in Deno, please remove this code block"
+    }
+    const dstRelativeFiles = DirUtils.listFileNames(folder)
+        .map(it => path.resolve(it))
+    // .map(it => it.toString().replace(dstWithSlash, ''))
+    const expectedRelativeFiles = expectedFiles
+        .map(it => path.resolve(folder, it))
+    // .map(it => it.toString().replace(dstWithSlash, ''))
+
+    assertArrayDoesNotInclude(
         dstRelativeFiles,
         expectedRelativeFiles,
     )

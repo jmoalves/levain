@@ -7,6 +7,7 @@ import {
     assertDirCount,
     assertFileSizeAprox,
     assertFind,
+    assertFolderDoesNotInclude,
     assertFolderIncludes,
     assertGreaterThan,
     assertNotFind,
@@ -114,6 +115,21 @@ Deno.test('MoreAsserts.assertFolderIncludes should find out that a file is missi
         },
         AssertionError,
         "abc123.doc",
+    )
+})
+//
+// assertFolderDoesNotInclude
+//
+Deno.test('MoreAsserts.assertFolderDoesNotInclude should assert a file is not in a folder', () => {
+    assertFolderDoesNotInclude('testdata/assertFolderIncludes', ['abc123.doc'])
+})
+Deno.test('MoreAsserts.assertFolderIncludes should find out that a file exists in the folder', () => {
+    assertThrows(
+        () => {
+            assertFolderDoesNotInclude('testdata/assertFolderIncludes', ['file.txt'])
+        },
+        AssertionError,
+        "file.txt",
     )
 })
 //
