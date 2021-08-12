@@ -30,6 +30,7 @@ import CheckUrl from "./check/check_url.ts";
 import AddToStartMenuAction from "./os/add-to-start-menu.ts";
 import AddToDesktopAction from "./os/add-to-desktop.ts";
 import KillProcessAction from "./os/killProcess.ts";
+import GitCloneAction from "./git/clone.ts";
 
 const actionMap = new Map<string, (config: Config) => Action>([
     ['addPath', (config: Config) => new AddPathAction(config)],
@@ -43,6 +44,7 @@ const actionMap = new Map<string, (config: Config) => Action>([
     ['checkPort', (config: Config) => new CheckPort(config)],
     ['checkUrl', (config: Config) => new CheckUrl(config)],
     ['copy', (config: Config) => new CopyAction(config)],
+    ['clone', () => new GitCloneAction()],
     ['contextMenu', (config: Config) => new ContextMenu(config)],
     ['defaultPackage', (config: Config) => new DefaultPackage(config)],
     ['echo', (config: Config) => new Echo(config)],

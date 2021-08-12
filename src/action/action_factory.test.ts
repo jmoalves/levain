@@ -22,6 +22,7 @@ Deno.test('ActionFactory should list actions', () => {
         'checkFileExists',
         'checkPort',
         'checkUrl',
+        'clone',
         'contextMenu',
         'copy',
         'defaultPackage',
