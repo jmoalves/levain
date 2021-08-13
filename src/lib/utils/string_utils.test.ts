@@ -150,3 +150,10 @@ Deno.test('StringUtils.removeAccentMarks', () => {
     assertEquals(StringUtils.removeAccentMarks('João'), 'Joao')
     assertEquals(StringUtils.removeAccentMarks('espaços'), 'espacos')
 })
+
+//
+// surround
+//
+Deno.test('StringUtils.surround should surround assertEquals string with another text', () => {
+    assertEquals(StringUtils.surround('abc', '"'), '"abc"')
+})

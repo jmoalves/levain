@@ -6,6 +6,7 @@ import Package from "../package/package.ts";
 import Loader from '../loader.ts';
 
 import OsUtils from "./os_utils.ts";
+import StringUtils from "../utils/string_utils.ts";
 
 export class OsShell {
     private dependencies: Package[];
@@ -107,6 +108,8 @@ export class OsShell {
         // TODO: Handle other os's
         OsUtils.onlyInWindows()
 
+        const adjustedArgs = OsShell.adjustArgs(args)
+
         let cmd = "";
         if (this.interactive) {
             if (this.config.shellPath) {
@@ -116,7 +119,7 @@ export class OsShell {
                 cmd = `cmd /c start cmd /u /k prompt [levain${myVersion}]$P$G`;
             }
         } else {
-            cmd = "cmd /u /c " + args.join(" ");
+            cmd = "cmd /u /c " + adjustedArgs.join(" ");
         }
 
         log.info(`- CMD - ${cmd}`);
@@ -154,6 +157,7 @@ export class OsShell {
         //     return;
         // }
 
+        log.debug(`Deno.run: ${JSON.stringify(opt)}`);
         const p = Deno.run(opt);
         let status = await p.status();
 
@@ -172,6 +176,18 @@ export class OsShell {
             }
             this.config.setVar(this.saveVar, cmdOutput);
         }
+    }
+
+    static adjustArgs(args: string[]) {
+        const QUOTATION_MARK = '"'
+
+        return args.map(arg => {
+            let adjusted = arg
+            if (arg.includes(' ')) {
+                adjusted = StringUtils.surround(arg, QUOTATION_MARK)
+            }
+            return adjusted
+        })
     }
 
     private versionTag(): string {

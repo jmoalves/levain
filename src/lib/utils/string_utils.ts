@@ -76,4 +76,8 @@ export default class StringUtils {
         return text.normalize('NFD')
             .replace(/[\u0300-\u036f]/g, '')
     }
+
+    static surround(text: string, border: string) {
+        return border + text + border
+    }
 }
