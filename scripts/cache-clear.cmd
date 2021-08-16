@@ -1,0 +1,9 @@
+deno info
+
+REM TODO: waiting for Deno CLIENT to clean caches
+
+SET REMOTE_MODULE_CACHE=%APPDATA%\..\Local\deno\deps
+RMDIR /Q /S %REMOTE_MODULE_CACHE%
+
+SET EMITTED_MODULE_CACHE=%APPDATA%\..\Local\deno\gen
+RMDIR /Q /S %EMITTED_MODULE_CACHE%

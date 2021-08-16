@@ -1,5 +1,5 @@
 import * as log from "https://deno.land/std/log/mod.ts";
-import {unZipFromFile} from 'https://deno.land/x/zip@v1.1.1/mod.ts'
+import {decompress} from 'https://deno.land/x/zip@v1.2.1/mod.ts'
 
 import Config from "../config.ts";
 import {Extractor} from "./extractor.ts";
@@ -12,7 +12,7 @@ export class DenoZip extends Extractor {
     async extractImpl(src: string, dst: string) {
         log.debug(`-- Deno unZIP ${src} => ${dst}`)
 
-        return await unZipFromFile(
+        return await decompress(
             src,
             dst,
             {includeFileName: false}

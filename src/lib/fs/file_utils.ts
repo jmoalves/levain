@@ -2,11 +2,10 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import {existsSync} from "https://deno.land/std/fs/mod.ts";
 
-import ProgressBar from "https://deno.land/x/progress@v1.2.3/mod.ts";
+import ProgressBar from "https://deno.land/x/progress@v1.2.4/mod.ts";
 
 import OsUtils from '../os/os_utils.ts';
 import DateUtils from '../utils/date_utils.ts';
-import FileReader from '../io/file_reader.ts';
 import FileWriter from '../io/file_writer.ts';
 import ProgressReader from '../io/progress_reader.ts';
 import ReaderFactory from "../io/reader_factory.ts";
@@ -104,7 +103,7 @@ export class FileUtils {
         return fileInfo.isFile
     }
 
-    static resolve(parent: string|undefined, url: string): string {
+    static resolve(parent: string | undefined, url: string): string {
         if (!FileUtils.isFileSystemUrl(url)) {
             return url
         }
@@ -118,7 +117,7 @@ export class FileUtils {
         return url
     }
 
-    static isFileSystemUrl(url: string|undefined) : boolean {
+    static isFileSystemUrl(url: string | undefined): boolean {
         if (!url) {
             return false
         }
@@ -149,9 +148,9 @@ export class FileUtils {
             return false
         }
     }
-    
+
     static async copyWithProgress(src: string | ProgressReader, dstFile: string) {
-        let r:ProgressReader | undefined = undefined
+        let r: ProgressReader | undefined = undefined
 
         if (typeof src == 'string') {
             r = ReaderFactory.readerFor(src)
@@ -170,7 +169,7 @@ export class FileUtils {
             try {
                 await r.rewind();
                 let dst = new FileWriter(dstFile);
-        
+
                 let title = r.title;
                 let total = r.size;
 
@@ -181,11 +180,11 @@ export class FileUtils {
                         complete: "=",
                         incomplete: "-"
                     });
-    
+
                     dst.size = r.size;
-                    dst.progressBar = pb;    
+                    dst.progressBar = pb;
                 }
-                
+
                 await Deno.copy(r, dst);
 
                 await r.close();
