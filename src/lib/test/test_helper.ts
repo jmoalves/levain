@@ -18,12 +18,12 @@ export default class TestHelper {
         const config = TestHelper.getConfig()
         const factory = new ActionFactory()
         return factory.get(actionName, config)
-    };
+    }
 
     static getConfig(): Config {
         const myArgs = {};
         return new Config(myArgs)
-    };
+    }
 
     static logRecord(
         msg: string = 'mock logRecord',

@@ -9,18 +9,22 @@ import OsUtils from "./os_utils.ts";
 import StringUtils from "../utils/string_utils.ts";
 
 export class OsShell {
-    private dependencies: Package[];
+    private readonly dependencies: Package[];
     private _interactive: boolean = false;
     private _varName: string | undefined = undefined;
     private _ignoreErrors: boolean = false;
     private _stripCRLF: boolean = false;
 
-    constructor(private config: Config, private pkgNames: string[], installedOnly = false) {
-        if (!pkgNames || pkgNames.length == 0) {
-            throw new Error("No package");
-        }
+    constructor(
+        private config: Config,
+        private pkgNames: string[],
+        installedOnly = false
+    ) {
+        // if (!pkgNames || pkgNames.length == 0) {
+        //     throw new Error("No package");
+        // }
 
-        let pkgs: Package[] | null = this.config.packageManager.resolvePackages(pkgNames, installedOnly, false);
+        let pkgs: Package[] | null = this.config?.packageManager?.resolvePackages(pkgNames, installedOnly, false);
         if (!pkgs) {
             throw new Error("Unable to load dependencies for a Levain shell. Aborting...");
         }
@@ -107,25 +111,52 @@ export class OsShell {
     async openShell(args: string[]) {
         // TODO: Handle other os's
         OsUtils.onlyInWindows()
+        let opt = this.prepareShellOptions(args);
 
-        const adjustedArgs = OsShell.adjustArgs(args)
+        log.debug(`Deno.run: ${JSON.stringify(opt)}`);
+        const p = Deno.run(opt);
+        let status = await p.status();
 
-        let cmd = "";
+        if (!this.ignoreErrors && !status.success) {
+            throw new Error("CMD terminated with code " + status.code);
+        }
+
+        if (this.saveVar) {
+            let rawOutput = await p.output();
+            let cmdOutput = new TextDecoder().decode(rawOutput);
+            if (this.stripCRLF) {
+                cmdOutput = cmdOutput
+                    .replace(/\r\n$/, '')
+                    .replace(/\r$/, '')
+                    .replace(/\n$/, '');
+            }
+            this.config.setVar(this.saveVar, cmdOutput);
+        }
+    }
+
+    prepareShellOptions(args: string[]) {
+        // const adjustedArgs = OsShell.adjustArgs(args)
+
+        let cmd: string[]
+        let cmdString: string
         if (this.interactive) {
             if (this.config.shellPath) {
-                cmd = `cmd /c start ${this.config.shellPath}`;
+                cmdString = `cmd /c start ${this.config.shellPath}`;
             } else {
                 let myVersion = this.versionTag();
-                cmd = `cmd /c start cmd /u /k prompt [levain${myVersion}]$P$G`;
+                cmdString = `cmd /c start cmd /u /k prompt [levain${myVersion}]$P$G`;
             }
+            cmd = StringUtils.splitSpaces(cmdString)
         } else {
-            cmd = "cmd /u /c " + adjustedArgs.join(" ");
+            cmdString = "cmd /u   /c "
+            cmd = StringUtils.splitSpaces(cmdString)
+            cmd = cmd.concat(args)
         }
 
         log.info(`- CMD - ${cmd}`);
 
-        let opt: any = {};
-        opt.cmd = cmd.split(" ");
+        let opt: any = {}
+        opt.cmd = cmd
         opt.env = {}
 
         this.setEnv(opt.env);
@@ -156,26 +187,7 @@ export class OsShell {
         //     log.info("shell initiated");
         //     return;
         // }
-
-        log.debug(`Deno.run: ${JSON.stringify(opt)}`);
-        const p = Deno.run(opt);
-        let status = await p.status();
-
-        if (!this.ignoreErrors && !status.success) {
-            throw new Error("CMD terminated with code " + status.code);
-        }
-
-        if (this.saveVar) {
-            let rawOutput = await p.output();
-            let cmdOutput = new TextDecoder().decode(rawOutput);
-            if (this.stripCRLF) {
-                cmdOutput = cmdOutput
-                    .replace(/\r\n$/, '')
-                    .replace(/\r$/, '')
-                    .replace(/\n$/, '');
-            }
-            this.config.setVar(this.saveVar, cmdOutput);
-        }
+        return opt;
     }
 
     static adjustArgs(args: string[]) {

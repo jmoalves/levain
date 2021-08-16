@@ -77,7 +77,12 @@ export default class StringUtils {
             .replace(/[\u0300-\u036f]/g, '')
     }
 
-    static surround(text: string, border: string) {
+    static surround(text: string, border: string): string {
         return border + text + border
+    }
+
+    static splitSpaces(text: string): string[] {
+        return text.split(' ')
+            .filter(text => text?.length)
     }
 }

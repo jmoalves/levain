@@ -8,11 +8,11 @@ import PackageManager from "./package/manager.ts";
 import UserInfoUtil from './user_info/userinfo_util.ts';
 import Registry from './repository/registry.ts';
 import RepositoryManager from "./repository/repository_manager.ts";
-import { FileUtils } from './fs/file_utils.ts';
+import {FileUtils} from './fs/file_utils.ts';
 import {homedir} from './utils/utils.ts';
 
 export default class Config {
-    private _pkgManager: PackageManager;
+    packageManager: PackageManager;
     private _repoManager: RepositoryManager;
 
     private _env: any = {};
@@ -33,11 +33,11 @@ export default class Config {
 
     private _lastKnownVersion: string | undefined;
     private _lastUpdateQuestion: string | undefined;
-    private _autoUpdate:boolean|undefined
-    private _shellCheckForUpdate:boolean|undefined
+    private _autoUpdate: boolean | undefined
+    private _shellCheckForUpdate: boolean | undefined
 
     constructor(args: any) {
-        this._pkgManager = new PackageManager(this);
+        this.packageManager = new PackageManager(this);
         this._repoManager = new RepositoryManager(this);
 
         this.configEnv(args);
@@ -48,10 +48,6 @@ export default class Config {
 
         log.debug("");
         log.debug(`=== Config: \n${JSON.stringify(this._env, null, 3)}`);
-    }
-
-    get packageManager(): PackageManager {
-        return this._pkgManager;
     }
 
     get repositoryManager(): RepositoryManager {
@@ -129,11 +125,11 @@ export default class Config {
                 log.debug(`Shell path does not exist - ${this._shellPath}`)
                 return undefined
             }
-    
+
             if (!FileUtils.isFile(this._shellPath)) {
                 log.debug(`Shell path must be the executable - ${this._shellPath}`)
                 return undefined
-            }    
+            }
         }
 
         return this._shellPath
@@ -167,38 +163,38 @@ export default class Config {
         this._defaultPackage = pkgName;
     }
 
-    get lastKnownVersion(): string|undefined {
+    get lastKnownVersion(): string | undefined {
         return this._lastKnownVersion
     }
 
-    set lastKnownVersion(version: string|undefined) {
+    set lastKnownVersion(version: string | undefined) {
         log.debug(`lastKnownVersion: ${this._lastKnownVersion} => ${version}`);
         this._lastKnownVersion = version
     }
 
-    get lastUpdateQuestion(): string|undefined {
+    get lastUpdateQuestion(): string | undefined {
         return this._lastUpdateQuestion
     }
 
-    set lastUpdateQuestion(dateTag: string|undefined) {
+    set lastUpdateQuestion(dateTag: string | undefined) {
         log.debug(`lastUpdateQuestion: ${this._lastUpdateQuestion} => ${dateTag}`);
         this._lastUpdateQuestion = dateTag
     }
 
-    get autoUpdate(): boolean|undefined {
+    get autoUpdate(): boolean | undefined {
         return this._autoUpdate
     }
 
-    set autoUpdate(autoUpdate: boolean|undefined) {
+    set autoUpdate(autoUpdate: boolean | undefined) {
         log.debug(`autoUpdate: ${this._autoUpdate} => ${autoUpdate}`);
         this._autoUpdate = autoUpdate
     }
 
-    get shellCheckForUpdate(): boolean|undefined {
+    get shellCheckForUpdate(): boolean | undefined {
         return this._shellCheckForUpdate
     }
 
-    set shellCheckForUpdate(shellCheckForUpdate: boolean|undefined) {
+    set shellCheckForUpdate(shellCheckForUpdate: boolean | undefined) {
         log.debug(`shellCheckForUpdate: ${this._shellCheckForUpdate} => ${shellCheckForUpdate}`);
         this._shellCheckForUpdate = shellCheckForUpdate
     }
@@ -401,7 +397,7 @@ export default class Config {
             this.levainCacheDir = args.levainCache
         }
     }
-    
+
     private configHome(args: any): void {
         delete this._env["levainHome"];
 

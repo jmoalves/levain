@@ -157,3 +157,10 @@ Deno.test('StringUtils.removeAccentMarks', () => {
 Deno.test('StringUtils.surround should surround assertEquals string with another text', () => {
     assertEquals(StringUtils.surround('abc', '"'), '"abc"')
 })
+
+//
+// splitSpaces
+//
+Deno.test('StringUtils.splitSpaces should remove empty spaces', () => {
+    assertEquals(StringUtils.splitSpaces('apple banana  carrot'), ['apple', 'banana', 'carrot'])
+})
