@@ -28,3 +28,4 @@ Deno.test('UserInfoUtil should work when user info is not found', async () => {
     assertEquals(userInfoUtil.userInfo.email, '')
     assertEquals(userInfoUtil.userInfo.fullName, '')
 })
+

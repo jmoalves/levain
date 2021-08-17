@@ -1,5 +1,6 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import {existsSync} from "https://deno.land/std/fs/mod.ts"
+import "https://deno.land/x/humanizer@1.0/ordinalize.ts"
 
 import {envChain, promptSecret} from '../utils/utils.ts';
 import Config from '../config.ts';
@@ -157,6 +158,7 @@ export default class UserInfoUtil {
         let fullName: string | null = prompt(
             "What's your full name?  (press return to confirm default value) ",
             this.userInfo.fullName || envChain("user", "fullname") || "");
+
         if (!fullName) {
             throw new Error(`Unable to collect full name`);
         }
@@ -173,7 +175,8 @@ export default class UserInfoUtil {
         const forbiddenPasswordChars = '^&'
         // const allowedAndTestedPasswordChars = '#!@'
 
-        let tries = 0;
+        let tries = 0
+        let alertPasswordSize = false
         do {
             tries++;
             log.debug(`Asking for password, try ${tries}`)
@@ -187,12 +190,27 @@ export default class UserInfoUtil {
             console.log(' ========================================================================================')
             console.log('')
 
+            if (alertPasswordSize) {
+                console.log("Password must have at least 3 characters.")
+                console.log("")
+                alertPasswordSize = false
+            }
+
+            if (tries > 1) {
+                console.log(`${tries.ordinalize()} attempt`)
+            }
+
             const password = promptSecret("Please, inform your network password: ");
             console.log("");
 
             if (!password) {
                 console.log("Please, inform your network password.");
                 console.log("");
+                continue;
+            }
+
+            if (password.length < 3) {
+                alertPasswordSize = true
                 continue;
             }
 
