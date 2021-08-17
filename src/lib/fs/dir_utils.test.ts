@@ -1,13 +1,32 @@
 import {assertArrayIncludes, assertEquals} from "https://deno.land/std/testing/asserts.ts";
 
 import DirUtils from "./dir_utils.ts";
+import TestHelper from "../test/test_helper.ts";
 
 const testDataDir = 'testdata/dir_utils';
 
-Deno.test('DirUtils should count dir elements', () => {
+//
+// count
+//
+Deno.test('DirUtils.count should count dir elements', () => {
     assertEquals(DirUtils.count(testDataDir), 8)
 })
-Deno.test('DirUtils should list file names', () => {
+Deno.test('DirUtils.count should return 0 when folder does not exist', () => {
+    let folder = TestHelper.folderThatDoesNotExist;
+    assertEquals(DirUtils.count(folder), 0)
+})
+
+//
+// listFiles
+//
+Deno.test('DirUtils.listFiles should return empty array when directory does not exist', () => {
+    let folder = TestHelper.folderThatDoesNotExist;
+    assertEquals(DirUtils.listFiles(folder), [])
+})
+//
+// listFileNames
+//
+Deno.test('DirUtils.listFileNames should list file names', () => {
     const fileNames = DirUtils.listFileNames(testDataDir)
 
     assertArrayIncludes(DirUtils.normalizePaths(fileNames), [
@@ -22,7 +41,11 @@ Deno.test('DirUtils should list file names', () => {
         "testdata/dir_utils/hello.txt",
     ])
 })
-Deno.test('DirUtils should normalize paths', () => {
+
+//
+// normalizePaths
+//
+Deno.test('DirUtils.normalizePaths should normalize paths', () => {
     const fileNames = [
         '/path/to/file',
         '\\path\\to\\another\\file',

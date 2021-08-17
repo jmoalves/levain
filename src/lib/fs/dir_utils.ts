@@ -1,4 +1,4 @@
-import {WalkEntry, walkSync,} from "https://deno.land/std/fs/mod.ts";
+import {existsSync, WalkEntry, walkSync} from "https://deno.land/std/fs/mod.ts";
 
 export default class DirUtils {
 
@@ -8,8 +8,11 @@ export default class DirUtils {
     }
 
     static listFiles(path: string): WalkEntry[] {
+        if (!existsSync(path)) {
+            return []
+        }
         const files = [...walkSync(path)]
-        const root = files.shift()
+        files.shift() // removes root
         return files
     }
 
