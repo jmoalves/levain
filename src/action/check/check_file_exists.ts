@@ -15,7 +15,7 @@ export default class CheckFileExists implements Action {
         const args = parseArgs(parameters, {})
 
         if (!args._ || args._.length < 1) {
-            throw new Error(`You must inform at least one filename to check`)
+            throw new Error(`Which files should be checked?`)
         }
 
         const files: string[] = args._
@@ -26,9 +26,11 @@ export default class CheckFileExists implements Action {
                 try {
                     let fileStat = await Deno.stat(file)
                     log.debug(`${file} - ${fileStat.isFile}`)
-                    if (fileStat.isFile) fileExists = true
-                    else log.debug(`NOT A FILE: ${file}`)
-
+                    if (fileStat.isFile) {
+                        fileExists = true
+                    } else {
+                        log.debug(`NOT A FILE: ${file}`)
+                    }
                 } catch (error) {
                     log.debug(`NOT FOUND: ${file}`)
                 }
@@ -39,6 +41,22 @@ export default class CheckFileExists implements Action {
 
         if (fileExists) return
 
-        throw new Error(`None of the informed files exist - ${files.toString()}`)
+        let message: string;
+        if (files.length === 1) {
+            message = `Expected file to exist:\n`;
+            const file = files[0];
+            message += this.getMessageForMissingFile(file);
+        } else {
+            message = `Expected one of the following files to exist:\n`
+            for (const file of files) {
+                message += this.getMessageForMissingFile(file);
+            }
+        }
+
+        throw new Error(message)
+    }
+
+    private getMessageForMissingFile(file: string) {
+        return `- ${file.toString()}\n`;
     }
 }

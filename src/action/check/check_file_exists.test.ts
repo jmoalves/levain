@@ -1,5 +1,4 @@
-import {assert, assertEquals, assertNotEquals, assertThrowsAsync} from "https://deno.land/std/testing/asserts.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
+import {assert, assertThrowsAsync} from "https://deno.land/std/testing/asserts.ts";
 
 import TestHelper from "../../lib/test/test_helper.ts";
 import ActionFactory from "../action_factory.ts";
@@ -21,9 +20,23 @@ Deno.test('CheckFileExists should throw error when param list is empty', async (
             await action.execute(TestHelper.mockPackage(), params)
         },
         Error,
-        `You must inform at least one filename to check`
+        `Which files should be checked?`
     )
 })
+
+Deno.test('CheckFileExists should throw error when one file does not exist', async () => {
+    const action = new CheckFileExists(TestHelper.getConfig())
+    const params = [TestHelper.fileThatDoesNotExist]
+
+    await assertThrowsAsync(
+        async () => {
+            await action.execute(TestHelper.mockPackage(), params)
+        },
+        Error,
+        `Expected file to exist:\n- ${TestHelper.fileThatDoesNotExist}\n`
+    )
+})
+
 Deno.test('CheckFileExists should throw error when param list contains only dirs', async () => {
     const action = new CheckFileExists(TestHelper.getConfig())
     const params = [TestHelper.folderThatAlwaysExists, TestHelper.folderThatDoesNotExist]
@@ -33,9 +46,10 @@ Deno.test('CheckFileExists should throw error when param list contains only dirs
             await action.execute(TestHelper.mockPackage(), params)
         },
         Error,
-        `None of the informed files exist`
+        `Expected one of the following files to exist:\n- ${TestHelper.folderThatAlwaysExists}\n- ${TestHelper.folderThatDoesNotExist}\n`
     )
 })
+
 Deno.test('CheckFileExists should return when at least one file exists', async () => {
     const action = new CheckFileExists(TestHelper.getConfig())
     const params = [TestHelper.fileThatDoesNotExist, TestHelper.anotherFileThatDoesNotExist, TestHelper.fileThatExists]
