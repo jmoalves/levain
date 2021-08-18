@@ -44,10 +44,10 @@ export default class Levain {
                 ],
                 boolean: [
                     "askPassword", // FIXME: Deprecated
-                    "ask-login",
-                    "ask-password",
-                    "ask-email",
                     "ask-fullname",
+                    "ask-login",
+                    "ask-email",
+                    "ask-password",
                     "wait-to-begin",
                     "wait-after-end",
                     "skip-levain-updates",

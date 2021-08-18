@@ -64,6 +64,11 @@ export default class UserInfoUtil {
 
         const userInfoUtil = new UserInfoUtil()
 
+        if (myArgs["ask-fullname"]) {
+            (separatorBegin ? separatorBegin() : undefined);
+
+            userInfoUtil.askFullName(config);
+        }
 
         if (myArgs["ask-login"]) {
             (separatorBegin ? separatorBegin() : undefined);
@@ -77,12 +82,6 @@ export default class UserInfoUtil {
             userInfoUtil.askEmail(config, myArgs["email-domain"]);
         }
 
-        if (myArgs["ask-fullname"]) {
-            (separatorBegin ? separatorBegin() : undefined);
-
-            userInfoUtil.askFullName(config);
-        }
-
         if (myArgs["ask-password"]) {
             (separatorBegin ? separatorBegin() : undefined);
 
@@ -90,6 +89,27 @@ export default class UserInfoUtil {
         }
 
         (separatorEnd ? separatorEnd() : undefined);
+    }
+
+    askFullName(config: Config): string {
+        log.debug(`Asking for full name`)
+        this.load()
+
+        let fullName: string | null = prompt(
+            "What's your FULL NAME (for Git and other configs)?",
+            this.userInfo.fullName || envChain("user", "fullname") || ""
+        )
+
+        if (!fullName) {
+            throw new Error(`Unable to collect full name`);
+        }
+
+        if (this.userInfo.fullName != fullName) {
+            this.userInfo.fullName = fullName
+            this.save()
+        }
+        config.fullname = fullName;
+        return fullName
     }
 
     askEmail(config: Config, emailDomain: string | undefined = undefined): string {
@@ -116,7 +136,7 @@ export default class UserInfoUtil {
             }
         }
 
-        let email = prompt("Do you have an email? (press return to confirm default value) ", defaultEmail);
+        let email = prompt("Do you have an EMAIL? (press return to confirm default value) ", defaultEmail);
         if (!email) {
             throw new Error(`Unable to collect email`);
         }
@@ -132,11 +152,11 @@ export default class UserInfoUtil {
     }
 
     askLogin(config: Config): string {
-        log.debug(`Asking for username`)
+        log.debug(`Asking for login`)
         this.load()
 
         let login: string | null = prompt(
-            "What's your login? (press return to confirm default value) ",
+            "What's your LOGIN? (press return to confirm default value) ",
             this.userInfo.login || OsUtils.login?.toLowerCase()
         );
         if (!login) {
@@ -149,26 +169,6 @@ export default class UserInfoUtil {
         }
         config.login = login;
         return login
-    }
-
-    askFullName(config: Config): string {
-        log.debug(`Asking for full name`)
-        this.load()
-
-        let fullName: string | null = prompt(
-            "What's your full name?  (press return to confirm default value) ",
-            this.userInfo.fullName || envChain("user", "fullname") || "");
-
-        if (!fullName) {
-            throw new Error(`Unable to collect full name`);
-        }
-
-        if (this.userInfo.fullName != fullName) {
-            this.userInfo.fullName = fullName
-            this.save()
-        }
-        config.fullname = fullName;
-        return fullName
     }
 
     askPassword(config: Config): void {
@@ -191,7 +191,7 @@ export default class UserInfoUtil {
             console.log('')
 
             if (alertPasswordSize) {
-                console.log("Password must have at least 3 characters.")
+                console.log("* Password must have at least 3 characters *")
                 console.log("")
                 alertPasswordSize = false
             }
@@ -204,8 +204,6 @@ export default class UserInfoUtil {
             console.log("");
 
             if (!password) {
-                console.log("Please, inform your network password.");
-                console.log("");
                 continue;
             }
 
