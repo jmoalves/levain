@@ -40,7 +40,7 @@ export class NameValidator implements Validator {
     static readonly validator = new NameValidator()
 
     static validate(text: string): ValidateResult {
-        return this.validator.validate(text)
+        return NameValidator.validator.validate(text)
     }
 }
 
