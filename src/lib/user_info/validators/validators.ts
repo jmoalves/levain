@@ -36,6 +36,12 @@ export class NameValidator implements Validator {
         const compositeValidators = new CompositeValidators(validators)
         return compositeValidators.validate(text)
     }
+
+    static readonly validator = new NameValidator()
+
+    static validate(text: string): ValidateResult {
+        return this.validator.validate(text)
+    }
 }
 
 export class CompositeValidators implements Validator {

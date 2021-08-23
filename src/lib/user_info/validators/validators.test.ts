@@ -48,6 +48,9 @@ Deno.test('NameValidator should reject unexpected chars', () => {
     const invalidDenoPromptChar = 'abc�123'; // https://github.com/denoland/deno/issues/8239#issuecomment-901448362
     assertEquals(validator.validate(invalidDenoPromptChar), "Only valid characters, please")
 })
+Deno.test('NameValidator should have a static validator', () => {
+    assertEquals(NameValidator.validate('Mary'), true)
+})
 //
 // EmailValidator
 //
