@@ -62,3 +62,6 @@ Deno.test('EmailValidator should reject an ASCII name', () => {
     const validator = new EmailValidator()
     assertEquals(validator.validate('John'), 'Please inform a valid email address')
 })
+Deno.test('EmailValidator should have a static validator', () => {
+    assertEquals(EmailValidator.validate('mary@hadalittlelamb.org'), true)
+})

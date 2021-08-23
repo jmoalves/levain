@@ -73,4 +73,10 @@ export class EmailValidator implements Validator {
 
         return true
     }
+
+    static readonly validator = new EmailValidator()
+
+    static validate(text: string): ValidateResult {
+        return EmailValidator.validator.validate(text)
+    }
 }
