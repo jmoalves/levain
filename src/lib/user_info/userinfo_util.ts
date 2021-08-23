@@ -1,6 +1,8 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import {existsSync} from "https://deno.land/std/fs/mod.ts"
 import "https://deno.land/x/humanizer@1.0/ordinalize.ts"
+// import {prompt} from "https://deno.land/x/cliffy@v0.19.5/prompt/mod.ts";
+import {ValidateResult} from "https://deno.land/x/cliffy/prompt/_generic_prompt.ts";
 
 import {envChain, promptSecret} from '../utils/utils.ts';
 import Config from '../config.ts';
@@ -8,7 +10,8 @@ import StringUtils from '../utils/string_utils.ts';
 import OsUtils from "../os/os_utils.ts";
 import YamlFileUtils from "../utils/yaml_file_utils.ts";
 
-import {UserInfo} from "./user_info.ts";
+import {UserInfo} from "./user_info.ts"
+import {NameValidator} from "./validators/validators.ts";
 
 export default class UserInfoUtil {
 
@@ -95,13 +98,15 @@ export default class UserInfoUtil {
         log.debug(`Asking for full name`)
         this.load()
 
-        let fullName: string | null = prompt(
-            "What's your FULL NAME (for Git and other configs)?",
+        let fullName: string = prompt(
+            "What's your FULL NAME (do not use accent marks) for Git and other configs?",
             this.userInfo.fullName || envChain("user", "fullname") || ""
-        )
+        ) || "undefined full name"
 
-        if (!fullName) {
-            throw new Error(`Unable to collect full name`);
+        const validationResult: ValidateResult = NameValidator.validate(fullName)
+
+        if (validationResult !== true) {
+            throw new Error(`Invalid FULL NAME - ${validationResult}`);
         }
 
         if (this.userInfo.fullName != fullName) {
@@ -200,7 +205,8 @@ export default class UserInfoUtil {
                 console.log(`${tries.ordinalize()} attempt`)
             }
 
-            const password = promptSecret("Please, inform your network password: ");
+            // const password: string = await Secret.prompt("Please, inform your network password: ");
+            const password: string | undefined = promptSecret("Please, inform your network password: ")
             console.log("");
 
             if (!password) {
