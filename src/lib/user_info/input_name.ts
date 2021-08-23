@@ -6,7 +6,7 @@ import OsUtils from "../os/os_utils.ts";
 export class InputFullName {
 
     static inputAndValidateSync(defaultValue: string) {
-        let fullName: string
+        let newValue: string
         let validationResult: ValidationResult
 
         do {
@@ -14,12 +14,12 @@ export class InputFullName {
                 console.log(validationResult)
             }
             let message = "What's your FULL NAME for Git and other configs?"
-            fullName = prompt(message, defaultValue)
+            newValue = prompt(message, defaultValue)
 
-            validationResult = NameValidator.validate(fullName)
+            validationResult = NameValidator.validate(newValue)
         } while (validationResult !== true)
 
-        return fullName;
+        return newValue;
     }
 
     static async inputAndValidate(defaultValue: string) {
