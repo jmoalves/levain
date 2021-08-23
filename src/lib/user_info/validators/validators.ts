@@ -63,7 +63,7 @@ export class CompositeValidators implements Validator {
 
 export class EmailValidator implements Validator {
 
-    readonly emailRegex = /^\w+@\w+\.[\w.]+$/
+    readonly emailRegex = /^[\w.]+@\w+\.[\w.]+$/
 
     validate(text: string): ValidateResult {
 
