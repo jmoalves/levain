@@ -1,4 +1,4 @@
-import {LatinUnicodeValidator, MinLengthValidator, NameValidator} from "./validators.ts";
+import {EmailValidator, LatinUnicodeValidator, MinLengthValidator, NameValidator} from "./validators.ts";
 import {assertEquals} from "https://deno.land/std/testing/asserts.ts";
 
 //
@@ -47,4 +47,15 @@ Deno.test('NameValidator should reject unexpected chars', () => {
     const validator = new NameValidator()
     const invalidDenoPromptChar = 'abc�123'; // https://github.com/denoland/deno/issues/8239#issuecomment-901448362
     assertEquals(validator.validate(invalidDenoPromptChar), "Only valid characters, please")
+})
+//
+// EmailValidator
+//
+Deno.test('EmailValidator should accept a valid email', () => {
+    const validator = new EmailValidator()
+    assertEquals(validator.validate('johndoe@myprovider.com'), true)
+})
+Deno.test('EmailValidator should reject an ASCII name', () => {
+    const validator = new EmailValidator()
+    assertEquals(validator.validate('John'), 'Please inform a valid email address')
 })

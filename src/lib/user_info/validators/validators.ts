@@ -54,3 +54,17 @@ export class CompositeValidators implements Validator {
         return true
     }
 }
+
+export class EmailValidator implements Validator {
+
+    readonly emailRegex = /^\w+@\w+\.[\w.]+$/
+
+    validate(text: string): ValidateResult {
+
+        if (!this.emailRegex.test(text)) {
+            return 'Please inform a valid email address'
+        }
+
+        return true
+    }
+}
