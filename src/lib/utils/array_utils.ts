@@ -26,8 +26,18 @@ export class ArrayUtils {
         return group
     }
 
-    static makeUnique<T>(group: T[]): T[] {
-        return group
+    static makeUnique<T>(
+        group: T[],
+        getKeyFn?: (element: T) => any,
+    ): T[] {
+
+        let newGroup: T[] = []
+
+        group.forEach(newItem => {
+            newGroup = ArrayUtils.addIfUnique(newGroup, newItem, getKeyFn)
+        })
+
+        return newGroup
     }
 
 }

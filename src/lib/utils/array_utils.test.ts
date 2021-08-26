@@ -12,9 +12,26 @@ Deno.test('ArrayUtils should remove the number from an array', () => {
 //
 // makeUnique
 //
-// Deno.test('ArrayUtils.makeUnique should make int[] unique', () => {
-//     assertEquals(ArrayUtils.makeUnique([1, 2, 2, 3]), [1, 2, 3])
-// })
+Deno.test('ArrayUtils.makeUnique should make int[] unique', () => {
+    assertEquals(ArrayUtils.makeUnique([1, 2, 2, 3]), [1, 2, 3])
+})
+Deno.test('ArrayUtils.makeUnique should make Object[] unique', () => {
+    const oneObject = {age: 1}
+    const anotherObject = {age: 2}
+    const group = [oneObject, oneObject, anotherObject]
+    const uniqueGroup = [oneObject, anotherObject]
+
+    assertEquals(ArrayUtils.makeUnique(group), uniqueGroup)
+})
+Deno.test('ArrayUtils.makeUnique should make Object[] unique using a key', () => {
+    const oneObject = {age: 1}
+    const anotherObject = {age: 2}
+    const repeatedKey = {age: 2}
+    const group = [oneObject, anotherObject, repeatedKey]
+    const uniqueGroup = [oneObject, anotherObject]
+
+    assertEquals(ArrayUtils.makeUnique(group, getAge), uniqueGroup)
+})
 //
 // addIfUnique
 //
