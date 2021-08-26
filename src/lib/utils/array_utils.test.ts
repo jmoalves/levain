@@ -13,7 +13,7 @@ Deno.test('ArrayUtils should remove the number from an array', () => {
 // makeUnique
 //
 Deno.test('ArrayUtils.makeUnique should make int[] unique', () => {
-    assertEquals(ArrayUtils.makeUnique([1, 2, 2, 3]), [1, 2, 3])
+    assertEquals(ArrayUtils.removeRepetitions([1, 2, 2, 3]), [1, 2, 3])
 })
 Deno.test('ArrayUtils.makeUnique should make Object[] unique', () => {
     const oneObject = {age: 1}
@@ -21,7 +21,7 @@ Deno.test('ArrayUtils.makeUnique should make Object[] unique', () => {
     const group = [oneObject, oneObject, anotherObject]
     const uniqueGroup = [oneObject, anotherObject]
 
-    assertEquals(ArrayUtils.makeUnique(group), uniqueGroup)
+    assertEquals(ArrayUtils.removeRepetitions(group), uniqueGroup)
 })
 Deno.test('ArrayUtils.makeUnique should make Object[] unique using a key', () => {
     const oneObject = {age: 1}
@@ -30,7 +30,7 @@ Deno.test('ArrayUtils.makeUnique should make Object[] unique using a key', () =>
     const group = [oneObject, anotherObject, repeatedKey]
     const uniqueGroup = [oneObject, anotherObject]
 
-    assertEquals(ArrayUtils.makeUnique(group, getAge), uniqueGroup)
+    assertEquals(ArrayUtils.removeRepetitions(group, getAge), uniqueGroup)
 })
 //
 // addIfUnique
@@ -63,3 +63,15 @@ Deno.test('ArrayUtils.addIfUnique should reject repeated object', () => {
 function getAge(obj: any): any {
     return obj['age']
 }
+
+//
+// awaitAndMerge
+//
+Deno.test('ArrayUtils.awaitAndMerge', async () => {
+    const promise1 = Promise.resolve([1, 2, 3])
+    const promise2 = Promise.resolve([4, 5, 6])
+
+    const merged = [1, 2, 3, 4, 5, 6]
+
+    assertEquals(await ArrayUtils.awaitAndMerge([promise1, promise2]), merged)
+})

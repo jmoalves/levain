@@ -1,3 +1,5 @@
+export type GetterFn<T> = (element: T) => any
+
 export class ArrayUtils {
 
     static remove<T>(array: T[], itemToRemove: T) {
@@ -26,9 +28,9 @@ export class ArrayUtils {
         return group
     }
 
-    static makeUnique<T>(
+    static removeRepetitions<T>(
         group: T[],
-        getKeyFn?: (element: T) => any,
+        getKeyFn?: GetterFn<T>,
     ): T[] {
 
         let newGroup: T[] = []
@@ -40,4 +42,9 @@ export class ArrayUtils {
         return newGroup
     }
 
+    static async awaitAndMerge<T>(promises: Array<Promise<T[]>>): Promise<T[]> {
+        const responses: Array<T[]> = await Promise.all(promises)
+        const emptyArray: T[] = [];
+        return emptyArray.concat.apply(emptyArray, responses)
+    }
 }
