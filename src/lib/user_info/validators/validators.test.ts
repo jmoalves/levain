@@ -1,5 +1,5 @@
-import {EmailValidator, LatinUnicodeValidator, MinLengthValidator, NameValidator} from "./validators.ts";
-import {assertEquals} from "https://deno.land/std/testing/asserts.ts";
+import {EmailValidator, LatinUnicodeValidator, MinLengthValidator, NameValidator} from "./validators.ts"
+import {assertEquals} from "https://deno.land/std/testing/asserts.ts"
 
 //
 // MinLengthValidator
@@ -17,7 +17,7 @@ Deno.test('MinLengthValidator should reject when below expected length', () => {
 //
 Deno.test('LatinUnicodeValidator should validate latin chars', () => {
     const validator = new LatinUnicodeValidator()
-    assertEquals(validator.validate('123abcABCãêç '), true)
+    assertEquals(validator.validate('.123abcABCãêç '), true)
 })
 Deno.test('LatinUnicodeValidator should validate an empty string', () => {
     const validator = new LatinUnicodeValidator()
