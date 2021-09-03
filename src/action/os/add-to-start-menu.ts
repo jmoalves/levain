@@ -20,7 +20,7 @@ export default class AddToStartMenuAction implements Action {
         if (folderName) {
             message += ` ${folderName}`;
         }
-        log.info(message);
+        log.debug(message);
 
         return await OsUtils.addToStartMenu(targetFile, folderName);
     }

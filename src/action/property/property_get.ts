@@ -14,7 +14,7 @@ export default class PropertyGetAction implements Action {
     }
 
     async execute(pkg: Package, parameters: string[]) {
-        log.info(`PROPERTY-GET ${parameters.join(' ')}`);
+        log.debug(`PROPERTY-GET ${parameters.join(' ')}`);
 
         let myArgs = parseArgs(parameters, {
             stringOnce: [

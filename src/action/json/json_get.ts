@@ -11,7 +11,7 @@ export default class JsonGet implements Action {
     }
 
     async execute(pkg: Package, parameters: string[]) {
-        log.info(`JSON-GET ${parameters.join(' ')}`);
+        log.debug(`JSON-GET ${parameters.join(' ')}`);
 
         let myArgs = parseArgs(parameters, {
             stringOnce: [

@@ -23,7 +23,7 @@ export default class Inspect implements Action {
 
         let src = path.resolve(Deno.cwd(), args._[0]);
 
-        log.info(`INSPECT ${src}`);
+        log.debug(`INSPECT ${src}`);
         let data = Deno.readTextFileSync(src);
         for (let index in args.regExp) {
             let regexp = args.regExp[index];

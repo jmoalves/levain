@@ -14,7 +14,7 @@ export default class AddToDesktopAction implements Action {
     async execute(pkg: Package | undefined, parameters: string[]): Promise<void> {
         const args = parseArgs(parameters);
         const targetFile: string = args._[0];
-        log.info(`ADD-TO-DESKTOP ${targetFile}`);
+        log.debug(`ADD-TO-DESKTOP ${targetFile}`);
         return await OsUtils.addToDesktop(targetFile)
     }
 }

@@ -10,6 +10,6 @@ export default class Echo implements Action {
     }
 
     async execute(pkg: Package | undefined, parameters: string[]) {
-        log.info(`ECHO ${parameters.join(' ')}`);
+        log.debug(`ECHO ${parameters.join(' ')}`);
     }
 }

@@ -34,7 +34,7 @@ export default class Extract implements Action {
         if (FileUtils.isFileSystemUrl(src)) FileUtils.throwIfNotExists(src);
         FileUtils.throwIfNotExists(dst);
 
-        log.info(`EXTRACT ${src} => ${dst}`);
+        log.debug(`EXTRACT ${src} => ${dst}`);
         const fileCache = new FileCache(this.config)
         const cachedSrc = await fileCache.get(src)
         const factory: ExtractorFactory = new ExtractorFactory();

@@ -29,7 +29,7 @@ export default class ZipRepository extends AbstractRepository {
             throw Error(`No zip url - ${rootUrl}`)
         }
 
-        log.info(`ZipRepo: Root=${this.rootUrl}`)
+        log.debug(`ZipRepo: Root=${this.rootUrl}`)
         this.name = `zipRepo for ${this.rootUrl}`
         this.repoFactory = new RepositoryFactory(config)
 

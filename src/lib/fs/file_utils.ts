@@ -206,7 +206,7 @@ export class FileUtils {
 
                 return;
             } catch (error) {
-                log.info("")
+                log.error("")
                 log.error(`Error ${error}`)
             }
         }

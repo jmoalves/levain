@@ -21,7 +21,7 @@ export default class VersionNumber {
     constructor(strVersion: string) {
         this.versionNumber = '' + strVersion
 
-        // log.info(`VersionNumber - ${JSON.stringify(this.versionNumber)}`)
+        // log.debug(`VersionNumber - ${JSON.stringify(this.versionNumber)}`)
         const matches = this.versionNumber.match(VersionNumber.VER_REGEXP)
         if (matches == null) {
             throw new Error(`Invalid version number - ${this.versionNumber}`)
@@ -76,7 +76,7 @@ export default class VersionNumber {
     }
 
     private chainCompareComponents(mine: string[], other: string[]): number {
-        // log.info(`Components = mine: ${mine} - other: ${other}`)
+        // log.debug(`Components = mine: ${mine} - other: ${other}`)
         for (let i = 0; i < mine.length; i++) {
             if (i >= other.length) {
                 // 11.4.4. A larger set of pre-release fields has a higher precedence than a smaller set, if all of the preceding identifiers are equal.
@@ -113,7 +113,7 @@ export default class VersionNumber {
     }
 
     private chainCompareElements(mine: string[], other: string[]): number {
-        // log.info(`Elements = mine: ${mine} - other: ${other}`)
+        // log.debug(`Elements = mine: ${mine} - other: ${other}`)
         for (let i = 0; i < mine.length; i++) {
             if (i >= other.length) {
                 // 11.4.4. A larger set of pre-release fields has a higher precedence than a smaller set, if all of the preceding identifiers are equal.
@@ -127,31 +127,31 @@ export default class VersionNumber {
             const myComp = mine[i]
             const otherComp = other[i]
 
-            // log.info(`Element = mine: ${myComp} - other: ${otherComp}`)
+            // log.debug(`Element = mine: ${myComp} - other: ${otherComp}`)
             if (isNumeric(myComp)) {
                 const myNum = Number(myComp)
                 if (isNumeric(otherComp)) {
                     const otherNum = Number(otherComp)
                     // 11.4.1. Identifiers consisting of only digits are compared numerically.
-                    // log.info(`Element[NUM] = mine: ${myComp} - other: ${otherComp}`)
+                    // log.debug(`Element[NUM] = mine: ${myComp} - other: ${otherComp}`)
                     if (myNum > otherNum) {
                         return VersionNumber.NEWER
                     } else if (myNum < otherNum) {
                         return VersionNumber.OLDER
                     }
                 } else {
-                    // log.info(`Element[MY-NUM] = mine: ${myComp} - other: ${otherComp}`)
+                    // log.debug(`Element[MY-NUM] = mine: ${myComp} - other: ${otherComp}`)
                     // 11.4.3. Numeric identifiers always have lower precedence than non-numeric identifiers.
                     return VersionNumber.OLDER
                 }
             } else {
                 if (isNumeric(otherComp)) {
-                    // log.info(`Element[OTHER-NUM] = mine: ${myComp} - other: ${otherComp}`)
+                    // log.debug(`Element[OTHER-NUM] = mine: ${myComp} - other: ${otherComp}`)
                     // 11.4.3. Numeric identifiers always have lower precedence than non-numeric identifiers.
                     return VersionNumber.NEWER
                 }
 
-                // log.info(`Element[STR] = mine: ${myComp} - other: ${otherComp}`)
+                // log.debug(`Element[STR] = mine: ${myComp} - other: ${otherComp}`)
                 const compCompare = myComp.localeCompare(otherComp)
                 if (compCompare != 0) {
                     return compCompare

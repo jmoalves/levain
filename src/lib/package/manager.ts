@@ -22,8 +22,8 @@ export default class PackageManager {
         PackageManager.removeExtension(pkgNames);
 
         if (showLog) {
-            log.info("");
-            this.feedback.start(`# Resolving ${pkgNames}`);
+            log.info("==================================");
+            this.feedback.start(`# ${pkgNames}...`);
         }
 
         let pkgs: Map<string, Package> = new Map();
@@ -36,7 +36,7 @@ export default class PackageManager {
         }
 
         if (showLog) {
-            this.feedback.reset("#");
+            this.feedback.reset(`# ${pkgNames} -> OK`);
         }
 
         if (error) {
@@ -44,7 +44,7 @@ export default class PackageManager {
         }
 
         if (showLog) {
-            log.info("# Package list (in order):");
+            log.debug("# Package list (in order):");
         }
 
         let result: Package[] = [];
@@ -53,7 +53,7 @@ export default class PackageManager {
             this.knownPackages.set(name, pkg);
             result.push(pkg);
             if (showLog) {
-                log.info(name);
+                log.debug(name);
             }
         }
 

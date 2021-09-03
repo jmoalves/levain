@@ -15,7 +15,7 @@ export default class ShellPath implements Action {
         }
 
         let shellPath = parameters[0]
-        log.info(`SHELL-PATH ${shellPath}`)
+        log.debug(`SHELL-PATH ${shellPath}`)
 
         this.config.shellPath = shellPath
     }

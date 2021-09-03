@@ -12,7 +12,7 @@ export default class CheckChainDirExists implements Action {
     }
 
     async execute(pkg: Package | undefined, parameters: string[]) {
-        log.info(`CHECK CHAIN DIRS EXIST ${parameters.join(' ')}`)
+        log.debug(`CHECK CHAIN DIRS EXIST ${parameters.join(' ')}`)
 
         let args = parseArgs(parameters, {
             stringOnce: [

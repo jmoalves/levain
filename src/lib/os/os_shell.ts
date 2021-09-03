@@ -96,7 +96,7 @@ export class OsShell {
             return;
         }
 
-        log.info(`=== ENV ${pkg.name} - ${pkg.version}`);
+        log.debug(`=== ENV ${pkg.name} - ${pkg.version}`);
         const loader = new Loader(this.config);
         for (let action of actions) {
             // Infinite loop protection - https://github.com/jmoalves/levain/issues/111
@@ -153,7 +153,7 @@ export class OsShell {
             cmd = cmd.concat(args)
         }
 
-        log.info(`- CMD - ${cmd}`);
+        log.debug(`- CMD - ${cmd}`);
 
         let opt: any = {}
         opt.cmd = cmd
@@ -184,7 +184,7 @@ export class OsShell {
         //     // FIXME: https://github.com/denoland/deno/issues/5501
         //     opt.detached = true;
         //     Deno.run(opt);
-        //     log.info("shell initiated");
+        //     log.debug("shell initiated");
         //     return;
         // }
         return opt;

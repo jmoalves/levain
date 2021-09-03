@@ -10,6 +10,6 @@ export default class Noop implements Action {
     }
 
     async execute(pkg: Package | undefined, parameters: string[]): Promise<void> {
-        log.info(`NOOP[${this.actionName}] ${parameters}`);
+        log.debug(`NOOP[${this.actionName}] ${parameters}`);
     }
 }

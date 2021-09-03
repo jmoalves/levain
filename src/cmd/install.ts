@@ -105,9 +105,9 @@ export default class Install implements Command {
             await this.installPackage(bkpTag, pkg, myArgs.force, shouldUpdate);
         }
 
-        log.info("");
-        log.info("-----------------");
-        log.info(`install ${JSON.stringify(pkgNames)} - FINISHED`);
+        log.debug("");
+        log.debug("-----------------");
+        log.debug(`install ${JSON.stringify(pkgNames)} - FINISHED`);
     }
 
     private async installPackage(bkpTag: string, pkg: Package, force: boolean = false, shouldUpdate: boolean = true) {
@@ -132,7 +132,10 @@ export default class Install implements Command {
             }
         }
 
-        log.info("");
+        if (shouldInstall) {
+            log.info("")
+        }
+
         log.info(`=== ${verb} ${pkg.name} - ${pkg.version}`);
 
         if (shouldInstall) {
@@ -197,7 +200,7 @@ export default class Install implements Command {
             await loader.action(pkg, action);
         }
 
-        log.info(`--> ${pkg.name} took ${timer.humanize()}`);
+        log.debug(`--> ${pkg.name} took ${timer.humanize()}`);
         return;
     }
 
@@ -215,11 +218,11 @@ export default class Install implements Command {
             log.info(`SAVING ${src} => ${dst}`);
 
             if (!existsSync(bkpDir)) {
-                log.info(`- SAVE-MKDIR ${bkpDir}`);
+                log.debug(`- SAVE-MKDIR ${bkpDir}`);
                 Deno.mkdirSync(bkpDir, {recursive: true});
             }
 
-            log.info(`- SAVE-COPY  ${src} => ${dst}`);
+            log.debug(`- SAVE-COPY  ${src} => ${dst}`);
             copySync(src, dst);
 
             if (pkg.yamlItem("levain.preserveBaseDirOnUpdate")) {
@@ -232,18 +235,18 @@ export default class Install implements Command {
                 prefix: ".rename." + path.basename(src) + ".",
                 suffix: ".tmp"
             });
-            log.info(`- SAVE-REN   ${src} => ${renameDir}`);
+            log.debug(`- SAVE-REN   ${src} => ${renameDir}`);
             Deno.removeSync(renameDir, {recursive: true});
             Deno.renameSync(src, renameDir);
 
             try {
-                log.info(`- SAVE-DEL   ${renameDir}`);
+                log.debug(`- SAVE-DEL   ${renameDir}`);
                 Deno.removeSync(renameDir, {recursive: true})
             } catch (error) {
                 log.debug(`Ignoring - ${error}`)
             }
 
-            log.info(`SAVED ${src} => ${dst}`);
+            log.debug(`SAVED ${src} => ${dst}`);
             return true;
 
         } catch (err) {

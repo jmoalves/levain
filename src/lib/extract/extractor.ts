@@ -4,8 +4,11 @@ import * as path from "https://deno.land/std/path/mod.ts";
 import Config from "../config.ts";
 import {Timer} from "../timer.ts";
 import {FileUtils} from "../fs/file_utils.ts";
+import ConsoleFeedback from "../utils/console_feedback.ts";
 
 export abstract class Extractor {
+    readonly feedback = new ConsoleFeedback();
+
     constructor(protected config: Config) {
     }
 
@@ -16,7 +19,7 @@ export abstract class Extractor {
 
 
     async copy(srcFile: string, dstFile: string): Promise<string> {
-        log.info(`- COPY ${srcFile} => ${dstFile}`);
+        log.debug(`- COPY ${srcFile} => ${dstFile}`);
 
         //copySync(srcFile, dstPath);
         await FileUtils.copyWithProgress(srcFile, dstFile);
@@ -57,10 +60,15 @@ export abstract class Extractor {
         });
 
         const timer = new Timer()
-        log.info(`- EXTRACT ${file} => ${tempDir}`);
-        await this.extractImpl(file, tempDir);
-        log.info(`- extracted in ${timer.humanize()}`);
+        log.debug(`- EXTRACT ${file} => ${tempDir}`);
+        this.feedback.start(`# ${file}`)
+
+        let tick = setInterval(() => this.feedback.show(), 300)
+        await this.extractImpl(file, tempDir)
+        clearInterval(tick)
+        
+        this.feedback.reset(`# ${file} in ${timer.humanize()}`)
+        log.debug(`- extracted in ${timer.humanize()}`);
         return tempDir
     }
-
 }

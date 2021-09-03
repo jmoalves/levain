@@ -63,7 +63,7 @@ export default class CopyAction implements Action {
             return
         }
 
-        log.info(`COPY ${src} => ${dst}`);
+        log.debug(`COPY ${src} => ${dst}`);
 
         for (let item of src) {
             log.debug(`- CHECK ${item}`);

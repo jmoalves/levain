@@ -17,6 +17,6 @@ export default class BackupFile implements Action {
 
         let filename = parameters[0];
         let bkp = FileUtils.createBackup(filename);
-        log.info(`BACKUP-FILE ${filename} => ${bkp}`);
+        log.debug(`BACKUP-FILE ${filename} => ${bkp}`);
     }
 }

@@ -19,7 +19,7 @@ export default class CheckFileExists implements Action {
         }
 
         const files: string[] = args._
-        log.info(`CHECK-FILE-EXISTS ${files.toString()}`)
+        log.debug(`CHECK-FILE-EXISTS ${files.toString()}`)
 
         let fileExists = false
         const promises = files.map(async (file) => {

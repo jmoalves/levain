@@ -16,7 +16,7 @@ export default class LevainShell implements Action {
             throw Error("No package for action levainShell")
         }
 
-        log.info(`LEVAIN-SHELL ${pkg.name} ${JSON.stringify(parameters)}`);
+        log.debug(`LEVAIN-SHELL ${pkg.name} ${JSON.stringify(parameters)}`);
 
         const myArgs = parseArgs(parameters, {
             stringOnce: [

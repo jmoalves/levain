@@ -24,8 +24,8 @@ exit /b 0
 
 :fnRun
 
-echo.
-echo Running %myPath%levain.ts
+rem echo.
+rem echo Running %myPath%levain.ts
 
 set NO_COLOR=true
 set DENO_DIR=%denoPath%

@@ -15,7 +15,7 @@ export default class AddToStartupAction implements Action {
         const args = parseArgs(parameters);
         const targetFile: string = args._[0];
 
-        log.info(`ADD-TO-STARTUP ${targetFile}`);
+        log.debug(`ADD-TO-STARTUP ${targetFile}`);
         return await OsUtils.addToStartup(targetFile)
     }
 }

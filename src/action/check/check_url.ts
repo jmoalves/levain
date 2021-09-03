@@ -19,7 +19,7 @@ export default class CheckUrl implements Action {
         }
 
         const url = args._[0]
-        log.info(`CHECK-URL ${url}`)
+        log.debug(`CHECK-URL ${url}`)
 
         try {
             const response = await fetch(url)

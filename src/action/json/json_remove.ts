@@ -10,7 +10,7 @@ export default class JsonSet implements Action {
     }
 
     async execute(pkg: Package, parameters: string[]) {
-        log.info(`JSON-REMOVE ${parameters.join(' ')}`);
+        log.debug(`JSON-REMOVE ${parameters.join(' ')}`);
 
         let myArgs = parseArgs(parameters, {
             stringOnce: [],

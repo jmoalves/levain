@@ -29,7 +29,7 @@ export default class Mkdir implements Action {
             return;
         }
 
-        log.info(`MKDIR ${dirname}`);
+        log.debug(`MKDIR ${dirname}`);
         Deno.mkdirSync(dirname, {recursive: true});
 
         if (args.compact) {
@@ -44,7 +44,7 @@ export default class Mkdir implements Action {
         }
 
         const windir = dirname.replace(/\//g, "\\");
-        log.info(`COMPACT ${windir}`);
+        log.debug(`COMPACT ${windir}`);
         let args = `compact /q /c /s:${windir}`.split(" ");
 
         const p = Deno.run({

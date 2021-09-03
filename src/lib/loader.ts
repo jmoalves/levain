@@ -20,9 +20,9 @@ export default class Loader {
         log.debug('')
         log.debug(`+ COMMAND: ${cmd} ${args}`)
 
-        log.info("");
-        log.info("==================================");
-        log.info(`${cmd} ${JSON.stringify(args)}`);
+        log.debug("");
+        log.debug("==================================");
+        log.debug(`${cmd} ${JSON.stringify(args)}`);
 
         const handler: Command = this.commandFactory.get(cmd, this.config)
         await handler.execute(args);

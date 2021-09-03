@@ -15,7 +15,7 @@ export default class DefaultPackage implements Action {
         }
 
         let pkgName = parameters[0];
-        log.info(`DEFAULT-PACKAGE ${pkgName}`);
+        log.debug(`DEFAULT-PACKAGE ${pkgName}`);
         this.config.defaultPackage = pkgName;
     }
 }

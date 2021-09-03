@@ -12,7 +12,7 @@ export default class JsonSet implements Action {
     }
 
     async execute(pkg: Package, parameters: string[]) {
-        log.info(`JSON-SET ${parameters.join(' ')}`);
+        log.debug(`JSON-SET ${parameters.join(' ')}`);
 
         let myArgs = parseArgs(parameters, {
             stringOnce: [],

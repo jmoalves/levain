@@ -15,9 +15,8 @@ import OsUtils from "./lib/os/os_utils.ts";
 export default class LevainCli {
 
     async execute(myArgs: any = {}): Promise<void> {
+        log.info(`Levain ${LevainVersion.levainVersion} with Deno v${Deno.version.deno} at ${Levain.levainRootFile}`);
         log.info("");
-        log.info(`Levain ${LevainVersion.levainVersion}    (${Levain.levainRootFile})`);
-        log.info(`Deno   v${Deno.version.deno}`);
 
         log.debug("args " + JSON.stringify(myArgs));
 
@@ -25,11 +24,10 @@ export default class LevainCli {
             console.log("");
             console.log("");
             CliUtil.askToContinue()
-
         }
 
         // Time to do business!
-        log.info("==================================");
+        log.debug("==================================");
         log.debug("");
         log.debug(`CWD ${Deno.cwd()}`);
 
@@ -105,7 +103,7 @@ export default class LevainCli {
         }
 
         /////////////////////////////////////////////////////////////////////////////////
-        log.info("==================================");
+        log.debug("==================================");
 
         config.save();
     }

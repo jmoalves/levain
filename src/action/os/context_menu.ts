@@ -12,7 +12,7 @@ export default class ContextMenu implements Action {
     }
 
     async execute(pkg: Package | undefined, parameters: string[]) {
-        log.info(`CONTEXT-MENU ${parameters}`);
+        log.debug(`CONTEXT-MENU ${parameters}`);
 
         if (!parameters || parameters.length < 1 || parameters[0] != "folders") {
             throw "contextMenu - You must inform the 'folders' sub action";

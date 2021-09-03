@@ -29,7 +29,7 @@ export default class Template implements Action {
         let src = (pkg ? path.resolve(pkg.pkgDir, args._[0]) : path.resolve(args._[0]));
         let dst = (pkg ? path.resolve(pkg.baseDir, args._[1]) : path.resolve(args._[1]));
 
-        log.info(`TEMPLATE ${src} => ${dst}`);
+        log.debug(`TEMPLATE ${src} => ${dst}`);
         let data = Deno.readTextFileSync(src);
         for (let x in args.replace) {
             let replacement = args.with[x];

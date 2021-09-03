@@ -15,7 +15,7 @@ export default class PropertySetAction implements Action {
     }
 
     async execute(pkg: Package, parameters: string[]): Promise<void> {
-        log.info(`PROPERTY-SET ${parameters.join(' ')}`);
+        log.debug(`PROPERTY-SET ${parameters.join(' ')}`);
 
 
         let myArgs = parseArgs(parameters, {

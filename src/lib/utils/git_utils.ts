@@ -5,9 +5,13 @@ import Config from "../config.ts";
 import ExtraBin from "../extra_bin.ts";
 import OsUtils from "../os/os_utils.ts";
 
+import ConsoleFeedback from "./console_feedback.ts";
+
 export default class GitUtils {
     static readonly GIT_REG_EXP = /(?<url>.*\.git)(:?#(?<branch>.+))?$/
     readonly gitCmd: string;
+
+    readonly feedback = new ConsoleFeedback();
 
     constructor(private config: Config) {
         this.gitCmd = `${ExtraBin.gitDir}\\cmd\\git.exe`;
@@ -34,38 +38,51 @@ export default class GitUtils {
         this.checkGitPath(gitUrl)
 
         const gitPath = GitUtils.parseGitPath(gitUrl)
-        log.info(`-- GIT - CLONE - ${JSON.stringify(gitPath)} => ${dst}`);
+        log.debug(`# GIT - CLONE - ${JSON.stringify(gitPath)} => ${dst}`);
         OsUtils.onlyInWindows();
+
+        this.feedback.start(`# GIT - CLONE - ${JSON.stringify(gitPath)} => ${dst}`)
+        let tick = setInterval(() => this.feedback.show(), 300)
 
         const branchOption = ( gitPath.branch ? `--branch ${gitPath.branch} ` : '')
         // We must have NO spaces after ${branchOption} in the command below
         const command = `cmd /u /c ${this.gitCmd} clone --progress ${branchOption}--single-branch --no-tags --depth 1 ${gitPath.url} ${dst}`;
         await OsUtils.runAndLog(command);
+
+        clearInterval(tick)
+        this.feedback.reset(`# GIT - CLONE - ${JSON.stringify(gitPath)} => ${dst} - OK`)
     }
 
     async pull(dir: string, options?: any) {
-        log.info(`-- GIT - PULL - ${dir}`);
+        log.debug(`# GIT - PULL - ${dir}`);
         OsUtils.onlyInWindows();
+
+        this.feedback.start(`# GIT - PULL - ${dir}`)
+        let tick = setInterval(() => this.feedback.show(), 300)
 
         const command = `cmd /u /c pushd ${dir} && ${this.gitCmd} pull --force -q --progress --no-tags --depth=1 --update-shallow --allow-unrelated-histories --no-commit --rebase && popd`;
         let tries = 0;
         do {
             tries++;
             if (tries > 1) {
-                log.info(`-- GIT - PULL - ${dir} - RETRY`);
+                log.debug(`# GIT - PULL - ${dir} - RETRY`);
             }
 
             try {
                 await OsUtils.runAndLog(command);
+                clearInterval(tick)
 
-                log.info(`-- GIT - PULL - ${dir} - OK`);
-                log.info("");
+                log.debug(`# GIT - PULL - ${dir} - OK`);
+                log.debug("");
+        
+                this.feedback.reset(`# GIT - PULL - ${dir} - OK`)
                 return;
             } catch (error) {
-                log.info(`${tries} - git error - ${error}`)
+                log.debug(`${tries} - git error - ${error}`)
             }
         } while (tries < 3)
 
+        clearInterval(tick)
         throw Error(`Unable to GIT PULL ${dir}`)
     }
 

@@ -41,7 +41,7 @@ export default class CheckPort implements Action {
             options.hostname = args.address;
         }
 
-        log.info(`CHECK-PORT ${JSON.stringify(options)}`);
+        log.debug(`CHECK-PORT ${JSON.stringify(options)}`);
         try {
             const listener = Deno.listen(options);
             listener.close();

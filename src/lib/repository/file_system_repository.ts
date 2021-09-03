@@ -98,7 +98,7 @@ export default class FileSystemRepository extends AbstractRepository {
             return [];
         }
 
-        this.feedback.start(`# Scanning ${this.rootDir} - rootDirOnly: ${this.rootOnly}. Please wait...`);
+        this.feedback.start(`# ${this.rootDir}...`);
 
         const timer = new Timer()
 
@@ -112,9 +112,7 @@ export default class FileSystemRepository extends AbstractRepository {
         log.debug(`# readPackages: ${packagesGlob} ${JSON.stringify(globOptions)}`)
         const packages: Array<Package> = this.getPackageFiles(packagesGlob, globOptions, this.rootOnly)
 
-        this.feedback.reset("#");
-        log.info(`added ${packages.length} packages in ${timer.humanize()}`)
-        log.info("")
+        this.feedback.reset(`# ${this.rootDir} -> ${packages.length} packages in ${timer.humanize()}`)
 
         return packages
     }

@@ -140,10 +140,10 @@ export default class RepositoryManager {
             }
         }
 
-        log.info(`=== REPOS`)
+        log.debug(`=== REPOS`)
         for (let key in repos) {
             if (repos[key]) {
-                log.info(`Repo[${key}] - ${repos[key].name}`)
+                log.debug(`Repo[${key}] - ${repos[key].name}`)
             }
         }
     }

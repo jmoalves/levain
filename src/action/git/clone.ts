@@ -24,10 +24,10 @@ export default class GitCloneAction implements Action {
         const srcUrl = params?.[0]
         const destDir = params?.[1]
 
-        log.info(`CLONE ${srcUrl} ${destDir}`)
+        log.debug(`CLONE ${srcUrl} ${destDir}`)
 
         if (DirUtils.count(destDir) > 0) {
-            log.info(`skipping clone, ${destDir} already has content`)
+            log.debug(`skipping clone, ${destDir} already has content`)
             return
         }
 
