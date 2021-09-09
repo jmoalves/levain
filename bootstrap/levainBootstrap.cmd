@@ -60,7 +60,7 @@ if exist %levainCMD% goto:eof
 for %%d in (%currentFileDir% %tempDir%) do (
     set levainZipPath=%%d
     :: Is Levain zip already available?
-    echo CHECK - %%d\%levainZipFile%
+    echo levainBootstrap - CHECK - %%d\%levainZipFile%
     if exist %%d\%levainZipFile% exit /b 0
 )
 
@@ -78,7 +78,7 @@ if "a%levainUrl%" == "a" (
 
 :: Download Levain Zip
 set url=%levainUrl%/v%levainVersion%/%levainZipFile%
-echo Downloading Levain zip from %url%
+echo levainBootstrap - Downloading Levain zip from %url%
 %currentFileDir%\extra-bin\windows\curl\bin\curl.exe -L -f %url% -o%levainZipPath%\%levainZipFile%
 if errorlevel 1 (
     echo.
@@ -117,8 +117,8 @@ if not exist %levainZipPath%\%levainZipFile% (
 
 :: Expand Levain Zip
 REM powershell.exe -nologo -noprofile -command "& { Expand-Archive -Force -LiteralPath %levainZipPath%\%levainZipFile% -DestinationPath %tempDir% }"
-echo Extracting Levain zip %levainZipPath%\%levainZipFile% to %tempDir%
-%currentFileDir%\extra-bin\windows\7-Zip\7z.exe x %levainZipPath%\%levainZipFile% -o%tempDir%
+echo levainBootstrap - Extracting Levain zip %levainZipPath%\%levainZipFile% to %tempDir%
+%currentFileDir%\extra-bin\windows\7-Zip\7z.exe -bsp2 x %levainZipPath%\%levainZipFile% -o%tempDir% > nul
 if errorlevel 1 (
     echo.
     echo.
