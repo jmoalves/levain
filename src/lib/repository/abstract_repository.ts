@@ -28,6 +28,11 @@ export default abstract class AbstractRepository implements Repository {
     }
 
     abstract readPackages(): Promise<Array<Package>>
+    
+    async reloadPackages() {
+        this.invalidatePackages()
+        await this.init()
+    }
 
     invalidatePackages(): void {
         log.debug(`invalidatePackages - ${this.name}`)

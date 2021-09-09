@@ -12,7 +12,7 @@ export default class MockRepository extends AbstractRepository {
             new MockPackage('anotherPackage', new VersionNumber('0.1.2')),
         ],
     ) {
-        const absoluteURI = 'mockURI';
+        const absoluteURI = `mockURI ${name}`
         super(name, absoluteURI)
     }
 

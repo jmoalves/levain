@@ -7,19 +7,23 @@ import ChainRepository from "./chain_repository.ts";
 import MockRepository from "./mock_repository.ts";
 import VersionNumber from "../utils/version_number.ts";
 import Repository from "./repository.ts";
+import LevainAsserts from "../test/levain_asserts.ts";
 
 Deno.test('ChainRepository should have a name', async () => {
     const repo = await getRepo()
 
-    assertEquals(repo.name, 'chainRepo for mockRepo1, mockRepo2')
+    assertEquals(repo.name, 'ChainRepo')
+})
+Deno.test('ChainRepository should have a description', async () => {
+    const repo = await getRepo()
+
+    assertEquals(repo.describe(), 'ChainRepo for mockRepo1, mockRepo2')
 })
 Deno.test('ChainRepository should list packages from repos', async () => {
     const repo = await getRepo()
 
     const packages = repo.listPackages()
-
-    const packageNames = packages.map(pkg => pkg.name)
-    assertEquals(packageNames, ['package 1', 'package 2', 'package 3'])
+    LevainAsserts.assertPackageNames(packages, ['package 1', 'package 2', 'package 3'])
 
     const packageVersions = packages.map(pkg => pkg?.version?.versionNumber)
     assertEquals(packageVersions, ['1.0.0', '2.0.0', '3.0.0'])

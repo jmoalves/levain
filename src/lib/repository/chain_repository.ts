@@ -1,5 +1,3 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-
 import Config from "../config.ts";
 import Package from "../package/package.ts";
 
@@ -14,7 +12,7 @@ export default class ChainRepository extends AbstractRepository {
         public repositories: Repository[],
     ) {
         const repos = repositories?.map(repo => repo.name).join(', ');
-        super('ChanRepo', repos)
+        super('ChainRepo', repos)
         this.repositories = ArrayUtils.removeRepetitions(
             this.repositories,
             repo => repo.absoluteURI
@@ -33,16 +31,6 @@ export default class ChainRepository extends AbstractRepository {
 
         await super.init()
     }
-    //
-    // listPackages(): Array<Package> {
-    //     return this.repositories
-    //         .flatMap(repo => repo.listPackages())
-    //         .reduce((uniquePkgs, pkg) =>
-    //                 uniquePkgs.find(includedPkg => includedPkg.name === pkg.name)
-    //                     ? uniquePkgs
-    //                     : [...uniquePkgs, pkg],
-    //             [] as Array<Package>)
-    // }
 
     invalidatePackages() {
         for (let repo of this.repositories) {
@@ -50,26 +38,6 @@ export default class ChainRepository extends AbstractRepository {
         }
 
         super.invalidatePackages()
-    }
-
-    async reloadPackages() {
-        this.invalidatePackages()
-        await this.init()
-    }
-
-    resolvePackage(packageName: string): Package | undefined {
-        if (!this.repositories) {
-            return undefined;
-        }
-
-        for (const repo of this.repositories) {
-            const pkg = repo.resolvePackage(packageName)
-            if (pkg) {
-                return pkg;
-            }
-        }
-
-        return undefined;
     }
 
     async readPackages(): Promise<Array<Package>> {
