@@ -5,6 +5,7 @@ import TestHelper from "../test/test_helper.ts";
 import MockRepository from "../repository/mock_repository.ts";
 import {MockPackage} from "./mock_package.ts";
 import VersionNumber from "../utils/version_number.ts";
+import Config from "../config.ts";
 
 Deno.test('Managers should resolve empty packages list', () => {
     // Given
@@ -16,9 +17,9 @@ Deno.test('Managers should resolve empty packages list', () => {
     assertEquals(resolvedPackages, [])
 })
 
-Deno.test('Managers should resolve packages without dependencies', () => {
+Deno.test('Managers should resolve packages without dependencies', async () => {
     // Given
-    const config = getConfigWithMockRepo()
+    const config = await getConfigWithMockRepo()
     const manager = new PackageManager(config)
     // When
     const resolvedPackages = manager.resolvePackages(['package without dependencies'])
@@ -27,9 +28,9 @@ Deno.test('Managers should resolve packages without dependencies', () => {
     assertEquals(packageNames, ['package without dependencies'])
 })
 
-Deno.test('Managers should resolve packages with 1 dependency', () => {
+Deno.test('Managers should resolve packages with 1 dependency', async () => {
     // Given
-    const config = getConfigWithMockRepo()
+    const config = await getConfigWithMockRepo()
     const manager = new PackageManager(config)
     // When
     const resolvedPackages = manager.resolvePackages(['package with a dependency'])
@@ -38,9 +39,9 @@ Deno.test('Managers should resolve packages with 1 dependency', () => {
     assertEquals(packageNames, ['a dependency', 'package with a dependency',])
 })
 
-Deno.test('Managers should resolve packages with a transitive dependency', () => {
+Deno.test('Managers should resolve packages with a transitive dependency', async () => {
     // Given
-    const config = getConfigWithMockRepo()
+    const config = await getConfigWithMockRepo()
     const manager = new PackageManager(config)
     // When
     const resolvedPackages = manager.resolvePackages(['package with a transitive dependency'])
@@ -49,7 +50,7 @@ Deno.test('Managers should resolve packages with a transitive dependency', () =>
     assertEquals(packageNames, ['transitive dependency', 'dependency with transitive', 'package with a transitive dependency',])
 })
 
-function getConfigWithMockRepo() {
+async function getConfigWithMockRepo(): Promise<Config> {
     const config = TestHelper.getConfig();
     const repoMock = new MockRepository('mockRepo1', [
         new MockPackage('package without dependencies', new VersionNumber('1.0.0')),
@@ -66,7 +67,7 @@ function getConfigWithMockRepo() {
             ['transitive dependency']),
         new MockPackage('transitive dependency', new VersionNumber('2.0.0')),
     ])
+    await repoMock.init()
     config.repositoryManager.repository = repoMock
     return config
 }
-
