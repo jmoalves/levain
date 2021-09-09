@@ -34,7 +34,7 @@ export default class Install implements Command {
         let pkgNames: string[] = myArgs._;
 
         if (pkgNames.length == 0) {
-            let curDirPkg = this.config.repositoryManager.currentDirPackage
+            let curDirPkg = await this.config.repositoryManager.currentDirPackage()
             if (curDirPkg && curDirPkg.dependencies && curDirPkg.dependencies.length > 0) {
                 pkgNames = curDirPkg.dependencies
             }

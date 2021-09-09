@@ -11,7 +11,7 @@ Deno.test('LevainCli should be able to list packages', async () => {
         _: ['list']
     }
 
-    levainCli.execute(myArgs)
+    await levainCli.execute(myArgs)
 })
 Deno.test('LevainCli should list commands available', async () => {
     const logger = await TestHelper.setupTestLogger()

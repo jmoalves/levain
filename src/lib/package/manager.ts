@@ -77,7 +77,7 @@ export default class PackageManager {
         return this.knownPackages.get(pkgName);
     }
 
-    getVar(pkgName: string, vName: string): string | undefined {
+    async getVar(pkgName: string, vName: string): Promise<string | undefined> {
         let pkg = this.package(pkgName);
         if (!pkg) {
             return undefined;
@@ -104,7 +104,7 @@ export default class PackageManager {
         }
 
         value = "" + value; // toString
-        return this.config.replaceVars(value!, pkgName);
+        return await this.config.replaceVars(value!, pkgName);
     }
 
     private resolveInRepo(repo: Repository, pkgs: Map<string, Package>, names: Set<String>, pkgName: string, showLog: boolean): boolean {

@@ -1,7 +1,7 @@
 import {assert, assertThrows} from "https://deno.land/std/testing/asserts.ts";
 
 import TestHelper from "../lib/test/test_helper.ts";
-import {assertArrayContainsInAnyOrder} from "../lib/test/more_asserts.ts";
+import {assertArrayEqualsInAnyOrder} from "../lib/test/more_asserts.ts";
 
 import ListCommand from "./list_command.ts";
 import CommandFactory from "./command_factory.ts";
@@ -11,7 +11,7 @@ Deno.test('CommandFactory should list commands', () => {
 
     const actions: string[] = factory.list()
 
-    assertArrayContainsInAnyOrder(actions, [
+    assertArrayEqualsInAnyOrder(actions, [
         'install',
         'shell',
         'list',

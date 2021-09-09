@@ -13,7 +13,6 @@ Deno.test('ChainRepository should have a name', async () => {
 
     assertEquals(repo.name, 'chainRepo for mockRepo1, mockRepo2')
 })
-
 Deno.test('ChainRepository should list packages from repos', async () => {
     const repo = await getRepo()
 
@@ -25,7 +24,6 @@ Deno.test('ChainRepository should list packages from repos', async () => {
     const packageVersions = packages.map(pkg => pkg?.version?.versionNumber)
     assertEquals(packageVersions, ['1.0.0', '2.0.0', '3.0.0'])
 })
-
 Deno.test('ChainRepository should resolve package by name', async () => {
     // Given
     const repo = await getRepo()

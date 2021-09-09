@@ -61,7 +61,7 @@ export function assertNotFind<T>(
     assertEquals(array.find(func), undefined, msg)
 }
 
-export function assertArrayContainsInAnyOrder<T>(
+export function assertArrayEqualsInAnyOrder<T>(
     actual: Array<T>,
     expected: Array<T>,
 ) {

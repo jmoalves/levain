@@ -1,4 +1,4 @@
-import {assert, assertEquals} from "https://deno.land/std/testing/asserts.ts";
+import {assert, assertEquals, assertThrows, assertThrowsAsync} from "https://deno.land/std/testing/asserts.ts";
 
 import GitUtils from "./git_utils.ts";
 
@@ -44,4 +44,79 @@ Deno.test(`GitUtils - localBaseDir()`, () => {
     assertEquals(GitUtils.localBaseDir('git@github.com:jmoalves/levain.git#develop'), 'git_github.com_jmoalves_levain_develop')
     assertEquals(GitUtils.localBaseDir('https://gitlab.com/scout-manager/scout-manager-app.git'), 'https_gitlab.com_scout-manager_scout-manager-app')
     assertEquals(GitUtils.localBaseDir('https://gitlab.com/scout-manager/scout-manager-app.git#develop'), 'https_gitlab.com_scout-manager_scout-manager-app_develop')
+})
+Deno.test('GitUtils.checkGitPath should throw error if url is invalid', () => {
+    assertThrows(() => {
+            GitUtils.checkGitPath('thisFolderDoesNotExist')
+        },
+        Error,
+        'Invalid git url - thisFolderDoesNotExist',
+    )
+})
+Deno.test('GitUtils.localBaseDir should throw error if url is invalid', () => {
+    assertThrows(() => {
+            GitUtils.localBaseDir('thisFolderDoesNotExist')
+        },
+        Error,
+        'Invalid git url - thisFolderDoesNotExist',
+    )
+})
+Deno.test('GitUtils.clone should throw error if url is invalid', async () => {
+    await assertThrowsAsync(
+        async () => {
+            await new GitUtils().clone('thisSourceDoesNotExist', 'thisDstDoesNotExist')
+        },
+        Error,
+        'Invalid git url - thisSourceDoesNotExist',
+    )
+})
+Deno.test('GitUtils.checkGitPath should throw error if url is invalid', () => {
+    assertThrows(() => {
+            GitUtils.checkGitPath('thisFolderDoesNotExist')
+        },
+        Error,
+        'Invalid git url - thisFolderDoesNotExist',
+    )
+})
+Deno.test('GitUtils.localBaseDir should throw error if url is invalid', () => {
+    assertThrows(() => {
+            GitUtils.localBaseDir('thisFolderDoesNotExist')
+        },
+        Error,
+        'Invalid git url - thisFolderDoesNotExist',
+    )
+})
+Deno.test('GitUtils.clone should throw error if url is invalid', async () => {
+    await assertThrowsAsync(
+        async () => {
+            await new GitUtils().clone('thisSourceDoesNotExist', 'thisDstDoesNotExist')
+        },
+        Error,
+        'Invalid git url - thisSourceDoesNotExist',
+    )
+})
+Deno.test('GitUtils.checkGitPath should throw error if url is invalid', () => {
+    assertThrows(() => {
+            GitUtils.checkGitPath('thisFolderDoesNotExist')
+        },
+        Error,
+        'Invalid git url - thisFolderDoesNotExist',
+    )
+})
+Deno.test('GitUtils.localBaseDir should throw error if url is invalid', () => {
+    assertThrows(() => {
+            GitUtils.localBaseDir('thisFolderDoesNotExist')
+        },
+        Error,
+        'Invalid git url - thisFolderDoesNotExist',
+    )
+})
+Deno.test('GitUtils.clone should throw error if url is invalid', async () => {
+    await assertThrowsAsync(
+        async () => {
+            await new GitUtils().clone('thisSourceDoesNotExist', 'thisDstDoesNotExist')
+        },
+        Error,
+        'Invalid git url - thisSourceDoesNotExist',
+    )
 })

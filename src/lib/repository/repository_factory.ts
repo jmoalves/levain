@@ -1,12 +1,9 @@
 import * as log from "https://deno.land/std/log/mod.ts";
-
-import Package from '../package/package.ts'
 import Config from '../config.ts';
 import OsUtils from "../os/os_utils.ts";
 import GitUtils from "../utils/git_utils.ts";
 
 import Repository from './repository.ts'
-import NullRepository from './null_repository.ts';
 import GitRepository from './git_repository.ts';
 import FileSystemRepository from './file_system_repository.ts';
 import ZipRepository from "./zip_repository.ts";
@@ -28,7 +25,7 @@ export default class RepositoryFactory {
     static normalizeList(repoPaths: string[]): string[] {
         let repos = new Set<string>()
         repoPaths.map(repo => RepositoryFactory.normalize(repo))
-                .forEach(repo => repos.add(repo))
+            .forEach(repo => repos.add(repo))
         return [...repos]
     }
 
@@ -56,7 +53,7 @@ export default class RepositoryFactory {
         let repoPath = RepositoryFactory.normalize(repoURI)
         if (this.knownRepos.has(repoPath)) {
             let repo = this.knownRepos.get(repoPath)!
-            log.debug(`RepoFactory.create - already known ${repo.name}`)
+            log.debug(`RepoFactory.create - already known ${repo.describe()}`)
             return repo
         }
 

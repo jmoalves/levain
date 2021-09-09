@@ -10,9 +10,9 @@ import {FileUtils} from "../fs/file_utils.ts";
 import ConsoleFeedback from "../utils/console_feedback.ts";
 
 import AbstractRepository from './abstract_repository.ts';
+import DirUtils from "../fs/dir_utils.ts";
 
 export default class FileSystemRepository extends AbstractRepository {
-    readonly name: string
 
     readonly excludeDirs = ['.git', 'node_modules', 'npm-cache', '$Recycle.Bin', 'temp', 'tmp', 'windows', 'system', 'system32', 'bin', 'extra-bin']
 
@@ -23,8 +23,17 @@ export default class FileSystemRepository extends AbstractRepository {
         public readonly rootDir: string,
         private rootOnly: boolean = false
     ) {
-        super();
-        this.name = `fileSystemRepo (${this.rootDir})`;
+        const name = `FileSystemRepo`
+        const absoluteURI = path.resolve(rootDir)
+        super(name, absoluteURI)
+    }
+
+    describe(): string {
+        let description: string = super.describe()
+        if (this.rootDir !== this.absoluteURI) {
+            description += ` from ${this.rootDir}`
+        }
+        return description
     }
 
     async init(): Promise<void> {
@@ -38,65 +47,17 @@ export default class FileSystemRepository extends AbstractRepository {
         if (!existsSync(this.rootDir)) {
             throw new Error(`addRepo - dir not found: ${this.rootDir}`)
         }
-
-        const fileInfo = Deno.statSync(this.rootDir)
-        if (!fileInfo || !fileInfo.isDirectory) {
-            throw new Error(`addRepo - repository should be a dir: ${this.rootDir}`)
+        if (!DirUtils.isDirectory(this.rootDir)) {
+            throw new Error(`addRepo - repository should exist and be a dir: ${this.rootDir}`)
         }
 
         log.debug(`FSRepo init: Root=${this.rootDir} - loadPackages`)
-        this.loadPackages()
-
+        await super.init()
         log.debug(`FSRepo init: Root=${this.rootDir} - END`)
     }
 
-    get absoluteURI(): string {
-        return this.rootDir;
-    }
-
-    resolvePackage(packageName: string): Package | undefined {
-        if (!existsSync(`${this.rootDir}`)) {
-            return undefined;
-        }
-
-        const pkg = this.listPackages()
-            ?.find(pkg => pkg.name === packageName);
-
-        if (pkg) {
-            log.debug(`FSRepo: found package ${packageName} => ${pkg.toString()}`);
-        } else {
-            log.debug(`FSRepo: package ${packageName} not found in ${this.name} - ${this.rootDir}`);
-            log.debug(`_packages: ${this._packages}`)
-        }
-
-        return pkg;
-    }
-
-    private _packages: Array<Package> | undefined;
-
-    listPackages(): Array<Package> {
-        if (!this._packages) {
-            this.loadPackages()
-        }
-        log.debug(`get packages _packages: ${this._packages}`)
-        return this._packages || [];
-    }
-
-    loadPackages() {
-        this._packages = this.readPackages()
-            .sort((a, b) => a?.name?.localeCompare(b?.name));
-
-        log.debug(`FSRepo: Root=${this.rootDir} - pkgs: ${this._packages}`)
-        log.debug(``)
-    }
-
-    invalidatePackages() {
-        log.debug(`invalidatePackages - ${this.name}`)
-        this._packages = undefined
-    }
-
-    readPackages(): Array<Package> {
-        if (!existsSync(`${this.rootDir}`)) {
+    async readPackages(): Promise<Array<Package>> {
+        if (!DirUtils.isDirectory(this.rootDir)) {
             log.debug(`# readPackages: rootDir not found ${this.rootDir}`);
             return [];
         }
@@ -113,24 +74,24 @@ export default class FileSystemRepository extends AbstractRepository {
             exclude: this.excludeDirs,
         }
         log.debug(`# readPackages: ${packagesGlob} ${JSON.stringify(globOptions)}`)
-        const packages: Array<Package> = this.getPackageFiles(packagesGlob, globOptions, this.rootOnly)
+        const packages: Array<Package> = await this.getPackageFiles(packagesGlob, globOptions, this.rootOnly)
 
         this.feedback.reset(`# ${this.rootDir} -> ${packages.length} packages in ${timer.humanize()}`)
 
         return packages
     }
 
-    private getPackageFiles(packagesGlob: string, globOptions: ExpandGlobOptions, rootDirOnly: boolean = false): Array<Package> {
+    private async getPackageFiles(packagesGlob: string, globOptions: ExpandGlobOptions, rootDirOnly: boolean = false): Promise<Array<Package>> {
         // FIXME Why, oh my...
         // FIXME globPackages throws error when folder is readonly in Deno 1.5.4
         // if (OsUtils.isWindows()) {
-        return this.crawlPackages(globOptions['root'] || '.', globOptions, rootDirOnly)
+        return await this.crawlPackages(globOptions['root'] || '.', globOptions, rootDirOnly)
         // } else {
         //     return this.globPackages(packagesGlob, globOptions);
         // }
     }
 
-    crawlPackages(dirname: string, options: ExpandGlobOptions, rootDirOnly: boolean = false, currentLevel = 0): Array<Package> {
+    async crawlPackages(dirname: string, options: ExpandGlobOptions, rootDirOnly: boolean = false, currentLevel = 0): Promise<Array<Package>> {
         const maxLevels = 5
         const nextLevel = currentLevel + 1;
 
@@ -175,10 +136,13 @@ export default class FileSystemRepository extends AbstractRepository {
                 if (currentLevel > maxLevels) {
                     log.debug(`skipping ${fullUri}, more then ${maxLevels} levels deep`)
                 } else {
-                    Array.prototype.push.apply(packages, this.crawlPackages(fullUri, options, false, nextLevel));
+                    Array.prototype.push.apply(
+                        packages,
+                        await this.crawlPackages(fullUri, options, false, nextLevel)
+                    )
                 }
             } else if (entry.isFile) {
-                const pkg = this.readPackage(fullUri);
+                const pkg = await this.readPackage(fullUri);
                 if (pkg) {
                     packages.push(pkg);
                     log.debug(`added package ${pkg?.name} ${pkg?.version}`)
@@ -189,12 +153,12 @@ export default class FileSystemRepository extends AbstractRepository {
         return packages;
     }
 
-    globPackages(packagesGlob: string, globOptions: ExpandGlobOptions): Array<Package> {
+    async globPackages(packagesGlob: string, globOptions: ExpandGlobOptions): Promise<Array<Package>> {
         const packages = []
         const packageFiles = expandGlobSync(packagesGlob, globOptions);
         for (const file of packageFiles) {
             log.debug(`## checking file ${JSON.stringify(file)}`)
-            const pkg = this.readPackage(file.path)
+            const pkg = await this.readPackage(file.path)
             if (pkg) {
                 log.debug(`## adding package ${pkg}`)
                 packages.push(pkg)
@@ -203,7 +167,7 @@ export default class FileSystemRepository extends AbstractRepository {
         return packages
     }
 
-    private readPackage(yamlFile: string): Package | undefined {
+    private async readPackage(yamlFile: string): Promise<Package | undefined> {
         if (!yamlFile.match(/\.levain\.ya?ml$/)) {
             return undefined;
         }
@@ -227,10 +191,12 @@ export default class FileSystemRepository extends AbstractRepository {
 
         // log.debug(`pkg ${packageName} -> ${pkg}`)
 
+        const packageHome = await this.config.replaceVars(`\${levainHome}/${packageName}`);
+
         return new FileSystemPackage(
             this.config,
             packageName,
-            this.config.replaceVars(`\${levainHome}/${packageName}`),
+            packageHome,
             yamlFile,
             yamlStr,
             this)

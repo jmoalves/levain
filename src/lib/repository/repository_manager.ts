@@ -68,13 +68,13 @@ export default class RepositoryManager {
         }
     }
 
-    get currentDirPackage(): Package | undefined {
+    currentDirPackage(): Package | undefined {
         if (!this.repositories.currentDir) {
             return undefined
         }
 
         // Looking for package at current dir
-        let pkgs = this.repositories.currentDir.readPackages()
+        const pkgs = this.repositories.currentDir.listPackages()
         if (pkgs && pkgs.length == 1) {
             return this.repositories.currentDir.resolvePackage(pkgs[0].name)
         }
@@ -119,7 +119,6 @@ export default class RepositoryManager {
 
         await this.createInstalledRepo()
         await this.createRegularRepository()
-
         await this.createCurrentDirRepo()
     }
 
@@ -150,7 +149,8 @@ export default class RepositoryManager {
 
     private async createCurrentDirRepo() {
         log.debug("createCurrentDirRepo")
-        this.repositories.currentDir = this.repoFactory.create(Deno.cwd(), true)
+        const currentDir = Deno.cwd()
+        this.repositories.currentDir = this.repoFactory.create(currentDir, true)
     }
 
     private async createInstalledRepo() {

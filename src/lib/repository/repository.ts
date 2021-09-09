@@ -1,19 +1,20 @@
 import Package from "../package/package.ts";
 
 export default interface Repository {
-    name: string;
+    name: string
+    readonly absoluteURI?: string
 
-    listPackages(): Array<Package>;
+    describe(): string
 
-    length: number;
+    listPackages(): Array<Package>
 
-    readonly absoluteURI: string;
+    size(): number
 
-    init(): Promise<void>;
+    init(): Promise<void>
 
-    invalidatePackages(): void;
+    invalidatePackages(): void
 
-    resolvePackage(packageName: string): Package | undefined;
+    resolvePackage(packageName: string): Package | undefined
 
-    readPackages(): Array<Package>;
+    readPackages(): Promise<Array<Package>>
 }

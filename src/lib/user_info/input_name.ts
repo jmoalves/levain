@@ -2,27 +2,28 @@ import {NameValidator} from "./validators/validators.ts"
 import {Input} from 'https://deno.land/x/cliffy/prompt/input.ts'
 import {readLines} from 'https://deno.land/std/io/mod.ts'
 import OsUtils from "../os/os_utils.ts";
+import {ValidateResult} from "https://deno.land/x/cliffy/prompt/_generic_prompt.ts";
 
 export class InputFullName {
 
-    static inputAndValidateSync(defaultValue: string) {
+    static inputAndValidateSync(defaultValue: string): string {
         let newValue: string
-        let validationResult: ValidationResult
+        let validateResult: ValidateResult = false
 
         do {
-            if (validationResult) {
-                console.log(validationResult)
+            if (validateResult) {
+                console.log(validateResult)
             }
             let message = "What's your FULL NAME for Git and other configs?"
-            newValue = prompt(message, defaultValue)
+            newValue = prompt(message, defaultValue) || ''
 
-            validationResult = NameValidator.validate(newValue)
-        } while (validationResult !== true)
+            validateResult = NameValidator.validate(newValue)
+        } while (validateResult !== true)
 
         return newValue;
     }
 
-    static async inputAndValidate(defaultValue: string) {
+    static async inputAndValidate(defaultValue: string): Promise<string> {
 
         const fullName: string = await Input.prompt({
                 message: "What's your FULL NAME for Git and other configs?",
@@ -34,19 +35,19 @@ export class InputFullName {
         return fullName
     }
 
-    static async inputAndValidateWithEncoding(defaultValue: string) {
+    static async inputAndValidateWithEncoding(defaultValue: string): Promise<string> {
         let fullName: string
-        let validationResult: ValidationResult
+        let validateResult: ValidateResult = false
 
         do {
-            if (validationResult) {
-                console.log(validationResult)
+            if (validateResult) {
+                console.log(validateResult)
             }
             let message = "What's your FULL NAME for Git and other configs?"
             fullName = await InputFullName.promptWithEncoding(message, defaultValue)
 
-            validationResult = NameValidator.validate(fullName)
-        } while (validationResult !== true)
+            validateResult = NameValidator.validate(fullName)
+        } while (validateResult !== true)
 
         return fullName;
     }
@@ -54,8 +55,8 @@ export class InputFullName {
     static async promptWithEncoding(
         message: string,
         defaultValue: string = '',
-        encoding,
-    ): string {
+        encoding: string = 'utf8',
+    ): Promise<string> {
         if (defaultValue) {
             message += ` Press return for [${defaultValue}]`
         }

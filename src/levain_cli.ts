@@ -50,7 +50,7 @@ export default class LevainCli {
         // Ask for user_info
         if (cmd === 'install') {
             const userInfoUtil = new UserInfoUtil()
-            userInfoUtil.askUserInfo(config, myArgs);
+            await userInfoUtil.askUserInfo(config, myArgs);
         }
 
         // Shell path

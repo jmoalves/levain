@@ -3,6 +3,5 @@
   <component name="TypeScriptCompiler">
     <option name="nodeInterpreterTextField" value="$PROJECT_DIR$/../../../dev-env/deno/deno" />
     <option name="recompileOnChanges" value="true" />
-    <option name="versionType" value="EMBEDDED" />
   </component>
 </project>

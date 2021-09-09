@@ -1,5 +1,6 @@
 import {ValidateResult} from "https://deno.land/x/cliffy/prompt/_generic_prompt.ts";
 import {Validator} from "./validator.ts";
+import * as deno_validator from 'https://deno.land/x/deno_validator/mod.ts';
 
 export class MinLengthValidator implements Validator {
     constructor(public minLength: number) {
@@ -67,7 +68,7 @@ export class EmailValidator implements Validator {
 
     validate(text: string): ValidateResult {
 
-        if (!this.emailRegex.test(text)) {
+        if (!deno_validator.isEmail(text, {})) {
             return 'Please inform a valid email address'
         }
 

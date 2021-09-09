@@ -2,8 +2,8 @@ import * as path from "https://deno.land/std/path/mod.ts";
 import {AssertionError, assertThrows} from "https://deno.land/std/testing/asserts.ts";
 
 import {
-    assertArrayContainsInAnyOrder,
     assertArrayEndsWith,
+    assertArrayEqualsInAnyOrder,
     assertDirCount,
     assertFileSizeAprox,
     assertFind,
@@ -92,12 +92,12 @@ Deno.test('MoreAsserts.assertNotFind should throw AssertionError when element is
 // assertArrayContainsInAnyOrder
 //
 Deno.test('MoreAsserts.assertArrayContainsInAnyOrder should assert that elements are equal, even in different order', () => {
-    assertArrayContainsInAnyOrder([1, 2, 3], [2, 3, 1])
+    assertArrayEqualsInAnyOrder([1, 2, 3], [2, 3, 1])
 })
 Deno.test('MoreAsserts.assertArrayContainsInAnyOrder should find out that one element is missing', () => {
     assertThrows(
         () => {
-            assertArrayContainsInAnyOrder([1, 2], [1, 2, 3])
+            assertArrayEqualsInAnyOrder([1, 2], [1, 2, 3])
         },
         AssertionError,
     )
@@ -144,9 +144,10 @@ Deno.test('MoreAsserts.assertDirCount should throw when folder does not exist', 
             assertDirCount(TestHelper.folderThatDoesNotExist, 1)
         },
         Deno.errors.NotFound,
-        '(os error 2)',
+        'this-folder-does-not-exist',
     )
 })
+
 //
 // assertFileSize
 //

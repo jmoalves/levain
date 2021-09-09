@@ -3,8 +3,6 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import Config from "../lib/config.ts";
 import {OsShell} from '../lib/os/os_shell.ts';
 import Loader from '../lib/loader.ts';
-import Action from "../action/action.ts";
-import Package from '../lib/package/package.ts';
 
 import Command from "./command.ts";
 
@@ -18,7 +16,7 @@ export default class Shell implements Command {
         let curDirPkg = undefined;
 
         if (pkgNames.length == 0) {
-            curDirPkg = this.config.repositoryManager.currentDirPackage
+            curDirPkg = await this.config.repositoryManager.currentDirPackage()
             if (curDirPkg && curDirPkg.dependencies && curDirPkg.dependencies.length > 0) {
                 pkgNames = curDirPkg.dependencies
                 let actions = curDirPkg.yamlItem("cmd.shell");

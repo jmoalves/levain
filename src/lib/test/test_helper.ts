@@ -11,6 +11,7 @@ import TestLogger from "../logger/test_logger.ts";
 import ActionFactory from "../../action/action_factory.ts";
 import Action from "../../action/action.ts";
 import {envChain} from "../utils/utils.ts";
+import MockRepository from "../repository/mock_repository.ts";
 
 export default class TestHelper {
 
@@ -128,5 +129,11 @@ export default class TestHelper {
         if (exists(path)) {
             Deno.removeSync(path, {recursive: true})
         }
+    }
+
+    static async getMockRepositoryInitialized(): Promise<MockRepository> {
+        const mockRepository = new MockRepository()
+        await mockRepository.init()
+        return mockRepository;
     }
 }

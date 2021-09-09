@@ -1,7 +1,7 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import {existsSync} from "https://deno.land/std/fs/mod.ts"
-import "https://deno.land/x/humanizer@1.0/ordinalize.ts"
-// import {prompt} from "https://deno.land/x/cliffy@v0.19.5/prompt/mod.ts";
+import "https://deno.land/x/humanizer/ordinalize.ts"
+
 import {ValidateResult} from "https://deno.land/x/cliffy/prompt/_generic_prompt.ts";
 
 import {envChain, promptSecret} from '../utils/utils.ts';
@@ -12,6 +12,8 @@ import YamlFileUtils from "../utils/yaml_file_utils.ts";
 
 import {UserInfo} from "./user_info.ts"
 import {NameValidator} from "./validators/validators.ts";
+import {InputFullName} from "./input_name.ts";
+import {InputEmail} from "./input_email.ts";
 
 export default class UserInfoUtil {
 
@@ -38,7 +40,7 @@ export default class UserInfoUtil {
         YamlFileUtils.saveObjectAsFileSync(this.userinfoFileUri, this.userInfo)
     }
 
-    askUserInfo(config: Config, myArgs: any) {
+    async askUserInfo(config: Config, myArgs: any) {
         // Some nasty tricks... Should we refactor this?
         let separatorEnd: (() => void) | undefined = () => {
         };
@@ -70,7 +72,7 @@ export default class UserInfoUtil {
         if (myArgs["ask-fullname"]) {
             (separatorBegin ? separatorBegin() : undefined);
 
-            userInfoUtil.askFullName(config);
+            await userInfoUtil.askFullName(config);
         }
 
         if (myArgs["ask-login"]) {
@@ -82,7 +84,7 @@ export default class UserInfoUtil {
         if (myArgs["ask-email"]) {
             (separatorBegin ? separatorBegin() : undefined);
 
-            userInfoUtil.askEmail(config, myArgs["email-domain"]);
+            await userInfoUtil.askEmail(config, myArgs["email-domain"]);
         }
 
         if (myArgs["ask-password"]) {
@@ -94,30 +96,28 @@ export default class UserInfoUtil {
         (separatorEnd ? separatorEnd() : undefined);
     }
 
-    askFullName(config: Config): string {
+    async askFullName(config: Config): Promise<string> {
         log.debug(`Asking for full name`)
         this.load()
 
-        let fullName: string = prompt(
-            "What's your FULL NAME (do not use accent marks) for Git and other configs?",
-            this.userInfo.fullName || envChain("user", "fullname") || ""
-        ) || "undefined full name"
+        const defaultValue = this.userInfo.fullName || envChain("user", "fullname") || "";
+        const newValue = await InputFullName.inputAndValidateWithEncoding(defaultValue);
 
-        const validationResult: ValidateResult = NameValidator.validate(fullName)
+        const validationResult: ValidateResult = NameValidator.validate(newValue)
 
         if (validationResult !== true) {
             throw new Error(`Invalid FULL NAME - ${validationResult}`);
         }
 
-        if (this.userInfo.fullName != fullName) {
-            this.userInfo.fullName = fullName
+        if (this.userInfo.fullName != newValue) {
+            this.userInfo.fullName = newValue
             this.save()
         }
-        config.fullname = fullName;
-        return fullName
+        config.fullname = newValue;
+        return newValue
     }
 
-    askEmail(config: Config, emailDomain: string | undefined = undefined): string {
+    async askEmail(config: Config, emailDomain: string | undefined = undefined): Promise<string> {
         log.debug(`Asking for email`)
         this.load()
         const loadedEmail = this.userInfo.email !== ""
@@ -141,7 +141,8 @@ export default class UserInfoUtil {
             }
         }
 
-        let email = prompt("Do you have an EMAIL? (press return to confirm default value) ", defaultEmail);
+        const email = await InputEmail.inputAndValidateSync(defaultEmail || '');
+
         if (!email) {
             throw new Error(`Unable to collect email`);
         }
@@ -154,6 +155,19 @@ export default class UserInfoUtil {
         }
         config.email = email;
         return email
+    }
+
+    async inputEmail(defaultValue: string) {
+        let newValue = prompt("Do you have an EMAIL? (press return to confirm default value) ", defaultValue);
+
+        // const fullName: string = await Input.prompt({
+        //         message: "Do you have an EMAIL? (press return to confirm default value)",
+        //         default: defaultValue,
+        //         validate: EmailValidator.validate,
+        //     }
+        // )
+
+        return newValue;
     }
 
     askLogin(config: Config): string {
@@ -218,6 +232,7 @@ export default class UserInfoUtil {
                 continue;
             }
 
+            // const pw2 = await Secret.prompt("Confirm your password: ");
             const pw2 = promptSecret("Confirm your password: ");
             console.log("");
 

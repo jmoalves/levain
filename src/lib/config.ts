@@ -207,7 +207,7 @@ export default class Config {
         return this._env[name];
     }
 
-    replaceVars(text: string, pkgName?: string | undefined): string {
+    async replaceVars(text: string, pkgName?: string | undefined): Promise<string> {
         // TODO: Refactor this... Use ChainOfResponsibility Pattern...
 
         let myText: string = text;
@@ -236,14 +236,14 @@ export default class Config {
 
                         case "levain.email":
                             if (!this.email) {
-                                new UserInfoUtil().askEmail(this)
+                                await new UserInfoUtil().askEmail(this)
                             }
                             value = this.email;
                             break;
 
                         case "levain.fullname":
                             if (!this.fullname) {
-                                new UserInfoUtil().askFullName(this)
+                                await new UserInfoUtil().askFullName(this)
                             }
                             value = this.fullname;
                             break;
@@ -260,12 +260,12 @@ export default class Config {
                 } else if (!value && vName.search(/^pkg\.(.+)\.([^.]*)/) != -1) {
                     let pkgVarPkg = vName.replace(/^pkg\.(.+)\.([^.]*)/, "$1");
                     let pkgVarName = vName.replace(/^pkg\.(.+)\.([^.]*)/, "$2");
-                    value = this.packageManager.getVar(pkgVarPkg, pkgVarName);
+                    value = await this.packageManager.getVar(pkgVarPkg, pkgVarName);
                 } else {
                     // General items
 
                     if (!value && pkgName) {
-                        value = this.packageManager.getVar(pkgName, vName);
+                        value = await this.packageManager.getVar(pkgName, vName);
                     }
 
                     if (!value && this._env) {

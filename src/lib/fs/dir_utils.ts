@@ -9,7 +9,7 @@ export default class DirUtils {
 
     static listFiles(path: string): WalkEntry[] {
         if (!existsSync(path)) {
-            return []
+            throw new Deno.errors.NotFound(path)
         }
         const files = [...walkSync(path)]
         files.shift() // removes root
@@ -26,5 +26,18 @@ export default class DirUtils {
 
     static count(path: string) {
         return this.listFiles(path).length
+    }
+
+    static isDirectory(path: string) {
+        try {
+            const fileInfo = Deno.statSync(path)
+            const dirExists = fileInfo?.isDirectory
+            return dirExists
+        } catch (err) {
+            if (err instanceof Deno.errors.NotFound) {
+                return false
+            }
+            throw err
+        }
     }
 }

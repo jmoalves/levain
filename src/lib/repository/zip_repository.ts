@@ -12,29 +12,41 @@ import AbstractRepository from './abstract_repository.ts';
 import RepositoryFactory from "./repository_factory.ts";
 import ReaderFactory from "../io/reader_factory.ts";
 import {ExtractorFactory} from "../extract/extractor_factory.ts";
+import HttpUtils from "../utils/http_utils.ts";
 
 export default class ZipRepository extends AbstractRepository {
-    readonly name: string
-
     private repoFactory: RepositoryFactory
 
     private readonly localZip: string
     private readonly localDir: string
     private localRepo: Repository | undefined
 
-    constructor(private config: Config, private rootUrl: string, private rootOnly: boolean = false) {
-        super()
+    constructor(private config: Config, public readonly rootUrl: string, private rootOnly: boolean = false) {
+        const name = `ZipRepo`
+        const absoluteURI = HttpUtils.resolve(rootUrl)
+        super(name, absoluteURI)
 
         if (!rootUrl.endsWith(".zip")) {
-            throw Error(`No zip url - ${rootUrl}`)
+            let message = `Zip not found: ${this.absoluteURI}`
+            if (rootUrl !== this.absoluteURI) {
+                message += ` from ${this.rootUrl}`
+            }
+            throw Error(message)
         }
 
         log.debug(`ZipRepo: Root=${this.rootUrl}`)
-        this.name = `zipRepo for ${this.rootUrl}`
         this.repoFactory = new RepositoryFactory(config)
 
         this.localZip = path.resolve(this.config.levainCacheDir, "zipRepos", "zips", path.basename(this.rootUrl))
         this.localDir = path.resolve(this.config.levainCacheDir, "zipRepos", "dirs", path.basename(this.rootUrl, ".zip"))
+    }
+
+    describe(): string {
+        let description: string = super.describe()
+        if (this.rootUrl !== this.absoluteURI) {
+            description += ` from ${this.rootUrl}`
+        }
+        return description
     }
 
     async init(): Promise<void> {
@@ -49,10 +61,6 @@ export default class ZipRepository extends AbstractRepository {
 
     invalidatePackages() {
         this.localRepo?.invalidatePackages();
-    }
-
-    get absoluteURI(): string {
-        return this.rootUrl;
     }
 
     listPackages(): Array<Package> {
@@ -71,7 +79,7 @@ export default class ZipRepository extends AbstractRepository {
         return this.localRepo.resolvePackage(packageName);
     }
 
-    readPackages(): Array<Package> {
+    async readPackages(): Promise<Array<Package>> {
         if (!this.localRepo) {
             throw Error(`${this.name} not loaded`)
         }

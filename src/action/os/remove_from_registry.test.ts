@@ -9,12 +9,12 @@ Deno.test('RemoveFromRegistry should remove package from registry', async () => 
     const registry = TestHelper.getNewTempRegistry()
     const pkg = TestHelper.getTestFilePackage();
     registry.add(pkg)
-    assertEquals(registry.length, 1)
+    assertEquals(registry.size(), 1)
     const action = new RemoveFromRegistry(registry)
 
     await action.execute(new MockPackage(), [pkg.name])
 
-    assertEquals(registry.length, 0)
+    assertEquals(registry.size(), 0)
 })
 Deno.test('RemoveFromRegistry should throw when no package was passed as parameter', async () => {
     await assertThrowsAsync(
@@ -32,10 +32,10 @@ Deno.test('RemoveFromRegistry should remove multiple packages', async () => {
     const registry = TestHelper.getNewTempRegistry()
     const pkg = TestHelper.getTestFilePackage();
     registry.add(pkg)
-    assertEquals(registry.length, 1)
+    assertEquals(registry.size(), 1)
     const action = new RemoveFromRegistry(registry)
 
     await action.execute(new MockPackage(), [pkg.name, 'package not found'])
 
-    assertEquals(registry.length, 0)
+    assertEquals(registry.size(), 0)
 })

@@ -1,7 +1,5 @@
 import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
 
-import Config from "../config.ts";
 import ExtraBin from "../extra_bin.ts";
 import OsUtils from "../os/os_utils.ts";
 
@@ -13,7 +11,8 @@ export default class GitUtils {
 
     readonly feedback = new ConsoleFeedback();
 
-    constructor(private config: Config) {
+    constructor() {
+        OsUtils.onlyInWindows()
         this.gitCmd = `${ExtraBin.gitDir}\\cmd\\git.exe`;
     }
 
@@ -26,6 +25,8 @@ export default class GitUtils {
     }
 
     static localBaseDir(gitUrl: string): string {
+        GitUtils.checkGitPath(gitUrl)
+
         let gitPath = GitUtils.parseGitPath(gitUrl)
         let gitBase = gitPath.url.replace(/\.git$/, '')
         if (gitPath.branch) {
@@ -35,19 +36,24 @@ export default class GitUtils {
     }
 
     async clone(gitUrl: string, dst: string, options?: any) {
-        this.checkGitPath(gitUrl)
+        GitUtils.checkGitPath(gitUrl)
 
         const gitPath = GitUtils.parseGitPath(gitUrl)
         log.debug(`# GIT - CLONE - ${JSON.stringify(gitPath)} => ${dst}`);
-        OsUtils.onlyInWindows();
+        OsUtils.onlyInWindows()
 
         this.feedback.start(`# GIT - CLONE - ${JSON.stringify(gitPath)} => ${dst}`)
         let tick = setInterval(() => this.feedback.show(), 300)
 
-        const branchOption = ( gitPath.branch ? `--branch ${gitPath.branch} ` : '')
+        const branchOption = (gitPath.branch ? `--branch ${gitPath.branch} ` : '')
         // We must have NO spaces after ${branchOption} in the command below
         const command = `cmd /u /c ${this.gitCmd} clone --progress ${branchOption}--single-branch --no-tags --depth 1 ${gitPath.url} ${dst}`;
-        await OsUtils.runAndLog(command);
+        try {
+            await OsUtils.runAndLog(command);
+        } catch (err) {
+            clearInterval(tick)
+            throw err
+        }
 
         clearInterval(tick)
         this.feedback.reset(`# GIT - CLONE - ${JSON.stringify(gitPath)} => ${dst} - OK`)
@@ -74,7 +80,7 @@ export default class GitUtils {
 
                 log.debug(`# GIT - PULL - ${dir} - OK`);
                 log.debug("");
-        
+
                 this.feedback.reset(`# GIT - PULL - ${dir} - OK`)
                 return;
             } catch (error) {
@@ -86,7 +92,7 @@ export default class GitUtils {
         throw Error(`Unable to GIT PULL ${dir}`)
     }
 
-    checkGitPath(url: string) {
+    static checkGitPath(url: string) {
         if (!GitUtils.isGitPath(url)) {
             throw new Error(`Invalid git url - ${url}`)
         }

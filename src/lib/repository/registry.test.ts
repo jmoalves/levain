@@ -9,7 +9,7 @@ Deno.test('Registry should start empty', () => {
     try {
         ensureDirSync(registry.rootDir)
 
-        assertEquals(registry.length, 0)
+        assertEquals(registry.size(), 0)
         assertEquals(registry.listPackages(), [])
     } finally {
         Deno.removeSync(registry.rootDir)
@@ -41,7 +41,7 @@ Deno.test('Registry should add package', () => {
     try {
         ensureDirSync(registry.rootDir)
         const pkg = TestHelper.getTestFilePackage()
-        assertEquals(registry.length, 0)
+        assertEquals(registry.size(), 0)
 
         registry.add(pkg)
 
@@ -59,10 +59,10 @@ Deno.test('Registry should remove package', () => {
         ensureDirSync(registry.rootDir)
         const pkg = TestHelper.getTestFilePackage()
         registry.add(pkg)
-        assertEquals(registry.length, 1)
+        assertEquals(registry.size(), 1)
 
         registry.remove(pkg.name)
-        assertEquals(registry.length, 0)
+        assertEquals(registry.size(), 0)
     } finally {
         Deno.removeSync(registry.rootDir, {recursive: true})
     }
