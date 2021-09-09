@@ -1,3 +1,5 @@
+import * as log from "https://deno.land/std/log/mod.ts";
+
 import Config from "../config.ts";
 import Package from "../package/package.ts";
 
@@ -15,7 +17,6 @@ export default class ChainRepository extends AbstractRepository {
     }
 
     readonly name: string;
-    private _packages: Array<Package> = [];
 
     async init(): Promise<void> {
         if (!this.repositories) {
@@ -25,26 +26,22 @@ export default class ChainRepository extends AbstractRepository {
         for (let repo of this.repositories) {
             await repo.init()
         }
-        this.loadPackages();
-    }
-
-    private loadPackages() {
-        this._packages = this.readPackages()
     }
 
     listPackages(): Array<Package> {
-        if (!this._packages) {
-            this.loadPackages()
-        }
-        return this._packages
+        return this.repositories
+            .flatMap(repo => repo.listPackages())
+            .reduce((uniquePkgs, pkg) =>
+                    uniquePkgs.find(includedPkg => includedPkg.name === pkg.name)
+                        ? uniquePkgs
+                        : [...uniquePkgs, pkg],
+                [] as Array<Package>)
     }
 
     invalidatePackages() {
         for (let repo of this.repositories) {
             repo.invalidatePackages()
         }
-
-        this._packages = this.readPackages()
     }
 
     get absoluteURI(): string {
@@ -67,12 +64,6 @@ export default class ChainRepository extends AbstractRepository {
     }
 
     readPackages(): Array<Package> {
-        return this.repositories
-            .flatMap(repo => repo.readPackages())
-            .reduce((uniquePkgs, pkg) =>
-                    uniquePkgs.find(includedPkg => includedPkg.name === pkg.name)
-                        ? uniquePkgs
-                        : [...uniquePkgs, pkg],
-                [] as Array<Package>)
+        return this.listPackages()
     }
 }

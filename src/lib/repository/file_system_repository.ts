@@ -33,7 +33,7 @@ export default class FileSystemRepository extends AbstractRepository {
             return;
         }
 
-        log.debug(`FSRepo init: Root=${this.rootDir}`)
+        log.debug(`FSRepo init: Root=${this.rootDir} - BEGIN`)
 
         if (!existsSync(this.rootDir)) {
             throw new Error(`addRepo - dir not found: ${this.rootDir}`)
@@ -44,7 +44,10 @@ export default class FileSystemRepository extends AbstractRepository {
             throw new Error(`addRepo - repository should be a dir: ${this.rootDir}`)
         }
 
+        log.debug(`FSRepo init: Root=${this.rootDir} - loadPackages`)
         this.loadPackages()
+
+        log.debug(`FSRepo init: Root=${this.rootDir} - END`)
     }
 
     get absoluteURI(): string {

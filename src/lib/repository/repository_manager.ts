@@ -115,7 +115,7 @@ export default class RepositoryManager {
     ////////////////////////////////////////////////////////////////////////////////
     async createRepositories(): Promise<void> {
         log.debug("");
-        log.debug("===");
+        log.debug("=== createRepositories");
 
         await this.createInstalledRepo()
         await this.createRegularRepository()
@@ -125,7 +125,7 @@ export default class RepositoryManager {
 
     async initRepositories(): Promise<void> {
         log.debug("");
-        log.debug("===");
+        log.debug("=== initRepositories");
 
         if (!this.repositories) {
             throw Error("Error initializing RepositoryManager - repositories not found")
@@ -135,7 +135,7 @@ export default class RepositoryManager {
         for (let key in repos) {
             if (repos[key]) {
                 let repo: Repository = repos[key]
-                log.debug(`Repo[${key}] - ${repo.name}`)
+                log.debug(`INIT Repo[${key}] - ${repo.name}`)
                 await repo.init()
             }
         }
