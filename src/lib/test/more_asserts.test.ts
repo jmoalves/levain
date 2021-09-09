@@ -42,7 +42,7 @@ Deno.test('MoreAsserts.assertArrayEndsWith should raise error when arrays are co
             assertArrayEndsWith([1, 2, 3], [6, 7, 8])
         },
         AssertionError,
-        "expected [1,2,3] to end with [6,7,8]"
+        // "expected [1,2,3] to end with [6,7,8]"
     )
 })
 Deno.test('MoreAsserts.assertArrayEndsWith should detect numeric array ending', () => {
@@ -54,7 +54,7 @@ Deno.test('MoreAsserts.assertArrayEndsWith should raise error when string array 
             assertArrayEndsWith(['abc', 'xyz'], ['abc'])
         },
         AssertionError,
-        `expected ["abc","xyz"] to end with ["abc"]`
+        // `expected ["abc","xyz"] to end with ["abc"]`
     )
 })
 Deno.test('MoreAsserts.assertArrayEndsWith should detect string array ending', () => {

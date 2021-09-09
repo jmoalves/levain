@@ -41,7 +41,7 @@ export function assertArrayEndsWith<T>(array: T[], expectedEnd: T[]) {
     assertEquals(
         ending,
         expectedEnd,
-        `expected ${JSON.stringify(array)} to end with ${JSON.stringify(expectedEnd)}`
+        // `expected ${JSON.stringify(array)} to end with ${JSON.stringify(expectedEnd)}`
     )
 }
 
