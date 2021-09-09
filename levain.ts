@@ -100,9 +100,9 @@ export default class Levain {
         this.logFiles = this.getLogFiles(myArgs['add-log'], myArgs['add-log-dir'])
         this.logger = await ConsoleAndFileLogger.setup(this.logFiles);
         this.logger.showLogFiles(this.logFiles);
-        if (myArgs['add-log'] || myArgs['add-log-dir']) {
-            CliUtil.askToContinue()
-        }
+        // if (myArgs['add-log'] || myArgs['add-log-dir']) {
+        //     CliUtil.askToContinue()
+        // }
         return this.logger
     }
 
