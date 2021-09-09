@@ -15,6 +15,6 @@ export default class RemoveFromRegistry implements Action {
         }
 
         const pkgName = parameters[0]
-        this.registry.remove(pkgName)
+        await this.registry.remove(pkgName)
     }
 }

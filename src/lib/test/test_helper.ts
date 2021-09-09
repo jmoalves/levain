@@ -81,11 +81,17 @@ export default class TestHelper {
         )
     }
 
+    static async getNewInitedTempRegistry(): Promise<Registry> {
+        const registry = this.getNewTempRegistry()
+        await registry.init()
+        return registry
+    }
+    
     static getNewTempRegistry(): Registry {
         return new Registry(
             TestHelper.getConfig(),
             Deno.makeTempDirSync()
-        );
+        )
     }
 
     static getNewTempDir(): string {

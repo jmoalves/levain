@@ -1,11 +1,11 @@
 import {ensureDirSync} from "https://deno.land/std/fs/mod.ts";
-import {assertEquals, assertThrows,} from "https://deno.land/std/testing/asserts.ts";
+import {assertEquals, assertThrowsAsync,} from "https://deno.land/std/testing/asserts.ts";
 
 import TestHelper from '../test/test_helper.ts';
 import FileSystemPackage from '../package/file_system_package.ts';
 
-Deno.test('Registry should start empty', () => {
-    const registry = TestHelper.getNewTempRegistry()
+Deno.test('Registry should start empty', async () => {
+    const registry = await TestHelper.getNewInitedTempRegistry()
     try {
         ensureDirSync(registry.rootDir)
 
@@ -18,14 +18,14 @@ Deno.test('Registry should start empty', () => {
 //
 // addPackage
 //
-Deno.test('Registry should throw when package file does not exist', () => {
-    const registry = TestHelper.getNewTempRegistry()
+Deno.test('Registry should throw when package file does not exist', async () => {
+    const registry = await TestHelper.getNewInitedTempRegistry()
     try {
         ensureDirSync(registry.rootDir)
         const pkg = TestHelper.getTestFilePackage('fileThatDoesNotExist.levain.yaml')
-        assertThrows(
-            () => {
-                registry.add(pkg)
+        await assertThrowsAsync(
+            async () => {
+                await registry.add(pkg)
             },
             Error,
             `Cannot find package ${pkg.fullPath}`,
@@ -35,15 +35,16 @@ Deno.test('Registry should throw when package file does not exist', () => {
     }
 })
 
-Deno.test('Registry should add package', () => {
+Deno.test('Registry should add package', async () => {
 
-    const registry = TestHelper.getNewTempRegistry()
+    const registry = await TestHelper.getNewInitedTempRegistry()
+
     try {
         ensureDirSync(registry.rootDir)
         const pkg = TestHelper.getTestFilePackage()
         assertEquals(registry.size(), 0)
 
-        registry.add(pkg)
+        await registry.add(pkg)
 
         const pkgNames = registry.listPackages()
             .map(it => (it as FileSystemPackage).fileName);
@@ -53,15 +54,15 @@ Deno.test('Registry should add package', () => {
     }
 })
 
-Deno.test('Registry should remove package', () => {
-    const registry = TestHelper.getNewTempRegistry()
+Deno.test('Registry should remove package', async () => {
+    const registry = await TestHelper.getNewInitedTempRegistry()
     try {
         ensureDirSync(registry.rootDir)
         const pkg = TestHelper.getTestFilePackage()
-        registry.add(pkg)
+        await registry.add(pkg)
         assertEquals(registry.size(), 1)
 
-        registry.remove(pkg.name)
+        await registry.remove(pkg.name)
         assertEquals(registry.size(), 0)
     } finally {
         Deno.removeSync(registry.rootDir, {recursive: true})
