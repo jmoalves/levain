@@ -14,6 +14,10 @@ import {envChain} from "../utils/utils.ts";
 import MockRepository from "../repository/mock_repository.ts";
 
 export default class TestHelper {
+    
+    static async setupTestLogger() {
+        return await TestLogger.setup()
+    }
 
     static getActionFromFactory(actionName: string): Action {
         const config = TestHelper.getConfig()
@@ -86,7 +90,7 @@ export default class TestHelper {
         await registry.init()
         return registry
     }
-    
+
     static getNewTempRegistry(): Registry {
         return new Registry(
             TestHelper.getConfig(),
@@ -114,10 +118,6 @@ export default class TestHelper {
 
     static resolveTestFile(filepath: string): string {
         return path.resolve('testdata', filepath);
-    }
-
-    static async setupTestLogger() {
-        return await TestLogger.setup()
     }
 
     static randomString(size: number = 32) {
