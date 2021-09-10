@@ -5,11 +5,11 @@ import {ensureDirSync, existsSync} from "https://deno.land/std/fs/mod.ts";
 import LevainVersion from "../levain_version.ts";
 
 import PackageManager from "./package/manager.ts";
-import UserInfoUtil from './user_info/userinfo_util.ts';
 import Registry from './repository/registry.ts';
 import RepositoryManager from "./repository/repository_manager.ts";
 import {FileUtils} from './fs/file_utils.ts';
 import {homedir} from './utils/utils.ts';
+import VarResolver from "./var_resolver.ts";
 
 export default class Config {
     packageManager: PackageManager;
@@ -36,7 +36,7 @@ export default class Config {
     private _autoUpdate: boolean | undefined
     private _shellCheckForUpdate: boolean | undefined
 
-    constructor(args: any) {
+    constructor(args: any = {}) {
         this.packageManager = new PackageManager(this);
         this._repoManager = new RepositoryManager(this);
 
@@ -209,87 +209,9 @@ export default class Config {
     }
 
     async replaceVars(text: string, pkgName?: string | undefined): Promise<string> {
-        // TODO: Refactor this... Use ChainOfResponsibility Pattern...
-
-        let myText: string = text;
-        let vars = myText.match(/\${[^${}]+}/);
-        while (vars) {
-            for (let v of vars) {
-                let vName = v.replace("$", "").replace("{", "").replace("}", "");
-                let value: string | undefined = undefined;
-
-                // We handle reserved words first
-                if (!value && vName.match(/^levain\./)) {
-                    switch (vName) {
-                        case "levain.login":
-                            if (!this.login) {
-                                new UserInfoUtil().askLogin(this)
-                            }
-                            value = this.login;
-                            break;
-
-                        case "levain.password":
-                            if (!this.password) {
-                                new UserInfoUtil().askPassword(this)
-                            }
-                            value = this.password;
-                            break;
-
-                        case "levain.email":
-                            if (!this.email) {
-                                await new UserInfoUtil().askEmail(this)
-                            }
-                            value = this.email;
-                            break;
-
-                        case "levain.fullname":
-                            if (!this.fullname) {
-                                await new UserInfoUtil().askFullName(this)
-                            }
-                            value = this.fullname;
-                            break;
-
-                        default:
-                        // nothing
-                    }
-
-                    if (!value) {
-                        throw new Error(`Global attribute ${vName} is undefined`);
-                    }
-                } else if (!value && vName == "home") {
-                    value = homedir();
-                } else if (!value && vName.search(/^pkg\.(.+)\.([^.]*)/) != -1) {
-                    let pkgVarPkg = vName.replace(/^pkg\.(.+)\.([^.]*)/, "$1");
-                    let pkgVarName = vName.replace(/^pkg\.(.+)\.([^.]*)/, "$2");
-                    value = await this.packageManager.getVar(pkgVarPkg, pkgVarName);
-                } else {
-                    // General items
-
-                    if (!value && pkgName) {
-                        value = await this.packageManager.getVar(pkgName, vName);
-                    }
-
-                    if (!value && this._env) {
-                        value = this._env[vName];
-                    }
-
-                    if (!value) {
-                        value = Deno.env.get(vName);
-                    }
-                }
-
-                if (value) {
-                    myText = myText.replace(v, value);
-                } else {
-                    throw new Error(`${v} is undefined`);
-                }
-            }
-
-            vars = myText.match(/\${[^${}]+}/);
-        }
-
-        return myText;
+        return VarResolver.replaceVars(text, pkgName, this)
     }
+
 
     public save(): void {
         let cfg: any = {};
