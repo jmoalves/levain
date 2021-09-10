@@ -28,7 +28,6 @@ Deno.test('CleanCommand should identify unknown option', () => {
     )
 })
 
-
 Deno.test('CleanCommand should clean cache and backup', () => {
     verifyClean([], true, true)
 })
