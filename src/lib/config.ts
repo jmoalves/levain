@@ -42,9 +42,10 @@ export default class Config {
 
         this.configEnv(args);
         this.configHome(args);
-        this.configCache(args);
 
         this.load();
+
+        this.configCache(args);
 
         log.debug("");
         log.debug(`=== Config: \n${JSON.stringify(this._env, null, 3)}`);

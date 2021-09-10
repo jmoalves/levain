@@ -61,7 +61,7 @@ Deno.test('Config should have a registry', () => {
     assertNotEquals(registry, undefined)
 })
 
-Deno.test('Config should have levainCache', () => {
+Deno.test('Config should have assertNotEquals default levainCache', () => {
     const config = new Config([])
 
     const dir = config.levainCacheDir
