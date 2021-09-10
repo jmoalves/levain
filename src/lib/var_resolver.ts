@@ -4,24 +4,40 @@ import Config from "./config.ts";
 export default class VarResolver {
     static async replaceVars(text: string, pkgName: string | undefined, config: Config): Promise<string> {
 
-        let replacedText: string = text;
-        let vars = VarResolver.matchVarsInText(replacedText);
-        while (vars) {
-            for (let myVar of vars) {
-                let varName = VarResolver.removeVarMarkers(myVar);
-                let varValue = await VarResolver.getVarValue(varName, pkgName, config);
+        let replacedText: string = text
+        let vars = VarResolver.findVarsInText(replacedText)
+        while (vars.length) {
+            for (const myVar of vars) {
+                const varText = myVar.text
+                const varName = myVar.name
+                const varValue = await VarResolver.getVarValue(varName, pkgName, config)
 
                 if (!varValue) {
-                    throw new Error(`Var ${varName} is undefined`);
+                    throw new Error(`Var ${varName} not defined`)
                 }
 
-                replacedText = replacedText.replace(myVar, varValue);
+                replacedText = replacedText.replace(varText, varValue)
             }
 
-            vars = VarResolver.matchVarsInText(replacedText);
+            vars = VarResolver.findVarsInText(replacedText)
         }
 
-        return replacedText;
+        return replacedText
+    }
+
+    static findVarsInText(text: string): { text: string, name: string }[] {
+
+        const varInTextRegExp = /(?<text>\${(?<name>[^${}]+)})/mg;
+        const matches = text.matchAll(varInTextRegExp)
+        if (!matches) {
+            return []
+        }
+        return [...matches]
+            .map(myVar => {
+                const text = myVar?.groups?.text ?? '<should be defined>'
+                const name = myVar?.groups?.name ?? '<should be defined>'
+                return {text, name,}
+            })
     }
 
     static async getVarValue(vName: string, pkgName: string | undefined, config: Config): Promise<string | undefined> {
@@ -59,7 +75,7 @@ export default class VarResolver {
 
                 case 'levain.cacheDir':
                     return config.levainCacheDir
-                
+
                 default:
                     throw new Error(`Levain attribute ${vName} is undefined`);
             }
@@ -87,14 +103,6 @@ export default class VarResolver {
 
             return undefined
         }
-    }
-
-    static removeVarMarkers(v: string) {
-        return v.replace("$", "").replace("{", "").replace("}", "");
-    }
-
-    static matchVarsInText(text: string): RegExpMatchArray | null {
-        return text.match(/\${[^${}]+}/);
     }
 
 }
