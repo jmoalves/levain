@@ -61,6 +61,7 @@ Deno.test('GitUtils.localBaseDir should throw error if url is invalid', () => {
         'Invalid git url - thisFolderDoesNotExist',
     )
 })
+
 Deno.test('GitUtils.clone should throw error if url is invalid', async () => {
     await assertThrowsAsync(
         async () => {

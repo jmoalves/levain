@@ -12,8 +12,11 @@ export default class GitUtils {
     readonly feedback = new ConsoleFeedback();
 
     constructor() {
-        OsUtils.onlyInWindows()
-        this.gitCmd = `${ExtraBin.gitDir}\\cmd\\git.exe`;
+        if (OsUtils.isWindows()) {
+            this.gitCmd = `${ExtraBin.gitDir}\\cmd\\git.exe`
+        } else {
+            this.gitCmd = `/usr/bin/git`
+        }
     }
 
     static isGitPath(gitUrl: string): boolean {
@@ -32,7 +35,7 @@ export default class GitUtils {
         if (gitPath.branch) {
             gitBase += '_' + gitPath.branch
         }
-        return gitBase.replace(/(?:\/|\\|:|@| )+/g, '_')
+        return gitBase.replace(/[\/\\:@ ]+/g, '_')
     }
 
     async clone(gitUrl: string, dst: string, options?: any) {
