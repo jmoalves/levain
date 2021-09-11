@@ -6,6 +6,7 @@ import {
     assertThrowsAsync
 } from "https://deno.land/std/testing/asserts.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
+import {ensureDirSync} from "https://deno.land/std/fs/mod.ts";
 
 import Config from "../config.ts";
 import FileSystemPackage from "../package/file_system_package.ts";
@@ -63,65 +64,66 @@ Deno.test({
     name: 'FileSystemRepository should list packages from an empty dir',
     // only: true,
     fn: async () => {
-        const repo = await getInitedRepo('testdata/file_system_repo/empty')
+        const emptyRepo = 'testdata/file_system_repo/empty'
+        ensureDirSync(emptyRepo)
+        const repo = await getInitedRepo(emptyRepo)
         const packagesFound = repo.listPackages()
         assertEquals([], packagesFound)
     },
 })
+Deno.test('FileSystemRepository should list .yml and .yaml packages, and include subfolder', async () => {
+    const repo = await getInitedRepo()
 
-    Deno.test('FileSystemRepository should list .yml and .yaml packages, and include subfolder', async () => {
-        const repo = await getInitedRepo()
+    const packages = repo.listPackages()
 
-        const packages = repo.listPackages()
+    const packageNames = packages.map(pkg => pkg.name)
+    assertArrayEqualsInAnyOrder(packageNames, ['amazingYml', 'awesomeYaml', 'insideSubfolder'])
+})
 
-        const packageNames = packages.map(pkg => pkg.name)
-        assertArrayEqualsInAnyOrder(packageNames, ['amazingYml', 'awesomeYaml', 'insideSubfolder'])
-    })
+Deno.test('FileSystemRepository should ignore node_modules', async () => {
+    const repo = await getInitedRepo()
 
-    Deno.test('FileSystemRepository should ignore node_modules', async () => {
-        const repo = await getInitedRepo()
+    const packages = repo.listPackages()
 
-        const packages = repo.listPackages()
+    const packageNames = packages.map(pkg => pkg.name)
+    assert(!packageNames.includes('hidden-by-folder'))
+})
 
-        const packageNames = packages.map(pkg => pkg.name)
-        assert(!packageNames.includes('hidden-by-folder'))
-    })
+Deno.test('FileSystemRepository should list FileSystemPackages', async () => {
+    const repo = await getInitedRepo()
 
-    Deno.test('FileSystemRepository should list FileSystemPackages', async () => {
-        const repo = await getInitedRepo()
+    const packages = repo.listPackages()
 
-        const packages = repo.listPackages()
-
-        assertNotEquals(0, packages?.length, 'packages should not be empty')
-        packages.forEach(pkg => assert(pkg instanceof FileSystemPackage))
-    })
+    assertNotEquals(0, packages?.length, 'packages should not be empty')
+    packages.forEach(pkg => assert(pkg instanceof FileSystemPackage))
+})
 
 //
 // resolvePackage
 //
-    Deno.test('FileSystemRepository should resolve package by name', async () => {
-        const repo = await getInitedRepo()
+Deno.test('FileSystemRepository should resolve package by name', async () => {
+    const repo = await getInitedRepo()
 
-        const pkg = repo.resolvePackage('amazingYml')
+    const pkg = repo.resolvePackage('amazingYml')
 
-        assert(pkg instanceof FileSystemPackage)
-        assertEquals(pkg.name, 'amazingYml')
-    })
+    assert(pkg instanceof FileSystemPackage)
+    assertEquals(pkg.name, 'amazingYml')
+})
 
-    Deno.test('FileSystemRepository should resolve package that does not exists as undefined', async () => {
-        const repo = await getInitedRepo()
+Deno.test('FileSystemRepository should resolve package that does not exists as undefined', async () => {
+    const repo = await getInitedRepo()
 
-        const pkg = repo.resolvePackage('--this-package-does-not-exist--')
+    const pkg = repo.resolvePackage('--this-package-does-not-exist--')
 
-        assertEquals(pkg, undefined)
-    })
+    assertEquals(pkg, undefined)
+})
 
-    async function getInitedRepo(rootDir: string = './testdata/file_system_repo/testRepo'): Promise<FileSystemRepository> {
-        const repo = getRepo(rootDir)
-        await repo.init()
-        return repo
-    }
+async function getInitedRepo(rootDir: string = './testdata/file_system_repo/testRepo'): Promise<FileSystemRepository> {
+    const repo = getRepo(rootDir)
+    await repo.init()
+    return repo
+}
 
-    function getRepo(rootDir: string = './testdata/file_system_repo/testRepo'): FileSystemRepository {
-        return new FileSystemRepository(new Config([]), rootDir)
-    }
+function getRepo(rootDir: string = './testdata/file_system_repo/testRepo'): FileSystemRepository {
+    return new FileSystemRepository(new Config([]), rootDir)
+}

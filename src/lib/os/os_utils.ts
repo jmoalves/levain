@@ -182,10 +182,12 @@ export default class OsUtils {
     }
 
     static async sanitizeUserPath() {
-        const path = await this.getUserPath()
-        const sanitizedPath = this.sanitizePathArray(path)
-        if (path != sanitizedPath) {
-            await this.setUserPath(sanitizedPath)
+        if (OsUtils.isWindows()) {
+            const path = await this.getUserPath()
+            const sanitizedPath = this.sanitizePathArray(path)
+            if (path != sanitizedPath) {
+                await this.setUserPath(sanitizedPath)
+            }
         }
     }
 

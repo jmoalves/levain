@@ -90,23 +90,20 @@ if (OsUtils.isWindows()) {
             '(os error 1314)',
         )
     })
-}
 
-Deno.test('OsUtils.createShortcut should create a shortcut/symlink to a file', async () => {
-    // Given that I have an empty dir
-    const tempDir = TestHelper.getNewTempDir()
-    // And a file
-    const aFile = TestHelper.getNewTempFile()
-    const aFileName = path.basename(aFile)
+    Deno.test('OsUtils.createShortcut should create a shortcut/symlink to a file', async () => {
+        // Given that I have an empty dir
+        const tempDir = TestHelper.getNewTempDir()
+        // And a file
+        const aFile = TestHelper.getNewTempFile()
+        const aFileName = path.basename(aFile)
 
-    // When I create a symlink to the file in the empty dir
-    await OsUtils.createShortcut(aFile, tempDir)
+        // When I create a symlink to the file in the empty dir
+        await OsUtils.createShortcut(aFile, tempDir)
 
-    // Then the new symlink should exist
-    assertPathExists(path.join(tempDir, `${aFileName}.lnk`))
-})
-
-if (OsUtils.isWindows()) {
+        // Then the new symlink should exist
+        assertPathExists(path.join(tempDir, `${aFileName}.lnk`))
+    })
 
     Deno.test({
         name: 'OsUtils.addToDesktop should create a shortcut to a file',
