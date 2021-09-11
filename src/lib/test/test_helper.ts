@@ -99,7 +99,9 @@ export default class TestHelper {
     }
 
     static getNewTempDir(): string {
-        return Deno.makeTempDirSync()
+        const tempDir = Deno.makeTempDirSync({prefix: 'levain-'});
+        console.debug(`getNewTempDir ${tempDir}`)
+        return tempDir
     }
 
     static getNewTempFile(originalFile?: string): string {

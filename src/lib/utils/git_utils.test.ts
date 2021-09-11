@@ -1,6 +1,8 @@
 import {assert, assertEquals, assertThrows, assertThrowsAsync} from "https://deno.land/std/testing/asserts.ts";
 
 import GitUtils from "./git_utils.ts";
+import TestHelper from "../test/test_helper.ts";
+import {assertDirCountGreaterOrEqualTo} from "../test/more_asserts.ts";
 
 const validUrls = [
     "git@github.com:jmoalves/levain.git",
@@ -120,4 +122,21 @@ Deno.test('GitUtils.clone should throw error if url is invalid', async () => {
         Error,
         'Invalid git url - thisSourceDoesNotExist',
     )
+})
+Deno.test('GitUtils.clone should clone a repo', async () => {
+    const tempFolder = TestHelper.getNewTempDir()
+    const gitRepo = 'https://github.com/begin-examples/deno-hello-world.git'
+
+    await new GitUtils().clone(gitRepo, tempFolder)
+
+    assertDirCountGreaterOrEqualTo(tempFolder, 3)
+})
+Deno.test('GitUtils.pull should pull a repo', async () => {
+    const tempFolder = TestHelper.getNewTempDir()
+    const gitRepo = 'https://github.com/begin-examples/deno-hello-world.git'
+
+    await new GitUtils().clone(gitRepo, tempFolder)
+    await new GitUtils().pull(tempFolder)
+
+    assertDirCountGreaterOrEqualTo(tempFolder, 3)
 })

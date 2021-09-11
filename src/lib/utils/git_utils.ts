@@ -43,16 +43,18 @@ export default class GitUtils {
 
         const gitPath = GitUtils.parseGitPath(gitUrl)
         log.debug(`# GIT - CLONE - ${JSON.stringify(gitPath)} => ${dst}`);
-        OsUtils.onlyInWindows()
 
         this.feedback.start(`# GIT - CLONE - ${JSON.stringify(gitPath)} => ${dst}`)
         let tick = setInterval(() => this.feedback.show(), 300)
 
         const branchOption = (gitPath.branch ? `--branch ${gitPath.branch} ` : '')
         // We must have NO spaces after ${branchOption} in the command below
-        const command = `cmd /u /c ${this.gitCmd} clone --progress ${branchOption}--single-branch --no-tags --depth 1 ${gitPath.url} ${dst}`;
+        let gitCommand = `${this.gitCmd} clone --progress ${branchOption}--single-branch --no-tags --depth 1 ${gitPath.url} ${dst}`;
+        if (OsUtils.isWindows()) {
+            gitCommand = `cmd /u /c ${gitCommand}`
+        }
         try {
-            await OsUtils.runAndLog(command);
+            await OsUtils.runAndLog(gitCommand);
         } catch (err) {
             clearInterval(tick)
             throw err
@@ -64,12 +66,17 @@ export default class GitUtils {
 
     async pull(dir: string, options?: any) {
         log.debug(`# GIT - PULL - ${dir}`);
-        OsUtils.onlyInWindows();
 
         this.feedback.start(`# GIT - PULL - ${dir}`)
         let tick = setInterval(() => this.feedback.show(), 300)
 
-        const command = `cmd /u /c pushd ${dir} && ${this.gitCmd} pull --force -q --progress --no-tags --depth=1 --update-shallow --allow-unrelated-histories --no-commit --rebase && popd`;
+        let gitCommand = `${this.gitCmd} pull --force -q --progress --no-tags --depth=1 --update-shallow --allow-unrelated-histories --no-commit --rebase`;
+        if (OsUtils.isWindows()) {
+            gitCommand = `cmd /u /c pushd ${dir} && ${gitCommand} && popd`
+        } else {
+            gitCommand = `cd ${dir} && ${gitCommand}`
+        }
+
         let tries = 0;
         do {
             tries++;
@@ -78,7 +85,7 @@ export default class GitUtils {
             }
 
             try {
-                await OsUtils.runAndLog(command);
+                await OsUtils.runAndLog(gitCommand);
                 clearInterval(tick)
 
                 log.debug(`# GIT - PULL - ${dir} - OK`);
