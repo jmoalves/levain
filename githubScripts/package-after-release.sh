@@ -143,7 +143,7 @@ rm -rf ${curlDir}
 unzip ${utilWin}/curl.zip -d ${curlDir}
 for dir in ${curlDir}/*; do
   cd $dir
-  mv -v * $( dirname ${curlDir})
+  mv -v * ${curlDir}
   cd -
 done
 
