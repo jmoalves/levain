@@ -134,6 +134,17 @@ ${myDeno} cache --unstable --reload ${distDir}/levain.ts
 #${myDeno} bundle --unstable --reload ${distDir}/levain.ts ${distDir}/levain.bundle.js
 # bundle problems - https://github.com/jmoalves/levain/issues/13
 
+### Get extra-bin binaries
+## curl
+curlUrl=https://curl.se/windows/dl-7.78.0_6/curl-7.78.0_6-win64-mingw.zip
+curlDir=${distDir}/extra-bin/windows/curl
+curl -ks -o ${utilWin}/curl.zip -L ${curlUrl}
+rm -rf ${curlDir}
+unzip ${utilWin}/curl.zip -d ${curlDir}
+for $file in ${curlDir}; do
+  mv $file $( basename ${curlDir})
+done
+
 ### levain cleanup
 cp ${distDir}/bootstrap/levainBootstrap.cmd ${distRoot}
 rm -rf ${distDir}/bootstrap
