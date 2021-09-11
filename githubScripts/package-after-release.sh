@@ -141,8 +141,10 @@ curlDir=${distDir}/extra-bin/windows/curl
 curl -ks -o ${utilWin}/curl.zip -L ${curlUrl}
 rm -rf ${curlDir}
 unzip ${utilWin}/curl.zip -d ${curlDir}
-for file in ${curlDir}/*; do
-  mv -v $file $( basename ${curlDir})
+for dir in ${curlDir}/*; do
+  cd $dir
+  mv -v * $( dirname ${curlDir})
+  cd -
 done
 
 ### levain cleanup
