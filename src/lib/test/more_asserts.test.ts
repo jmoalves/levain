@@ -5,10 +5,12 @@ import {
     assertArrayEndsWith,
     assertArrayEqualsInAnyOrder,
     assertDirCount,
+    assertDirCountGreaterOrEqualTo,
     assertFileSizeAprox,
     assertFind,
     assertFolderDoesNotInclude,
     assertFolderIncludes,
+    assertGreaterOrEqualTo,
     assertGreaterThan,
     assertNotFind,
     assertNumberEquals,
@@ -147,7 +149,12 @@ Deno.test('MoreAsserts.assertDirCount should throw when folder does not exist', 
         'this-folder-does-not-exist',
     )
 })
-
+//
+// assertDirCountGreaterOrEqualTo
+//
+Deno.test('MoreAsserts.assertDirCountGreaterOrEqualTo should verify element count', () => {
+    assertDirCountGreaterOrEqualTo('testdata/more_asserts', 3)
+})
 //
 // assertFileSize
 //
@@ -201,4 +208,46 @@ Deno.test('MoreAsserts.assertNumberEquals should work with zeros', () => {
 //
 Deno.test('MoreAsserts.assertGreaterThan should work with numbers', () => {
     assertGreaterThan(4, 1)
+})
+Deno.test('MoreAsserts.assertGreaterThan should fail with a message', () => {
+    assertThrows(
+        () => {
+            assertGreaterThan(2, 2000)
+        },
+        Error,
+        'Expected 2 to be greater than 2000'
+    )
+})
+Deno.test('MoreAsserts.assertGreaterThan should fail with custom message', () => {
+    assertThrows(
+        () => {
+            assertGreaterThan(1, 321, 'Do or do not, there is no try')
+        },
+        Error,
+        'Do or do not, there is no try'
+    )
+})
+//
+// assertGreaterOrEqualTo
+//
+Deno.test('MoreAsserts.assertGreaterOrEqualTo should work with numbers', () => {
+    assertGreaterOrEqualTo(12, 12)
+})
+Deno.test('MoreAsserts.assertGreaterOrEqualTo should fail with a message', () => {
+    assertThrows(
+        () => {
+            assertGreaterOrEqualTo(2, 2000)
+        },
+        Error,
+        'Expected 2 to be greater or equal to 2000'
+    )
+})
+Deno.test('MoreAsserts.assertGreaterOrEqualTo should fail with custom message', () => {
+    assertThrows(
+        () => {
+            assertGreaterOrEqualTo(1, 321, 'Always in motion is the future.')
+        },
+        Error,
+        'Always in motion is the future.',
+    )
 })

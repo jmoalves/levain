@@ -119,6 +119,10 @@ export function assertDirCount(dir: string, expectedCount: number, msg?: string 
     assertEquals(DirUtils.count(dir), expectedCount, msg)
 }
 
+export function assertDirCountGreaterOrEqualTo(dir: string, minCount: number, msg?: string | undefined) {
+    assertGreaterOrEqualTo(DirUtils.count(dir), minCount, msg)
+}
+
 export function assertFileSizeAprox(path: string, expectedSize: number) {
     const size = FileUtils.getSize(path)
 
@@ -145,7 +149,18 @@ export function assertNumberEquals(current: number, expected: number, tolerance:
     }
 }
 
-export function assertGreaterThan(number: number, otherNumber: number) {
-    assert(number > otherNumber, `Expected ${number} to be greater than ${otherNumber}`)
+export function assertGreaterThan(
+    number: number,
+    otherNumber: number,
+    msg: string = `Expected ${number} to be greater than ${otherNumber}`
+) {
+    assert(number > otherNumber, msg)
 }
 
+export function assertGreaterOrEqualTo(
+    number: number,
+    otherNumber: number,
+    msg: string = `Expected ${number} to be greater or equal to ${otherNumber}`
+) {
+    assert(number >= otherNumber, msg)
+}
