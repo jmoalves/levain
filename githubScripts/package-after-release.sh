@@ -145,6 +145,7 @@ for dir in ${curlDir}/*; do
   cd $dir
   mv -v * ${curlDir}
   cd -
+  rmdir $dir
 done
 
 ### levain cleanup
