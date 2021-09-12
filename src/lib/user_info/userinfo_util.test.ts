@@ -20,7 +20,7 @@ Deno.test('UserInfoUtil should load user info', async () => {
 Deno.test('UserInfoUtil should work when user info is not found', async () => {
     const userInfoUtil = new UserInfoUtil('./this_file_does_not_exist')
 
-    userInfoUtil.load()
+    await userInfoUtil.load()
 
     assertEquals(userInfoUtil.userInfo.login, '')
     assertEquals(userInfoUtil.userInfo.email, '')

@@ -177,6 +177,10 @@ export default class OsUtils {
         Deno.chmodSync(path, 0o444)
     }
 
+    static removePermissions(path: string) {
+        Deno.chmodSync(path, 0)
+    }
+
     static makeReadWrite(path: string) {
         Deno.chmodSync(path, 0o777)
     }

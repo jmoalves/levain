@@ -1,12 +1,12 @@
 import * as path from "https://deno.land/std/path/mod.ts";
 import {assert, assertEquals, assertNotEquals, assertThrows,} from "https://deno.land/std/testing/asserts.ts";
-import {ensureDirSync, existsSync} from "https://deno.land/std/fs/mod.ts";
+import {ensureDirSync, ensureFileSync, existsSync} from "https://deno.land/std/fs/mod.ts";
 
 import OsUtils from '../os/os_utils.ts';
 import TestHelper from '../test/test_helper.ts';
 import {assertNumberEquals} from "../test/more_asserts.ts";
 
-import { FileUtils } from "./file_utils.ts";
+import {FileUtils} from "./file_utils.ts";
 
 const readOnlyFolder = './testdata/file_utils/read_only_folder';
 const folderThatDoesNotExist = './testdata/file_utils/--does_not_exist--';
@@ -78,11 +78,13 @@ Deno.test('FileUtils - should detect a RW permission on a file', () => {
 if (!OsUtils.isWindows()) {
     Deno.test('FileUtils - should detect read only folder', () => {
         const path = readOnlyFolder
+        ensureDirSync(readOnlyFolder)
         OsUtils.makeReadOnly(path)
         verifyFileReadWrite(path, true, false);
     })
     Deno.test('FileUtils - should detect read only file', () => {
         const path = readOnlyFile
+        ensureFileSync(readOnlyFile)
         OsUtils.makeReadOnly(path)
         verifyFileReadWrite(path, true, false);
     })
@@ -92,6 +94,10 @@ Deno.test('FileUtils - should detect a folder without permissions', () => {
     const fileUri = OsUtils.isWindows()
         ? 'd:\\Config.Msi'
         : './testdata/file_utils/cannot_read_this_folder'
+
+    ensureDirSync(fileUri)
+    OsUtils.removePermissions(fileUri)
+
     if (!OsUtils.isWindows() && !existsSync(fileUri)) {
         throw `Please create the folder ${fileUri} with read permission denied`
     }
