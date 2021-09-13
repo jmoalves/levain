@@ -131,12 +131,38 @@ Deno.test('GitUtils.clone should clone a repo', async () => {
 
     assertDirCountGreaterOrEqualTo(tempFolder, 3)
 })
-Deno.test('GitUtils.pull should pull a repo', async () => {
-    const tempFolder = TestHelper.getNewTempDir()
-    const gitRepo = 'https://github.com/begin-examples/deno-hello-world.git'
+Deno.test({
+    name: 'GitUtils.pull should pull a repo',
+    fn: async () => {
+        const tempFolder = TestHelper.getNewTempDir()
+        const gitRepo = 'https://github.com/begin-examples/deno-hello-world.git'
 
-    await new GitUtils().clone(gitRepo, tempFolder)
-    await new GitUtils().pull(tempFolder)
+        const gitUtils = new GitUtils();
+        await gitUtils.clone(gitRepo, tempFolder)
+        await gitUtils.pull(tempFolder)
 
-    assertDirCountGreaterOrEqualTo(tempFolder, 3)
+        assertDirCountGreaterOrEqualTo(tempFolder, 3)
+    },
+    // only: true,
+})
+Deno.test({
+    name: 'GitUtils.pull should throw an error if folder is not a git repo',
+    fn: async () => {
+        const testLogger = await TestHelper.setupTestLogger()
+
+        const folder = TestHelper.folderThatAlwaysExists
+        const gitUtils = new GitUtils()
+
+        await assertThrowsAsync(
+            async () => {
+                await gitUtils.pull(folder)
+            },
+            Error,
+            'Unable to GIT PULL',
+        )
+
+        const lastMessage = testLogger.messages[testLogger.messages.length - 1]
+        assertEquals(lastMessage, 'ERROR git error - try 3 - Error 128 running "/usr/bin/git pull --force -q --progress --no-tags --depth=1 --update-shallow --allow-unrelated-histories --no-commit --rebase\nfatal: not a git repository (or any of the parent directories): .git\n"')
+    },
+    // only: true
 })

@@ -38,7 +38,7 @@ export default class GitUtils {
         return gitBase.replace(/[\/\\:@ ]+/g, '_')
     }
 
-    async clone(gitUrl: string, dst: string, options?: any) {
+    async clone(gitUrl: string, dst: string) {
         GitUtils.checkGitPath(gitUrl)
 
         const gitPath = GitUtils.parseGitPath(gitUrl)
@@ -64,42 +64,40 @@ export default class GitUtils {
         this.feedback.reset(`# GIT - CLONE - ${JSON.stringify(gitPath)} => ${dst} - OK`)
     }
 
-    async pull(dir: string, options?: any) {
-        log.debug(`# GIT - PULL - ${dir}`);
+    async pull(workingDir: string) {
+        log.debug(`# GIT - PULL - ${workingDir}`);
 
-        this.feedback.start(`# GIT - PULL - ${dir}`)
+        this.feedback.start(`# GIT - PULL - ${workingDir}`)
         let tick = setInterval(() => this.feedback.show(), 300)
 
-        let gitCommand = `${this.gitCmd} pull --force -q --progress --no-tags --depth=1 --update-shallow --allow-unrelated-histories --no-commit --rebase`;
+        let gitCommand: string | string[] = `${this.gitCmd} pull --force -q --progress --no-tags --depth=1 --update-shallow --allow-unrelated-histories --no-commit --rebase`;
         if (OsUtils.isWindows()) {
-            gitCommand = `cmd /u /c pushd ${dir} && ${gitCommand} && popd`
-        } else {
-            gitCommand = `cd ${dir} && ${gitCommand}`
+            gitCommand = `cmd /u /c pushd ${workingDir} && ${gitCommand} && popd`
         }
 
         let tries = 0;
         do {
             tries++;
             if (tries > 1) {
-                log.debug(`# GIT - PULL - ${dir} - RETRY`);
+                log.debug(`# GIT - PULL - ${workingDir} - RETRY`);
             }
 
             try {
-                await OsUtils.runAndLog(gitCommand);
+                await OsUtils.runAndLog(gitCommand, workingDir);
                 clearInterval(tick)
 
-                log.debug(`# GIT - PULL - ${dir} - OK`);
+                log.debug(`# GIT - PULL - ${workingDir} - OK`);
                 log.debug("");
 
-                this.feedback.reset(`# GIT - PULL - ${dir} - OK`)
+                this.feedback.reset(`# GIT - PULL - ${workingDir} - OK`)
                 return;
             } catch (error) {
-                log.debug(`${tries} - git error - ${error}`)
+                log.error(`git error - try ${tries} - ${error}`)
             }
         } while (tries < 3)
 
         clearInterval(tick)
-        throw Error(`Unable to GIT PULL ${dir}`)
+        throw Error(`Unable to GIT PULL ${workingDir}`)
     }
 
     static checkGitPath(url: string) {
