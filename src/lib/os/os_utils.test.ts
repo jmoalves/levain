@@ -265,3 +265,16 @@ if (OsUtils.isWindows()) {
         assert(await OsUtils.isInUserPath(folder), `Should have the folder ${folder} in path - ${await OsUtils.getUserPath()}`);
     })
 }
+//
+// runAndLog
+//
+Deno.test('OsUtils.runAndLog should execute and return stdout', async () => {
+    const stdout = await OsUtils.runAndLog('pwd')
+
+    assertMatch(stdout, /[\\\/]levain/)
+})
+Deno.test('OsUtils.runAndLog should accept a workDir', async () => {
+    const stdout = await OsUtils.runAndLog('pwd', TestHelper.getTestDataPath())
+
+    assertMatch(stdout, /[\\\/]testdata$/m)
+})

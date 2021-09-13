@@ -130,7 +130,7 @@ export default class OsUtils {
     }
 
 
-    static async runAndLog(command: string | string[]): Promise<string> {
+    static async runAndLog(command: string | string[], workDir = '.'): Promise<string> {
         log.debug(`runAndLog\n${command}`)
 
         let args: string[];
@@ -141,15 +141,17 @@ export default class OsUtils {
             args = command
         } else {
             log.error(command)
-            throw `********** Unkown command type ${typeof command}`
+            throw `********** Unknown command type ${typeof command}`
         }
 
         // https://github.com/denoland/deno/issues/4568
-        const proc = Deno.run({
+        const runOptions: Deno.RunOptions = {
             cmd: args,
+            cwd: workDir,
             stderr: 'piped',
             stdout: 'piped',
-        });
+        }
+        const proc = Deno.run(runOptions);
 
         const [
             stderr,
@@ -159,7 +161,7 @@ export default class OsUtils {
             proc.stderrOutput(),
             proc.output(),
             proc.status()
-        ]);
+        ])
 
         proc.close()
 
