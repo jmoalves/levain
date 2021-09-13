@@ -78,6 +78,18 @@ export default class OsUtils {
         return this.getOs() === "windows"
     }
 
+    static isPosix(): boolean {
+        return this.isMacOs() || this.isLinux()
+    }
+
+    static isMacOs(): boolean {
+        return this.getOs() === "darwin"
+    }
+
+    static isLinux(): boolean {
+        return this.getOs() === "linux"
+    }
+
     static getOs(): string {
         return Deno.build.os;
     }

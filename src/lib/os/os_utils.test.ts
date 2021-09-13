@@ -71,6 +71,23 @@ Deno.test('OsUtils should know if we are running in Windows', () => {
     assertEquals(OsUtils.isWindows(), shouldBeWindows)
 })
 
+Deno.test('OsUtils should know if we are running in Posix', () => {
+    const os: string = Deno.build.os
+    const shouldBePosix = ['linux', 'darwin'].includes(os)
+    assertEquals(OsUtils.isPosix(), shouldBePosix)
+})
+
+Deno.test('OsUtils should know if we are running in macOS', () => {
+    const os = Deno.build.os
+    const shouldBeMacOs = (os === 'darwin')
+    assertEquals(OsUtils.isMacOs(), shouldBeMacOs)
+})
+
+Deno.test('OsUtils should know if we are running in Linux', () => {
+    const os = Deno.build.os
+    const shouldBeLinux = (os === 'linux')
+    assertEquals(OsUtils.isLinux(), shouldBeLinux)
+})
 
 if (OsUtils.isWindows()) {
     Deno.test('Deno.symlinkSync throws unnecessary permission error. Use it in OsUtils.createShortcut when fixed.', () => {
