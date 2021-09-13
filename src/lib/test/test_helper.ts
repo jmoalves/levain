@@ -14,7 +14,7 @@ import {envChain} from "../utils/utils.ts";
 import MockRepository from "../repository/mock_repository.ts";
 
 export default class TestHelper {
-    
+
     static async setupTestLogger() {
         return await TestLogger.setup()
     }
@@ -143,5 +143,11 @@ export default class TestHelper {
         const mockRepository = new MockRepository()
         await mockRepository.init()
         return mockRepository;
+    }
+
+    static getTestDataPath(aditionalPath: string = '') {
+        const __dirname = path.dirname(path.fromFileUrl(import.meta.url))
+        const testDataPath = path.join(__dirname, '../../../testdata')
+        return path.resolve(testDataPath, aditionalPath)
     }
 }

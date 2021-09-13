@@ -8,9 +8,12 @@ import {assertNumberEquals} from "../test/more_asserts.ts";
 
 import {FileUtils} from "./file_utils.ts";
 
-const readOnlyFolder = './testdata/file_utils/read_only_folder';
-const folderThatDoesNotExist = './testdata/file_utils/--does_not_exist--';
-const readOnlyFile = './testdata/file_utils/read_only.txt';
+const readOnlyFolder = TestHelper.getTestDataPath('file_utils/read_only_folder')
+const folderThatDoesNotExist = TestHelper.getTestDataPath('file_utils/--does_not_exist--')
+const readOnlyFile = TestHelper.getTestDataPath('file_utils/read_only.txt')
+const readWriteFolder = TestHelper.getTestDataPath('file_utils/')
+const readWriteFile = TestHelper.getTestDataPath('file_utils/can_read_and_write_this_file.txt')
+const noPermissionsFolder = TestHelper.getTestDataPath('file_utils/cannot_read_this_folder')
 
 Deno.test('FileUtils - should create a backup for a given file in the same dir', () => {
     let src = Deno.makeTempFileSync();
@@ -58,21 +61,12 @@ Deno.test('FileUtils - should get file permissions in Windows', () => {
 //
 // isReadOnly
 //
-function verifyFileReadWrite(fileUri: string, shouldRead: boolean, shouldWrite: boolean = true) {
-    assertEquals(FileUtils.canReadSync(fileUri), shouldRead, 'shouldRead')
-    // FIXME Will be able to use the assertion below when Deno.statSync.mode is fully implemented for Windows
-    if (!OsUtils.isWindows()) {
-        assertEquals(FileUtils.canWriteSync(fileUri), shouldWrite, 'shouldWrite')
-    }
-}
-
 Deno.test('FileUtils - should detect a RW permission on a folder', () => {
-    const fileUri = './testdata/file_utils/'
+    const fileUri = readWriteFolder
     verifyFileReadWrite(fileUri, true, true);
 })
-
 Deno.test('FileUtils - should detect a RW permission on a file', () => {
-    const fileUri = './testdata/file_utils/can_read_and_write_this_file.txt'
+    const fileUri = readWriteFile
     verifyFileReadWrite(fileUri, true, true);
 })
 if (!OsUtils.isWindows()) {
@@ -93,25 +87,31 @@ Deno.test('FileUtils - should detect a folder without permissions', () => {
     // FIXME Will not need the folowing line when Deno.statSync.mode is fully implemented for Windows
     const fileUri = OsUtils.isWindows()
         ? 'd:\\Config.Msi'
-        : './testdata/file_utils/cannot_read_this_folder'
+        : noPermissionsFolder
 
     ensureDirSync(fileUri)
     OsUtils.removePermissions(fileUri)
 
-    if (!OsUtils.isWindows() && !existsSync(fileUri)) {
-        throw `Please create the folder ${fileUri} with read permission denied`
-    }
     verifyFileReadWrite(fileUri, false, false);
 })
 Deno.test('FileUtils - should not read or write a folder that does not exist', () => {
     const fileUri = folderThatDoesNotExist
     verifyFileReadWrite(fileUri, false, false);
 })
+
+function verifyFileReadWrite(fileUri: string, shouldRead: boolean, shouldWrite: boolean = true) {
+    assertEquals(FileUtils.canReadSync(fileUri), shouldRead, `should be able to read ${fileUri}`)
+    // FIXME Will be able to use the assertion below when Deno.statSync.mode is fully implemented for Windows
+    if (!OsUtils.isWindows()) {
+        assertEquals(FileUtils.canWriteSync(fileUri), shouldWrite, `should be able to write ${fileUri}`)
+    }
+}
+
 //
 // isDir
 //
 Deno.test('FileUtils - should detect that a file is not a dir', () => {
-    const file = './testdata/file_utils/file.txt'
+    const file = TestHelper.getTestDataPath('file_utils/file.txt')
 
     const isDir = FileUtils.isDir(file)
 
@@ -161,7 +161,7 @@ Deno.test('FileUtils - canCreateTempFileInDir should not be able to write in a d
     assertEquals(canWrite, false)
 })
 Deno.test('FileUtils - getSize should get file size', () => {
-    const filePath = path.join('testdata', 'file_utils', 'file.txt')
+    const filePath = TestHelper.getTestDataPath('file_utils/file.txt')
     const fileSize = FileUtils.getSize(filePath)
 
     assertNumberEquals(fileSize, 615, 0.1)
