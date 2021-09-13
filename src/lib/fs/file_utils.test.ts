@@ -118,7 +118,7 @@ Deno.test('FileUtils - should detect that a file is not a dir', () => {
     assertEquals(isDir, false)
 })
 Deno.test('FileUtils - should detect that a dir is a dir', () => {
-    const file = './testdata/file_utils'
+    const file = TestHelper.getTestDataPath('file_utils')
 
     const isDir = FileUtils.isDir(file)
 
