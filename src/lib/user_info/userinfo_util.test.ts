@@ -3,13 +3,18 @@ import {assertEquals} from "https://deno.land/std/testing/asserts.ts";
 import {assertStringEndsWith} from "../test/more_asserts.ts";
 
 import UserInfoUtil from "./userinfo_util.ts";
+import TestHelper from "../test/test_helper.ts";
 
 Deno.test('UserInfoUtil should use user_info file in $HOME/credentials_jdoe.yaml', () => {
     const userInfoUtil = new UserInfoUtil()
     assertStringEndsWith(userInfoUtil.userinfoFileUri, `/.levain.yaml`)
 })
+//
+// load
+//
 Deno.test('UserInfoUtil should load user info', async () => {
-    const userInfoUtil = new UserInfoUtil('./testData/home/credentials_jdoe.yaml')
+    const userinfoFileUri = TestHelper.getTestDataPath('home/credentials_jdoe.yaml')
+    const userInfoUtil = new UserInfoUtil(userinfoFileUri)
 
     await userInfoUtil.load()
 
