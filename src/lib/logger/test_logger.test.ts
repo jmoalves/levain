@@ -25,7 +25,4 @@ Deno.test({
 
         await LogUtils.closeLogFiles()
     },
-
-    sanitizeResources: false,
-    sanitizeOps: false,
 })
