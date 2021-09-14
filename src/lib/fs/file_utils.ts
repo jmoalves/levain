@@ -1,6 +1,6 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
-import {existsSync} from "https://deno.land/std/fs/mod.ts";
+import {ensureDirSync, existsSync} from "https://deno.land/std/fs/mod.ts";
 
 import ProgressBar from "https://deno.land/x/progress@v1.2.4/mod.ts";
 
@@ -19,8 +19,7 @@ export class FileUtils {
     }
 
     static getFileInfoSync(filePath: string): Deno.FileInfo {
-        const stat = Deno.statSync(filePath);
-        return stat;
+        return Deno.statSync(filePath);
     }
 
     static canReadSync(filePath: string) {
@@ -74,8 +73,7 @@ export class FileUtils {
         }
 
         const mode = fileInfo.mode || 0;
-        const hasPermission = !!(mode & bitwisePermission)
-        return hasPermission
+        return !!(mode & bitwisePermission)
     }
 
     static waitForFilesToClose() {
@@ -87,10 +85,9 @@ export class FileUtils {
     static getFileResources(): [string, any][] {
         const resourceMap = Deno.resources()
         const resourceArray = Object.entries(resourceMap)
-        const fileResources = resourceArray.filter(
+        return resourceArray.filter(
             it => it[1].toString() === 'fsFile'
         )
-        return fileResources
     }
 
     static isDir(filePath: string) {
@@ -126,11 +123,7 @@ export class FileUtils {
             return false
         }
 
-        if (url.match(/.*@.*:.*\/.*\.git/)) {
-            return false
-        }
-
-        return true
+        return !url.match(/.*@.*:.*\/.*\.git/);
     }
 
     static canCreateTempFileInDir(dir: string): boolean {
@@ -150,7 +143,7 @@ export class FileUtils {
     }
 
     static async copyWithProgress(src: string | ProgressReader, dstFile: string) {
-        let r: ProgressReader | undefined = undefined
+        let r: ProgressReader | undefined
 
         if (typeof src == 'string') {
             r = ReaderFactory.readerFor(src)
@@ -216,8 +209,7 @@ export class FileUtils {
 
     static getSize(path: string) {
         const stat = Deno.statSync(path)
-        const size = stat.size
-        return size
+        return stat.size
     }
 
     static throwIfNotExists(filePath: string) {
@@ -244,5 +236,14 @@ export class FileUtils {
 
     static exists(path: string): boolean {
         return existsSync(path);
+    }
+
+    static ensureDirSync(fileUri: string) {
+        try {
+            ensureDirSync(fileUri)
+        } catch (err) {
+            console.error(`Error with ${fileUri}`)
+            throw err
+        }
     }
 }

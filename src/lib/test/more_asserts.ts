@@ -125,8 +125,13 @@ export function assertDirCountGreaterOrEqualTo(dir: string, minCount: number, ms
 
 export function assertFileSizeAprox(path: string, expectedSize: number) {
     const size = FileUtils.getSize(path)
-
     assertNumberEquals(size, expectedSize, 0.10)
+}
+
+export function assertPathEndsWith(path: string, expectedEnd: string) {
+    const normalizedPath = DirUtils.normalizePath(path)
+    const normalizedEnd = DirUtils.normalizePath(expectedEnd)
+    assert(normalizedPath.endsWith(normalizedEnd), `Expected path ${normalizedPath} to end with ${normalizedEnd}`)
 }
 
 export function assertPathDoesNotExist(path: string) {

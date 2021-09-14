@@ -1,4 +1,10 @@
-import {assert, assertEquals, assertThrows, assertThrowsAsync} from "https://deno.land/std/testing/asserts.ts";
+import {
+    assert,
+    assertEquals,
+    assertMatch,
+    assertThrows,
+    assertThrowsAsync
+} from "https://deno.land/std/testing/asserts.ts";
 
 import GitUtils from "./git_utils.ts";
 import TestHelper from "../test/test_helper.ts";
@@ -162,7 +168,8 @@ Deno.test({
         )
 
         const lastMessage = testLogger.messages[testLogger.messages.length - 1]
-        assertEquals(lastMessage, 'ERROR git error - try 3 - Error 128 running "/usr/bin/git pull --force -q --progress --no-tags --depth=1 --update-shallow --allow-unrelated-histories --no-commit --rebase\nfatal: not a git repository (or any of the parent directories): .git\n"')
+        assertMatch(lastMessage, /^ERROR git error - try 3 - Error 128/m)
+        assertMatch(lastMessage, /fatal: not a git repository \(or any of the parent directories\): .git/)
     },
     // only: true
 })

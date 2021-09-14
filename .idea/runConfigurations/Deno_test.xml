@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Deno test" type="DenoConfigurationType" inputPath="$PROJECT_DIR$/src" programParameters="test --allow-all --unstable">
+  <configuration default="false" name="Deno test" type="DenoConfigurationType" inputPath="$PROJECT_DIR$/src" programParameters="test --allow-all --unstable --watch">
     <method v="2" />
   </configuration>
 </component>

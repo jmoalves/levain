@@ -3,6 +3,7 @@ import {
     assertEquals,
     assertMatch,
     assertNotEquals,
+    assertNotMatch,
     assertThrows
 } from "https://deno.land/std/testing/asserts.ts";
 import {existsSync} from "https://deno.land/std/fs/exists.ts";
@@ -13,6 +14,7 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import OsUtils from "./os_utils.ts";
 import {assertGreaterThan, assertPathExists} from "../test/more_asserts.ts";
 import TestHelper from "../test/test_helper.ts";
+import DirUtils from "../fs/dir_utils.ts";
 
 const currentFileDir = path.dirname(import.meta.url)
 const referenceFile = `${currentFileDir}/../../testdata/os_utils/testOsUtils.txt`
@@ -268,13 +270,26 @@ if (OsUtils.isWindows()) {
 //
 // runAndLog
 //
-Deno.test('OsUtils.runAndLog should execute and return stdout', async () => {
-    const stdout = await OsUtils.runAndLog('pwd')
-
-    assertMatch(stdout, /[\\\/]levain/)
+const getCurrentDirCommand = OsUtils.isWindows()
+    ? 'cmd /u /c echo %cd%'
+    : 'pwd'
+Deno.test('OsUtils.runAndLog should not insert unicode zeros in stdout', async () => {
+    const stdout = await OsUtils.runAndLog(getCurrentDirCommand)
+    assertNotMatch(stdout, /\u0000/)
 })
-Deno.test('OsUtils.runAndLog should accept a workDir', async () => {
-    const stdout = await OsUtils.runAndLog('pwd', TestHelper.getTestDataPath())
+Deno.test('OsUtils.runAndLog should execute and return stdout', async () => {
+    const stdout = await OsUtils.runAndLog(getCurrentDirCommand)
 
-    assertMatch(stdout, /[\\\/]testdata$/m)
+    const normalizedPath = DirUtils.normalizePath(stdout)
+    assertMatch(normalizedPath, /[\\\/]+levain/)
+})
+Deno.test({
+    name: 'OsUtils.runAndLog should accept a workDir',
+    async fn() {
+        const stdout = await OsUtils.runAndLog(getCurrentDirCommand, TestHelper.getTestDataPath())
+        const pathInOutput = stdout.replaceAll(/[\r\n]/gm, '')
+        const normalizedPath = DirUtils.normalizePath(pathInOutput)
+        assertMatch(normalizedPath, /[\\\/]+testdata/)
+    },
+    // only: true,
 })

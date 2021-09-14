@@ -1,4 +1,3 @@
-import * as path from "https://deno.land/std/path/mod.ts";
 import {AssertionError, assertThrows} from "https://deno.land/std/testing/asserts.ts";
 
 import {
@@ -15,9 +14,14 @@ import {
     assertNotFind,
     assertNumberEquals,
     assertPathDoesNotExist,
+    assertPathEndsWith,
     assertStringEndsWith,
 } from "./more_asserts.ts";
 import TestHelper from "./test_helper.ts";
+
+const testdataMoreAssertsFolder = TestHelper.getTestDataPath('more_asserts');
+const testdataMoreAssertsFile = TestHelper.getTestDataPath('more_asserts/file.txt');
+const testdataAssertFolderIncludes = TestHelper.getTestDataPath('assertFolderIncludes')
 
 //
 // assertsStringEndsWith
@@ -108,12 +112,12 @@ Deno.test('MoreAsserts.assertArrayContainsInAnyOrder should find out that one el
 // assertFolderIncludes
 //
 Deno.test('MoreAsserts.assertFolderIncludes should assert a file is in a folder', () => {
-    assertFolderIncludes('testdata/assertFolderIncludes', ['file.txt'])
+    assertFolderIncludes(testdataAssertFolderIncludes, ['file.txt'])
 })
 Deno.test('MoreAsserts.assertFolderIncludes should find out that a file is missing', () => {
     assertThrows(
         () => {
-            assertFolderIncludes('testdata/assertFolderIncludes', ['abc123.doc'])
+            assertFolderIncludes(testdataAssertFolderIncludes, ['abc123.doc'])
         },
         AssertionError,
         "abc123.doc",
@@ -123,12 +127,12 @@ Deno.test('MoreAsserts.assertFolderIncludes should find out that a file is missi
 // assertFolderDoesNotInclude
 //
 Deno.test('MoreAsserts.assertFolderDoesNotInclude should assert a file is not in a folder', () => {
-    assertFolderDoesNotInclude('testdata/assertFolderIncludes', ['abc123.doc'])
+    assertFolderDoesNotInclude(testdataAssertFolderIncludes, ['abc123.doc'])
 })
 Deno.test('MoreAsserts.assertFolderIncludes should find out that a file exists in the folder', () => {
     assertThrows(
         () => {
-            assertFolderDoesNotInclude('testdata/assertFolderIncludes', ['file.txt'])
+            assertFolderDoesNotInclude(testdataAssertFolderIncludes, ['file.txt'])
         },
         AssertionError,
         "file.txt",
@@ -138,7 +142,7 @@ Deno.test('MoreAsserts.assertFolderIncludes should find out that a file exists i
 // assertDirCount
 //
 Deno.test('MoreAsserts.assertDirCount should verify element count', () => {
-    assertDirCount('testdata/more_asserts', 3)
+    assertDirCount(testdataMoreAssertsFolder, 3)
 })
 Deno.test('MoreAsserts.assertDirCount should throw when folder does not exist', () => {
     assertThrows(
@@ -153,18 +157,18 @@ Deno.test('MoreAsserts.assertDirCount should throw when folder does not exist', 
 // assertDirCountGreaterOrEqualTo
 //
 Deno.test('MoreAsserts.assertDirCountGreaterOrEqualTo should verify element count', () => {
-    assertDirCountGreaterOrEqualTo('testdata/more_asserts', 3)
+    assertDirCountGreaterOrEqualTo(testdataMoreAssertsFolder, 3)
 })
 //
 // assertFileSize
 //
 Deno.test('MoreAsserts.assertFileSize should check file size', () => {
-    assertFileSizeAprox(path.join('testdata', 'more_asserts', 'file.txt'), 29)
+    assertFileSizeAprox(testdataMoreAssertsFile, 29)
 })
 Deno.test('MoreAsserts.assertFileSize should throw if file size doesnt match', () => {
     assertThrows(
         () => {
-            assertFileSizeAprox(path.join('testdata', 'more_asserts', 'file.txt'), 10)
+            assertFileSizeAprox(testdataMoreAssertsFile, 10)
         },
         AssertionError,
         'Values are not equal',
@@ -177,7 +181,7 @@ Deno.test('MoreAsserts.assertFileDoesNotExist should identify that file does not
     assertPathDoesNotExist(TestHelper.fileThatDoesNotExist)
 })
 Deno.test('MoreAsserts.assertFileDoesNotExist should raise when file exists', () => {
-    const filePath = path.join('testdata', 'more_asserts', 'file.txt')
+    const filePath = testdataMoreAssertsFile
 
     assertThrows(
         () => {
@@ -185,6 +189,28 @@ Deno.test('MoreAsserts.assertFileDoesNotExist should raise when file exists', ()
         },
         AssertionError,
         `Path ${filePath} should not exist`
+    )
+})
+//
+// assertPathEndsWith
+//
+Deno.test('MoreAsserts.assertPathEndsWith should work with Windows path separators', () => {
+    assertPathEndsWith('C:\\src\\dev-env\\levain\\testdata\\any-folder\\any-file.txt', 'any-folder\\any-file.txt')
+})
+Deno.test('MoreAsserts.assertPathEndsWith should work with Posix path separators', () => {
+    assertPathEndsWith('/levain/testdata/any-folder/any-file.txt', 'any-folder/any-file.txt')
+})
+Deno.test('MoreAsserts.assertPathEndsWith should work with mixed path separators', () => {
+    assertPathEndsWith('C:\\src\\dev-env\\levain\\testdata\\any-folder\\any-file.txt', 'any-folder/any-file.txt')
+    assertPathEndsWith('/levain/testdata/any-folder/any-file.txt', 'any-folder\\any-file.txt')
+})
+Deno.test('MoreAsserts.assertPathEndsWith should fail for different paths', () => {
+    assertThrows(
+        () => {
+            assertPathEndsWith('one-folder/one-file.txt', 'another-folder/another-file.txt')
+        },
+        Error,
+        'Expected path one-folder/one-file.txt to end with another-folder/another-file.txt'
     )
 })
 //

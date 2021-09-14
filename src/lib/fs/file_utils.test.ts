@@ -13,7 +13,6 @@ const folderThatDoesNotExist = TestHelper.getTestDataPath('file_utils/--does_not
 const readOnlyFile = TestHelper.getTestDataPath('file_utils/read_only.txt')
 const readWriteFolder = TestHelper.getTestDataPath('file_utils/')
 const readWriteFile = TestHelper.getTestDataPath('file_utils/can_read_and_write_this_file.txt')
-const noPermissionsFolder = TestHelper.getTestDataPath('file_utils/cannot_read_this_folder')
 
 Deno.test('FileUtils - should create a backup for a given file in the same dir', () => {
     let src = Deno.makeTempFileSync();
@@ -62,12 +61,10 @@ Deno.test('FileUtils - should get file permissions in Windows', () => {
 // isReadOnly
 //
 Deno.test('FileUtils - should detect a RW permission on a folder', () => {
-    const fileUri = readWriteFolder
-    verifyFileReadWrite(fileUri, true, true);
+    verifyFileReadWrite(readWriteFolder, true, true);
 })
 Deno.test('FileUtils - should detect a RW permission on a file', () => {
-    const fileUri = readWriteFile
-    verifyFileReadWrite(fileUri, true, true);
+    verifyFileReadWrite(readWriteFile, true, true);
 })
 if (!OsUtils.isWindows()) {
     Deno.test('FileUtils - should detect read only folder', () => {
@@ -83,20 +80,15 @@ if (!OsUtils.isWindows()) {
         verifyFileReadWrite(path, true, false);
     })
 }
-Deno.test('FileUtils - should detect a folder without permissions', () => {
-    // FIXME Will not need the folowing line when Deno.statSync.mode is fully implemented for Windows
-    const fileUri = OsUtils.isWindows()
-        ? 'd:\\Config.Msi'
-        : noPermissionsFolder
-
-    ensureDirSync(fileUri)
-    OsUtils.removePermissions(fileUri)
-
-    verifyFileReadWrite(fileUri, false, false);
-})
+if (OsUtils.isWindows()) {
+    Deno.test('FileUtils - should detect a folder without permissions', () => {
+        // FIXME Will not need the folowing line when Deno.statSync.mode is fully implemented for Windows
+        const fileUri = 'd:\\Config.Msi'
+        verifyFileReadWrite(fileUri, false, false);
+    })
+}
 Deno.test('FileUtils - should not read or write a folder that does not exist', () => {
-    const fileUri = folderThatDoesNotExist
-    verifyFileReadWrite(fileUri, false, false);
+    verifyFileReadWrite(folderThatDoesNotExist, false, false);
 })
 
 function verifyFileReadWrite(fileUri: string, shouldRead: boolean, shouldWrite: boolean = true) {

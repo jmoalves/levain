@@ -168,13 +168,17 @@ export default class OsUtils {
         log.debug(`status ${JSON.stringify(status)}`)
 
         if (!status.success) {
-            let stderrOutput = this.decodeOutput(stderr)
+            let stderrOutput = OsUtils.decodeOutput(stderr)
             throw `Error ${status.code} running "${command}\n${stderrOutput}"`;
         }
 
         const output = OsUtils.decodeOutput(stdout)
-        log.debug(`stdout ${output}`)
-        return output
+
+        // TODO it should not be necessary to remove \u0000 from stdout. Is it a bug in Deno 1.13.2?
+        const cleanOutput = output.replaceAll(/\u0000/gm, '')
+
+        log.debug(`stdout ${cleanOutput}`)
+        return cleanOutput
     }
 
     static decodeOutput(output: Uint8Array) {
