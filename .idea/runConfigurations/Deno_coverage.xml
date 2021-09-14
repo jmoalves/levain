@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Deno coverage" type="DenoConfigurationType" inputPath="$PROJECT_DIR$/src" programParameters="test --allow-all --unstable --coverage">
+  <configuration default="false" name="Deno coverage" type="DenoConfigurationType" inputPath="$PROJECT_DIR$/src" programParameters="test --allow-all --unstable --coverage=coverage">
     <method v="2" />
   </configuration>
 </component>
