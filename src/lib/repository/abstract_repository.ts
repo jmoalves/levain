@@ -10,7 +10,7 @@ export default abstract class AbstractRepository implements Repository {
         readonly name: string,
         readonly absoluteURI?: string,
     ) {
-        log.debug(`${this.describe} constructor`)
+        log.debug(`${this.describe()} constructor`)
     }
 
     describe(): string {
@@ -28,7 +28,7 @@ export default abstract class AbstractRepository implements Repository {
     }
 
     abstract readPackages(): Promise<Array<Package>>
-    
+
     async reloadPackages() {
         this.invalidatePackages()
         await this.init()
