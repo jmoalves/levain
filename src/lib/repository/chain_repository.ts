@@ -11,12 +11,15 @@ export default class ChainRepository extends AbstractRepository {
         public config: Config,
         public repositories: Repository[],
     ) {
-        const repos = repositories?.map(repo => repo.name).join(', ');
-        super('ChainRepo', repos)
+        super('ChainRepo', ChainRepository.describeRepositories(repositories))
         this.repositories = ArrayUtils.removeRepetitions(
             this.repositories,
             repo => repo.absoluteURI
         )
+    }
+
+    private static describeRepositories(repositories: Repository[]): string {
+        return repositories?.map(repo => repo.name).join(', ')
     }
 
     async init(): Promise<void> {

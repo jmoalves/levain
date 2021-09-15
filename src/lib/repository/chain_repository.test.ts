@@ -1,4 +1,4 @@
-import {assertEquals} from "https://deno.land/std/testing/asserts.ts";
+import {assertEquals} from 'https://deno.land/std/testing/asserts.ts';
 
 import Config from "../config.ts";
 import {MockPackage} from "../package/mock_package.ts";
@@ -48,15 +48,24 @@ Deno.test('ChainRepository should resolve package that only exists in second rep
     assertEquals(pkg?.version?.versionNumber, '3.0.0')
 })
 
+Deno.test('ChainRepository should ignore duplicated repos', async () => {
+    const chainRepository = new ChainRepository(new Config([]), [repoMock1, repoMock1, repoMock2])
+
+    const repos = chainRepository.repositories
+
+    assertEquals(repos.length, 2)
+})
+
+const repoMock1 = new MockRepository('mockRepo1', [
+    new MockPackage('package 1', new VersionNumber('1.0.0')),
+    new MockPackage('package 2', new VersionNumber('2.0.0')),
+])
+const repoMock2 = new MockRepository('mockRepo2', [
+    new MockPackage('package 2', new VersionNumber('2.2.2')),
+    new MockPackage('package 3', new VersionNumber('3.0.0')),
+])
+
 async function getRepo(): Promise<Repository> {
-    const repoMock1 = new MockRepository('mockRepo1', [
-        new MockPackage('package 1', new VersionNumber('1.0.0')),
-        new MockPackage('package 2', new VersionNumber('2.0.0')),
-    ])
-    const repoMock2 = new MockRepository('mockRepo2', [
-        new MockPackage('package 2', new VersionNumber('2.2.2')),
-        new MockPackage('package 3', new VersionNumber('3.0.0')),
-    ])
     const repo = new ChainRepository(new Config([]), [repoMock1, repoMock2])
     await repo.init()
     return repo
