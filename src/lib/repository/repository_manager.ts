@@ -7,12 +7,7 @@ import Repository from "./repository.ts";
 import CacheRepository from "./cache_repository.ts";
 import ChainRepository from "./chain_repository.ts";
 import RepositoryFactory from "./repository_factory.ts";
-
-class Repositories {
-    regular: Repository | undefined = undefined
-    installed: Repository | undefined = undefined
-    currentDir: Repository | undefined = undefined
-}
+import Repositories from "./repositories.ts";
 
 export default class RepositoryManager {
     private repoFactory: RepositoryFactory
@@ -25,9 +20,11 @@ export default class RepositoryManager {
         this.repoFactory = new RepositoryFactory(config)
     }
 
-    async init({repos, tempRepos}: { repos: string[]; tempRepos?: string[]; }) {
+    async init({repos, tempRepos}: { repos: string[]; tempRepos?: string[]; }): Promise<void> {
         log.debug("")
         log.debug(`=== RepositoryManager.init - extraRepos: ${JSON.stringify(repos)} tempRepos: ${JSON.stringify(tempRepos)}`)
+        log.debug(`extraRepos: ${JSON.stringify(repos)}`)
+        log.debug(`tempRepos: ${JSON.stringify(tempRepos)}`)
 
         if (repos) {
             this.extraRepos.clear()
@@ -130,7 +127,9 @@ export default class RepositoryManager {
             throw Error("Error initializing RepositoryManager - repositories not found")
         }
 
-        let repos: any = this.repositories;
+        let repos: any = this.repositories
+        log.debug(`## repos: ${this.repositories?.describe()}`)
+
         for (let key in repos) {
             if (repos[key]) {
                 let repo: Repository = repos[key]
