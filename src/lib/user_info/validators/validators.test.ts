@@ -1,4 +1,4 @@
-import {EmailValidator, LatinUnicodeValidator, MinLengthValidator, NameValidator} from "./validators.ts"
+import {EmailValidator, LatinUnicodeValidator, LoginValidator, MinLengthValidator, NameValidator} from "./validators.ts"
 import {assertEquals} from "https://deno.land/std/testing/asserts.ts"
 
 //
@@ -64,4 +64,28 @@ Deno.test('EmailValidator should reject an ASCII name', () => {
 })
 Deno.test('EmailValidator should have a static validator', () => {
     assertEquals(EmailValidator.validate('mary@hadalittlelamb.org'), true)
+})
+//
+// LoginValidator
+//
+
+Deno.test('LoginValidator should accept a valid login', () => {
+    const validator = new LoginValidator()
+    assertEquals(validator.validate('afo'), true)
+    assertEquals(validator.validate('rfwal'), true)
+    assertEquals(validator.validate('t2765'), true)
+    assertEquals(validator.validate('321'), true)
+    assertEquals(validator.validate('54321'), true)
+})
+Deno.test('LoginValidator should reject invalid logins', () => {
+    const validator = new LoginValidator()
+    const invalidLoginMessage = 'Please inform a valid LOGIN'
+    assertEquals(validator.validate('false with spaces'), invalidLoginMessage)
+    assertEquals(validator.validate(''), invalidLoginMessage)
+    assertEquals(validator.validate('1'), invalidLoginMessage)
+    assertEquals(validator.validate('21'), invalidLoginMessage)
+    assertEquals(validator.validate('654321'), invalidLoginMessage)
+})
+Deno.test('LoginValidator should have a static validator', () => {
+    assertEquals(LoginValidator.validate('rfwal'), true)
 })
