@@ -1,7 +1,7 @@
 import {LogRecord} from "https://deno.land/std/log/logger.ts"
 import {LogLevels} from "https://deno.land/std/log/levels.ts"
 import * as path from "https://deno.land/std/path/mod.ts"
-import {copySync, exists} from "https://deno.land/std/fs/mod.ts"
+import {copySync, existsSync,} from "https://deno.land/std/fs/mod.ts"
 
 import Config from "../config.ts";
 import {MockPackage} from "../package/mock_package.ts";
@@ -134,7 +134,7 @@ export default class TestHelper {
     }
 
     static remove(path: string) {
-        if (exists(path)) {
+        if (existsSync(path)) {
             Deno.removeSync(path, {recursive: true})
         }
     }
