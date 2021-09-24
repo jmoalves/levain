@@ -23,15 +23,13 @@ export default class FileSystemRepository extends AbstractRepository {
         public readonly rootDir: string,
         private rootOnly: boolean = false
     ) {
-        const name = `FileSystemRepo`
-        const absoluteURI = path.resolve(rootDir)
-        super(name, absoluteURI)
+        super(`FileSystemRepo`, path.resolve(rootDir))
     }
 
     describe(): string {
-        let description: string = super.describe()
+        const description: string = super.describe()
         if (this.rootDir !== this.absoluteURI) {
-            description += ` from ${this.rootDir}`
+            return description.replace(/\)/, ` resolved from ${this.rootDir})`)
         }
         return description
     }

@@ -33,15 +33,13 @@ Deno.test('FileSystemRepository should have a absoluteURI', () => {
 })
 Deno.test('FileSystemRepository.describe should include absoluteURI and rootDir when different', () => {
     const repo = getRepo(rootDir)
-    const absoluteURI = repo.absoluteURI
-
-    assertEquals(repo.describe(), `FileSystemRepo for ${absoluteURI} from ${rootDir}`)
+    assertEquals(repo.describe(), `FileSystemRepo (${(repo.absoluteURI)} resolved from ${rootDir})`)
 })
 Deno.test('FileSystemRepository.describe should not repeat absoluteURI when equal to rootDir', () => {
     const absoluteURI = path.resolve(rootDir)
     const repo = getRepo(absoluteURI)
 
-    assertEquals(repo.describe(), `FileSystemRepo for ${absoluteURI}`)
+    assertEquals(repo.describe(), `FileSystemRepo (${absoluteURI})`)
 })
 Deno.test({
     name: 'FileSystemRepository should throw an error when root folder does not exist',
@@ -50,7 +48,7 @@ Deno.test({
 
         await assertThrowsAsync(
             async () => {
-                const repo = await getInitedRepo('thisFolderDoesNotExist')
+                await getInitedRepo('thisFolderDoesNotExist')
             },
             Error,
             'addRepo - dir not found: thisFolderDoesNotExist',

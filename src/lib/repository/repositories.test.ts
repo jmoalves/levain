@@ -29,11 +29,11 @@ Deno.test('Repositories.describe should humanize repositories', () => {
     repositories.regular = repoMock1
     repositories.installed = repoMock2
     repositories.currentDir = repoMock1
-    
+
     assertEquals(
         repositories.describe(),
-        'currentDir: mockRepo1 for mockURI mockRepo1\n' +
-        'installed: mockRepo2 for mockURI mockRepo2\n' +
-        'regular: mockRepo1 for mockURI mockRepo1\n'
+        'currentDir: mockRepo1 (mockURI-mockRepo1)\n' +
+        'installed: mockRepo2 (mockURI-mockRepo2)\n' +
+        'regular: mockRepo1 (mockURI-mockRepo1)\n'
     )
 })

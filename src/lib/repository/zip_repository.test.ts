@@ -26,7 +26,7 @@ Deno.test('ZipRepository should have a absoluteURI', () => {
 Deno.test('ZipRepository should have a description', () => {
     const repo = getRepo()
 
-    assertEquals(repo.describe(), `ZipRepo for ${repo.absoluteURI} from ./testdata/zip_repository/zipRepo.zip`)
+    assertEquals(repo.describe(), `ZipRepo (${repo.absoluteURI} resolved from ./testdata/zip_repository/zipRepo.zip)`)
 })
 Deno.test({
     name: 'ZipRepository should throw an error when root folder does not exist',
@@ -40,7 +40,7 @@ Deno.test({
                 await repo.init()
             },
             Error,
-            `Zip not found: ${absoluteURI} from thisFolderDoesNotExist`,
+            `Zip not found: ${absoluteURI} resolved from thisFolderDoesNotExist`,
         )
     },
 })

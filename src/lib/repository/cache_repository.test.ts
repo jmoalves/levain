@@ -15,7 +15,7 @@ Deno.test('CacheRepository should have a name', async () => {
 Deno.test('CacheRepository should have a description', async () => {
     const repo = await getRepo()
 
-    assertEquals(repo.describe(), 'CacheRepo for mockRepo')
+    assertEquals(repo.describe(), 'CacheRepo (mockRepo)')
 })
 Deno.test('CacheRepository should list packages from cached repo', async () => {
     const repo = await getRepo()

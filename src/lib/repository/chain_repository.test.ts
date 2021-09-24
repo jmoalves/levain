@@ -17,7 +17,7 @@ Deno.test('ChainRepository should have a name', async () => {
 Deno.test('ChainRepository should have a description', async () => {
     const repo = await getRepo()
 
-    assertEquals(repo.describe(), 'ChainRepo for mockRepo1, mockRepo2')
+    assertEquals(repo.describe(), 'ChainRepo (mockRepo1 (mockURI-mockRepo1), mockRepo2 (mockURI-mockRepo2))')
 })
 Deno.test('ChainRepository should list packages from repos', async () => {
     const repo = await getRepo()

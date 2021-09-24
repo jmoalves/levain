@@ -14,7 +14,7 @@ export default abstract class AbstractRepository implements Repository {
     }
 
     describe(): string {
-        return `${this.name} for ${this.absoluteURI}`
+        return `${this.name} (${this.absoluteURI})`
     }
 
     async init(): Promise<void> {
@@ -23,7 +23,9 @@ export default abstract class AbstractRepository implements Repository {
         this._packages = (await this.readPackages())
             .sort((a, b) => a?.name?.localeCompare(b?.name))
 
-        log.debug(`${this.name}: Root=${this.absoluteURI} - pkgs: ${this._packages}`)
+        const count = this._packages.length
+
+        log.debug(`Found ${count} packages in ${this.describe()}: ${this._packages}`)
         log.debug(``)
     }
 
@@ -44,7 +46,7 @@ export default abstract class AbstractRepository implements Repository {
         log.debug(`listPackages - ${this.name}`)
 
         if (!this._packages) {
-            throw new Error(`Please init repository ${this.name} before listing packages`)
+            throw new Error(`Please init repository ${this.describe()} before listing packages`)
         }
         return this._packages
     }
@@ -63,8 +65,8 @@ export default abstract class AbstractRepository implements Repository {
         if (pkg) {
             log.debug(`${this.name}: found package ${packageName} => ${pkg.toString()}`);
         } else {
-            log.debug(`${this.name}: package ${packageName} not found in ${this.name} - ${this.absoluteURI}`);
-            log.debug(`${this.name}.packages: ${packages}`)
+            log.debug(`${this.name}: package ${packageName} not found in ${this.describe}`);
+            log.debug(`Known packages: ${packages}`)
         }
 
         return pkg;

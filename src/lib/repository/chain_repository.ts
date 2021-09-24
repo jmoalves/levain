@@ -19,7 +19,7 @@ export default class ChainRepository extends AbstractRepository {
     }
 
     private static describeRepositories(repositories: Repository[]): string {
-        return repositories?.map(repo => repo.name).join(', ')
+        return repositories?.map(repo => repo.describe()).join(', ');
     }
 
     async init(): Promise<void> {

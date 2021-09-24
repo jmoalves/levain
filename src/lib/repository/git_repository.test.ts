@@ -19,7 +19,7 @@ Deno.test('GitRepository should have a absoluteURI', () => {
 Deno.test('GitRepository should have a description', () => {
     const repo = getRepo()
 
-    assertEquals(repo.describe(), `GitRepo for https://github.com/jmoalves/levain-pkgs.git`)
+    assertEquals(repo.describe(), `GitRepo (https://github.com/jmoalves/levain-pkgs.git)`)
 })
 Deno.test({
     name: 'GitRepository should throw an error when root url is invalid',

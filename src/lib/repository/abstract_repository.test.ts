@@ -18,6 +18,6 @@ Deno.test('AbstractRepository should throw error when listing before init', () =
             repo.listPackages()
         },
         Error,
-        'Please init repository mockRepo before listing packages'
+        'Please init repository mockRepo (mockURI-mockRepo) before listing packages'
     )
 })

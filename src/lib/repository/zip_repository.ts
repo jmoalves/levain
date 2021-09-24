@@ -12,7 +12,6 @@ import AbstractRepository from './abstract_repository.ts';
 import RepositoryFactory from "./repository_factory.ts";
 import ReaderFactory from "../io/reader_factory.ts";
 import {ExtractorFactory} from "../extract/extractor_factory.ts";
-import HttpUtils from "../utils/http_utils.ts";
 
 export default class ZipRepository extends AbstractRepository {
     private repoFactory: RepositoryFactory
@@ -22,14 +21,12 @@ export default class ZipRepository extends AbstractRepository {
     private localRepo: Repository | undefined
 
     constructor(private config: Config, public readonly rootUrl: string, private rootOnly: boolean = false) {
-        const name = `ZipRepo`
-        const absoluteURI = HttpUtils.resolve(rootUrl)
-        super(name, absoluteURI)
+        super(`ZipRepo`, path.resolve(rootUrl))
 
         if (!rootUrl.endsWith(".zip")) {
             let message = `Zip not found: ${this.absoluteURI}`
             if (rootUrl !== this.absoluteURI) {
-                message += ` from ${this.rootUrl}`
+                message += ` resolved from ${rootUrl}`
             }
             throw Error(message)
         }
@@ -42,9 +39,9 @@ export default class ZipRepository extends AbstractRepository {
     }
 
     describe(): string {
-        let description: string = super.describe()
+        const description: string = super.describe()
         if (this.rootUrl !== this.absoluteURI) {
-            description += ` from ${this.rootUrl}`
+            return description.replace(/\)/, ` resolved from ${this.rootUrl})`)
         }
         return description
     }
