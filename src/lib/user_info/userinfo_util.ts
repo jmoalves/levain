@@ -14,6 +14,7 @@ import {UserInfo} from "./user_info.ts"
 import {NameValidator} from "./validators/validators.ts";
 import {InputFullName} from "./input_name.ts";
 import {InputEmail} from "./input_email.ts";
+import {InputLogin} from "./input_login.ts";
 
 export default class UserInfoUtil {
 
@@ -40,7 +41,7 @@ export default class UserInfoUtil {
         YamlFileUtils.saveObjectAsFileSync(this.userinfoFileUri, this.userInfo)
     }
 
-    async askUserInfo(config: Config, myArgs: any) {
+    async askUserInfo(config: Config, myArgs: any): Promise<void> {
         // Some nasty tricks... Should we refactor this?
         let separatorEnd: (() => void) | undefined = () => {
         };
@@ -78,7 +79,7 @@ export default class UserInfoUtil {
         if (myArgs["ask-login"]) {
             (separatorBegin ? separatorBegin() : undefined);
 
-            userInfoUtil.askLogin(config);
+            await userInfoUtil.askLogin(config);
         }
 
         if (myArgs["ask-email"]) {
@@ -100,7 +101,8 @@ export default class UserInfoUtil {
         log.debug(`Asking for full name`)
         this.load()
 
-        const defaultValue = this.userInfo.fullName || envChain("user", "fullname") || "";
+        const defaultValue = this.userInfo.fullName || envChain("user", "fullname") || ""
+
         const newValue = await InputFullName.inputAndValidateWithEncoding(defaultValue);
 
         const validationResult: ValidateResult = NameValidator.validate(newValue)
@@ -158,8 +160,6 @@ export default class UserInfoUtil {
     }
 
     async inputEmail(defaultValue: string) {
-        let newValue = prompt("Do you have an EMAIL? (press return to confirm default value) ", defaultValue);
-
         // const fullName: string = await Input.prompt({
         //         message: "Do you have an EMAIL? (press return to confirm default value)",
         //         default: defaultValue,
@@ -167,30 +167,25 @@ export default class UserInfoUtil {
         //     }
         // )
 
-        return newValue;
+        return prompt("Do you have an EMAIL? (press return to confirm default value) ", defaultValue);
     }
 
-    askLogin(config: Config): string {
+    async askLogin(config: Config): Promise<string> {
         log.debug(`Asking for login`)
         this.load()
 
-        let login: string | null = prompt(
-            "What's your LOGIN? (press return to confirm default value) ",
-            this.userInfo.login || OsUtils.login?.toLowerCase()
-        );
-        if (!login) {
-            throw new Error(`Unable to collect login`);
-        }
+        const defaultValue = this.userInfo.login || OsUtils.login?.toLowerCase() || ""
+        const newValue = await InputLogin.inputAndValidateWithEncoding(defaultValue)
 
-        if (this.userInfo.login != login) {
-            this.userInfo.login = login
+        if (this.userInfo.login != newValue) {
+            this.userInfo.login = newValue
             this.save()
         }
-        config.login = login;
-        return login
+        config.login = newValue;
+        return newValue
     }
 
-    askPassword(config: Config): void {
+    async askPassword(config: Config): Promise<string> {
         const forbiddenPasswordChars = '^&'
         // const allowedAndTestedPasswordChars = '#!@'
 
@@ -245,7 +240,7 @@ export default class UserInfoUtil {
                 console.log("Perfect, the typed passwords are the same.");
                 console.log("");
                 config.password = password;
-                return;
+                return password;
             }
 
             console.log("Password mismatch... Please, inform again.");

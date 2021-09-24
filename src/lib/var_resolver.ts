@@ -48,13 +48,13 @@ export default class VarResolver {
             switch (vName) {
                 case "levain.login":
                     if (!config.login) {
-                        new UserInfoUtil().askLogin(config)
+                        await new UserInfoUtil().askLogin(config)
                     }
                     return config.login
 
                 case "levain.password":
                     if (!config.password) {
-                        new UserInfoUtil().askPassword(config)
+                        await new UserInfoUtil().askPassword(config)
                     }
                     return config.password
 
