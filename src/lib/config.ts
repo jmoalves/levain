@@ -10,6 +10,7 @@ import RepositoryManager from "./repository/repository_manager.ts";
 import {FileUtils} from './fs/file_utils.ts';
 import {homedir} from './utils/utils.ts';
 import VarResolver from "./var_resolver.ts";
+import ConfigPersistentAttributes from "./config-persistent-attributes.ts";
 
 export default class Config {
     packageManager: PackageManager;
@@ -35,6 +36,7 @@ export default class Config {
     private _lastUpdateQuestion: string | undefined;
     private _autoUpdate: boolean | undefined
     private _shellCheckForUpdate: boolean | undefined
+    private lastCfg?: ConfigPersistentAttributes;
 
     constructor(args: any = {}) {
         this.packageManager = new PackageManager(this);
@@ -212,17 +214,19 @@ export default class Config {
         return VarResolver.replaceVars(text, pkgName, this)
     }
 
+    public saveIfChanged(): void {
+        log.debug(`Config.saveIfChanged`)
+
+        const currentCfg = this.buildCfg()
+        if (currentCfg !== this.lastCfg) {
+            log.debug(`saving changed config`)
+            return this.save()
+        }
+    }
 
     public save(): void {
-        let cfg: any = {};
-        cfg.repos = this.repositoryManager.saveState;
-        cfg.defaultPackage = this._defaultPackage;
-        cfg.cacheDir = this.levainCacheDir;
-        cfg.shellPath = this._shellPath;
-        cfg.lastKnownVersion = this._lastKnownVersion;
-        cfg.lastUpdateQuestion = this._lastUpdateQuestion;
-        cfg.autoUpdate = this._autoUpdate;
-        cfg.shellCheckForUpdate = this._shellCheckForUpdate;
+        let cfg = this.buildCfg()
+        this.lastCfg = cfg
 
         let fileName = this.levainConfigFile;
 
@@ -232,6 +236,19 @@ export default class Config {
         ensureDirSync(this.levainConfigDir)
         Deno.writeTextFileSync(fileName, JSON.stringify(cfg, null, 3));
         log.debug(`saved ${fileName}`);
+    }
+
+    private buildCfg(): ConfigPersistentAttributes {
+        let cfg = new ConfigPersistentAttributes();
+        cfg.repos = this.repositoryManager.saveState;
+        cfg.defaultPackage = this._defaultPackage;
+        cfg.cacheDir = this.levainCacheDir;
+        cfg.shellPath = this._shellPath;
+        cfg.lastKnownVersion = this._lastKnownVersion;
+        cfg.lastUpdateQuestion = this._lastUpdateQuestion;
+        cfg.autoUpdate = this._autoUpdate;
+        cfg.shellCheckForUpdate = this._shellCheckForUpdate;
+        return cfg;
     }
 
     public load(): void {
@@ -248,6 +265,8 @@ export default class Config {
 
             let cfg = JSON.parse(data);
             log.debug(`- PARSE ${JSON.stringify(cfg)}`);
+            this.lastCfg = cfg
+
             if (cfg.repos) {
                 this.repositoryManager.saveState = cfg.repos;
             }

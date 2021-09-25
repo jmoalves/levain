@@ -91,6 +91,8 @@ export default class LevainCli {
                 }
 
                 await loader.command(cmd, myArgs._)
+                // FIXME Will this save a broken config?
+                // config.saveIfChanged()
             }
         } catch (err) {
             if (err instanceof CommandNotFoundError) {
@@ -105,7 +107,7 @@ export default class LevainCli {
         /////////////////////////////////////////////////////////////////////////////////
         log.debug("==================================");
 
-        config.save();
+        config.save()
     }
 
 
