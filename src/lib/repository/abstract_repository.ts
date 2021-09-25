@@ -72,4 +72,8 @@ export default abstract class AbstractRepository implements Repository {
         return pkg;
     }
 
+    initialized(): boolean {
+        return this._packages !== undefined;
+    }
+
 }

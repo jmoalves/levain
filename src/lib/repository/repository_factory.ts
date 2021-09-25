@@ -43,7 +43,7 @@ export default class RepositoryFactory {
         return repoPath.toLowerCase().trim()
     }
 
-    create(repoURI: string, rootOnly: boolean = false): Repository {
+    getOrCreate(repoURI: string, rootOnly: boolean = false): Repository {
         log.debug(`RepoFactory.create - repo for uri ${repoURI}`)
 
         if (!repoURI) {
@@ -57,7 +57,7 @@ export default class RepositoryFactory {
             return repo
         }
 
-        let repo = undefined;
+        let repo: Repository
         if (RepositoryFactory.isGitPath(repoPath)) {
             repo = new GitRepository(this.config, repoPath, rootOnly)
         } else if (RepositoryFactory.isZipPath(repoPath)) {

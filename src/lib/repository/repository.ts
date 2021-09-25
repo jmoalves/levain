@@ -17,4 +17,6 @@ export default interface Repository {
     resolvePackage(packageName: string): Package | undefined
 
     readPackages(): Promise<Array<Package>>
+
+    initialized(): boolean
 }

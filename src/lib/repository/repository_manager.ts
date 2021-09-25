@@ -134,7 +134,9 @@ export default class RepositoryManager {
             if (repos[key]) {
                 let repo: Repository = repos[key]
                 log.debug(`INIT Repo[${key}] - ${repo.name}`)
-                await repo.init()
+                if (!repo.initialized()) {
+                    await repo.init()
+                }
             }
         }
 
@@ -149,7 +151,7 @@ export default class RepositoryManager {
     private async createCurrentDirRepo() {
         log.debug("createCurrentDirRepo")
         const currentDir = Deno.cwd()
-        this.repositories.currentDir = this.repoFactory.create(currentDir, true)
+        this.repositories.currentDir = this.repoFactory.getOrCreate(currentDir, true)
     }
 
     private async createInstalledRepo() {
@@ -164,7 +166,7 @@ export default class RepositoryManager {
         this.repositories.regular = this.createRepos(repos)
     }
 
-    private async repoList(installedOnly: boolean): Promise<string[]> {
+    async repoList(installedOnly: boolean): Promise<string[]> {
         let repos: string[] = [];
 
         if (installedOnly) {
@@ -201,7 +203,7 @@ export default class RepositoryManager {
     private createRepos(list: string[]): Repository {
         let repoArr: Repository[] = []
         for (let repoPath of RepositoryFactory.normalizeList(list)) {
-            repoArr.push(this.repoFactory.create(repoPath))
+            repoArr.push(this.repoFactory.getOrCreate(repoPath))
         }
 
         return new CacheRepository(this.config,

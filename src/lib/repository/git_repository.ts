@@ -18,8 +18,7 @@ export default class GitRepository extends AbstractRepository {
     private localRepo: Repository | undefined
 
     constructor(private config: Config, private rootUrl: string, private rootOnly: boolean = false) {
-        const name = 'GitRepo'
-        super(name, rootUrl)
+        super('GitRepo', rootUrl)
 
         log.debug(`GitRepo: Root=${this.rootUrl}`)
         this.repoFactory = new RepositoryFactory(config)
@@ -35,7 +34,7 @@ export default class GitRepository extends AbstractRepository {
             await this.gitUtils.clone(this.rootUrl, this.localDir);
         }
 
-        this.localRepo = this.repoFactory.create(this.localDir, this.rootOnly);
+        this.localRepo = this.repoFactory.getOrCreate(this.localDir, this.rootOnly);
         await this.localRepo.init()
 
         await super.init()

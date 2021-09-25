@@ -1,6 +1,6 @@
 import {assertEquals} from "https://deno.land/std/testing/asserts.ts";
 
-import PackageManager from "./manager.ts";
+import PackageManager from "./package_manager.ts";
 import TestHelper from "../test/test_helper.ts";
 import MockRepository from "../repository/mock_repository.ts";
 import {MockPackage} from "./mock_package.ts";

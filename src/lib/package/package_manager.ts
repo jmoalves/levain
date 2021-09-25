@@ -129,7 +129,7 @@ export default class PackageManager {
         }
 
         names.add(pkgName);
-        log.debug(`## resolving package ${pkgName} in ${repo.name}`)
+        log.debug(`## resolving package ${pkgName} in ${repo.describe()}`)
         const pkgDef = repo.resolvePackage(pkgName);
         if (!pkgDef) {
             if (showLog) {

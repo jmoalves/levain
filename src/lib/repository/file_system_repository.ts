@@ -60,26 +60,27 @@ export default class FileSystemRepository extends AbstractRepository {
             return [];
         }
 
-        this.feedback.start(`# ${this.rootDir}...`);
+        this.feedback.start(`# Scanning ${this.rootDir}...`);
 
         const timer = new Timer()
 
-        const packagesGlob = `**/*.levain.{yaml,yml}`.replace(/\\/g, '/');
         const globOptions: ExpandGlobOptions = {
             root: this.rootDir,
             extended: true,
             includeDirs: true,
             exclude: this.excludeDirs,
         }
-        log.debug(`# readPackages: ${packagesGlob} ${JSON.stringify(globOptions)}`)
-        const packages: Array<Package> = await this.getPackageFiles(packagesGlob, globOptions, this.rootOnly)
+        const packages: Array<Package> = await this.getPackageFiles(globOptions, this.rootOnly)
 
         this.feedback.reset(`Found ${packages.length} packages in ${this.rootDir} (${timer.humanize()})`)
 
         return packages
     }
 
-    private async getPackageFiles(packagesGlob: string, globOptions: ExpandGlobOptions, rootDirOnly: boolean = false): Promise<Array<Package>> {
+    private async getPackageFiles(globOptions: ExpandGlobOptions, rootDirOnly: boolean = false): Promise<Array<Package>> {
+        const packagesGlob = `**/*.levain.{yaml,yml}`.replace(/\\/g, '/');
+        log.debug(`# readPackages: ${packagesGlob} ${JSON.stringify(globOptions)}`)
+
         // FIXME Why, oh my...
         // FIXME globPackages throws error when folder is readonly in Deno 1.5.4
         // if (OsUtils.isWindows()) {

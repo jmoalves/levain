@@ -52,7 +52,7 @@ export default class ZipRepository extends AbstractRepository {
             await this.extractLocalZip(zipfile)
         }
 
-        this.localRepo = this.repoFactory.create(this.localDir, this.rootOnly);
+        this.localRepo = this.repoFactory.getOrCreate(this.localDir, this.rootOnly);
         await this.localRepo.init();
     }
 

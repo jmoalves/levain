@@ -1,6 +1,6 @@
 import MockRepository from "./mock_repository.ts";
 import LevainAsserts from "../test/levain_asserts.ts";
-import {assertThrows} from "https://deno.land/std/testing/asserts.ts";
+import {assertEquals, assertThrows} from "https://deno.land/std/testing/asserts.ts";
 
 
 Deno.test('AbstractRepository.listPackages should return a list of packages', async () => {
@@ -20,4 +20,14 @@ Deno.test('AbstractRepository should throw error when listing before init', () =
         Error,
         'Please init repository mockRepo (mockURI-mockRepo) before listing packages'
     )
+})
+Deno.test('AbstractRepository.initialized should reflect if packages are valid', async () => {
+    const repo = new MockRepository()
+    assertEquals(repo.initialized(), false)
+
+    await repo.init()
+    assertEquals(repo.initialized(), true)
+
+    repo.invalidatePackages()
+    assertEquals(repo.initialized(), false)
 })

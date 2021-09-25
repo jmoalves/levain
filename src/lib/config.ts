@@ -4,7 +4,7 @@ import {ensureDirSync, existsSync} from "https://deno.land/std/fs/mod.ts";
 
 import LevainVersion from "../levain_version.ts";
 
-import PackageManager from "./package/manager.ts";
+import PackageManager from "./package/package_manager.ts";
 import Registry from './repository/registry.ts';
 import RepositoryManager from "./repository/repository_manager.ts";
 import {FileUtils} from './fs/file_utils.ts';
