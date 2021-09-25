@@ -56,7 +56,7 @@ export default abstract class AbstractRepository implements Repository {
     }
 
     resolvePackage(packageName: string): Package | undefined {
-        log.debug(`resolvePackage - looking for ${packageName} in ${this.name}`)
+        log.debug(`resolvePackage - looking for ${packageName} in ${this.describe()}`)
 
         const packages = this.listPackages()
 
@@ -65,7 +65,7 @@ export default abstract class AbstractRepository implements Repository {
         if (pkg) {
             log.debug(`${this.name}: found package ${packageName} => ${pkg.toString()}`);
         } else {
-            log.debug(`${this.name}: package ${packageName} not found in ${this.describe}`);
+            log.debug(`${this.name}: package ${packageName} not found in ${this.describe()}`);
             log.debug(`Known packages: ${packages}`)
         }
 

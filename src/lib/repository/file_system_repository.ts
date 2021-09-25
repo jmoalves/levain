@@ -74,7 +74,7 @@ export default class FileSystemRepository extends AbstractRepository {
         log.debug(`# readPackages: ${packagesGlob} ${JSON.stringify(globOptions)}`)
         const packages: Array<Package> = await this.getPackageFiles(packagesGlob, globOptions, this.rootOnly)
 
-        this.feedback.reset(`# ${this.rootDir} -> ${packages.length} packages in ${timer.humanize()}`)
+        this.feedback.reset(`Found ${packages.length} packages in ${this.rootDir} (${timer.humanize()})`)
 
         return packages
     }

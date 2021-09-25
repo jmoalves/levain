@@ -127,16 +127,17 @@ export default class Install implements Command {
             } else if (force) {
                 verb = 'FORCE';
             } else {
-                verb = 'ENV (already installed)';
+                verb = 'ALREADY INSTALLED';
                 shouldInstall = false;
             }
         }
 
         if (shouldInstall) {
             log.info("")
+            log.info(`- ${verb} ${pkg.name}@${pkg.version}`);
+        } else {
+            log.info(`- ${pkg.name}@${pkg.version} already installed`);
         }
-
-        log.info(`=== ${verb} ${pkg.name} - ${pkg.version}`);
 
         if (shouldInstall) {
             const levainTag = pkg.levainTag;
