@@ -12,7 +12,7 @@ export default class CacheRepository extends AbstractRepository {
         public config: Config,
         public repository: Repository,
     ) {
-        super('CacheRepo', repository?.name)
+        super('CacheRepo', repository?.describe())
     }
 
     async init(): Promise<void> {

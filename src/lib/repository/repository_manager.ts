@@ -15,12 +15,13 @@ export default class RepositoryManager {
     private tempRepos: Set<string> = new Set<string>()
 
     private repositories = new Repositories()
+    initializedRepositories?: Repository[];
 
     constructor(private config: Config) {
         this.repoFactory = new RepositoryFactory(config)
     }
 
-    async init({repos, tempRepos}: { repos: string[]; tempRepos?: string[]; }): Promise<void> {
+    async init({repos, tempRepos}: { repos: string[]; tempRepos?: string[]; }): Promise<Repository[]> {
         log.debug("")
         log.debug(`=== RepositoryManager.init - extraRepos: ${JSON.stringify(repos)} tempRepos: ${JSON.stringify(tempRepos)}`)
         log.debug(`extraRepos: ${JSON.stringify(repos)}`)
@@ -36,7 +37,7 @@ export default class RepositoryManager {
         }
 
         await this.createRepositories()
-        await this.initRepositories()
+        return await this.initRepositories()
     }
 
     invalidatePackages() {
@@ -119,7 +120,7 @@ export default class RepositoryManager {
         await this.createCurrentDirRepo()
     }
 
-    async initRepositories(): Promise<void> {
+    async initRepositories(): Promise<Repository[]> {
         log.debug("");
         log.debug("=== initRepositories");
 
@@ -130,12 +131,15 @@ export default class RepositoryManager {
         let repos: any = this.repositories
         log.debug(`## repos: ${this.repositories?.describe()}`)
 
+        let initializedRepositories: Repository[] = []
+
         for (let key in repos) {
             if (repos[key]) {
                 let repo: Repository = repos[key]
                 log.debug(`INIT Repo[${key}] - ${repo.name}`)
                 if (!repo.initialized()) {
                     await repo.init()
+                    initializedRepositories.push(repo)
                 }
             }
         }
@@ -146,6 +150,9 @@ export default class RepositoryManager {
                 log.debug(`Repo[${key}] - ${repos[key].name}`)
             }
         }
+
+        this.initializedRepositories = initializedRepositories
+        return initializedRepositories
     }
 
     private async createCurrentDirRepo() {

@@ -9,7 +9,7 @@ import FileSystemRepository from './file_system_repository.ts';
 import ZipRepository from "./zip_repository.ts";
 
 export default class RepositoryFactory {
-    private knownRepos = new Map<string, Repository>()
+    static knownRepos = new Map<string, Repository>()
 
     constructor(private config: Config) {
     }
@@ -51,9 +51,9 @@ export default class RepositoryFactory {
         }
 
         let repoPath = RepositoryFactory.normalize(repoURI)
-        if (this.knownRepos.has(repoPath)) {
-            let repo = this.knownRepos.get(repoPath)!
-            log.debug(`RepoFactory.create - already known ${repo.describe()}`)
+        if (RepositoryFactory.knownRepos.has(repoPath)) {
+            let repo = RepositoryFactory.knownRepos.get(repoPath)!
+            log.debug(`Reusing repo ${repo.describe()}`)
             return repo
         }
 
@@ -66,7 +66,7 @@ export default class RepositoryFactory {
             repo = new FileSystemRepository(this.config, repoPath, rootOnly)
         }
 
-        this.knownRepos.set(repoPath, repo)
+        RepositoryFactory.knownRepos.set(repoPath, repo)
         return repo
     }
 }
