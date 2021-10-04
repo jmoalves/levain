@@ -43,7 +43,7 @@ export default abstract class AbstractRepository implements Repository {
     }
 
     listPackages(): Array<Package> {
-        log.debug(`listPackages - ${this.name}`)
+        log.debug(`listPackages - ${this.describe()}`)
 
         if (!this._packages) {
             throw new Error(`Please init repository ${this.describe()} before listing packages`)
