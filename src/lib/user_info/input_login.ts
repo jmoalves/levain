@@ -6,23 +6,6 @@ import {ValidateResult} from "https://deno.land/x/cliffy/prompt/_generic_prompt.
 
 export class InputLogin {
 
-    static inputAndValidateSync(defaultValue: string): string {
-        let newValue: string
-        let validateResult: ValidateResult = false
-
-        do {
-            if (validateResult) {
-                console.log(validateResult)
-            }
-            let message = "What's your FULL NAME for Git and other configs?"
-            newValue = prompt(message, defaultValue) || ''
-
-            validateResult = LoginValidator.validate(newValue)
-        } while (validateResult !== true)
-
-        return newValue;
-    }
-
     private static readonly message = "What's your LOGIN? (press return to confirm default value) ";
 
     static async inputAndValidate(defaultValue: string = ''): Promise<string> {

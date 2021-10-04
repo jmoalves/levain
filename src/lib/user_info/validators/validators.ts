@@ -64,12 +64,10 @@ export class CompositeValidators implements Validator {
 
 export class EmailValidator implements Validator {
 
-    readonly regex = /^[\w.]+@\w+\.[\w.]+$/
-
     validate(text: string): ValidateResult {
 
         if (!deno_validator.isEmail(text, {})) {
-            return 'Please inform a valid email address'
+            return 'Please inform a valid EMAIL'
         }
 
         return true

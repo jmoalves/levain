@@ -104,10 +104,10 @@ export default class TestHelper {
         return tempDir
     }
 
-    static getNewTempFile(originalFile?: string): string {
+    static getNewTempFile(copyFile?: string): string {
         const fileName = Deno.makeTempFileSync()
-        if (originalFile) {
-            copySync(originalFile, fileName, {overwrite: true})
+        if (copyFile) {
+            copySync(copyFile, fileName, {overwrite: true})
         }
         return fileName
     }

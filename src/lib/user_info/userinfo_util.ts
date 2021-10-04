@@ -34,14 +34,14 @@ export default class UserInfoUtil {
         }
         const userInfo = YamlFileUtils.loadFileAsObjectSync<UserInfo>(this.userinfoFileUri)
         log.debug(`User info: ${JSON.stringify(userInfo)}`)
-        this.userInfo = userInfo
+        this.userInfo = userInfo || new UserInfo()
     }
 
     save() {
         YamlFileUtils.saveObjectAsFileSync(this.userinfoFileUri, this.userInfo)
     }
 
-    async askUserInfo(config: Config, myArgs: any): Promise<void> {
+    async askUserInfo(config: Config, myArgs: any): Promise<UserInfo> {
         // Some nasty tricks... Should we refactor this?
         let separatorEnd: (() => void) | undefined = () => {
         };
@@ -68,42 +68,44 @@ export default class UserInfoUtil {
             myArgs["ask-password"] = true;
         }
 
-        const userInfoUtil = new UserInfoUtil()
-
         if (myArgs["ask-fullname"]) {
             (separatorBegin ? separatorBegin() : undefined);
 
-            await userInfoUtil.askFullName(config);
+            await this.askFullName(config);
         }
 
         if (myArgs["ask-login"]) {
             (separatorBegin ? separatorBegin() : undefined);
 
-            await userInfoUtil.askLogin(config);
+            await this.askLogin(config);
         }
 
         if (myArgs["ask-email"]) {
             (separatorBegin ? separatorBegin() : undefined);
 
-            await userInfoUtil.askEmail(config, myArgs["email-domain"]);
+            await this.askEmail(config, myArgs["email-domain"]);
         }
 
         if (myArgs["ask-password"]) {
             (separatorBegin ? separatorBegin() : undefined);
 
-            userInfoUtil.askPassword(config);
+            await this.askPassword(config);
         }
 
         (separatorEnd ? separatorEnd() : undefined);
+
+        return this.userInfo
     }
 
-    async askFullName(config: Config): Promise<string> {
+    async askFullName(config: Config, defaultValue?: string): Promise<string> {
         log.debug(`Asking for full name`)
         this.load()
 
-        const defaultValue = this.userInfo.fullName || envChain("user", "fullname") || ""
+        if (!defaultValue) {
+            defaultValue = this?.userInfo?.fullName || envChain("user", "fullname") || ""
+        }
 
-        const newValue = await InputFullName.inputAndValidateWithEncoding(defaultValue);
+        const newValue = await InputFullName.inputAndValidate(defaultValue);
 
         const validationResult: ValidateResult = NameValidator.validate(newValue)
 
@@ -111,7 +113,7 @@ export default class UserInfoUtil {
             throw new Error(`Invalid FULL NAME - ${validationResult}`);
         }
 
-        if (this.userInfo.fullName != newValue) {
+        if (this?.userInfo?.fullName != newValue) {
             this.userInfo.fullName = newValue
             this.save()
         }
@@ -119,19 +121,20 @@ export default class UserInfoUtil {
         return newValue
     }
 
-    async askEmail(config: Config, emailDomain: string | undefined = undefined): Promise<string> {
+    async askEmail(config: Config, emailDomain: string | undefined = undefined, defaultValue?: string): Promise<string> {
         log.debug(`Asking for email`)
         this.load()
         const loadedEmail = this.userInfo.email !== ""
             ? this.userInfo.email
             : undefined
 
-
-        let defaultEmail = config.email || loadedEmail;
-        if (!defaultEmail) {
+        if (!defaultValue) {
+            defaultValue = config.email || loadedEmail;
+        }
+        if (!defaultValue) {
             if (config.login && emailDomain) {
-                defaultEmail = config.login + (emailDomain.startsWith("@") ? "" : "@") + emailDomain;
-                log.debug(`defaultEmail = ${defaultEmail}`);
+                defaultValue = config.login + (emailDomain.startsWith("@") ? "" : "@") + emailDomain;
+                log.debug(`defaultEmail = ${defaultValue}`);
             } else {
                 if (!config.login) {
                     log.debug("No username for defaultEmail");
@@ -143,7 +146,7 @@ export default class UserInfoUtil {
             }
         }
 
-        const email = await InputEmail.inputAndValidateSync(defaultEmail || '');
+        const email = await InputEmail.inputAndValidate(defaultValue || '');
 
         if (!email) {
             throw new Error(`Unable to collect email`);
@@ -159,23 +162,14 @@ export default class UserInfoUtil {
         return email
     }
 
-    async inputEmail(defaultValue: string) {
-        // const fullName: string = await Input.prompt({
-        //         message: "Do you have an EMAIL? (press return to confirm default value)",
-        //         default: defaultValue,
-        //         validate: EmailValidator.validate,
-        //     }
-        // )
-
-        return prompt("Do you have an EMAIL? (press return to confirm default value) ", defaultValue);
-    }
-
-    async askLogin(config: Config): Promise<string> {
+    async askLogin(config: Config, defaultValue?: string): Promise<string> {
         log.debug(`Asking for login`)
         this.load()
 
-        const defaultValue = this.userInfo.login || OsUtils.login?.toLowerCase() || ""
-        const newValue = await InputLogin.inputAndValidateWithEncoding(defaultValue)
+        if (!defaultValue) {
+            defaultValue = this.userInfo.login || OsUtils.login?.toLowerCase() || ""
+        }
+        const newValue = await InputLogin.inputAndValidate(defaultValue)
 
         if (this.userInfo.login != newValue) {
             this.userInfo.login = newValue

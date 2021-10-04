@@ -6,33 +6,16 @@ import {ValidateResult} from "https://deno.land/x/cliffy/prompt/_generic_prompt.
 
 export class InputFullName {
 
-    static inputAndValidateSync(defaultValue: string): string {
-        let newValue: string
-        let validateResult: ValidateResult = false
-
-        do {
-            if (validateResult) {
-                console.log(validateResult)
-            }
-            let message = "What's your FULL NAME for Git and other configs?"
-            newValue = prompt(message, defaultValue) || ''
-
-            validateResult = NameValidator.validate(newValue)
-        } while (validateResult !== true)
-
-        return newValue;
-    }
+    static readonly defaultMessage = "What's your FULL NAME (for Git)?";
 
     static async inputAndValidate(defaultValue: string): Promise<string> {
 
-        const fullName: string = await Input.prompt({
-                message: "What's your FULL NAME for Git and other configs?",
+        return await Input.prompt({
+                message: this.defaultMessage,
                 default: defaultValue,
                 validate: NameValidator.validate,
             }
         )
-
-        return fullName
     }
 
     static async inputAndValidateWithEncoding(defaultValue: string): Promise<string> {
@@ -43,8 +26,7 @@ export class InputFullName {
             if (validateResult) {
                 console.log(validateResult)
             }
-            let message = "What's your FULL NAME for Git and other configs?"
-            fullName = await InputFullName.promptWithEncoding(message, defaultValue)
+            fullName = await InputFullName.promptWithEncoding(this.defaultMessage, defaultValue)
 
             validateResult = NameValidator.validate(fullName)
         } while (validateResult !== true)

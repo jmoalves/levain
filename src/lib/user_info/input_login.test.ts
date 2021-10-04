@@ -1,7 +1,7 @@
-import {assertEquals} from "https://deno.land/std/testing/asserts.ts";
+import {assertEquals, assertThrowsAsync} from "https://deno.land/std/testing/asserts.ts";
 
 //
-// askFullName
+// inputAndValidate
 //
 import {InputLogin} from "./input_login.ts";
 import {CliffyTestHelper} from "./cliffy_test_helper.ts";
@@ -19,4 +19,15 @@ Deno.test('InputLogin.inputAndValidate should accept a default value', async () 
     const input = await InputLogin.inputAndValidate('ppppp')
 
     assertEquals(input, 'ppppp')
+})
+Deno.test('InputEmail.inputAndValidate should reject an invalid value', async () => {
+    CliffyTestHelper.inputResponse('--invalid-email--')
+
+    assertThrowsAsync(
+        async () => {
+            await InputLogin.inputAndValidate('defaultValue@server.com')
+        },
+        Error,
+        ' ✘ Please inform a valid LOGIN'
+    )
 })
