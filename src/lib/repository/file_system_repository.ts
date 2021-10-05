@@ -1,6 +1,6 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
-import {existsSync, ExpandGlobOptions, expandGlobSync} from "https://deno.land/std/fs/mod.ts";
+import {existsSync, ExpandGlobOptions} from "https://deno.land/std/fs/mod.ts";
 
 import Config from '../config.ts';
 import Package from '../package/package.ts'
@@ -77,20 +77,13 @@ export default class FileSystemRepository extends AbstractRepository {
         return packages
     }
 
-    private async getPackageFiles(globOptions: ExpandGlobOptions, rootDirOnly: boolean = false): Promise<Array<Package>> {
-        const packagesGlob = `**/*.levain.{yaml,yml}`.replace(/\\/g, '/');
-        log.debug(`# readPackages: ${packagesGlob} ${JSON.stringify(globOptions)}`)
-
-        // FIXME Why, oh my...
-        // FIXME globPackages throws error when folder is readonly in Deno 1.5.4
-        // if (OsUtils.isWindows()) {
-        return await this.crawlPackages(globOptions['root'] || '.', globOptions, rootDirOnly)
-        // } else {
-        //     return this.globPackages(packagesGlob, globOptions);
-        // }
+    async getPackageFiles(globOptions: ExpandGlobOptions, rootDirOnly: boolean = false): Promise<Array<Package>> {
+        log.debug(`# readPackages: ${JSON.stringify(globOptions)}`)
+        return this.crawlPackages(globOptions['root'] || '.', globOptions, rootDirOnly)
     }
 
     async crawlPackages(dirname: string, options: ExpandGlobOptions, rootDirOnly: boolean = false, currentLevel = 0): Promise<Array<Package>> {
+        // TODO can we use expandGlob to get faster results?
         const maxLevels = 5
         const nextLevel = currentLevel + 1;
 
@@ -127,7 +120,7 @@ export default class FileSystemRepository extends AbstractRepository {
 
             const fullUri = path.resolve(dirname, entry.name);
             if (!FileUtils.canReadSync(fullUri)) {
-                log.debug(`not crawling ${fullUri}`)
+                log.debug(`not crawling ${fullUri} - can't read`)
                 continue
             }
 
@@ -150,20 +143,6 @@ export default class FileSystemRepository extends AbstractRepository {
         }
 
         return packages;
-    }
-
-    async globPackages(packagesGlob: string, globOptions: ExpandGlobOptions): Promise<Array<Package>> {
-        const packages = []
-        const packageFiles = expandGlobSync(packagesGlob, globOptions);
-        for (const file of packageFiles) {
-            log.debug(`## checking file ${JSON.stringify(file)}`)
-            const pkg = await this.readPackage(file.path)
-            if (pkg) {
-                log.debug(`## adding package ${pkg}`)
-                packages.push(pkg)
-            }
-        }
-        return packages
     }
 
     private async readPackage(yamlFile: string): Promise<Package | undefined> {
