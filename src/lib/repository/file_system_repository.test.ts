@@ -77,6 +77,14 @@ Deno.test('FileSystemRepository should list .yml and .yaml packages, and include
     const packageNames = packages.map(pkg => pkg.name)
     assertArrayEqualsInAnyOrder(packageNames, ['amazingYml', 'awesomeYaml', 'insideSubfolder'])
 })
+Deno.test('FileSystemRepository should optionally list only root', async () => {
+    const repo = await getInitedRepo(undefined, true)
+
+    const packages = repo.listPackages()
+
+    const packageNames = packages.map(pkg => pkg.name)
+    assertArrayEqualsInAnyOrder(packageNames, ['amazingYml', 'awesomeYaml'])
+})
 
 Deno.test('FileSystemRepository should ignore node_modules', async () => {
     const repo = await getInitedRepo()
@@ -116,12 +124,13 @@ Deno.test('FileSystemRepository should resolve package that does not exists as u
     assertEquals(pkg, undefined)
 })
 
-async function getInitedRepo(rootDir: string = './testdata/file_system_repo/testRepo'): Promise<FileSystemRepository> {
-    const repo = getRepo(rootDir)
+async function getInitedRepo(rootDir?: string, rootDirOnly?: boolean): Promise<FileSystemRepository> {
+    const repo = getRepo(rootDir, rootDirOnly)
     await repo.init()
     return repo
 }
 
-function getRepo(rootDir: string = './testdata/file_system_repo/testRepo'): FileSystemRepository {
-    return new FileSystemRepository(new Config([]), rootDir)
+function getRepo(rootDir: string = './testdata/file_system_repo/testRepo', rootOnly: boolean = false): FileSystemRepository {
+    const config = new Config();
+    return new FileSystemRepository(config, rootDir, rootOnly)
 }
