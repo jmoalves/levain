@@ -48,3 +48,7 @@ async function getInitializedRepositoryManager() {
     })
     return repositoryManager;
 }
+
+//
+// currentDirPackage
+//

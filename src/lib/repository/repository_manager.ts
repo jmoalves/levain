@@ -66,12 +66,15 @@ export default class RepositoryManager {
         }
     }
 
-    currentDirPackage(): Package | undefined {
+    async currentDirPackage(): Promise<Package | undefined> {
         if (!this.repositories.currentDir) {
             return undefined
         }
 
         // Looking for package at current dir
+        if (!this.repositories.currentDir.initialized()) {
+            await this.repositories.currentDir.init()
+        }
         const pkgs = this.repositories.currentDir.listPackages()
         if (pkgs && pkgs.length == 1) {
             return this.repositories.currentDir.resolvePackage(pkgs[0].name)
@@ -158,19 +161,19 @@ export default class RepositoryManager {
     private async createCurrentDirRepo() {
         log.debug("createCurrentDirRepo")
         const currentDir = Deno.cwd()
-        this.repositories.currentDir = this.repoFactory.getOrCreate(currentDir, true)
+        this.repositories.currentDir = await this.repoFactory.getOrCreate(currentDir, true)
     }
 
     private async createInstalledRepo() {
         log.debug("createInstalledRepo")
         let repos = await this.repoList(true)
-        this.repositories.installed = this.createRepos(repos)
+        this.repositories.installed = await this.createRepos(repos)
     }
 
     private async createRegularRepository() {
         log.debug("createRegularRepository")
         let repos = await this.repoList(false)
-        this.repositories.regular = this.createRepos(repos)
+        this.repositories.regular = await this.createRepos(repos)
     }
 
     async repoList(installedOnly: boolean): Promise<string[]> {
@@ -207,10 +210,10 @@ export default class RepositoryManager {
         this.tempRepos.forEach(repo => repos.push(repo))
     }
 
-    private createRepos(list: string[]): Repository {
+    private async createRepos(list: string[]): Promise<Repository> {
         let repoArr: Repository[] = []
         for (let repoPath of RepositoryFactory.normalizeList(list)) {
-            repoArr.push(this.repoFactory.getOrCreate(repoPath))
+            repoArr.push(await this.repoFactory.getOrCreate(repoPath))
         }
 
         return new CacheRepository(this.config,

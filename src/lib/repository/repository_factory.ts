@@ -43,7 +43,7 @@ export default class RepositoryFactory {
         return repoPath.toLowerCase().trim()
     }
 
-    getOrCreate(repoURI: string, rootOnly: boolean = false): Repository {
+    async getOrCreate(repoURI: string, rootOnly: boolean = false): Promise<Repository> {
         log.debug(`RepoFactory.create - repo for uri ${repoURI}`)
 
         if (!repoURI) {
@@ -65,6 +65,8 @@ export default class RepositoryFactory {
         } else {
             repo = new FileSystemRepository(this.config, repoPath, rootOnly)
         }
+
+        await repo.init()
 
         RepositoryFactory.knownRepos.set(repoPath, repo)
         return repo

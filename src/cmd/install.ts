@@ -136,7 +136,7 @@ export default class Install implements Command {
             log.info("")
             log.info(`- ${verb} ${pkg.name}@${pkg.version}`);
         } else {
-            log.info(`- ${pkg.name}@${pkg.version} already installed`);
+            log.info(`✓ ${pkg.name}@${pkg.version}`);
         }
 
         if (shouldInstall) {
