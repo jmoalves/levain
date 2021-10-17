@@ -42,7 +42,7 @@ export default class Shell implements Command {
         } else {
             await loader.command("install", ["--noUpdate"].concat(pkgNames));
         }
-        this.config.repositoryManager.invalidatePackages();
+        await this.config.repositoryManager.reloadPackages();
 
         // Actions
         if (curDirPkg && pkgActions) {

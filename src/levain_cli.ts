@@ -65,7 +65,7 @@ export default class LevainCli {
 
         // Repository Manager
         await config.repositoryManager.init({
-            repos: myArgs.addRepo,
+            extraRepos: myArgs.addRepo,
             tempRepos: myArgs.tempRepo
         })
 

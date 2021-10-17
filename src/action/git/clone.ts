@@ -25,7 +25,7 @@ export default class GitCloneAction implements Action {
 
         log.debug(`CLONE ${srcUrl} ${destDir}`)
 
-        if (DirUtils.count(destDir) > 0) {
+        if (DirUtils.isDirectory(destDir) && DirUtils.count(destDir) > 0) {
             log.debug(`skipping clone, ${destDir} already has content`)
             return
         }

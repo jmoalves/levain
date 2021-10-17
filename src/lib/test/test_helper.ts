@@ -1,6 +1,7 @@
 import {LogRecord} from "https://deno.land/std/log/logger.ts"
 import {LogLevels} from "https://deno.land/std/log/levels.ts"
 import * as path from "https://deno.land/std/path/mod.ts"
+import * as log from "https://deno.land/std/log/mod.ts";
 import {copySync, existsSync,} from "https://deno.land/std/fs/mod.ts"
 
 import Config from "../config.ts";
@@ -149,5 +150,28 @@ export default class TestHelper {
         const __dirname = path.dirname(path.fromFileUrl(import.meta.url))
         const testDataPath = path.join(__dirname, '../../../testdata')
         return path.resolve(testDataPath, aditionalPath)
+    }
+
+    static async logToConsole() {
+        await log.setup({
+            handlers: {
+                console: new log.handlers.ConsoleHandler("DEBUG"),
+                //
+                // file: new log.handlers.FileHandler("WARNING", {
+                //     filename: "./log.txt",
+                //     // you can change format of output message using any keys in `LogRecord`.
+                //     formatter: "{levelName} {msg}",
+                // }),
+            },
+
+            loggers: {
+                // configure default logger available via short-hand methods above.
+                default: {
+                    level: "DEBUG",
+                    // handlers: ["console", "file"],
+                    handlers: ["console"],
+                },
+            },
+        });
     }
 }

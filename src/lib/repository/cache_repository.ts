@@ -20,7 +20,9 @@ export default class CacheRepository extends AbstractRepository {
             return;
         }
 
-        await this.repository.init()
+        if (!this.repository.initialized()) {
+            await this.repository.init()
+        }
 
         await super.init()
     }
@@ -47,6 +49,6 @@ export default class CacheRepository extends AbstractRepository {
     }
 
     async readPackages(): Promise<Array<Package>> {
-        return await this.repository.readPackages()
+        return this.repository.listPackages();
     }
 }

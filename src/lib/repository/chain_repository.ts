@@ -29,7 +29,9 @@ export default class ChainRepository extends AbstractRepository {
 
         // TODO init in parallel?
         for (const repo of this.repositories) {
-            await repo.init()
+            if (!repo.initialized()) {
+                await repo.init()
+            }
         }
 
         await super.init()
@@ -44,9 +46,10 @@ export default class ChainRepository extends AbstractRepository {
     }
 
     async readPackages(): Promise<Array<Package>> {
-        const packagesPromises: Array<Promise<Package[]>> = this.repositories
-            .map(repo => repo.readPackages())
-        const packages = await ArrayUtils.awaitAndMerge<Package>(packagesPromises)
+        // TODO this method should not be called
+        const packages = this.repositories
+            .map(repo => repo.listPackages())
+            .reduce((acc, val) => acc.concat(val), [])
 
         return ArrayUtils.removeRepetitions<Package>(
             packages,

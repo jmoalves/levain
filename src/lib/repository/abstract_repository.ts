@@ -20,6 +20,11 @@ export default abstract class AbstractRepository implements Repository {
     async init(): Promise<void> {
         log.debug(`${this.describe()} init`)
 
+        if (this.initialized()) {
+            log.debug(`${this.describe()} already initialized`)
+            return
+        }
+
         this._packages = (await this.readPackages())
             .sort((a, b) => a?.name?.localeCompare(b?.name))
 
