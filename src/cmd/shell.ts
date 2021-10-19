@@ -59,7 +59,8 @@ export default class Shell implements Command {
         // Running shell
         const osShell: OsShell = new OsShell(this.config, pkgNames, true);
         osShell.interactive = true;
-
+        // TODO initRepositories elsewhere?
+        await this.config.repositoryManager.initRepositories()
         await osShell.execute([]);
     }
 
