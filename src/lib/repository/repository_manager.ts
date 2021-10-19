@@ -42,6 +42,7 @@ export default class RepositoryManager {
 
     async reloadPackages(): Promise<Repository[]> {
         this.invalidatePackages()
+        await this.createRepositories()
         return this.initRepositories()
     }
 
