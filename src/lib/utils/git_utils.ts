@@ -38,7 +38,7 @@ export default class GitUtils {
         return gitBase.replace(/[\/\\:@ ]+/g, '_')
     }
 
-    async clone(gitUrl: string, dst: string) {
+    async clone(gitUrl: string, dst: string, shallow: boolean = false): Promise<void> {
         GitUtils.checkGitPath(gitUrl)
 
         const gitPath = GitUtils.parseGitPath(gitUrl)
@@ -48,8 +48,9 @@ export default class GitUtils {
         let tick = setInterval(() => this.feedback.show(), 300)
 
         const branchOption = (gitPath.branch ? `--branch ${gitPath.branch} ` : '')
+        const shallowOption = (shallow ? `--single-branch --no-tags --depth 1 ` : '')
         // We must have NO spaces after ${branchOption} in the command below
-        let gitCommand = `${this.gitCmd} clone --progress ${branchOption}--single-branch --no-tags --depth 1 ${gitPath.url} ${dst}`;
+        let gitCommand = `${this.gitCmd} clone --progress ${branchOption}${shallowOption}${gitPath.url} ${dst}`;
         if (OsUtils.isWindows()) {
             gitCommand = `cmd /u /c ${gitCommand}`
         }

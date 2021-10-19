@@ -31,7 +31,7 @@ export default class GitRepository extends AbstractRepository {
         if (existsSync(this.localDir)) {
             await this.gitUtils.pull(this.localDir);
         } else {
-            await this.gitUtils.clone(this.rootUrl, this.localDir);
+            await this.gitUtils.clone(this.rootUrl, this.localDir, true);
         }
 
         this.localRepo = await this.repoFactory.getOrCreate(this.localDir, this.rootOnly);
