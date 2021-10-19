@@ -1,7 +1,4 @@
 import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-
-import Config from "../config.ts";
 import ExtraBin from "../extra_bin.ts";
 import OsUtils from "../os/os_utils.ts";
 
@@ -13,8 +10,12 @@ export default class GitUtils {
 
     readonly feedback = new ConsoleFeedback();
 
-    constructor(private config: Config) {
-        this.gitCmd = `${ExtraBin.gitDir}\\cmd\\git.exe`;
+    constructor() {
+        if (OsUtils.isWindows()) {
+            this.gitCmd = `${ExtraBin.gitDir}\\cmd\\git.exe`
+        } else {
+            this.gitCmd = `/usr/bin/git`
+        }
     }
 
     static isGitPath(gitUrl: string): boolean {
@@ -26,67 +27,80 @@ export default class GitUtils {
     }
 
     static localBaseDir(gitUrl: string): string {
+        GitUtils.checkGitPath(gitUrl)
+
         let gitPath = GitUtils.parseGitPath(gitUrl)
         let gitBase = gitPath.url.replace(/\.git$/, '')
         if (gitPath.branch) {
             gitBase += '_' + gitPath.branch
         }
-        return gitBase.replace(/(?:\/|\\|:|@| )+/g, '_')
+        return gitBase.replace(/[\/\\:@ ]+/g, '_')
     }
 
-    async clone(gitUrl: string, dst: string, options?: any) {
-        this.checkGitPath(gitUrl)
+    async clone(gitUrl: string, dst: string, shallow: boolean = false): Promise<void> {
+        GitUtils.checkGitPath(gitUrl)
 
         const gitPath = GitUtils.parseGitPath(gitUrl)
         log.debug(`# GIT - CLONE - ${JSON.stringify(gitPath)} => ${dst}`);
-        OsUtils.onlyInWindows();
 
         this.feedback.start(`# GIT - CLONE - ${JSON.stringify(gitPath)} => ${dst}`)
         let tick = setInterval(() => this.feedback.show(), 300)
 
-        const branchOption = ( gitPath.branch ? `--branch ${gitPath.branch} ` : '')
+        const branchOption = (gitPath.branch ? `--branch ${gitPath.branch} ` : '')
+        const shallowOption = (shallow ? `--single-branch --no-tags --depth 1 ` : '')
         // We must have NO spaces after ${branchOption} in the command below
-        const command = `cmd /u /c ${this.gitCmd} clone --progress ${branchOption}--single-branch --no-tags --depth 1 ${gitPath.url} ${dst}`;
-        await OsUtils.runAndLog(command);
+        let gitCommand = `${this.gitCmd} clone --progress ${branchOption}${shallowOption}${gitPath.url} ${dst}`;
+        if (OsUtils.isWindows()) {
+            gitCommand = `cmd /u /c ${gitCommand}`
+        }
+        try {
+            await OsUtils.runAndLog(gitCommand);
+        } catch (err) {
+            clearInterval(tick)
+            throw err
+        }
 
         clearInterval(tick)
         this.feedback.reset(`# GIT - CLONE - ${JSON.stringify(gitPath)} => ${dst} - OK`)
     }
 
-    async pull(dir: string, options?: any) {
-        log.debug(`# GIT - PULL - ${dir}`);
-        OsUtils.onlyInWindows();
+    async pull(workingDir: string) {
+        log.debug(`# GIT - PULL - ${workingDir}`);
 
-        this.feedback.start(`# GIT - PULL - ${dir}`)
+        this.feedback.start(`# GIT - PULL - ${workingDir}`)
         let tick = setInterval(() => this.feedback.show(), 300)
 
-        const command = `cmd /u /c pushd ${dir} && ${this.gitCmd} pull --force -q --progress --no-tags --depth=1 --update-shallow --allow-unrelated-histories --no-commit --rebase && popd`;
+        let gitCommand: string | string[] = `${this.gitCmd} pull --force -q --progress --no-tags --depth=1 --update-shallow --allow-unrelated-histories --no-commit --rebase`;
+        if (OsUtils.isWindows()) {
+            gitCommand = `cmd /u /c pushd ${workingDir} && ${gitCommand} && popd`
+        }
+
         let tries = 0;
         do {
             tries++;
             if (tries > 1) {
-                log.debug(`# GIT - PULL - ${dir} - RETRY`);
+                log.debug(`# GIT - PULL - ${workingDir} - RETRY`);
             }
 
             try {
-                await OsUtils.runAndLog(command);
+                await OsUtils.runAndLog(gitCommand, workingDir);
                 clearInterval(tick)
 
-                log.debug(`# GIT - PULL - ${dir} - OK`);
+                log.debug(`# GIT - PULL - ${workingDir} - OK`);
                 log.debug("");
-        
-                this.feedback.reset(`# GIT - PULL - ${dir} - OK`)
+
+                this.feedback.reset(`# GIT - PULL - ${workingDir} - OK`)
                 return;
             } catch (error) {
-                log.debug(`${tries} - git error - ${error}`)
+                log.error(`git error - try ${tries} - ${error}`)
             }
         } while (tries < 3)
 
         clearInterval(tick)
-        throw Error(`Unable to GIT PULL ${dir}`)
+        throw Error(`Unable to GIT PULL ${workingDir}`)
     }
 
-    checkGitPath(url: string) {
+    static checkGitPath(url: string) {
         if (!GitUtils.isGitPath(url)) {
             throw new Error(`Invalid git url - ${url}`)
         }
