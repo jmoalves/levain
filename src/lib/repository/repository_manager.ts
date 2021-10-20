@@ -145,11 +145,12 @@ export default class RepositoryManager {
         for (let key in repos) {
             if (repos[key]) {
                 let repo: Repository = repos[key]
-                log.debug(`INIT Repo[${key}] - ${repo.name}`)
                 if (!repo.initialized()) {
+                    log.debug(`INIT Repo[${key}] - ${repo.describe()} inited? ${repo.initialized()}`)
                     await repo.init()
                     initializedRepositories.push(repo)
                 }
+                log.debug(`Repo[${key}] - ${repo.describe()} inited? ${repo.initialized()}`)
             }
         }
         this.logRepos(repos);

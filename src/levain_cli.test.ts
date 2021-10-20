@@ -37,12 +37,15 @@ Deno.test('LevainCli should list commands available when invalid command', async
     )
 })
 if (OsUtils.isWindows()) {
-    Deno.test('LevainCli should open a shell', async () => {
-        const logger = await TestHelper.setupTestLogger()
-        const levainCli = new LevainCli()
+    Deno.test({
+        name: 'LevainCli should open a shell',
+        only: true,
+        fn: async () => {
+            const logger = await TestHelper.setupTestLogger()
+            const levainCli = new LevainCli()
 
-        await levainCli.execute({_: ["shell"]})
-
+            await levainCli.execute({_: ["shell"]})
+        }
     })
 }
 const commandHelp = [
