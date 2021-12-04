@@ -12,11 +12,16 @@ jobs:
   createRelease:
     runs-on: ubuntu-latest
 
+    env:
+      DENO_ROOT_PATH: ${{ env.$RUNNER_TEMP }}/deno
+      LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
+      LEVAIN_RELEASE_PATH: ${{ env.$RUNNER_TEMP }}/levain-$LEVAIN_VERSION
+
     steps:
       - name: Check parameter
         run: |
           # Check parameter
-          version=${{ github.event.inputs.releaseNumber }}
+          version=$LEVAIN_VERSION
           if [[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo Version v${version};
           else
@@ -48,7 +53,7 @@ jobs:
       - name: Tag
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bash $GITHUB_WORKSPACE/githubScripts/tag-release.sh ${{ github.event.inputs.releaseNumber }}
+        run: bash $GITHUB_WORKSPACE/githubScripts/tag-release.sh $LEVAIN_VERSION
 
       - name: Create release
         id: create_release
@@ -56,16 +61,46 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ github.event.inputs.releaseNumber }}
-          release_name: v${{ github.event.inputs.releaseNumber }}
+          tag_name: v$LEVAIN_VERSION
+          release_name: v$LEVAIN_VERSION
           commitish: master
           draft: false
           prerelease: true
 
-      - name: Wait release - Timeout 5 min
-        run: timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' https://api.github.com/repos/jmoalves/levain/releases/tags/v${{ github.event.inputs.releaseNumber }})" != "200" ]]; do echo Waiting...; sleep 5; done' || false
+      - name: Get Deno
+        run: |
+          mkdir -p $DENO_ROOT_PATH
+          echo Deno Windows
+          bash $GITHUB_WORKSPACE/githubScripts/get-deno.sh $DENO_ROOT_PATH/windows Windows
+          echo Deno Linux
+          bash $GITHUB_WORKSPACE/githubScripts/get-deno.sh $DENO_ROOT_PATH/linux Linux
 
-      - name: Package and Upload
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bash $GITHUB_WORKSPACE/githubScripts/package-after-release.sh ${{ github.event.inputs.releaseNumber }} 
+      - name: Wait release - Timeout 5 min
+        run: timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' https://api.github.com/repos/jmoalves/levain/releases/tags/v$LEVAIN_VERSION)" != "200" ]]; do echo Waiting...; sleep 5; done' || false
+
+      - name: Get Levain release
+        run: |
+          rm -rf $LEVAIN_RELEASE_PATH
+          mkdir -p $LEVAIN_RELEASE_PATH
+          bash $GITHUB_WORKSPACE/githubScripts/get-levain-release.sh $LEVAIN_VERSION $LEVAIN_RELEASE_PATH
+
+      - name: Clean Levain release
+        run: |
+          bash $GITHUB_WORKSPACE/githubScripts/clean-levain-release.sh $LEVAIN_RELEASE_PATH
+
+      - name: Levain embedded binaries
+        run: |
+          bash $GITHUB_WORKSPACE/githubScripts/levain-embedded-binaries.sh $LEVAIN_RELEASE_PATH $DENO_ROOT_PATH/windows
+
+      - name: Levain bundle
+        run: |
+          bash $GITHUB_WORKSPACE/githubScripts/levain-bundle.sh $LEVAIN_RELEASE_PATH $DENO_ROOT_PATH/linux/deno
+
+      - name: Levain package
+        run: |
+          bash $GITHUB_WORKSPACE/githubScripts/levain-package.sh $LEVAIN_RELEASE_PATH levain-v$levainVersion-windows-x86_64.zip
+
+      - name: Upload assets
+        run: |
+          bash $GITHUB_WORKSPACE/githubScripts/asset-upload.sh $LEVAIN_VERSION levain-v$levainVersion-windows-x86_64.zip application/zip
+          bash $GITHUB_WORKSPACE/githubScripts/asset-upload.sh $LEVAIN_VERSION levain-v$levainVersion-windows-x86_64.zip.sha256 text/plain

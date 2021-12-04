@@ -52,14 +52,21 @@ getRelease() {
   echo $(curl -ks -X GET ${url})
 }
 
-echo Get Deno "$@"
-
 dir=$1
-
 if [ -z "$dir" ]; then
   echo You must inform the destination dir
   exit 1
 fi
+
+denoOS=$2
+if [ -z "$denoOS" ]; then
+  echo No DENO OS informed... Using $RUNNER_OS
+  denoOS=$RUNNER_OS
+fi
+
+echo === BEG = Deno for $denoOS at $dir 
+
+############
 
 myPath="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 cd $myPath/..
@@ -72,15 +79,28 @@ if [ -z "$denoRelease" ]; then
 fi
 
 denoVersion=$(echo $denoRelease | jq -rc '.tag_name' | sed 's/v//g')
-denoLinuxUrl=$(echo $denoRelease | jq -rc '.assets|.[] | select( .name == "deno-x86_64-unknown-linux-gnu.zip" ) | .browser_download_url')
 
-# Deno for Linux
-echo Deno $denoVersion for Linux at $denoLinuxUrl
-mkdir -p ${dir}
-tempFile=$( mktemp )
-curl -ks -o ${tempFile} -L $denoLinuxUrl
-unzip ${tempFile} -d ${dir} >/dev/null
-rm -rf ${tempFile}
+case "${denoOS}" in
+Windows)
+  denoUrl=$(echo $denoRelease | jq -rc '.assets|.[] | select( .name == "deno-x86_64-pc-windows-msvc.zip" ) | .browser_download_url')
+  ;;
 
-echo
-echo Deno installed at ${dir}
+Linux|macOS)
+  denoUrl=$(echo $denoRelease | jq -rc '.assets|.[] | select( .name == "deno-x86_64-unknown-linux-gnu.zip" ) | .browser_download_url')
+  ;;
+
+*)
+  echo Invalid deno OS $denoOS
+  exit 1
+  ;;
+esac
+
+# Deno
+echo Downloading Deno $denoVersion for $denoOS from $denoUrl
+
+mkdir -p ${dir} &&
+tempFile=$( mktemp ) &&
+curl -ks -o ${tempFile} -L $denoUrl &&
+unzip ${tempFile} -d ${dir} >/dev/null &&
+rm -rf ${tempFile} &&
+echo === END = Deno for $denoOS at $dir 
