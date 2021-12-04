@@ -40,6 +40,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Get Deno
+        run: |
+          mkdir -p $DENO_ROOT_PATH
+          echo Deno Windows
+          bash $GITHUB_WORKSPACE/githubScripts/get-deno.sh $DENO_ROOT_PATH/windows Windows
+          echo Deno Linux
+          bash $GITHUB_WORKSPACE/githubScripts/get-deno.sh $DENO_ROOT_PATH/linux Linux
+        env:
+          DENO_ROOT_PATH: ${{ runner.temp }}/deno
+
+      - name: Check sources
+        run: |
+          bash $GITHUB_WORKSPACE/githubScripts/levain-check.sh $DENO_ROOT_PATH/linux/deno
+        env:
+          DENO_ROOT_PATH: ${{ runner.temp }}/deno
+
       - name: Git config commmit user
         run: |
           # Git config commmit user
@@ -65,16 +81,6 @@ jobs:
           commitish: master
           draft: false
           prerelease: true
-
-      - name: Get Deno
-        run: |
-          mkdir -p $DENO_ROOT_PATH
-          echo Deno Windows
-          bash $GITHUB_WORKSPACE/githubScripts/get-deno.sh $DENO_ROOT_PATH/windows Windows
-          echo Deno Linux
-          bash $GITHUB_WORKSPACE/githubScripts/get-deno.sh $DENO_ROOT_PATH/linux Linux
-        env:
-          DENO_ROOT_PATH: ${{ runner.temp }}/deno
 
       - name: Wait release - Timeout 5 min
         run: timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' https://api.github.com/repos/jmoalves/levain/releases/tags/v${{ env.LEVAIN_VERSION }})" != "200" ]]; do echo Waiting...; sleep 5; done' || false
