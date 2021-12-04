@@ -56,7 +56,7 @@ jobs:
         env:
           DENO_ROOT_PATH: ${{ runner.temp }}/deno
 
-      - name: Git config commmit user
+      - name: Git config commit user
         run: |
           # Git config commmit user
           git config --local user.email "action@github.com"
