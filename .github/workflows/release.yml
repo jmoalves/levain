@@ -13,9 +13,9 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      DENO_ROOT_PATH: ${{ env.RUNNER_TEMP }}/deno
+      DENO_ROOT_PATH: ${{ runner.temp }}/deno
       LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
-      LEVAIN_RELEASE_PATH: ${{ env.RUNNER_TEMP }}/levain-$LEVAIN_VERSION
+      LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-$LEVAIN_VERSION
 
     steps:
       - name: Check parameter
