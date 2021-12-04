@@ -8,7 +8,13 @@ myDeno=$1
 export DENO_DIR=$( mktemp -d )
 mkdir -p ${DENO_DIR}
 ${myDeno} info
-${myDeno} cache --unstable --reload levain.ts
-rm -rf ${DENO_DIR}
+
+if ! ${myDeno} cache --unstable --reload levain.ts; then
+    echo ERROR compiling levain
+    rm -rf ${DENO_DIR}
+    exit 1
+fi
 
 #FIXME: Run Tests!
+
+rm -rf ${DENO_DIR}
