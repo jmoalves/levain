@@ -8,11 +8,6 @@ on:
         description: 'Release number'     
         required: true
 
-env:
-  DENO_ROOT_PATH: ${{ runner.temp }}/deno
-  LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
-  LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-$LEVAIN_VERSION
-
 jobs:
   createRelease:
     runs-on: ubuntu-latest
@@ -54,12 +49,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bash $GITHUB_WORKSPACE/githubScripts/tag-release.sh $LEVAIN_VERSION
+        env:
+          LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
 
       - name: Create release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
         with:
           tag_name: v$LEVAIN_VERSION
           release_name: v$LEVAIN_VERSION
@@ -74,33 +72,57 @@ jobs:
           bash $GITHUB_WORKSPACE/githubScripts/get-deno.sh $DENO_ROOT_PATH/windows Windows
           echo Deno Linux
           bash $GITHUB_WORKSPACE/githubScripts/get-deno.sh $DENO_ROOT_PATH/linux Linux
+        env:
+          DENO_ROOT_PATH: ${{ runner.temp }}/deno
 
       - name: Wait release - Timeout 5 min
         run: timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' https://api.github.com/repos/jmoalves/levain/releases/tags/v$LEVAIN_VERSION)" != "200" ]]; do echo Waiting...; sleep 5; done' || false
+        env:
+          LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
 
       - name: Get Levain release
         run: |
           rm -rf $LEVAIN_RELEASE_PATH
           mkdir -p $LEVAIN_RELEASE_PATH
           bash $GITHUB_WORKSPACE/githubScripts/get-levain-release.sh $LEVAIN_VERSION $LEVAIN_RELEASE_PATH
+        env:
+          LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
+          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-$LEVAIN_VERSION
 
       - name: Clean Levain release
         run: |
           bash $GITHUB_WORKSPACE/githubScripts/clean-levain-release.sh $LEVAIN_RELEASE_PATH
+        env:
+          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-$LEVAIN_VERSION
 
       - name: Levain embedded binaries
         run: |
           bash $GITHUB_WORKSPACE/githubScripts/levain-embedded-binaries.sh $LEVAIN_RELEASE_PATH $DENO_ROOT_PATH/windows
+        env:
+          DENO_ROOT_PATH: ${{ runner.temp }}/deno
+          LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
+          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-$LEVAIN_VERSION
 
       - name: Levain bundle
         run: |
           bash $GITHUB_WORKSPACE/githubScripts/levain-bundle.sh $LEVAIN_RELEASE_PATH $DENO_ROOT_PATH/linux/deno
+        env:
+          DENO_ROOT_PATH: ${{ runner.temp }}/deno
+          LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
+          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-$LEVAIN_VERSION
 
       - name: Levain package
         run: |
-          bash $GITHUB_WORKSPACE/githubScripts/levain-package.sh $LEVAIN_RELEASE_PATH levain-v$levainVersion-windows-x86_64.zip
+          bash $GITHUB_WORKSPACE/githubScripts/levain-package.sh $LEVAIN_RELEASE_PATH ${{ runner.temp }}/levain-v$LEVAIN_VERSION-windows-x86_64.zip
+        env:
+          LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
+          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-$LEVAIN_VERSION
 
       - name: Upload assets
         run: |
-          bash $GITHUB_WORKSPACE/githubScripts/asset-upload.sh $LEVAIN_VERSION levain-v$levainVersion-windows-x86_64.zip application/zip
-          bash $GITHUB_WORKSPACE/githubScripts/asset-upload.sh $LEVAIN_VERSION levain-v$levainVersion-windows-x86_64.zip.sha256 text/plain
+          bash $GITHUB_WORKSPACE/githubScripts/asset-upload.sh $LEVAIN_VERSION ${{ runner.temp }}/levain-v$LEVAIN_VERSION-windows-x86_64.zip application/zip
+          bash $GITHUB_WORKSPACE/githubScripts/asset-upload.sh $LEVAIN_VERSION ${{ runner.temp }}/levain-v$LEVAIN_VERSION-windows-x86_64.zip.sha256 text/plain
+        env:
+          DENO_ROOT_PATH: ${{ runner.temp }}/deno
+          LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
+          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-$LEVAIN_VERSION
