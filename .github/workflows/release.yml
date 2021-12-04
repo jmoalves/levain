@@ -58,7 +58,7 @@ jobs:
 
       - name: Git config commit user
         run: |
-          # Git config commmit user
+          # Git config commit user
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git config pull.rebase true
