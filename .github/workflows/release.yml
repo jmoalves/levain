@@ -48,9 +48,8 @@ jobs:
       - name: Tag
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bash $GITHUB_WORKSPACE/githubScripts/tag-release.sh $LEVAIN_VERSION
-        env:
           LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
+        run: bash $GITHUB_WORKSPACE/githubScripts/tag-release.sh $LEVAIN_VERSION
 
       - name: Create release
         id: create_release
