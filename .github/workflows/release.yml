@@ -88,13 +88,13 @@ jobs:
           bash $GITHUB_WORKSPACE/githubScripts/get-levain-release.sh $LEVAIN_VERSION $LEVAIN_RELEASE_PATH
         env:
           LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
-          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-$LEVAIN_VERSION
+          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ env.LEVAIN_VERSION }}
 
       - name: Clean Levain release
         run: |
           bash $GITHUB_WORKSPACE/githubScripts/clean-levain-release.sh $LEVAIN_RELEASE_PATH
         env:
-          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-$LEVAIN_VERSION
+          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ env.LEVAIN_VERSION }}
 
       - name: Levain embedded binaries
         run: |
@@ -102,7 +102,7 @@ jobs:
         env:
           DENO_ROOT_PATH: ${{ runner.temp }}/deno
           LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
-          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-$LEVAIN_VERSION
+          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ env.LEVAIN_VERSION }}
 
       - name: Levain bundle
         run: |
@@ -110,14 +110,14 @@ jobs:
         env:
           DENO_ROOT_PATH: ${{ runner.temp }}/deno
           LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
-          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-$LEVAIN_VERSION
+          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ env.LEVAIN_VERSION }}
 
       - name: Levain package
         run: |
           bash $GITHUB_WORKSPACE/githubScripts/levain-package.sh $LEVAIN_RELEASE_PATH ${{ runner.temp }}/levain-v$LEVAIN_VERSION-windows-x86_64.zip
         env:
           LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
-          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-$LEVAIN_VERSION
+          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ env.LEVAIN_VERSION }}
 
       - name: Upload assets
         run: |
@@ -126,4 +126,4 @@ jobs:
         env:
           DENO_ROOT_PATH: ${{ runner.temp }}/deno
           LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
-          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-$LEVAIN_VERSION
+          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ env.LEVAIN_VERSION }}
