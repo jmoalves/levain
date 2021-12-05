@@ -12,7 +12,7 @@ mkdir -p ${workDir}/extra-bin/windows
 for utility in 7-zip curl; do
     cp -r ${levainDir}/extra-bin/windows/${utility} ${workDir}/extra-bin/windows
 done
-cp ${levainDir}/levainBootstrap.cmd ${workDir}
+cp ${levainDir}/bootstrap/levainBootstrap.cmd ${workDir}
 
 cd ${workDir}
 zip -r ${bootstrapZipFile} levainBootstrap.cmd extra-bin >/dev/null
