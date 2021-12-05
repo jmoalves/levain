@@ -1,0 +1,32 @@
+name: Check sources
+
+on:
+  push:
+
+jobs:
+  checkSources:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clean TEMP
+        run: rm -rf $RUNNER_TEMP && mkdir -p $RUNNER_TEMP
+
+      - name: Clean Workspace
+        run: rm -rf $GITHUB_WORKSPACE && mkdir -p $GITHUB_WORKSPACE
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Get Deno
+        run: |
+          rm -rf $DENO_ROOT_PATH && mkdir -p $DENO_ROOT_PATH
+          echo Deno Linux
+          bash $GITHUB_WORKSPACE/githubScripts/get-deno.sh $DENO_ROOT_PATH/linux Linux
+        env:
+          DENO_ROOT_PATH: ${{ runner.temp }}/deno
+
+      - name: Check sources
+        run: |
+          bash $GITHUB_WORKSPACE/githubScripts/levain-check.sh $DENO_ROOT_PATH/linux/deno
+        env:
+          DENO_ROOT_PATH: ${{ runner.temp }}/deno
