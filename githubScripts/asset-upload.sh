@@ -7,6 +7,11 @@ levainVersion=$1
 assetFile=$2
 contentType=$3
 
+if [ ! -r ${assetFile} ]; then
+  echo ERROR Unable to read ${assetFile}
+  exit 1
+fi
+
 levainRelease=$( bash $scriptPath/github-release.sh -o jmoalves -r levain $levainVersion )
 if [ -z "$levainRelease" ]; then
   echo ERROR getting levain release ${levainVersion}
