@@ -25,7 +25,7 @@ export default class GitRepository extends AbstractRepository {
         this.name = `gitRepo for ${this.rootUrl}`
         this.repoFactory = new RepositoryFactory(config)
 
-        this.gitUtils = new GitUtils(config)
+        this.gitUtils = new GitUtils()
         this.localDir = path.resolve(this.config.levainConfigDir, "gitRepos", GitUtils.localBaseDir(this.rootUrl))
     }
 

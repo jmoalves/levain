@@ -31,7 +31,7 @@ export default class GitCloneAction implements Action {
             return
         }
 
-        const gitUtils = new GitUtils(TestHelper.getConfig());
+        const gitUtils = new GitUtils();
         return await gitUtils.clone(srcUrl, destDir)
     }
 
