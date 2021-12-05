@@ -3,6 +3,10 @@ name: Check sources
 on:
   push:
 
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron:  '30 4 * * *'
+
 jobs:
   checkSources:
     runs-on: ubuntu-latest
