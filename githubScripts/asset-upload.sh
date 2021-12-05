@@ -24,6 +24,11 @@ assetName=$( basename $assetFile )
 
 echo
 echo Uploading $assetName to $levainAssetsUploadUrl from ${assetFile}
+echo curl -ks -X POST -u username:$GITHUB_TOKEN \
+    -H "Content-Type: ${contentType}" \
+    -T ${assetFile} \
+    ${levainAssetsUploadUrl}?name=${assetName}
+
 curl -ks -X POST -u username:$GITHUB_TOKEN \
     -H "Content-Type: ${contentType}" \
     -T ${assetFile} \
