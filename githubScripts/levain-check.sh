@@ -11,7 +11,7 @@ if [ -z "$myDeno" ]; then
     exit 1
 fi
 
-if [ -x "$myDeno" ]; then
+if [ ! -x "$myDeno" ]; then
     echo We can\'t run $myDeno
     exit 1
 fi
