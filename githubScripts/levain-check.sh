@@ -19,9 +19,6 @@ fi
 ########
 
 export DENO_DIR=$( mktemp -d )
-${myDeno} info
-
-echo
 if ! ${myDeno} cache --unstable --reload levain.ts; then
     echo ERROR compiling levain
     rm -rf ${DENO_DIR}
