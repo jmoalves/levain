@@ -6,7 +6,7 @@ levainZipFile=$2
 
 ## Create Levain zip
 cd $( dirname ${levainDir} )
-zip -r ${levainZipFile} $( dirname ${levainDir} ) >/dev/null
+zip -r ${levainZipFile} $( basename ${levainDir} ) >/dev/null
 sha256sum ${levainZipFile} > ${levainZipFile}.sha256
 cd - >/dev/null
 
