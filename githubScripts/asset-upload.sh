@@ -20,12 +20,11 @@ fi
 
 levainAssetsUploadUrl=$(echo $levainRelease | jq -rc '.upload_url' | sed 's/{.*}//')
 
+assetName=$( basename $assetFile )
+
 echo
-echo Uploading asset ${assetFile} to $levainAssetsUploadUrl
-if ! curl -ks -X POST -u username:$GITHUB_TOKEN \
+echo Uploading $assetName to $levainAssetsUploadUrl from ${assetFile}
+curl -ks -X POST -u username:$GITHUB_TOKEN \
     -H "Content-Type: ${contentType}" \
     -T ${assetFile} \
-    ${levainAssetsUploadUrl}?name=${assetFile}; then
-  echo ERROR uploading $assetFile to $levainAssetsUploadUrl
-  exit 1
-fi
+    ${levainAssetsUploadUrl}?name=${assetName}
