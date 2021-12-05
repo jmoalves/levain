@@ -146,6 +146,7 @@ jobs:
           bash $GITHUB_WORKSPACE/githubScripts/asset-upload.sh $LEVAIN_VERSION ${{ runner.temp }}/levainBootstrap-windows-x86_64.zip application/zip
           bash $GITHUB_WORKSPACE/githubScripts/asset-upload.sh $LEVAIN_VERSION ${{ runner.temp }}/levainBootstrap-windows-x86_64.zip.sha256 text/plain
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DENO_ROOT_PATH: ${{ runner.temp }}/deno
           LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
           LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ github.event.inputs.releaseNumber }}
