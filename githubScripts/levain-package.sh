@@ -6,7 +6,7 @@ levainZipFile=$2
 
 ## Create Levain zip
 cd $( dirname ${levainDir} )
-zip -r ${levainZipFile} $( basename ${levainDir} ) >/dev/null
+zip -9r ${levainZipFile} $( basename ${levainDir} ) >/dev/null
 cd - >/dev/null
 
 cd $( dirname ${levainZipFile} )
