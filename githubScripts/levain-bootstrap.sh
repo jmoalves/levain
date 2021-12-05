@@ -15,7 +15,7 @@ done
 cp ${levainDir}/bootstrap/levainBootstrap.cmd ${workDir}
 
 cd ${workDir}
-zip -r ${bootstrapZipFile} levainBootstrap.cmd extra-bin >/dev/null
+zip -9r ${bootstrapZipFile} levainBootstrap.cmd extra-bin >/dev/null
 cd - >/dev/null
 rm -rf ${workDir}
 
