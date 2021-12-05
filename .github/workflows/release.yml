@@ -36,13 +36,19 @@ jobs:
         env:
           LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
 
+      - name: Clean TEMP
+        run: rm -rf $RUNNER_TEMP && mkdir -p $RUNNER_TEMP
+
+      - name: Clean Workspace
+        run: rm -rf $GITHUB_WORKSPACE && mkdir -p $GITHUB_WORKSPACE
+
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout
         uses: actions/checkout@v2
 
       - name: Get Deno
         run: |
-          mkdir -p $DENO_ROOT_PATH
+          rm -rf $DENO_ROOT_PATH && mkdir -p $DENO_ROOT_PATH
           echo Deno Windows
           bash $GITHUB_WORKSPACE/githubScripts/get-deno.sh $DENO_ROOT_PATH/windows Windows
           echo Deno Linux
@@ -93,7 +99,7 @@ jobs:
           bash $GITHUB_WORKSPACE/githubScripts/get-levain-release.sh $LEVAIN_VERSION $LEVAIN_RELEASE_PATH
         env:
           LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
-          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ env.LEVAIN_VERSION }}
+          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ github.event.inputs.releaseNumber }}
 
       - name: Levain embedded binaries
         run: |
@@ -101,7 +107,7 @@ jobs:
         env:
           DENO_ROOT_PATH: ${{ runner.temp }}/deno
           LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
-          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ env.LEVAIN_VERSION }}
+          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ github.event.inputs.releaseNumber }}
 
       - name: Levain bootstrap
         run: |
@@ -109,13 +115,13 @@ jobs:
         env:
           DENO_ROOT_PATH: ${{ runner.temp }}/deno
           LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
-          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ env.LEVAIN_VERSION }}
+          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ github.event.inputs.releaseNumber }}
 
       - name: Clean Levain release
         run: |
           bash $GITHUB_WORKSPACE/githubScripts/clean-levain-release.sh $LEVAIN_RELEASE_PATH
         env:
-          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ env.LEVAIN_VERSION }}
+          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ github.event.inputs.releaseNumber }}
 
       - name: Levain bundle
         run: |
@@ -123,14 +129,14 @@ jobs:
         env:
           DENO_ROOT_PATH: ${{ runner.temp }}/deno
           LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
-          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ env.LEVAIN_VERSION }}
+          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ github.event.inputs.releaseNumber }}
 
       - name: Levain package
         run: |
           bash $GITHUB_WORKSPACE/githubScripts/levain-package.sh $LEVAIN_RELEASE_PATH ${{ runner.temp }}/levain-v$LEVAIN_VERSION-windows-x86_64.zip
         env:
           LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
-          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ env.LEVAIN_VERSION }}
+          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ github.event.inputs.releaseNumber }}
 
       - name: Upload assets
         run: |
@@ -141,4 +147,4 @@ jobs:
         env:
           DENO_ROOT_PATH: ${{ runner.temp }}/deno
           LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
-          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ env.LEVAIN_VERSION }}
+          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ github.event.inputs.releaseNumber }}
