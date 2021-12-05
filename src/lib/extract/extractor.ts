@@ -21,7 +21,6 @@ export abstract class Extractor {
     async copy(srcFile: string, dstFile: string): Promise<string> {
         log.debug(`- COPY ${srcFile} => ${dstFile}`);
 
-        //copySync(srcFile, dstPath);
         await FileUtils.copyWithProgress(srcFile, dstFile);
         return dstFile;
     }

@@ -1,6 +1,7 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
-import {copySync, ensureDirSync, existsSync} from "https://deno.land/std/fs/mod.ts";
+import {copySync} from "https://deno.land/std/fs/copy.ts";
+import {ensureDirSync, existsSync} from "https://deno.land/std/fs/mod.ts";
 
 import Config from '../config.ts';
 import FileSystemPackage from '../package/file_system_package.ts';
