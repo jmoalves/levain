@@ -81,6 +81,7 @@ jobs:
         with:
           tag_name: v${{ env.LEVAIN_VERSION }}
           release_name: v${{ env.LEVAIN_VERSION }}
+          commitish: master
           draft: false
           prerelease: true
         env:
