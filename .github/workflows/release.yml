@@ -141,12 +141,17 @@ jobs:
 
       - name: Upload assets
         run: |
+          echo
           bash $GITHUB_WORKSPACE/githubScripts/asset-upload.sh $LEVAIN_VERSION ${{ runner.temp }}/levain-v$LEVAIN_VERSION-windows-x86_64.zip application/zip
+          echo
+          echo
           bash $GITHUB_WORKSPACE/githubScripts/asset-upload.sh $LEVAIN_VERSION ${{ runner.temp }}/levain-v$LEVAIN_VERSION-windows-x86_64.zip.sha256 text/plain
+          echo
+          echo
           bash $GITHUB_WORKSPACE/githubScripts/asset-upload.sh $LEVAIN_VERSION ${{ runner.temp }}/levainBootstrap-windows-x86_64.zip application/zip
+          echo
+          echo
           bash $GITHUB_WORKSPACE/githubScripts/asset-upload.sh $LEVAIN_VERSION ${{ runner.temp }}/levainBootstrap-windows-x86_64.zip.sha256 text/plain
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DENO_ROOT_PATH: ${{ runner.temp }}/deno
           LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
-          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ github.event.inputs.releaseNumber }}

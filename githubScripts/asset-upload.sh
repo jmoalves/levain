@@ -22,7 +22,6 @@ levainAssetsUploadUrl=$(echo $levainRelease | jq -rc '.upload_url' | sed 's/{.*}
 
 assetName=$( basename $assetFile )
 
-echo
 echo Uploading $assetName to $levainAssetsUploadUrl from ${assetFile}
 curl -ks -X POST -u username:$GITHUB_TOKEN \
     -H "Content-Type: ${contentType}" \
