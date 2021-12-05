@@ -64,23 +64,22 @@ jobs:
           git config pull.rebase true
 
       - name: Tag
+        run: bash $GITHUB_WORKSPACE/githubScripts/tag-release.sh $LEVAIN_VERSION
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
-        run: bash $GITHUB_WORKSPACE/githubScripts/tag-release.sh $LEVAIN_VERSION
 
       - name: Create release
         id: create_release
         uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
         with:
           tag_name: v${{ env.LEVAIN_VERSION }}
           release_name: v${{ env.LEVAIN_VERSION }}
-          commitish: master
           draft: false
           prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
 
       - name: Wait release - Timeout 5 min
         run: timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' https://api.github.com/repos/jmoalves/levain/releases/tags/v${{ env.LEVAIN_VERSION }})" != "200" ]]; do echo Waiting...; sleep 5; done' || false
