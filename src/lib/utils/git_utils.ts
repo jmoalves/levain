@@ -83,7 +83,8 @@ export default class GitUtils {
             }
 
             try {
-                await OsUtils.runAndLog(gitCommand, workingDir);
+                // BROKEN? await OsUtils.runAndLog(gitCommand, workingDir);
+                await OsUtils.runAndLog(gitCommand);
                 clearInterval(tick)
 
                 log.debug(`# GIT - PULL - ${workingDir} - OK`);
