@@ -47,6 +47,15 @@ export default class Install implements Command {
 
         let pkgs: Package[] | null = this.config.packageManager.resolvePackages(pkgNames);
         if (!pkgs) {
+            log.info(``)
+            log.info(`${pkgNames} - Unable to find some packages`)
+
+            log.info("")
+            log.info("=== Similar known packages")
+            for (let name of pkgNames) {
+                log.info(`${name} => ${[...this.config.packageManager.getSimilarNames(name)]}`)
+            }
+            log.info("")
             throw new Error(`Couldn't find package ${pkgNames} to install. Aborting...`);
         }
 

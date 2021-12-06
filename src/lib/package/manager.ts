@@ -1,5 +1,7 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
+import {distance} from 'https://deno.land/x/fastest_levenshtein/mod.ts'
+
 import Config from "../config.ts";
 import Package from "./package.ts";
 import Repository from "../repository/repository.ts";
@@ -12,7 +14,7 @@ export default class PackageManager {
 
     constructor(private config: Config) {
     }
-
+    
     resolvePackages(pkgNames: string[], installedOnly = false, showLog = true): Package[] | null {
         if (!pkgNames || pkgNames.length == 0) {
             return [];
@@ -23,7 +25,7 @@ export default class PackageManager {
 
         if (showLog) {
             log.info("==================================");
-            this.feedback.start(`# ${pkgNames}...`);
+            this.feedback.start(`# Resolve ${pkgNames}...`);
         }
 
         let pkgs: Map<string, Package> = new Map();
@@ -36,7 +38,7 @@ export default class PackageManager {
         }
 
         if (showLog) {
-            this.feedback.reset(`# ${pkgNames} -> OK`);
+            this.feedback.reset(`# Resolve ${pkgNames} -> Done`);
         }
 
         if (error) {
@@ -107,6 +109,28 @@ export default class PackageManager {
         return this.config.replaceVars(value!, pkgName);
     }
 
+    getSimilarNames(pkgName: string, installedOnly = false, showLog = true): Set<String> {
+        let names: Set<string> = new Set();
+
+        let repo = (installedOnly ? this.config.repositoryManager.repositoryInstalled : this.config.repositoryManager.repository);
+        for (let pkg of repo?.listPackages()) {
+            if (pkg.name.toLowerCase().includes(pkgName.toLowerCase())) {
+                log.debug(`INCLUDES: ${pkgName} => ${pkg.name}`)
+                names.add(pkg.name)
+                continue
+            }
+
+            let d = distance(pkgName.toLowerCase(), pkg.name.toLowerCase())
+            if (d <= 2) {
+                log.debug(`DISTANCE: ${pkgName} => ${pkg.name} - ${d}`)
+                names.add(pkg.name)
+                continue
+            }
+        }
+
+        return names;
+    }
+
     private resolveInRepo(repo: Repository, pkgs: Map<string, Package>, names: Set<String>, pkgName: string, showLog: boolean): boolean {
         // User feedback
         if (showLog) {
@@ -132,11 +156,7 @@ export default class PackageManager {
         log.debug(`## resolving package ${pkgName} in ${repo.name}`)
         const pkgDef = repo.resolvePackage(pkgName);
         if (!pkgDef) {
-            if (showLog) {
-                this.feedback.reset("#")
-            }
-
-            log.error("PACKAGE NOT FOUND: " + pkgName);
+            log.debug("PACKAGE NOT FOUND: " + pkgName);
             return true;
         }
 
