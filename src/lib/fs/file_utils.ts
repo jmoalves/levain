@@ -201,7 +201,7 @@ export class FileUtils {
                     Deno.utimeSync(dstFile, r.motificationTime, r.motificationTime)
                     log.debug(`Timestamps preserved - ${dstFile}`)
                 } else {
-                    log.error(`Could not preserve timestamps - ${dstFile}`)
+                    log.debug(`Could not preserve timestamps - ${dstFile}`)
                 }
 
                 return;
