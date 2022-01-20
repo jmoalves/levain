@@ -7,3 +7,4 @@ sonarLint
 cannot_read_this_folder
 levain.bundle.js
 /coverage
+/extra-bin/
