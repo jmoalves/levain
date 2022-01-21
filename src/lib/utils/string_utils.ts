@@ -1,3 +1,4 @@
+import * as log from "https://deno.land/std/log/mod.ts";
 import {distance} from 'https://deno.land/x/fastest_levenshtein/mod.ts'
 
 export default class StringUtils {
@@ -92,7 +93,8 @@ export default class StringUtils {
         let names: Set<string> = new Set();
 
         for (let name of database) {
-            if (this.partialDistance(search.toLowerCase(), name.toLowerCase()) <= 2) {
+            let d = this.partialDistance(search.toLowerCase(), name.toLowerCase())
+            if (d <= 2) {
                 names.add(name)
             }
         }

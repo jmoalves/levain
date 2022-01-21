@@ -35,13 +35,13 @@ export default class CommandFactory {
     
             let similar = StringUtils.findSimilar(cmd, this.list())
             if (similar.size > 0) {}
-                log.error(`Command '${cmd} not found`)
+                log.error(`Command '${cmd}' not found`)
                 log.error("")
                 log.error(`Did you mean one of these commands?`)
                 similar.forEach(element => {
                     log.error(`\t${element}`)                    
-                    log.error("")
                 });
+                log.error("")
 
             throw new CommandNotFoundError(cmd)
         }

@@ -192,3 +192,23 @@ Deno.test('StringUtils.findSimilar should find similar names', () => {
                 'automav-en'
             ]) 
 })
+
+Deno.test('StringUtils.findSimilar should find similar names', () => {
+    assertEquals(
+        [... StringUtils.findSimilar(
+            'instal',
+            [
+                'install',
+                'list',
+                'info',
+                'explain',
+                'clean',
+                'shell',
+                'actions'
+            ])], 
+            [
+                'install',
+                'list',
+                'info'
+            ]) 
+})

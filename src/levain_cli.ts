@@ -95,7 +95,7 @@ export default class LevainCli {
         } catch (err) {
             if (err instanceof CommandNotFoundError) {
                 log.info("");
-                log.error(err);
+                //log.error(err);
                 this.showCliHelp()
                 return
             }
