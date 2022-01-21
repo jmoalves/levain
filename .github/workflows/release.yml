@@ -139,6 +139,13 @@ jobs:
           LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
           LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ github.event.inputs.releaseNumber }}
 
+      - name: Levain package binaries
+        run: |
+          bash $GITHUB_WORKSPACE/githubScripts/levain-package-binaries.sh $LEVAIN_RELEASE_PATH ${{ runner.temp }}/levain-extra-bin-v$LEVAIN_VERSION-windows-x86_64.zip
+        env:
+          LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
+          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ github.event.inputs.releaseNumber }}
+
       - name: Upload assets
         run: |
           echo
@@ -146,6 +153,12 @@ jobs:
           echo
           echo
           bash $GITHUB_WORKSPACE/githubScripts/asset-upload.sh $LEVAIN_VERSION ${{ runner.temp }}/levain-v$LEVAIN_VERSION-windows-x86_64.zip.sha256 text/plain
+          echo
+          echo
+          bash $GITHUB_WORKSPACE/githubScripts/asset-upload.sh $LEVAIN_VERSION ${{ runner.temp }}/levain-extra-bin-v$LEVAIN_VERSION-windows-x86_64.zip application/zip
+          echo
+          echo
+          bash $GITHUB_WORKSPACE/githubScripts/asset-upload.sh $LEVAIN_VERSION ${{ runner.temp }}/levain-extra-bin-v$LEVAIN_VERSION-windows-x86_64.zip.sha256 text/plain
           echo
           echo
           bash $GITHUB_WORKSPACE/githubScripts/asset-upload.sh $LEVAIN_VERSION ${{ runner.temp }}/levainBootstrap-windows-x86_64.zip application/zip
