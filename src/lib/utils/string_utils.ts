@@ -1,3 +1,5 @@
+import {distance} from 'https://deno.land/x/fastest_levenshtein/mod.ts'
+
 export default class StringUtils {
 
     static textContainsAtLeastOneChar(text: string, chars: string) {
@@ -84,5 +86,24 @@ export default class StringUtils {
     static splitSpaces(text: string): string[] {
         return text.split(' ')
             .filter(text => text?.length)
+    }
+
+    static findSimilar(search: string, database: string[]) : Set<string> {
+        let names: Set<string> = new Set();
+
+        for (let name of database) {
+            if (name.toLowerCase().includes(search.toLowerCase())) {
+                names.add(name)
+                continue
+            }
+
+            let d = distance(search.toLowerCase(), name.toLowerCase())
+            if (d <= 2) {
+                names.add(name)
+                continue
+            }
+        }
+
+        return names;
     }
 }

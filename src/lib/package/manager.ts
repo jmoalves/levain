@@ -1,11 +1,10 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
-import {distance} from 'https://deno.land/x/fastest_levenshtein/mod.ts'
-
 import Config from "../config.ts";
 import Package from "./package.ts";
 import Repository from "../repository/repository.ts";
 import ConsoleFeedback from "../utils/console_feedback.ts";
+import StringUtils from "../utils/string_utils.ts";
 
 export default class PackageManager {
     private knownPackages: Map<string, Package> = new Map();
@@ -109,26 +108,14 @@ export default class PackageManager {
         return this.config.replaceVars(value!, pkgName);
     }
 
-    getSimilarNames(pkgName: string, installedOnly = false, showLog = true): Set<String> {
-        let names: Set<string> = new Set();
+    getSimilarNames(pkgName: string, installedOnly = false): Set<String> {
+        let repo = (installedOnly ? this.config.repositoryManager.repositoryInstalled : this.config.repositoryManager.repository)
 
-        let repo = (installedOnly ? this.config.repositoryManager.repositoryInstalled : this.config.repositoryManager.repository);
-        for (let pkg of repo?.listPackages()) {
-            if (pkg.name.toLowerCase().includes(pkgName.toLowerCase())) {
-                log.debug(`INCLUDES: ${pkgName} => ${pkg.name}`)
-                names.add(pkg.name)
-                continue
-            }
-
-            let d = distance(pkgName.toLowerCase(), pkg.name.toLowerCase())
-            if (d <= 2) {
-                log.debug(`DISTANCE: ${pkgName} => ${pkg.name} - ${d}`)
-                names.add(pkg.name)
-                continue
-            }
-        }
-
-        return names;
+        let names: string[] = []
+        repo?.listPackages().forEach(element => {
+            names.push(element.name)
+        });
+        return StringUtils.findSimilar(pkgName, names);
     }
 
     private resolveInRepo(repo: Repository, pkgs: Map<string, Package>, names: Set<String>, pkgName: string, showLog: boolean): boolean {
