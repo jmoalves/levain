@@ -92,18 +92,32 @@ export default class StringUtils {
         let names: Set<string> = new Set();
 
         for (let name of database) {
-            if (name.toLowerCase().includes(search.toLowerCase())) {
+            if (this.partialDistance(search.toLowerCase(), name.toLowerCase()) <= 2) {
                 names.add(name)
-                continue
-            }
-
-            let d = distance(search.toLowerCase(), name.toLowerCase())
-            if (d <= 2) {
-                names.add(name)
-                continue
             }
         }
 
         return names;
+    }
+
+    private static partialDistance(str1: string, str2: string): number {
+        // http://www.augustobaffa.pro.br/wiki/Dist%C3%A2ncia_de_Levenshtein
+        if (str2.length < str1.length) {
+            return this.partialDistance(str2, str1)
+        }
+
+        let diff = str2.length - str1.length
+        if ( diff == 0 ) {
+            return distance(str1, str2)
+        }
+
+        let ret = Number.MAX_VALUE;
+        for (let i = 0; i <= diff; i++) {
+            let partial = str2.substring(i, i + str1.length)
+            let v = distance(str1, partial)
+            ret = Math.min(ret, v)
+        }
+
+        return ret
     }
 }

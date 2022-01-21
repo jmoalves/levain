@@ -164,3 +164,31 @@ Deno.test('StringUtils.surround should surround assertEquals string with another
 Deno.test('StringUtils.splitSpaces should remove empty spaces', () => {
     assertEquals(StringUtils.splitSpaces('apple banana  carrot'), ['apple', 'banana', 'carrot'])
 })
+
+//
+// findSimilar
+//
+Deno.test('StringUtils.findSimilar should find similar names', () => {
+    assertEquals(
+        [... StringUtils.findSimilar(
+            'maiven',
+            [
+                'eclipse-2021-21',
+                'maven',
+                'maven-3.6',
+                'maven-3.8',
+                'eclipse-maven',
+                'new-maven-version',
+                'mav',
+                'automav-en'
+            ])], 
+            [
+                'maven',
+                'maven-3.6',
+                'maven-3.8',
+                'eclipse-maven',
+                'new-maven-version',
+                'mav',
+                'automav-en'
+            ]) 
+})
