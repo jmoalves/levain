@@ -1,4 +1,7 @@
+import * as log from "https://deno.land/std/log/mod.ts";
+
 import Config from "../lib/config.ts";
+import StringUtils from "../lib/utils/string_utils.ts";
 
 import Install from "./install.ts";
 import Shell from "./shell.ts";
@@ -27,8 +30,22 @@ export default class CommandFactory {
     get(cmd: string, config: Config): Command {
         const builder = commandMap.get(cmd)
         if (!builder) {
-            throw new CommandNotFoundError(cmd);
+            log.error("")
+            log.error("")
+    
+            let similar = StringUtils.findSimilar(cmd, this.list())
+            if (similar.size > 0) {}
+                log.error(`Command '${cmd} not found`)
+                log.error("")
+                log.error(`Did you mean one of these commands?`)
+                similar.forEach(element => {
+                    log.error(`\t${element}`)                    
+                    log.error("")
+                });
+
+            throw new CommandNotFoundError(cmd)
         }
+
         return builder(config)
     }
 
