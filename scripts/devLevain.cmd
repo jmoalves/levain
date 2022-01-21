@@ -3,7 +3,7 @@
 SETLOCAL
 set myPath=%~dp0
 set myPath=%mypath:~0,-1%
-set levainRoot=%myPath%/..
+set levainRoot=%myPath%\..
 
 set PWS=powershell.exe -ExecutionPolicy Bypass -NoLogo -NonInteractive -NoProfile
 
@@ -25,8 +25,13 @@ echo === EXTRA-BIN latest
 set binPath=%TEMP%\levain\extra-bin
 if exist %binPath% rmdir /q /s %binPath%
 mkdir %binPath%
-%PWS% Invoke-WebRequest https://github.com/jmoalves/levain/releases/download/v0.60.0/levain-extra-bin-v0.60.0-windows-x86_64.zip -OutFile %binPath%\levain-extra-bin-windows-x86_64.zip
+REM FIXME - Change to latest below
+%PWS% Invoke-WebRequest https://github.com/jmoalves/levain/releases/download/v0.60.2/levain-extra-bin-windows-x86_64.zip -OutFile %binPath%\levain-extra-bin-windows-x86_64.zip
 REM %PWS% Invoke-WebRequest https://github.com/jmoalves/levain/releases/latest/download/levain-extra-bin-windows-x86_64.zip -OutFile %binPath%\levain-extra-bin-windows-x86_64.zip
+
+if exist %levainRoot%\extra-bin\windows\7-zip rmdir /q /s %levainRoot%\extra-bin\windows\7-zip
+if exist %levainRoot%\extra-bin\windows\curl rmdir /q /s %levainRoot%\extra-bin\windows\curl
+if exist %levainRoot%\extra-bin\windows\git rmdir /q /s %levainRoot%\extra-bin\windows\git
 %PWS% Expand-Archive %binPath%\levain-extra-bin-windows-x86_64.zip -DestinationPath %levainRoot%
 rmdir /q /s %binPath%
 
