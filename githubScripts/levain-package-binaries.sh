@@ -6,7 +6,8 @@ binZipFile=$2
 
 ## Create Levain zip
 cd ${levainDir}
-zip -9r ${binZipFile} extra-bin -x extra-bin/windows/os-utils  >/dev/null
+rm -rf ${binZipFile}
+zip -9r ${binZipFile} extra-bin -x "extra-bin/windows/os-utils**" >/dev/null
 cd - >/dev/null
 
 cd $( dirname ${binZipFile} )
