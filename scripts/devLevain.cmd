@@ -17,11 +17,18 @@ set denoPath=%TEMP%\deno
 if exist %denoPath% rmdir /q /s %denoPath%
 mkdir %denoPath%
 %PWS% Invoke-WebRequest https://github.com/denoland/deno/releases/latest/download/deno-x86_64-pc-windows-msvc.zip -OutFile %denoPath%\deno-x86_64-pc-windows-msvc.zip
-%PWS% Expand-Archive %denoPath%\deno-x86_64-pc-windows-msvc.zip -DestinationPath %levainRoot%\bin
+%PWS% Expand-Archive %denoPath%\deno-x86_64-pc-windows-msvc.zip -DestinationPath %levainRoot%\bin -Force
 rmdir /q /s %denoPath%
 
-@REM echo.
-@REM echo === EXTRA-BIN latest
+echo.
+echo === EXTRA-BIN latest
+set binPath=%TEMP%\levain\extra-bin
+if exist %binPath% rmdir /q /s %binPath%
+mkdir %binPath%
+%PWS% Invoke-WebRequest https://github.com/jmoalves/levain/releases/download/v0.60.0/levain-extra-bin-v0.60.0-windows-x86_64.zip -OutFile %binPath%\levain-extra-bin-windows-x86_64.zip
+REM %PWS% Invoke-WebRequest https://github.com/jmoalves/levain/releases/latest/download/levain-extra-bin-windows-x86_64.zip -OutFile %binPath%\levain-extra-bin-windows-x86_64.zip
+%PWS% Expand-Archive %binPath%\levain-extra-bin-windows-x86_64.zip -DestinationPath %levainRoot%
+rmdir /q /s %binPath%
 
 echo.
 echo === Deno cache
