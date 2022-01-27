@@ -7,15 +7,18 @@ on:
       releaseNumber:
         description: 'Release number'     
         required: true
+      denoVersion:
+        description: 'Deno version (optional)'     
+        required: false
 
 jobs:
   createRelease:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check parameter
+      - name: Check parameters
         run: |
-          # Check parameter
+          # Check releaseNumber
           version=$LEVAIN_VERSION
           if [[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo Version v${version};
@@ -32,6 +35,27 @@ jobs:
             echo
 
             exit 1
+          fi
+
+          # Check denoVersion
+          version=${{ github.event.inputs.denoVersion }}
+          if [ -n "$version" ]; then
+            if [[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo DenoVersion v${version};
+            else
+              echo Invalid denoVersion - $version;
+              echo
+              echo You must use the pattern
+              echo major.minor.patch
+              echo
+              echo Examples:
+              echo 0.20.1
+              echo 1.0.3
+              echo 2.5.0
+              echo
+
+              exit 1
+            fi
           fi
         env:
           LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
@@ -50,9 +74,9 @@ jobs:
         run: |
           rm -rf $DENO_ROOT_PATH && mkdir -p $DENO_ROOT_PATH
           echo Deno Windows
-          bash $GITHUB_WORKSPACE/githubScripts/get-deno.sh $DENO_ROOT_PATH/windows Windows
+          bash $GITHUB_WORKSPACE/githubScripts/get-deno.sh $DENO_ROOT_PATH/windows Windows ${{ github.event.inputs.denoVersion }}
           echo Deno Linux
-          bash $GITHUB_WORKSPACE/githubScripts/get-deno.sh $DENO_ROOT_PATH/linux Linux
+          bash $GITHUB_WORKSPACE/githubScripts/get-deno.sh $DENO_ROOT_PATH/linux Linux ${{ github.event.inputs.denoVersion }}
         env:
           DENO_ROOT_PATH: ${{ runner.temp }}/deno
 

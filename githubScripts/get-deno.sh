@@ -64,6 +64,8 @@ if [ -z "$denoOS" ]; then
   denoOS=$RUNNER_OS
 fi
 
+denoVersion=$3
+
 echo === BEG = Deno for $denoOS at $dir 
 
 ############
@@ -72,7 +74,7 @@ myPath="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 cd $myPath/..
 
 ## Deno Release
-denoRelease=$(getRelease -o denoland -r deno)
+denoRelease=$(getRelease -o denoland -r deno $denoVersion)
 if [ -z "$denoRelease" ]; then
   echo ERROR getting Deno release
   exit 1
