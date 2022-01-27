@@ -7,7 +7,7 @@ cmd.install:
   # Tab completion
   # Command extensions
   # UNC Path
-  - levainShell reg import ${pkgDir}/cmd-config.reg
+  - levainShell reg import ${pkgDir}/cmd-config.reg 2>nul
 
 cmd.env:
   - addPath ${baseDir}
