@@ -5,6 +5,8 @@ import StringUtils from "../lib/utils/string_utils.ts";
 
 import Command from "./command.ts";
 
+import {distance} from 'https://deno.land/x/fastest_levenshtein/mod.ts'
+
 export default class ListCommand implements Command {
     constructor(private config: Config) {
     }
@@ -40,11 +42,42 @@ export default class ListCommand implements Command {
                 log.info(`== Package${filteredPluralChar}`);
                 // TODO: Inform if package is already installed.
                 filteredPackages.forEach(pkg => {
-                    log.info(`   ${StringUtils.padEnd(pkg?.name, 30)} ${StringUtils.padEnd(pkg?.version?.versionNumber, 10)} => ${pkg?.filePath}`)
+                    log.info(`   ${StringUtils.padEnd(pkg?.name, 30)}`)
                 })
+            }else{
+                log.info(``)
+                log.info(`${searchText} - Unable to list some packages`)
+        
+                const similarPackages = packages?.filter(it => this.similarNames(it.name, searchText))
+                log.info(``)
+                if( !similarPackages || similarPackages.length == 0){
+                    log.info(`${searchText} - Unable to list similar packages too`)
+                }else{
+                    log.info(`${searchText} - Listing similar packages`)
+                    for( let a of similarPackages){
+                        log.info(a.name)
+                    }
+                }
+                log.info("")
             }
         }
     }
+
+
+    // TODO Use the same function that exists in packageManager
+    similarNames(name1: string, name2: string): boolean {
+        if (name1.toLowerCase().includes(name2.toLowerCase())
+         || name2.toLowerCase().includes(name1.toLowerCase())) {
+            return true;
+        }
+
+        let d = distance(name1.toLowerCase(), name2.toLowerCase())
+        if (d <= 2) {
+            return true;
+        }
+        return false;
+    }
+
 
     readonly oneLineExample = "  list <optional search text>"
 }
