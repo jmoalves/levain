@@ -1,6 +1,8 @@
 /bin/
 /dist/
-/.idea/workspace.xml
+/.idea/
+/.vscode/
+/.eclipse/
 sonarLint
 *.log
 .DS_Store

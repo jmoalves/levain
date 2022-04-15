@@ -1,5 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Deno: userinfo_util.test-manual.ts" type="DenoConfigurationType" nameIsGenerated="true" inputPath="$PROJECT_DIR$/src/lib/user_info/userinfo_util.test-manual.ts" programParameters="test --unstable --allow-all --watch">
-    <method v="2" />
-  </configuration>
-</component>

@@ -1,5 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Deno watch" type="DenoConfigurationType" inputPath="$PROJECT_DIR$/src" programParameters="test --allow-all --unstable --watch">
-    <method v="2" />
-  </configuration>
-</component>
