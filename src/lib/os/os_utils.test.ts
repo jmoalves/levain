@@ -3,6 +3,7 @@ import {
     assertEquals,
     assertMatch,
     assertNotEquals,
+    assertNotMatch,
     assertThrows
 } from "https://deno.land/std/testing/asserts.ts";
 import {existsSync} from "https://deno.land/std/fs/exists.ts";
@@ -13,6 +14,7 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import OsUtils from "./os_utils.ts";
 import {assertGreaterThan, assertPathExists} from "../test/more_asserts.ts";
 import TestHelper from "../test/test_helper.ts";
+import DirUtils from "../fs/dir_utils.ts";
 
 const currentFileDir = path.dirname(import.meta.url)
 const referenceFile = `${currentFileDir}/../../testdata/os_utils/testOsUtils.txt`
@@ -71,6 +73,23 @@ Deno.test('OsUtils should know if we are running in Windows', () => {
     assertEquals(OsUtils.isWindows(), shouldBeWindows)
 })
 
+Deno.test('OsUtils should know if we are running in Posix', () => {
+    const os: string = Deno.build.os
+    const shouldBePosix = ['linux', 'darwin'].includes(os)
+    assertEquals(OsUtils.isPosix(), shouldBePosix)
+})
+
+Deno.test('OsUtils should know if we are running in macOS', () => {
+    const os = Deno.build.os
+    const shouldBeMacOs = (os === 'darwin')
+    assertEquals(OsUtils.isMacOs(), shouldBeMacOs)
+})
+
+Deno.test('OsUtils should know if we are running in Linux', () => {
+    const os = Deno.build.os
+    const shouldBeLinux = (os === 'linux')
+    assertEquals(OsUtils.isLinux(), shouldBeLinux)
+})
 
 if (OsUtils.isWindows()) {
     Deno.test('Deno.symlinkSync throws unnecessary permission error. Use it in OsUtils.createShortcut when fixed.', () => {
@@ -90,23 +109,20 @@ if (OsUtils.isWindows()) {
             '(os error 1314)',
         )
     })
-}
 
-Deno.test('OsUtils.createShortcut should create a shortcut/symlink to a file', async () => {
-    // Given that I have an empty dir
-    const tempDir = TestHelper.getNewTempDir()
-    // And a file
-    const aFile = TestHelper.getNewTempFile()
-    const aFileName = path.basename(aFile)
+    Deno.test('OsUtils.createShortcut should create a shortcut/symlink to a file', async () => {
+        // Given that I have an empty dir
+        const tempDir = TestHelper.getNewTempDir()
+        // And a file
+        const aFile = TestHelper.getNewTempFile()
+        const aFileName = path.basename(aFile)
 
-    // When I create a symlink to the file in the empty dir
-    await OsUtils.createShortcut(aFile, tempDir)
+        // When I create a symlink to the file in the empty dir
+        await OsUtils.createShortcut(aFile, tempDir)
 
-    // Then the new symlink should exist
-    assertPathExists(path.join(tempDir, `${aFileName}.lnk`))
-})
-
-if (OsUtils.isWindows()) {
+        // Then the new symlink should exist
+        assertPathExists(path.join(tempDir, `${aFileName}.lnk`))
+    })
 
     Deno.test({
         name: 'OsUtils.addToDesktop should create a shortcut to a file',
@@ -251,3 +267,29 @@ if (OsUtils.isWindows()) {
         assert(await OsUtils.isInUserPath(folder), `Should have the folder ${folder} in path - ${await OsUtils.getUserPath()}`);
     })
 }
+//
+// runAndLog
+//
+const getCurrentDirCommand = OsUtils.isWindows()
+    ? 'cmd /u /c echo %cd%'
+    : 'pwd'
+Deno.test('OsUtils.runAndLog should not insert unicode zeros in stdout', async () => {
+    const stdout = await OsUtils.runAndLog(getCurrentDirCommand)
+    assertNotMatch(stdout, /\u0000/)
+})
+Deno.test('OsUtils.runAndLog should execute and return stdout', async () => {
+    const stdout = await OsUtils.runAndLog(getCurrentDirCommand)
+
+    const normalizedPath = DirUtils.normalizePath(stdout)
+    assertMatch(normalizedPath, /[\\\/]+levain/)
+})
+Deno.test({
+    name: 'OsUtils.runAndLog should accept a workDir',
+    async fn() {
+        const stdout = await OsUtils.runAndLog(getCurrentDirCommand, TestHelper.getTestDataPath())
+        const pathInOutput = stdout.replaceAll(/[\r\n]/gm, '')
+        const normalizedPath = DirUtils.normalizePath(pathInOutput)
+        assertMatch(normalizedPath, /[\\\/]+testdata/)
+    },
+    // only: true,
+})

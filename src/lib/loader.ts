@@ -30,7 +30,7 @@ export default class Loader {
 
     private actionFactory = new ActionFactory();
 
-    async action(pkg: Package | undefined, cmdline: string) {
+    async action(pkg: Package | undefined, cmdline: string): Promise<void> {
         log.debug('')
         log.debug(`+ ACTION: ${JSON.stringify(cmdline)}`)
 
@@ -47,7 +47,7 @@ export default class Loader {
         const handler: Action = this.actionFactory.get(action, this.config);
 
         for (let index in args) {
-            args[index] = this.config.replaceVars(args[index], pkg?.name);
+            args[index] = await this.config.replaceVars(args[index], pkg?.name);
         }
 
         await handler.execute(pkg, args);

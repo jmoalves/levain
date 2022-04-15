@@ -4,34 +4,31 @@ import Config from "../config.ts";
 import Package from "../package/package.ts";
 
 import Repository from "./repository.ts";
-import CacheRepository from "./cache_repository.ts";
 import ChainRepository from "./chain_repository.ts";
 import RepositoryFactory from "./repository_factory.ts";
-
-class Repositories {
-    regular: Repository | undefined = undefined
-    installed: Repository | undefined = undefined
-    currentDir: Repository | undefined = undefined
-}
+import Repositories from "./repositories.ts";
+import {EmptyRepository} from "./empty_repository.ts";
 
 export default class RepositoryManager {
     private repoFactory: RepositoryFactory
     private extraRepos: Set<string> = new Set<string>()
     private tempRepos: Set<string> = new Set<string>()
 
-    private repositories = new Repositories()
+    repositories = new Repositories()
 
     constructor(private config: Config) {
         this.repoFactory = new RepositoryFactory(config)
     }
 
-    async init({repos, tempRepos}: { repos: string[]; tempRepos?: string[]; }) {
+    async init({extraRepos, tempRepos}: { extraRepos: string[]; tempRepos?: string[]; }): Promise<Repository[]> {
         log.debug("")
-        log.debug(`=== RepositoryManager.init - extraRepos: ${JSON.stringify(repos)} tempRepos: ${JSON.stringify(tempRepos)}`)
+        log.debug(`=== RepositoryManager.init - extraRepos: ${JSON.stringify(extraRepos)} tempRepos: ${JSON.stringify(tempRepos)}`)
+        log.debug(`extraRepos: ${JSON.stringify(extraRepos)}`)
+        log.debug(`tempRepos: ${JSON.stringify(tempRepos)}`)
 
-        if (repos) {
-            this.extraRepos.clear()
-            repos.forEach(repo => this.extraRepos.add(repo))
+        if (extraRepos) {
+            // this.extraRepos.clear()
+            extraRepos.forEach(repo => this.extraRepos.add(repo))
         }
 
         if (tempRepos) {
@@ -39,22 +36,13 @@ export default class RepositoryManager {
         }
 
         await this.createRepositories()
-        await this.initRepositories()
+        return await this.initRepositories()
     }
 
-    invalidatePackages() {
-        if (!this.repositories) {
-            throw Error("Error initializing RepositoryManager - repositories not found")
-        }
-
-        let repos: any = this.repositories;
-        for (let key in repos) {
-            if (repos[key]) {
-                let repo: Repository = repos[key]
-                log.debug(`INVALIDATE-PACKAGES Repo[${key}] - ${repo.name}`)
-                repo.invalidatePackages()
-            }
-        }
+    async reload(): Promise<void> {
+        this.invalidatePackages()
+        await this.createRepositories()
+        await this.initRepositories()
     }
 
     get saveState(): any {
@@ -68,13 +56,16 @@ export default class RepositoryManager {
         }
     }
 
-    get currentDirPackage(): Package | undefined {
+    async currentDirPackage(): Promise<Package | undefined> {
         if (!this.repositories.currentDir) {
             return undefined
         }
 
         // Looking for package at current dir
-        let pkgs = this.repositories.currentDir.readPackages()
+        if (!this.repositories.currentDir.initialized()) {
+            await this.repositories.currentDir.init()
+        }
+        const pkgs = this.repositories.currentDir.listPackages()
         if (pkgs && pkgs.length == 1) {
             return this.repositories.currentDir.resolvePackage(pkgs[0].name)
         }
@@ -113,20 +104,7 @@ export default class RepositoryManager {
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    async createRepositories(): Promise<void> {
-        log.debug("");
-        log.debug("=== createRepositories");
-
-        await this.createInstalledRepo()
-        await this.createRegularRepository()
-
-        await this.createCurrentDirRepo()
-    }
-
-    async initRepositories(): Promise<void> {
-        log.debug("");
-        log.debug("=== initRepositories");
-
+    private invalidatePackages() {
         if (!this.repositories) {
             throw Error("Error initializing RepositoryManager - repositories not found")
         }
@@ -135,11 +113,51 @@ export default class RepositoryManager {
         for (let key in repos) {
             if (repos[key]) {
                 let repo: Repository = repos[key]
-                log.debug(`INIT Repo[${key}] - ${repo.name}`)
-                await repo.init()
+                log.debug(`INVALIDATE-PACKAGES Repo[${key}] - ${repo.name}`)
+                repo.reload()
             }
         }
+    }
 
+    private async createRepositories(): Promise<void> {
+        log.debug("");
+        log.debug("=== createRepositories");
+
+        await this.createInstalledRepo()
+        await this.createRegularRepositories()
+        await this.createCurrentDirRepo()
+    }
+
+    private async initRepositories(): Promise<Repository[]> {
+        log.debug("");
+        log.debug("=== initRepositories");
+
+        if (!this.repositories) {
+            throw Error("Error initializing RepositoryManager - repositories not found")
+        }
+
+        let repos: any = this.repositories
+        log.debug(`## repos: ${this.repositories?.describe()}`)
+
+        let initializedRepositories: Repository[] = []
+
+        for (let key in repos) {
+            if (repos[key]) {
+                let repo: Repository = repos[key]
+                if (!repo.initialized()) {
+                    log.debug(`INIT Repo[${key}] - ${repo.describe()} inited? ${repo.initialized()}`)
+                    await repo.init()
+                    initializedRepositories.push(repo)
+                }
+                log.debug(`Repo[${key}] - ${repo.describe()} inited? ${repo.initialized()}`)
+            }
+        }
+        this.logRepos(repos);
+
+        return initializedRepositories
+    }
+
+    private logRepos(repos: any) {
         log.debug(`=== REPOS`)
         for (let key in repos) {
             if (repos[key]) {
@@ -148,21 +166,24 @@ export default class RepositoryManager {
         }
     }
 
-    private async createCurrentDirRepo() {
+    private async createCurrentDirRepo(): Promise<Repository> {
         log.debug("createCurrentDirRepo")
-        this.repositories.currentDir = this.repoFactory.create(Deno.cwd(), true)
+        const currentDir = Deno.cwd()
+        const currentDirRepo = await this.createRepos([currentDir], true)
+        this.repositories.currentDir = currentDirRepo
+        return currentDirRepo
     }
 
-    private async createInstalledRepo() {
+    private async createInstalledRepo(): Promise<Repository> {
         log.debug("createInstalledRepo")
         let repos = await this.repoList(true)
-        this.repositories.installed = this.createRepos(repos)
+        return this.repositories.installed = await this.createRepos(repos)
     }
 
-    private async createRegularRepository() {
+    private async createRegularRepositories(): Promise<Repository> {
         log.debug("createRegularRepository")
         let repos = await this.repoList(false)
-        this.repositories.regular = this.createRepos(repos)
+        return this.repositories.regular = await this.createRepos(repos)
     }
 
     private async repoList(installedOnly: boolean): Promise<string[]> {
@@ -199,14 +220,23 @@ export default class RepositoryManager {
         this.tempRepos.forEach(repo => repos.push(repo))
     }
 
-    private createRepos(list: string[]): Repository {
+    private async createRepos(repoDirs: string[], rootOnly: boolean = false): Promise<Repository> {
         let repoArr: Repository[] = []
-        for (let repoPath of RepositoryFactory.normalizeList(list)) {
-            repoArr.push(this.repoFactory.create(repoPath))
+        for (let repoPath of RepositoryFactory.normalizeList(repoDirs)) {
+            repoArr.push(await this.repoFactory.getOrCreate(repoPath, rootOnly))
         }
 
-        return new CacheRepository(this.config,
-            new ChainRepository(this.config, repoArr)
-        )
+        const repoCount = repoArr.length
+        if (repoCount === 0) {
+            return new EmptyRepository()
+        }
+
+        if (repoCount === 1) {
+            return repoArr[0]
+        }
+
+        const repo = new ChainRepository(this.config, repoArr)
+        await repo.init()
+        return repo
     }
 }

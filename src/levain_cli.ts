@@ -50,7 +50,7 @@ export default class LevainCli {
         // Ask for user_info
         if (cmd === 'install') {
             const userInfoUtil = new UserInfoUtil()
-            userInfoUtil.askUserInfo(config, myArgs);
+            await userInfoUtil.askUserInfo(config, myArgs);
         }
 
         // Shell path
@@ -65,7 +65,7 @@ export default class LevainCli {
 
         // Repository Manager
         await config.repositoryManager.init({
-            repos: myArgs.addRepo,
+            extraRepos: myArgs.addRepo,
             tempRepos: myArgs.tempRepo
         })
 
@@ -86,11 +86,13 @@ export default class LevainCli {
                 log.info("Bye.");
                 Deno.exit(0)
             } else {
-                if (cmd != "clean") {
+                if (cmd != "clean" && Math.random() > 0.75) {
                     await loader.command("clean", [])
                 }
 
                 await loader.command(cmd, myArgs._)
+                // FIXME Will this save a broken config?
+                // config.saveIfChanged()
             }
         } catch (err) {
             if (err instanceof CommandNotFoundError) {
@@ -105,7 +107,7 @@ export default class LevainCli {
         /////////////////////////////////////////////////////////////////////////////////
         log.debug("==================================");
 
-        config.save();
+        config.save()
     }
 
 

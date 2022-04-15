@@ -60,7 +60,7 @@ Deno.test('SetEnv should allow --permanent option', async () => {
                 await action.execute(mockPackage, ['--permanent', envKey, envValue])
             },
             Error,
-            'darwin not supported'
+            `${OsUtils.getOs()} not supported`
         )
     }
 })

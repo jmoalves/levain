@@ -1,6 +1,8 @@
+import * as log from "https://deno.land/std/log/mod.ts";
 import {LogRecord} from "https://deno.land/std/log/logger.ts"
 import {LogLevels} from "https://deno.land/std/log/levels.ts"
 import * as path from "https://deno.land/std/path/mod.ts"
+
 import {copySync} from "https://deno.land/std/fs/copy.ts";
 import {existsSync} from "https://deno.land/std/fs/mod.ts"
 
@@ -12,8 +14,13 @@ import TestLogger from "../logger/test_logger.ts";
 import ActionFactory from "../../action/action_factory.ts";
 import Action from "../../action/action.ts";
 import {envChain} from "../utils/utils.ts";
+import MockRepository from "../repository/mock_repository.ts";
 
 export default class TestHelper {
+
+    static async setupTestLogger() {
+        return await TestLogger.setup()
+    }
 
     static getActionFromFactory(actionName: string): Action {
         const config = TestHelper.getConfig()
@@ -27,7 +34,7 @@ export default class TestHelper {
     }
 
     static logRecord(
-        msg: string = 'mock logRecord',
+        msg = 'mock logRecord',
         level: LogLevels = LogLevels.INFO,
     ) {
         return new LogRecord({
@@ -81,21 +88,29 @@ export default class TestHelper {
         )
     }
 
+    static async getNewInitedTempRegistry(): Promise<Registry> {
+        const registry = this.getNewTempRegistry()
+        await registry.init()
+        return registry
+    }
+
     static getNewTempRegistry(): Registry {
         return new Registry(
             TestHelper.getConfig(),
             Deno.makeTempDirSync()
-        );
+        )
     }
 
     static getNewTempDir(): string {
-        return Deno.makeTempDirSync()
+        const tempDir = Deno.makeTempDirSync({prefix: 'levain-'});
+        console.debug(`getNewTempDir ${tempDir}`)
+        return tempDir
     }
 
-    static getNewTempFile(originalFile?: string): string {
+    static getNewTempFile(copyFile?: string): string {
         const fileName = Deno.makeTempFileSync()
-        if (originalFile) {
-            copySync(originalFile, fileName, {overwrite: true})
+        if (copyFile) {
+            copySync(copyFile, fileName, {overwrite: true})
         }
         return fileName
     }
@@ -110,13 +125,9 @@ export default class TestHelper {
         return path.resolve('testdata', filepath);
     }
 
-    static async setupTestLogger() {
-        return await TestLogger.setup()
-    }
-
-    static randomString(size: number = 32) {
-        let outString: string = '';
-        let inOptions: string = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    static randomString(size = 32) {
+        let outString = '';
+        let inOptions = 'abcdefghijklmnopqrstuvwxyz0123456789';
 
         for (let i = 0; i < size; i++) {
             outString += inOptions.charAt(Math.floor(Math.random() * inOptions.length));
@@ -129,5 +140,40 @@ export default class TestHelper {
         if (existsSync(path)) {
             Deno.removeSync(path, {recursive: true})
         }
+    }
+
+    static async getMockRepositoryInitialized(): Promise<MockRepository> {
+        const mockRepository = new MockRepository()
+        await mockRepository.init()
+        return mockRepository;
+    }
+
+    static getTestDataPath(aditionalPath = '') {
+        const __dirname = path.dirname(path.fromFileUrl(import.meta.url))
+        const testDataPath = path.join(__dirname, '../../../testdata')
+        return path.resolve(testDataPath, aditionalPath)
+    }
+
+    static async logToConsole() {
+        await log.setup({
+            handlers: {
+                console: new log.handlers.ConsoleHandler("DEBUG"),
+                //
+                // file: new log.handlers.FileHandler("WARNING", {
+                //     filename: "./log.txt",
+                //     // you can change format of output message using any keys in `LogRecord`.
+                //     formatter: "{levelName} {msg}",
+                // }),
+            },
+
+            loggers: {
+                // configure default logger available via short-hand methods above.
+                default: {
+                    level: "DEBUG",
+                    // handlers: ["console", "file"],
+                    handlers: ["console"],
+                },
+            },
+        });
     }
 }

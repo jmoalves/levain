@@ -1,5 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="network tests" type="DenoConfigurationType" inputPath="$PROJECT_DIR$/src/lib/repository/file_system_repository.test.ts" programParameters="test --unstable --allow-all --filter &quot;network&quot;" workingDirectory="$PROJECT_DIR$/src/lib/repository">
-    <method v="2" />
-  </configuration>
-</component>

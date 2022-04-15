@@ -15,9 +15,8 @@ export default class ExplainCommand implements Command {
     constructor(private config: Config) {
     }
 
-    execute(args: string[]): void {
-        const myArgs = parseArgs(args, {
-        });
+    async execute(args: string[]): Promise<void> {
+        const myArgs = parseArgs(args, {});
 
         log.info(`EXPLAIN ${myArgs}`)
         let pkgNames: string[] = myArgs._
@@ -40,8 +39,8 @@ export default class ExplainCommand implements Command {
 
         for (let pkg of pkgs) {
             log.info(`## levain install ${pkg.name}`)
-            this.showActions(pkg, "cmd.install")
-            this.showActions(pkg, "cmd.env")
+            await this.listActions(pkg, "cmd.install")
+            await this.listActions(pkg, "cmd.env")
             log.info('')
             log.info('')
         }
@@ -51,15 +50,15 @@ export default class ExplainCommand implements Command {
         log.info("");
     }
 
-    private showActions(pkg: Package, item: string) {
-        let list = pkg.yamlItem(item)
+    async listActions(pkg: Package, item: string) {
+        const list = pkg.yamlItem(item)
         if (!list) {
             return
         }
 
         log.info('')
         for (let action of list) {
-            let actionWithVars = this.config.replaceVars(action, pkg.name)
+            const actionWithVars = await this.config.replaceVars(action, pkg.name)
             log.info(`* ${actionWithVars}`)
         }
     }

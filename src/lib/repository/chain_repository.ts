@@ -1,10 +1,9 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-
 import Config from "../config.ts";
 import Package from "../package/package.ts";
 
 import Repository from './repository.ts'
 import AbstractRepository from './abstract_repository.ts';
+import {ArrayUtils} from "../utils/array_utils.ts";
 
 export default class ChainRepository extends AbstractRepository {
 
@@ -12,58 +11,57 @@ export default class ChainRepository extends AbstractRepository {
         public config: Config,
         public repositories: Repository[],
     ) {
-        super();
-        this.name = `chainRepo for ${this.repositories?.map(repo => repo.name).join(', ')}`;
+        super('ChainRepo', ChainRepository.describeRepositories(repositories))
+        this.repositories = ArrayUtils.removeRepetitions(
+            this.repositories,
+            repo => repo.absoluteURI
+        )
     }
 
-    readonly name: string;
+    private static describeRepositories(repositories: Repository[]): string {
+        return repositories?.map(repo => repo.describe()).join(', ');
+    }
 
     async init(): Promise<void> {
         if (!this.repositories) {
             return
         }
 
-        for (let repo of this.repositories) {
-            await repo.init()
-        }
-    }
-
-    listPackages(): Array<Package> {
-        return this.repositories
-            .flatMap(repo => repo.listPackages())
-            .reduce((uniquePkgs, pkg) =>
-                    uniquePkgs.find(includedPkg => includedPkg.name === pkg.name)
-                        ? uniquePkgs
-                        : [...uniquePkgs, pkg],
-                [] as Array<Package>)
-    }
-
-    invalidatePackages() {
-        for (let repo of this.repositories) {
-            repo.invalidatePackages()
-        }
-    }
-
-    get absoluteURI(): string {
-        return this.name;
-    }
-
-    resolvePackage(packageName: string): Package | undefined {
-        if (!this.repositories) {
-            return undefined;
-        }
-
+        // TODO init in parallel?
         for (const repo of this.repositories) {
-            const pkg = repo.resolvePackage(packageName)
-            if (pkg) {
-                return pkg;
+            if (!repo.initialized()) {
+                await repo.init()
             }
         }
 
-        return undefined;
+        this.setInitialized()
     }
 
-    readPackages(): Array<Package> {
-        return this.listPackages()
+    listPackages(): Array<Package> {
+        const packages = this.repositories
+            .map(repo => repo.listPackages())
+            .reduce((acc, val) => acc.concat(val), [])
+
+        return ArrayUtils.removeRepetitions<Package>(
+            packages,
+            (pkg: Package) => pkg.name,
+        )
+    }
+
+    resolvePackage(packageName: string): Package | undefined {
+        for (let repo of this.repositories) {
+            let pkg = repo.resolvePackage(packageName)
+            if (pkg) {
+                return pkg
+            }
+        }
+
+        return undefined
+    }
+
+    async reload(): Promise<void> {
+        for (const repo of this.repositories) {
+            await repo.reload()
+        }
     }
 }

@@ -4,7 +4,6 @@ import * as path from "https://deno.land/std/path/mod.ts";
 import ConsoleAndFileLogger from './src/lib/logger/console_and_file_logger.ts'
 import {parseArgs} from "./src/lib/parse_args.ts";
 import {Timer} from "./src/lib/timer.ts";
-import CliUtil from "./src/lib/cli_util.ts";
 
 import LevainCli from "./src/levain_cli.ts";
 
