@@ -34,13 +34,9 @@ export default class GitRepository extends AbstractRepository {
             await this.gitUtils.clone(this.rootUrl, this.localDir, true);
         }
 
-        this.localRepo = await this.repoFactory.getOrCreate(this.localDir, this.rootOnly);
+        this.localRepo = await this.repoFactory.getOrCreate(this.localDir, this.rootOnly)
 
-        await super.init()
-    }
-
-    invalidatePackages() {
-        this.localRepo?.invalidatePackages();
+        this.setInitialized()
     }
 
     listPackages(): Array<Package> {
@@ -59,11 +55,7 @@ export default class GitRepository extends AbstractRepository {
         return this.localRepo.resolvePackage(packageName)
     }
 
-    async readPackages(): Promise<Array<Package>> {
-        if (!this.localRepo) {
-            throw Error(`${this.name} not loaded`)
-        }
-
-        return this.localRepo.readPackages();
+    async reload(): Promise<void> {
+        return this.localRepo?.reload()
     }
 }

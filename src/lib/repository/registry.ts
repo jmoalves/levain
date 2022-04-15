@@ -17,10 +17,6 @@ export default class Registry extends FileSystemRepository {
         super(config, rootDir)
     }
 
-    async init(): Promise<void> {
-        return super.init()
-    }
-
     async add(pkg: FileSystemPackage): Promise<void> {
         log.debug(`Registry.add ${pkg.fullPath} ${this.rootDir}`)
         if (!existsSync(pkg.fullPath)) {
@@ -31,8 +27,7 @@ export default class Registry extends FileSystemRepository {
         log.debug(`COPY ${pkg.fullPath} ${path.join(this.rootDir, pkg.filePath)}`)
         copySync(pkg.fullPath, path.join(this.rootDir, pkg.filePath))
 
-        this.invalidatePackages()
-        await this.init()
+        this.reload()
     }
 
     async remove(name: string) {
@@ -49,9 +44,9 @@ export default class Registry extends FileSystemRepository {
                 shouldInvalidate = true
             }
         })
+
         if (shouldInvalidate) {
-            this.invalidatePackages()
-            await this.init()
+            this.reload()
         }
     }
 }

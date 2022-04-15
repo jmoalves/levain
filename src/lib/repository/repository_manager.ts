@@ -4,7 +4,6 @@ import Config from "../config.ts";
 import Package from "../package/package.ts";
 
 import Repository from "./repository.ts";
-import CacheRepository from "./cache_repository.ts";
 import ChainRepository from "./chain_repository.ts";
 import RepositoryFactory from "./repository_factory.ts";
 import Repositories from "./repositories.ts";
@@ -40,25 +39,10 @@ export default class RepositoryManager {
         return await this.initRepositories()
     }
 
-    async reloadPackages(): Promise<Repository[]> {
+    async reload(): Promise<void> {
         this.invalidatePackages()
         await this.createRepositories()
-        return this.initRepositories()
-    }
-
-    invalidatePackages() {
-        if (!this.repositories) {
-            throw Error("Error initializing RepositoryManager - repositories not found")
-        }
-
-        let repos: any = this.repositories;
-        for (let key in repos) {
-            if (repos[key]) {
-                let repo: Repository = repos[key]
-                log.debug(`INVALIDATE-PACKAGES Repo[${key}] - ${repo.name}`)
-                repo.invalidatePackages()
-            }
-        }
+        await this.initRepositories()
     }
 
     get saveState(): any {
@@ -120,7 +104,22 @@ export default class RepositoryManager {
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    async createRepositories(): Promise<void> {
+    private invalidatePackages() {
+        if (!this.repositories) {
+            throw Error("Error initializing RepositoryManager - repositories not found")
+        }
+
+        let repos: any = this.repositories;
+        for (let key in repos) {
+            if (repos[key]) {
+                let repo: Repository = repos[key]
+                log.debug(`INVALIDATE-PACKAGES Repo[${key}] - ${repo.name}`)
+                repo.reload()
+            }
+        }
+    }
+
+    private async createRepositories(): Promise<void> {
         log.debug("");
         log.debug("=== createRepositories");
 
@@ -129,7 +128,7 @@ export default class RepositoryManager {
         await this.createCurrentDirRepo()
     }
 
-    async initRepositories(): Promise<Repository[]> {
+    private async initRepositories(): Promise<Repository[]> {
         log.debug("");
         log.debug("=== initRepositories");
 
@@ -167,7 +166,7 @@ export default class RepositoryManager {
         }
     }
 
-    async createCurrentDirRepo(): Promise<Repository> {
+    private async createCurrentDirRepo(): Promise<Repository> {
         log.debug("createCurrentDirRepo")
         const currentDir = Deno.cwd()
         const currentDirRepo = await this.createRepos([currentDir], true)
@@ -175,19 +174,19 @@ export default class RepositoryManager {
         return currentDirRepo
     }
 
-    async createInstalledRepo(): Promise<Repository> {
+    private async createInstalledRepo(): Promise<Repository> {
         log.debug("createInstalledRepo")
         let repos = await this.repoList(true)
         return this.repositories.installed = await this.createRepos(repos)
     }
 
-    async createRegularRepositories(): Promise<Repository> {
+    private async createRegularRepositories(): Promise<Repository> {
         log.debug("createRegularRepository")
         let repos = await this.repoList(false)
         return this.repositories.regular = await this.createRepos(repos)
     }
 
-    async repoList(installedOnly: boolean): Promise<string[]> {
+    private async repoList(installedOnly: boolean): Promise<string[]> {
         let repos: string[] = [];
 
         if (installedOnly) {
@@ -233,20 +232,11 @@ export default class RepositoryManager {
         }
 
         if (repoCount === 1) {
-            const cacheRepo = new CacheRepository(
-                this.config,
-                repoArr[0],
-            )
-            await cacheRepo.init()
-            return cacheRepo
+            return repoArr[0]
         }
 
-        const cacheRepository = new CacheRepository(
-            this.config,
-            new ChainRepository(this.config, repoArr)
-        )
-        await cacheRepository.init()
-        return cacheRepository
+        const repo = new ChainRepository(this.config, repoArr)
+        await repo.init()
+        return repo
     }
-
 }

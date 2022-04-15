@@ -4,7 +4,7 @@ import Package from '../package/package.ts';
 import Repository from './repository.ts';
 
 export default abstract class AbstractRepository implements Repository {
-    protected _packages?: Array<Package>
+    private _initialized:boolean = false;
 
     constructor(
         readonly name: string,
@@ -13,72 +13,24 @@ export default abstract class AbstractRepository implements Repository {
         log.debug(`${this.describe()} constructor`)
     }
 
+    abstract init(): Promise<void>
+    abstract listPackages(): Array<Package>
+    abstract resolvePackage(packageName: string): Package | undefined
+    abstract reload(): Promise<void>
+    
     describe(): string {
         return `${this.name} (${this.absoluteURI})`
-    }
-
-    async init(): Promise<void> {
-        log.debug(`${this.describe()} init`)
-
-        if (this.initialized()) {
-            log.debug(`${this.describe()} already initialized`)
-            return
-        }
-
-        this._packages = (await this.readPackages())
-            .sort((a, b) => a?.name?.localeCompare(b?.name))
-
-        const count = this._packages.length
-
-        log.debug(`Found ${count} packages in ${this.describe()}: ${this._packages}`)
-        log.debug(``)
-    }
-
-    abstract readPackages(): Promise<Array<Package>>
-
-    async reloadPackages() {
-        this.invalidatePackages()
-        await this.init()
-    }
-
-    invalidatePackages(): void {
-        log.debug(`invalidatePackages - ${this.name}`)
-
-        this._packages = undefined
-    }
-
-    listPackages(): Array<Package> {
-        log.debug(`listPackages - ${this.describe()}`)
-
-        if (!this._packages) {
-            throw new Error(`Please init repository ${this.describe()} before listing packages`)
-        }
-        return this._packages
     }
 
     size(): number {
         return this.listPackages()?.length
     }
 
-    resolvePackage(packageName: string): Package | undefined {
-        log.debug(`resolvePackage - looking for ${packageName} in ${this.describe()}`)
-
-        const packages = this.listPackages()
-
-        const pkg = packages.find(pkg => pkg.name === packageName)
-
-        if (pkg) {
-            log.debug(`${this.name}: found package ${packageName} => ${pkg.toString()}`);
-        } else {
-            log.debug(`${this.name}: package ${packageName} not found in ${this.describe()}`);
-            log.debug(`Known packages: ${packages}`)
-        }
-
-        return pkg;
-    }
-
     initialized(): boolean {
-        return this._packages !== undefined;
+        return this._initialized
     }
 
+    protected setInitialized(): void {
+        this._initialized = true
+    }
 }

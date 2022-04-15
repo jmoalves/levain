@@ -18,6 +18,8 @@ export default class FileSystemRepository extends AbstractRepository {
 
     readonly feedback = new ConsoleFeedback();
 
+    private _packages:Map<string, Package> = new Map()
+
     constructor(
         private config: Config,
         public readonly rootDir: string,
@@ -35,7 +37,7 @@ export default class FileSystemRepository extends AbstractRepository {
     }
 
     async init(): Promise<void> {
-        if (this._packages) {
+        if (this.initialized()) {
             log.debug(`FSRepo: Root=${this.rootDir} - already initialized`);
             return;
         }
@@ -45,16 +47,46 @@ export default class FileSystemRepository extends AbstractRepository {
         if (!existsSync(this.rootDir)) {
             throw new Error(`addRepo - dir not found: ${this.rootDir}`)
         }
+
         if (!DirUtils.isDirectory(this.rootDir)) {
             throw new Error(`addRepo - repository should exist and be a dir: ${this.rootDir}`)
         }
 
-        log.debug(`FSRepo init: Root=${this.rootDir} - loadPackages`)
-        await super.init()
+        await this.reload()
+
         log.debug(`FSRepo init: Root=${this.rootDir} - END`)
+        this.setInitialized()
     }
 
-    async readPackages(): Promise<Array<Package>> {
+    listPackages(): Array<Package> {
+        return [...this._packages.values()]
+    }
+
+    resolvePackage(packageName: string): Package | undefined {
+        log.debug(`resolvePackage - looking for ${packageName} in ${this.describe()}`)
+
+        const pkg = this._packages.get(packageName)
+
+        if (pkg) {
+            log.debug(`${this.name}: found package ${packageName} => ${pkg.toString()}`);
+        } else {
+            log.debug(`${this.name}: package ${packageName} not found in ${this.describe()}`);
+            log.debug(`Known packages: ${this._packages}`)
+        }
+
+        return pkg;
+    }
+
+    async reload(): Promise<void> {
+        this._packages.clear();
+        (await this.readPackages()).forEach( pkg => {
+            this._packages.set(pkg.name, pkg)
+        })
+    }
+
+    ///////////////////////////////////////////////////
+
+    private async readPackages(): Promise<Array<Package>> {
         if (!DirUtils.isDirectory(this.rootDir)) {
             log.debug(`# readPackages: rootDir not found ${this.rootDir}`);
             return [];
@@ -77,12 +109,12 @@ export default class FileSystemRepository extends AbstractRepository {
         return packages
     }
 
-    async getPackageFiles(globOptions: ExpandGlobOptions, rootDirOnly: boolean = false): Promise<Array<Package>> {
+    private async getPackageFiles(globOptions: ExpandGlobOptions, rootDirOnly: boolean = false): Promise<Array<Package>> {
         log.debug(`# readPackages: ${JSON.stringify(globOptions)}`)
         return this.crawlPackages(globOptions['root'] || '.', globOptions, rootDirOnly)
     }
 
-    async crawlPackages(dirname: string, options: ExpandGlobOptions, rootDirOnly: boolean = false, currentLevel = 0): Promise<Array<Package>> {
+    private async crawlPackages(dirname: string, options: ExpandGlobOptions, rootDirOnly: boolean = false, currentLevel = 0): Promise<Array<Package>> {
         // TODO can we use expandGlob to get faster results?
         const maxLevels = 5
         const nextLevel = currentLevel + 1;

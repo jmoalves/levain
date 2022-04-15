@@ -10,6 +10,7 @@ import {Extractor} from "../extract/extractor.ts"
 import Repository from "./repository.ts";
 import AbstractRepository from './abstract_repository.ts';
 import RepositoryFactory from "./repository_factory.ts";
+
 import ReaderFactory from "../io/reader_factory.ts";
 import {ExtractorFactory} from "../extract/extractor_factory.ts";
 
@@ -52,12 +53,9 @@ export default class ZipRepository extends AbstractRepository {
             await this.extractLocalZip(zipfile)
         }
 
-        this.localRepo = await this.repoFactory.getOrCreate(this.localDir, this.rootOnly);
-        // await this.localRepo.init();
-    }
+        this.localRepo = await this.repoFactory.getOrCreate(this.localDir, this.rootOnly)
 
-    invalidatePackages() {
-        this.localRepo?.invalidatePackages();
+        this.setInitialized()
     }
 
     listPackages(): Array<Package> {
@@ -76,14 +74,9 @@ export default class ZipRepository extends AbstractRepository {
         return this.localRepo.resolvePackage(packageName);
     }
 
-    async readPackages(): Promise<Array<Package>> {
-        if (!this.localRepo) {
-            throw Error(`${this.name} not loaded`)
-        }
-
-        return this.localRepo.readPackages();
+    async reload(): Promise<void> {
+        return this.localRepo?.reload()
     }
-
 
     /////////////////////////////////////////////////////////////////////
     private async copyLocalZip(): Promise<string> {

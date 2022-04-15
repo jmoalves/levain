@@ -4,19 +4,11 @@ export default interface Repository {
     name: string
     readonly absoluteURI?: string
 
-    describe(): string
-
-    listPackages(): Array<Package>
-
-    size(): number
-
     init(): Promise<void>
-
-    invalidatePackages(): void
-
-    resolvePackage(packageName: string): Package | undefined
-
-    readPackages(): Promise<Array<Package>>
-
     initialized(): boolean
+    describe(): string
+    listPackages(): Array<Package>
+    size(): number
+    resolvePackage(packageName: string): Package | undefined
+    reload(): Promise<void>
 }

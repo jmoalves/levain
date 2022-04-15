@@ -34,19 +34,10 @@ export default class ChainRepository extends AbstractRepository {
             }
         }
 
-        await super.init()
+        this.setInitialized()
     }
 
-    invalidatePackages() {
-        for (let repo of this.repositories) {
-            repo.invalidatePackages()
-        }
-
-        super.invalidatePackages()
-    }
-
-    async readPackages(): Promise<Array<Package>> {
-        // TODO this method should not be called
+    listPackages(): Array<Package> {
         const packages = this.repositories
             .map(repo => repo.listPackages())
             .reduce((acc, val) => acc.concat(val), [])
@@ -57,4 +48,20 @@ export default class ChainRepository extends AbstractRepository {
         )
     }
 
+    resolvePackage(packageName: string): Package | undefined {
+        for (let repo of this.repositories) {
+            let pkg = repo.resolvePackage(packageName)
+            if (pkg) {
+                return pkg
+            }
+        }
+
+        return undefined
+    }
+
+    async reload(): Promise<void> {
+        for (const repo of this.repositories) {
+            await repo.reload()
+        }
+    }
 }

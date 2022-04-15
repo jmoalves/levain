@@ -34,4 +34,7 @@ export class EmptyRepository implements Repository {
     size(): number {
         return 0;
     }
+
+    async reload(): Promise<void> {
+    }
 }

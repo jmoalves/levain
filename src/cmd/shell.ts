@@ -42,7 +42,7 @@ export default class Shell implements Command {
         } else {
             await loader.command("install", ["--noUpdate"].concat(pkgNames));
         }
-        await this.config.repositoryManager.reloadPackages();
+        await this.config.repositoryManager.reload();
 
         // Actions
         if (curDirPkg && pkgActions) {
@@ -59,8 +59,6 @@ export default class Shell implements Command {
         // Running shell
         const osShell: OsShell = new OsShell(this.config, pkgNames, true);
         osShell.interactive = true;
-        // TODO initRepositories elsewhere?
-        await this.config.repositoryManager.initRepositories()
         await osShell.execute([]);
     }
 
