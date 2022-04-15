@@ -145,7 +145,9 @@ export default class FileSystemRepository extends AbstractRepository {
             return []
         }
 
-        let packages: Array<Package> = [];
+        let promisesDir: Array<Promise<Array<Package>>> = []
+        let promisesFile: Array<Promise<Package | undefined>> = []
+
         for (const entry of entries) {
             // User feedback
             this.feedback.show();
@@ -155,22 +157,33 @@ export default class FileSystemRepository extends AbstractRepository {
                 log.debug(`not crawling ${fullUri} - can't read`)
                 continue
             }
-
+            
             if (entry.isDirectory && !rootDirOnly) {
                 if (currentLevel > maxLevels) {
                     log.debug(`skipping ${fullUri}, more then ${maxLevels} levels deep`)
                 } else {
-                    Array.prototype.push.apply(
-                        packages,
-                        await this.crawlPackages(fullUri, options, false, nextLevel)
-                    )
+                    promisesDir.push(this.crawlPackages(fullUri, options, false, nextLevel))
                 }
             } else if (entry.isFile) {
-                const pkg = await this.readPackage(fullUri);
+                promisesFile.push(this.readPackage(fullUri))
+            }
+        }
+
+        let packages: Array<Package> = [];
+
+        if (promisesFile.length > 0) {
+            let pkgsFile = await Promise.all(promisesFile)
+            for (let pkg of pkgsFile) {
                 if (pkg) {
-                    packages.push(pkg);
-                    log.debug(`added package ${pkg?.name} ${pkg?.version}`)
+                    packages.push(pkg)
                 }
+            }    
+        }
+
+        if (promisesDir.length > 0) {
+            let pkgsDir = await Promise.all(promisesDir)
+            for (let pkgArr of pkgsDir) {
+                Array.prototype.push.apply(packages, pkgArr)    
             }
         }
 
