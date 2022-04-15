@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="deno-upgrade" type="BatchConfigurationType" factoryName="Batch">
+    <module name="levain" />
+    <option name="INTERPRETER_OPTIONS" value="" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+    <option name="PARENT_ENVS" value="true" />
+    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/deno-upgrade.cmd" />
+    <option name="PARAMETERS" value="" />
+    <method v="2" />
+  </configuration>
+</component>

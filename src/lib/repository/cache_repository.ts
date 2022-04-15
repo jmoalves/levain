@@ -5,18 +5,14 @@ import Repository from './repository.ts'
 import AbstractRepository from './abstract_repository.ts';
 
 export default class CacheRepository extends AbstractRepository {
-    readonly name: string
-    private _packages: Array<Package> = [];
 
     private cache: Map<string, Package> = new Map();
 
-    // eslint-disable-next-line no-useless-constructor
     constructor(
         public config: Config,
         public repository: Repository,
     ) {
-        super();
-        this.name = `cacheRepo for ${this.repository?.name}`;
+        super('CacheRepo', repository?.describe())
     }
 
     async init(): Promise<void> {
@@ -24,17 +20,15 @@ export default class CacheRepository extends AbstractRepository {
             return;
         }
 
-        await this.repository.init()
-        this._packages = this.repository.listPackages();
+        if (!this.repository.initialized()) {
+            await this.repository.init()
+        }
+
+        await super.init()
     }
 
     invalidatePackages() {
-        this.repository.invalidatePackages();
-        this._packages = this.repository.listPackages();
-    }
-
-    get absoluteURI(): string {
-        return this.name;
+        this.repository.invalidatePackages()
     }
 
     resolvePackage(packageName: string): Package | undefined {
@@ -54,11 +48,7 @@ export default class CacheRepository extends AbstractRepository {
         return pkg;
     }
 
-    listPackages(): Array<Package> {
-        return this._packages;
-    }
-
-    readPackages(): Array<Package> {
-        return this._packages;
+    async readPackages(): Promise<Array<Package>> {
+        return this.repository.listPackages();
     }
 }

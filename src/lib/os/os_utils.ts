@@ -78,6 +78,18 @@ export default class OsUtils {
         return this.getOs() === "windows"
     }
 
+    static isPosix(): boolean {
+        return this.isMacOs() || this.isLinux()
+    }
+
+    static isMacOs(): boolean {
+        return this.getOs() === "darwin"
+    }
+
+    static isLinux(): boolean {
+        return this.getOs() === "linux"
+    }
+
     static getOs(): string {
         return Deno.build.os;
     }
@@ -118,7 +130,7 @@ export default class OsUtils {
     }
 
 
-    static async runAndLog(command: string | string[]): Promise<string> {
+    static async runAndLog(command: string | string[], workDir = '.'): Promise<string> {
         log.debug(`runAndLog\n${command}`)
 
         let args: string[];
@@ -129,15 +141,17 @@ export default class OsUtils {
             args = command
         } else {
             log.error(command)
-            throw `********** Unkown command type ${typeof command}`
+            throw `********** Unknown command type ${typeof command}`
         }
 
         // https://github.com/denoland/deno/issues/4568
-        const proc = Deno.run({
+        const runOptions: Deno.RunOptions = {
             cmd: args,
+            cwd: workDir,
             stderr: 'piped',
             stdout: 'piped',
-        });
+        }
+        const proc = Deno.run(runOptions);
 
         const [
             stderr,
@@ -147,20 +161,24 @@ export default class OsUtils {
             proc.stderrOutput(),
             proc.output(),
             proc.status()
-        ]);
+        ])
 
         proc.close()
 
         log.debug(`status ${JSON.stringify(status)}`)
 
         if (!status.success) {
-            let stderrOutput = this.decodeOutput(stderr)
+            let stderrOutput = OsUtils.decodeOutput(stderr)
             throw `Error ${status.code} running "${command}\n${stderrOutput}"`;
         }
 
         const output = OsUtils.decodeOutput(stdout)
-        log.debug(`stdout ${output}`)
-        return output
+
+        // TODO it should not be necessary to remove \u0000 from stdout. Is it a bug in Deno 1.13.2?
+        const cleanOutput = output.replaceAll(/\u0000/gm, '')
+
+        log.debug(`stdout ${cleanOutput}`)
+        return cleanOutput
     }
 
     static decodeOutput(output: Uint8Array) {
@@ -177,15 +195,21 @@ export default class OsUtils {
         Deno.chmodSync(path, 0o444)
     }
 
+    static removePermissions(path: string) {
+        Deno.chmodSync(path, 0)
+    }
+
     static makeReadWrite(path: string) {
         Deno.chmodSync(path, 0o777)
     }
 
     static async sanitizeUserPath() {
-        const path = await this.getUserPath()
-        const sanitizedPath = this.sanitizePathArray(path)
-        if (path != sanitizedPath) {
-            await this.setUserPath(sanitizedPath)
+        if (OsUtils.isWindows()) {
+            const path = await this.getUserPath()
+            const sanitizedPath = this.sanitizePathArray(path)
+            if (path != sanitizedPath) {
+                await this.setUserPath(sanitizedPath)
+            }
         }
     }
 

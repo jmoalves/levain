@@ -1,0 +1,5 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Deno: user_info" type="DenoConfigurationType" nameIsGenerated="true" inputPath="$PROJECT_DIR$/src/lib/user_info" programParameters="test --unstable --allow-all --watch">
+    <method v="2" />
+  </configuration>
+</component>

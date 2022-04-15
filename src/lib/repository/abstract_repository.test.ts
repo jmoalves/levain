@@ -1,39 +1,33 @@
-import {assertEquals} from "https://deno.land/std/testing/asserts.ts";
+import MockRepository from "./mock_repository.ts";
+import LevainAsserts from "../test/levain_asserts.ts";
+import {assertEquals, assertThrows} from "https://deno.land/std/testing/asserts.ts";
 
-import AbstractRepository from "./abstract_repository.ts";
-import Package from '../package/package.ts';
 
-class TestRepository extends AbstractRepository {
-    get name(): string {
-        return 'TestRepository'
-    }
+Deno.test('AbstractRepository.listPackages should return a list of packages', async () => {
+    const repo = new MockRepository()
+    await repo.init()
+    const packages = repo.listPackages()
 
-    listPackages(): Array<Package> {
-        console.log("packages()")
-        return []
-    }
+    const expectedPackageNames = ['aPackage', 'anotherPackage',]
+    LevainAsserts.assertPackageNames(packages, expectedPackageNames)
+})
+Deno.test('AbstractRepository should throw error when listing before init', () => {
+    const repo = new MockRepository()
+    assertThrows(
+        () => {
+            repo.listPackages()
+        },
+        Error,
+        'Please init repository MockRepo (mockURI-MockRepo) before listing packages'
+    )
+})
+Deno.test('AbstractRepository.initialized should reflect if packages are valid', async () => {
+    const repo = new MockRepository()
+    assertEquals(repo.initialized(), false)
 
-    get absoluteURI(): string {
-        return 'URI'
-    }
+    await repo.init()
+    assertEquals(repo.initialized(), true)
 
-    async init(): Promise<void> {
-        return
-    }
-
-    invalidatePackages(): void {
-    }
-
-    readPackages(): Array<Package> {
-        return []
-    }
-
-    resolvePackage(packageName: string): Package | undefined {
-        return undefined
-    }
-}
-
-Deno.test('AbstractRepository - packages must work', async () => {
-    const repo = new TestRepository();
-    assertEquals(repo.listPackages(), [])
+    repo.invalidatePackages()
+    assertEquals(repo.initialized(), false)
 })

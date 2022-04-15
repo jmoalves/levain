@@ -4,8 +4,8 @@ import MemoryHandler from "./memory_handler.ts";
 
 export default class TestLogger {
 
-    static async setup() {
-        const memoryHandler = new MemoryHandler("INFO");
+    static async setup(): Promise<TestLogger> {
+        const memoryHandler = new MemoryHandler("DEBUG");
         const testLogger = new TestLogger(memoryHandler)
 
         await log.setup({

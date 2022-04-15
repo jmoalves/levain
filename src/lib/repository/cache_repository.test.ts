@@ -5,22 +5,24 @@ import Config from "../config.ts";
 import CacheRepository from "./cache_repository.ts";
 import MockRepository from "./mock_repository.ts";
 import Repository from "./repository.ts";
+import LevainAsserts from "../test/levain_asserts.ts";
 
 Deno.test('CacheRepository should have a name', async () => {
     const repo = await getRepo()
 
-    assertEquals(repo.name, 'cacheRepo for mockRepo')
+    assertEquals(repo.name, 'CacheRepo')
 })
+Deno.test('CacheRepository should have a description', async () => {
+    const repo = await getRepo()
 
+    assertEquals(repo.describe(), 'CacheRepo (MockRepo (mockURI-MockRepo))')
+})
 Deno.test('CacheRepository should list packages from cached repo', async () => {
     const repo = await getRepo()
 
     const packages = repo.listPackages()
-    const packageNames = packages.map(pkg => pkg.name)
-
-    assertEquals(packageNames, ['aPackage', 'anotherPackage'])
+    LevainAsserts.assertPackageNames(packages, ['aPackage', 'anotherPackage'])
 })
-
 Deno.test('CacheRepository should resolve package by name', async () => {
     // Given
     const repo = await getRepo()

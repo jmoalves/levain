@@ -17,7 +17,11 @@ export default class Registry extends FileSystemRepository {
         super(config, rootDir)
     }
 
-    add(pkg: FileSystemPackage) {
+    async init(): Promise<void> {
+        return super.init()
+    }
+
+    async add(pkg: FileSystemPackage): Promise<void> {
         log.debug(`Registry.add ${pkg.fullPath} ${this.rootDir}`)
         if (!existsSync(pkg.fullPath)) {
             throw Error(`Cannot find package ${pkg.fullPath}`)
@@ -28,9 +32,10 @@ export default class Registry extends FileSystemRepository {
         copySync(pkg.fullPath, path.join(this.rootDir, pkg.filePath))
 
         this.invalidatePackages()
+        await this.init()
     }
 
-    remove(name: string) {
+    async remove(name: string) {
         log.debug(`Registry.remove ${name} ${this.rootDir}`)
         let shouldInvalidate = false
         const possibleFiles = [
@@ -46,6 +51,7 @@ export default class Registry extends FileSystemRepository {
         })
         if (shouldInvalidate) {
             this.invalidatePackages()
+            await this.init()
         }
     }
 }

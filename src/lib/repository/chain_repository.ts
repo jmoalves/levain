@@ -1,10 +1,9 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-
 import Config from "../config.ts";
 import Package from "../package/package.ts";
 
 import Repository from './repository.ts'
 import AbstractRepository from './abstract_repository.ts';
+import {ArrayUtils} from "../utils/array_utils.ts";
 
 export default class ChainRepository extends AbstractRepository {
 
@@ -12,58 +11,50 @@ export default class ChainRepository extends AbstractRepository {
         public config: Config,
         public repositories: Repository[],
     ) {
-        super();
-        this.name = `chainRepo for ${this.repositories?.map(repo => repo.name).join(', ')}`;
+        super('ChainRepo', ChainRepository.describeRepositories(repositories))
+        this.repositories = ArrayUtils.removeRepetitions(
+            this.repositories,
+            repo => repo.absoluteURI
+        )
     }
 
-    readonly name: string;
+    private static describeRepositories(repositories: Repository[]): string {
+        return repositories?.map(repo => repo.describe()).join(', ');
+    }
 
     async init(): Promise<void> {
         if (!this.repositories) {
             return
         }
 
-        for (let repo of this.repositories) {
-            await repo.init()
+        // TODO init in parallel?
+        for (const repo of this.repositories) {
+            if (!repo.initialized()) {
+                await repo.init()
+            }
         }
-    }
 
-    listPackages(): Array<Package> {
-        return this.repositories
-            .flatMap(repo => repo.listPackages())
-            .reduce((uniquePkgs, pkg) =>
-                    uniquePkgs.find(includedPkg => includedPkg.name === pkg.name)
-                        ? uniquePkgs
-                        : [...uniquePkgs, pkg],
-                [] as Array<Package>)
+        await super.init()
     }
 
     invalidatePackages() {
         for (let repo of this.repositories) {
             repo.invalidatePackages()
         }
+
+        super.invalidatePackages()
     }
 
-    get absoluteURI(): string {
-        return this.name;
+    async readPackages(): Promise<Array<Package>> {
+        // TODO this method should not be called
+        const packages = this.repositories
+            .map(repo => repo.listPackages())
+            .reduce((acc, val) => acc.concat(val), [])
+
+        return ArrayUtils.removeRepetitions<Package>(
+            packages,
+            (pkg: Package) => pkg.name,
+        )
     }
 
-    resolvePackage(packageName: string): Package | undefined {
-        if (!this.repositories) {
-            return undefined;
-        }
-
-        for (const repo of this.repositories) {
-            const pkg = repo.resolvePackage(packageName)
-            if (pkg) {
-                return pkg;
-            }
-        }
-
-        return undefined;
-    }
-
-    readPackages(): Array<Package> {
-        return this.listPackages()
-    }
 }

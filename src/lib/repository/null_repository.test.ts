@@ -11,5 +11,5 @@ Deno.test('nullRepo should have a name', () => {
 })
 
 Deno.test('nullRepo should not have packages', () => {
-    assertEquals(repo.packages, [])
+    assertEquals(repo.listPackages(), [])
 })

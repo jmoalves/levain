@@ -1,7 +1,7 @@
 import {assert, assertThrows} from "https://deno.land/std/testing/asserts.ts";
 
 import TestHelper from "../lib/test/test_helper.ts";
-import {assertDirCount} from "../lib/test/more_asserts.ts";
+import {assertDirCount, assertPathDoesNotExist} from "../lib/test/more_asserts.ts";
 import MathUtil from "../lib/utils/math_util.ts";
 
 import CommandFactory from "./command_factory.ts";
@@ -27,7 +27,6 @@ Deno.test('CleanCommand should identify unknown option', () => {
         'ERROR: Unknown option --this-param-does-not-exist',
     )
 })
-
 
 Deno.test('CleanCommand should clean cache and backup', () => {
     verifyClean([], true, true)
@@ -63,13 +62,13 @@ function verifyClean(parameters: any[], shouldCleanBackupDir: boolean, shouldCle
 
 
     if (shouldCleanBackupDir) {
-        assertDirCount(backupDir, 0, 'should clean backupDir')
+        assertPathDoesNotExist(backupDir)
     } else {
         assertDirCount(backupDir, backupDirCount, 'should keep backupDir')
     }
 
     if (shouldCleanCacheDir) {
-        assertDirCount(cacheDir, 0, 'should clean cacheDir')
+        assertPathDoesNotExist(cacheDir)
     } else {
         assertDirCount(cacheDir, cacheDirCount, 'should keep cacheDir')
     }

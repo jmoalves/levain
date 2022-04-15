@@ -1,4 +1,4 @@
-import PackageManager from "./manager.ts";
+import PackageManager from "./package_manager.ts";
 import Package from "./package.ts";
 
 export class PackageManagerMock extends PackageManager {

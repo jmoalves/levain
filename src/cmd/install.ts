@@ -35,7 +35,7 @@ export default class Install implements Command {
         let pkgNames: string[] = myArgs._;
 
         if (pkgNames.length == 0) {
-            let curDirPkg = this.config.repositoryManager.currentDirPackage
+            let curDirPkg = await this.config.repositoryManager.currentDirPackage()
             if (curDirPkg && curDirPkg.dependencies && curDirPkg.dependencies.length > 0) {
                 pkgNames = curDirPkg.dependencies
             }
@@ -137,16 +137,17 @@ export default class Install implements Command {
             } else if (force) {
                 verb = 'FORCE';
             } else {
-                verb = 'ENV (already installed)';
+                verb = 'ALREADY INSTALLED';
                 shouldInstall = false;
             }
         }
 
         if (shouldInstall) {
             log.info("")
+            log.info(`- ${verb} ${pkg.name}@${pkg.version}`);
+        } else {
+            log.info(`✓ ${pkg.name}@${pkg.version}`);
         }
-
-        log.info(`=== ${verb} ${pkg.name} - ${pkg.version}`);
 
         if (shouldInstall) {
             const levainTag = pkg.levainTag;

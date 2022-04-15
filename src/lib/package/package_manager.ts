@@ -78,7 +78,7 @@ export default class PackageManager {
         return this.knownPackages.get(pkgName);
     }
 
-    getVar(pkgName: string, vName: string): string | undefined {
+    async getVar(pkgName: string, vName: string): Promise<string | undefined> {
         let pkg = this.package(pkgName);
         if (!pkg) {
             return undefined;
@@ -105,7 +105,7 @@ export default class PackageManager {
         }
 
         value = "" + value; // toString
-        return this.config.replaceVars(value!, pkgName);
+        return await this.config.replaceVars(value!, pkgName);
     }
 
     getSimilarNames(pkgName: string, installedOnly = false): Set<String> {
@@ -140,7 +140,7 @@ export default class PackageManager {
         }
 
         names.add(pkgName);
-        log.debug(`## resolving package ${pkgName} in ${repo.name}`)
+        log.debug(`## resolving package ${pkgName} in ${repo.describe()}`)
         const pkgDef = repo.resolvePackage(pkgName);
         if (!pkgDef) {
             log.debug("PACKAGE NOT FOUND: " + pkgName);

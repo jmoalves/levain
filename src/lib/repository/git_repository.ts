@@ -11,7 +11,6 @@ import Repository from "./repository.ts";
 import RepositoryFactory from "./repository_factory.ts";
 
 export default class GitRepository extends AbstractRepository {
-    readonly name: string
     private readonly gitUtils: GitUtils
 
     private repoFactory: RepositoryFactory
@@ -19,10 +18,9 @@ export default class GitRepository extends AbstractRepository {
     private localRepo: Repository | undefined
 
     constructor(private config: Config, private rootUrl: string, private rootOnly: boolean = false) {
-        super()
+        super('GitRepo', rootUrl)
 
         log.debug(`GitRepo: Root=${this.rootUrl}`)
-        this.name = `gitRepo for ${this.rootUrl}`
         this.repoFactory = new RepositoryFactory(config)
 
         this.gitUtils = new GitUtils()
@@ -36,16 +34,13 @@ export default class GitRepository extends AbstractRepository {
             await this.gitUtils.clone(this.rootUrl, this.localDir, true);
         }
 
-        this.localRepo = this.repoFactory.create(this.localDir, this.rootOnly);
-        await this.localRepo.init();
+        this.localRepo = await this.repoFactory.getOrCreate(this.localDir, this.rootOnly);
+
+        await super.init()
     }
 
     invalidatePackages() {
         this.localRepo?.invalidatePackages();
-    }
-
-    get absoluteURI(): string {
-        return this.rootUrl;
     }
 
     listPackages(): Array<Package> {
@@ -64,7 +59,7 @@ export default class GitRepository extends AbstractRepository {
         return this.localRepo.resolvePackage(packageName)
     }
 
-    readPackages(): Array<Package> {
+    async readPackages(): Promise<Array<Package>> {
         if (!this.localRepo) {
             throw Error(`${this.name} not loaded`)
         }

@@ -1,4 +1,5 @@
 import * as log from "https://deno.land/std/log/mod.ts";
+
 import ExtraBin from "../extra_bin.ts";
 import OsUtils from "../os/os_utils.ts";
 
@@ -29,7 +30,7 @@ export default class GitUtils {
     static localBaseDir(gitUrl: string): string {
         GitUtils.checkGitPath(gitUrl)
 
-        let gitPath = GitUtils.parseGitPath(gitUrl)
+        const gitPath = GitUtils.parseGitPath(gitUrl)
         let gitBase = gitPath.url.replace(/\.git$/, '')
         if (gitPath.branch) {
             gitBase += '_' + gitPath.branch
@@ -37,14 +38,14 @@ export default class GitUtils {
         return gitBase.replace(/[\/\\:@ ]+/g, '_')
     }
 
-    async clone(gitUrl: string, dst: string, shallow: boolean = false): Promise<void> {
+    async clone(gitUrl: string, dst: string, shallow = false): Promise<void> {
         GitUtils.checkGitPath(gitUrl)
 
         const gitPath = GitUtils.parseGitPath(gitUrl)
         log.debug(`# GIT - CLONE - ${JSON.stringify(gitPath)} => ${dst}`);
 
         this.feedback.start(`# GIT - CLONE - ${JSON.stringify(gitPath)} => ${dst}`)
-        let tick = setInterval(() => this.feedback.show(), 300)
+        const tick = setInterval(() => this.feedback.show(), 300)
 
         const branchOption = (gitPath.branch ? `--branch ${gitPath.branch} ` : '')
         const shallowOption = (shallow ? `--single-branch --no-tags --depth 1 ` : '')
@@ -68,7 +69,7 @@ export default class GitUtils {
         log.debug(`# GIT - PULL - ${workingDir}`);
 
         this.feedback.start(`# GIT - PULL - ${workingDir}`)
-        let tick = setInterval(() => this.feedback.show(), 300)
+        const tick = setInterval(() => this.feedback.show(), 300)
 
         let gitCommand: string | string[] = `${this.gitCmd} pull --force -q --progress --no-tags --depth=1 --update-shallow --allow-unrelated-histories --no-commit --rebase`;
         if (OsUtils.isWindows()) {
@@ -83,8 +84,8 @@ export default class GitUtils {
             }
 
             try {
-                // BROKEN? await OsUtils.runAndLog(gitCommand, workingDir);
-                await OsUtils.runAndLog(gitCommand);
+                await OsUtils.runAndLog(gitCommand, workingDir);
+
                 clearInterval(tick)
 
                 log.debug(`# GIT - PULL - ${workingDir} - OK`);
