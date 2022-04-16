@@ -1,5 +1,6 @@
 import UserInfoUtil from "./user_info/userinfo_util.ts";
 import Config from "./config.ts";
+import {homedir} from './utils/utils.ts';
 
 export default class VarResolver {
     static async replaceVars(text: string, pkgName: string | undefined, config: Config): Promise<string> {
@@ -81,7 +82,7 @@ export default class VarResolver {
             }
 
         } else if (vName == "home") {
-            return config.levainHome;
+            return homedir()
         } else if (vName.search(/^pkg\.(.+)\.([^.]*)/) != -1) {
             let pkgVarPkg = vName.replace(/^pkg\.(.+)\.([^.]*)/, "$1");
             let pkgVarName = vName.replace(/^pkg\.(.+)\.([^.]*)/, "$2");
