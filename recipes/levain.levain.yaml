@@ -1,4 +1,4 @@
-version: vHEAD
+version: 0.70.1
 
 cmd.install:
   - copy --verbose ../src ../levain.ts ../bin ../extra-bin ../levain.cmd ../levain.sh ../recipes ${baseDir}
