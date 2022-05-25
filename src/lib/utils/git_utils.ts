@@ -1,4 +1,5 @@
 import * as log from "https://deno.land/std/log/mod.ts";
+import * as path from "https://deno.land/std/path/mod.ts";
 
 import ExtraBin from "../extra_bin.ts";
 import OsUtils from "../os/os_utils.ts";
@@ -106,5 +107,35 @@ export default class GitUtils {
         if (!GitUtils.isGitPath(url)) {
             throw new Error(`Invalid git url - ${url}`)
         }
+    }
+
+    static gitRoot(startDir: string): string|undefined {
+        let dir = startDir
+
+        do {
+            try {
+                const gitdir = path.resolve(dir, '.git')
+                log.debug(`Looking for .git at ${gitdir}`)
+                const fileInfo = Deno.lstatSync(gitdir)
+                if (fileInfo.isDirectory) {
+                    log.debug(`Found .git at ${gitdir} - using ${dir}`)
+                    return dir
+                }
+            } catch (err) {
+                if (!(err instanceof Deno.errors.NotFound)) {
+                    throw err;
+                }
+            }
+
+            const parentDir = path.dirname(dir)
+            if (parentDir == dir) {
+                return undefined
+            }
+
+            dir = parentDir
+            log.debug(`Parent: ${dir}`)
+        } while (dir.length > 0)
+
+        return undefined
     }
 }

@@ -8,6 +8,7 @@ import ChainRepository from "./chain_repository.ts";
 import RepositoryFactory from "./repository_factory.ts";
 import Repositories from "./repositories.ts";
 import {EmptyRepository} from "./empty_repository.ts";
+import GitUtils from "../utils/git_utils.ts";
 
 export default class RepositoryManager {
     private repoFactory: RepositoryFactory
@@ -73,10 +74,8 @@ export default class RepositoryManager {
         // TODO: Could we provide a default mechanism?
         if (pkgs && pkgs.length > 1) {
             log.warning("")
-            log.warning("***********************************************************************************")
-            log.warning(`** Found more than one .levain.yaml file in this folder. Which one should I use? => ${pkgs}`)
-            log.warning("***********************************************************************************")
-            log.warning("")
+            log.warning(`Found more than one .levain.yaml file => Using ${pkgs[0].filePath} of ${pkgs.map(p => p.filePath)}`)
+            return this.repositories.currentDir.resolvePackage(pkgs[0].name)
         }
 
         return undefined
@@ -167,9 +166,16 @@ export default class RepositoryManager {
     }
 
     private async createCurrentDirRepo(): Promise<Repository> {
-        log.debug("createCurrentDirRepo")
         const currentDir = Deno.cwd()
-        const currentDirRepo = await this.createRepos([currentDir], true)
+        let dirs = [currentDir]
+
+        const gitDir = GitUtils.gitRoot(currentDir)
+        if (gitDir) {
+            dirs.push(gitDir)
+        }
+
+        log.debug(`createCurrentDirRepo ${dirs}`)
+        const currentDirRepo = await this.createRepos(dirs, true)
         this.repositories.currentDir = currentDirRepo
         return currentDirRepo
     }
