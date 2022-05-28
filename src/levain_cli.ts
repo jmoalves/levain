@@ -1,5 +1,7 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
+import i18n from './lib/i18n.ts'
+
 import Config from "./lib/config.ts";
 import ConsoleAndFileLogger from "./lib/logger/console_and_file_logger.ts";
 import Loader from "./lib/loader.ts";
@@ -12,10 +14,15 @@ import Levain from "../levain.ts";
 import LevainVersion from "./levain_version.ts";
 import OsUtils from "./lib/os/os_utils.ts";
 
+const t = i18n();
+
 export default class LevainCli {
 
     async execute(myArgs: any = {}): Promise<void> {
-        log.info(`Levain ${LevainVersion.levainVersion} with Deno v${Deno.version.deno} at ${Levain.levainRootFile}`);
+        log.info(t("lib.levain_cli.levainVersion", { 
+            version: LevainVersion.levainVersion, 
+            denoVersion: Deno.version.deno,
+            levainRootFile: Levain.levainRootFile}));
         log.info("");
 
         log.debug("args " + JSON.stringify(myArgs));
@@ -79,11 +86,11 @@ export default class LevainCli {
                 log.info("");
                 log.info("");
                 log.info("");
-                log.info("Levain upgrade completed. Please re-execute your previous command")
+                log.info(t("lib.levain_cli.levainUpgrade"));
                 log.info("");
-                prompt("Hit ENTER to finish");
+                prompt(t("enterFinish"));
                 log.info("");
-                log.info("Bye.");
+                log.info(t("lib.levain_cli.bye"));
                 Deno.exit(0)
             } else {
                 if (cmd != "clean" && Math.random() > 0.75) {

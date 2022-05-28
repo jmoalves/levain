@@ -1,0 +1,15 @@
+{
+    "enterFinish": "Hit ENTER to finish",
+    "levain": {
+        "levainRan": "Levain ran in {{timer}}",
+        "executionFailed": "execution FAILED",
+        "executionSuccess": "execution SUCCESS"
+    },
+    "lib": {
+        "levain_cli": {
+            "levainVersion": "Levain {{version}} with Deno v{{denoVersion}} at {{levainRootFile}}",
+            "levainUpgrade": "Levain upgrade completed. Please re-execute your previous command",
+            "bye": "Bye."
+        }
+    }
+}

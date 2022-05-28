@@ -1,11 +1,14 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 
+import i18n from './src/lib/i18n.ts'
 import ConsoleAndFileLogger from './src/lib/logger/console_and_file_logger.ts'
 import {parseArgs} from "./src/lib/parse_args.ts";
 import {Timer} from "./src/lib/timer.ts";
 
 import LevainCli from "./src/levain_cli.ts";
+
+const t = i18n();
 
 export default class Levain {
     static get levainRootFile(): string {
@@ -77,18 +80,19 @@ export default class Levain {
             this.logger?.showLogFiles(this.logFiles);
 
             log.info("");
-            log.info(`Levain ran in ${this.timer.humanize()}`)
+            const timed = this.timer.humanize()
+            log.info(t("levain.levainRan", { timer: timed }))
             this.logger?.flush()
 
             if (this.error) {
-                log.error('execution FAILED')
+                log.error(t("levain.executionFailed"))
             } else {
-                log.debug('execution SUCCESS')
+                log.debug(t("levain.executionSuccess"))
             }
 
             if (this.error || (this.myArgs && this.myArgs["wait-after-end"])) {
                 console.log("");
-                prompt("Hit ENTER to finish");
+                prompt(t("enterFinish"));
             }
         }
 
