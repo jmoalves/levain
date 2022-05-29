@@ -19,7 +19,7 @@ const t = i18n();
 export default class LevainCli {
 
     async execute(myArgs: any = {}): Promise<void> {
-        log.info(t("lib.levain_cli.levainVersion", { 
+        log.info(t("levain_cli.levainVersion", { 
             version: LevainVersion.levainVersion, 
             denoVersion: Deno.version.deno,
             levainRootFile: Levain.levainRootFile}));
@@ -86,11 +86,11 @@ export default class LevainCli {
                 log.info("");
                 log.info("");
                 log.info("");
-                log.info(t("lib.levain_cli.levainUpgrade"));
+                log.info(t("levain_cli.levainUpgrade"));
                 log.info("");
                 prompt(t("enterFinish"));
                 log.info("");
-                log.info(t("lib.levain_cli.bye"));
+                log.info(t("levain_cli.bye"));
                 Deno.exit(0)
             } else {
                 if (cmd != "clean" && Math.random() > 0.75) {
@@ -127,7 +127,7 @@ export default class LevainCli {
             .map(command => command.oneLineExample)
 
         log.info("");
-        log.info(t("lib.levain_cli.availableCommands"))
+        log.info(t("levain_cli.availableCommands"))
         examples.forEach(example => log.info(example))
     }
 }
