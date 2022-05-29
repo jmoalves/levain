@@ -95,6 +95,10 @@
                 "match": "Perfect, the typed passwords are the same.",
                 "mismatch": "Password mismatch... Please, inform again.",
                 "unablePasswordAttempts": "Unable to collect password after {{tries}} attempts"
+            },
+            "input_name": {
+                "namePrompt": "What's your FULL NAME (for Git)?",
+                "enterDefault": " Press return for [{{defaultValue}}]"
             }
         }
     }
