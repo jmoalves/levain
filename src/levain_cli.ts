@@ -127,7 +127,7 @@ export default class LevainCli {
             .map(command => command.oneLineExample)
 
         log.info("");
-        log.info("Commands available:")
+        log.info(t("lib.levain_cli.availableCommands"))
         examples.forEach(example => log.info(example))
     }
 }
