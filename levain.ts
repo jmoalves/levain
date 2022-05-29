@@ -2,6 +2,7 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 
 import t from './src/lib/i18n.ts'
+
 import ConsoleAndFileLogger from './src/lib/logger/console_and_file_logger.ts'
 import {parseArgs} from "./src/lib/parse_args.ts";
 import {Timer} from "./src/lib/timer.ts";

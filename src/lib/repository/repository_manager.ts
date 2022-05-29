@@ -1,5 +1,7 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
+import t from '../i18n.ts'
+
 import Config from "../config.ts";
 import Package from "../package/package.ts";
 
@@ -53,7 +55,7 @@ export default class RepositoryManager {
     set saveState(state: any) {
         this.extraRepos = new Set<string>(state)
         if (this.extraRepos) {
-            log.debug(`- Loaded REPOS ${JSON.stringify([...this.extraRepos])}`)
+            log.debug(t("lib.repository.repository_manager.loaded", { repos: JSON.stringify([...this.extraRepos])}))
         }
     }
 
@@ -74,7 +76,7 @@ export default class RepositoryManager {
         // TODO: Could we provide a default mechanism?
         if (pkgs && pkgs.length > 1) {
             log.warning("")
-            log.warning(`Found more than one .levain.yaml file => Using ${pkgs[0].filePath} of ${pkgs.map(p => p.filePath)}`)
+            log.warning(t("lib.repository.repository_manager.currentMultiple", { chosen: pkgs[0].filePath, choices: pkgs.map(p => p.filePath) }))
             return this.repositories.currentDir.resolvePackage(pkgs[0].name)
         }
 
@@ -83,20 +85,20 @@ export default class RepositoryManager {
 
     get repository(): Repository {
         if (!this.repositories.regular) {
-            throw Error("RepositoryManager not initialized")
+            throw Error(t("lib.repository.repository_manager.notInitialized"))
         }
 
         return this.repositories.regular
     }
 
     set repository(repo: Repository) {
-        log.warning(`RepositoryManager.repository(${repo.name}) - TEST ONLY!`);
+        log.warning(t("lib.repository.repository_manager.testOnly", { repo: repo.name }));
         this.repositories.regular = repo;
     }
 
     get repositoryInstalled(): Repository {
         if (!this.repositories.installed) {
-            throw Error("RepositoryManager not initialized")
+            throw Error(t("lib.repository.repository_manager.notInitialized"))
         }
 
         return this.repositories.installed
@@ -105,7 +107,7 @@ export default class RepositoryManager {
     ////////////////////////////////////////////////////////////////////////////////
     private invalidatePackages() {
         if (!this.repositories) {
-            throw Error("Error initializing RepositoryManager - repositories not found")
+            throw Error(t("lib.repository.repository_manager.notFound"))
         }
 
         let repos: any = this.repositories;
@@ -132,7 +134,7 @@ export default class RepositoryManager {
         log.debug("=== initRepositories");
 
         if (!this.repositories) {
-            throw Error("Error initializing RepositoryManager - repositories not found")
+            throw Error(t("lib.repository.repository_manager.notFound"))
         }
 
         let repos: any = this.repositories
@@ -144,11 +146,11 @@ export default class RepositoryManager {
             if (repos[key]) {
                 let repo: Repository = repos[key]
                 if (!repo.initialized()) {
-                    log.debug(`INIT Repo[${key}] - ${repo.describe()} inited? ${repo.initialized()}`)
+                    log.debug(`INIT Repo[${key}] - ${repo.describe()} initialized? ${repo.initialized()}`)
                     await repo.init()
                     initializedRepositories.push(repo)
                 }
-                log.debug(`Repo[${key}] - ${repo.describe()} inited? ${repo.initialized()}`)
+                log.debug(`Repo[${key}] - ${repo.describe()} initialized? ${repo.initialized()}`)
             }
         }
         this.logRepos(repos);

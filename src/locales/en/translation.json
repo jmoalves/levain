@@ -62,5 +62,16 @@
             "errorSaving": "- Found error saving {{pkg}}. Ignoring upgrade",
             "example": "  install <package name>"
         }
+    },
+    "lib": {
+        "repository": {
+            "repository_manager": {
+                "loaded": "- Loaded REPOS {{repos}}",
+                "currentMultiple": "Found more than one .levain.yaml file => Using {{chosen}} of {{choices}}",
+                "notInitialized": "RepositoryManager not initialized",
+                "testOnly": "RepositoryManager.repository({{repo}}) - TEST ONLY!",
+                "notFound": "Error initializing RepositoryManager - repositories not found"
+            }
+        }
     }
 }
