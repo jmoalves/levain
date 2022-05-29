@@ -1,6 +1,6 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
-import i18n from './lib/i18n.ts'
+import t from './lib/i18n.ts'
 
 import Config from "./lib/config.ts";
 import ConsoleAndFileLogger from "./lib/logger/console_and_file_logger.ts";
@@ -13,8 +13,6 @@ import Levain from "../levain.ts";
 
 import LevainVersion from "./levain_version.ts";
 import OsUtils from "./lib/os/os_utils.ts";
-
-const t = i18n();
 
 export default class LevainCli {
 

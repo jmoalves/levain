@@ -24,5 +24,4 @@ i18next
     },
   });
 
-export default (lng: string | undefined | null) =>
-  i18next.getFixedT(lng || systemLocale);
+export default i18next.getFixedT(systemLocale);

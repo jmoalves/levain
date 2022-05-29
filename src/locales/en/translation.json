@@ -10,5 +10,11 @@
         "levainUpgrade": "Levain upgrade completed. Please re-execute your previous command",
         "bye": "Bye.",
         "availableCommands": "Available commands:"
+    },
+    "cmd": {
+        "actions": {
+            "actionsFound": "= Actions:",
+            "example": "  actions <optional search text>"
+        }
     }
 }
