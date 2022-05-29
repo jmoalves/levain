@@ -1,5 +1,7 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
+import t from '../lib/i18n.ts'
+
 import Config from "../lib/config.ts";
 import Package from '../lib/package/package.ts';
 import {parseArgs} from "../lib/parse_args.ts";
@@ -24,7 +26,7 @@ export default class InfoCommand implements Command {
             this.config.packageManager.resolvePackages(pkgNames, false, false);
 
             log.info("")
-            log.info("=== Your packages")
+            log.info(t("cmd.info.yourPackages"))
             pkgNames.forEach(pkg => this.showPackage(myArgs, 0, pkg))
         } else {
             this.config.packageManager.resolvePackages(["levain"], false, false);
@@ -45,11 +47,11 @@ export default class InfoCommand implements Command {
 
         if (!pkg) {
             log.info("")
-            log.info(`Package not found - ${pkgName}`)
+            log.info(t("cmd.info.packageNotFound", {pkgName: pkgName}))
             return
         }
 
-        log.info(`${ident}+ ${pkg.name} - ${pkg.version}${ pkg.installed ? "" : " - NOT installed"}${ pkg.installed && pkg.updateAvailable ? " - need UPDATE" : ""}`)
+        log.info(`${ident}+ ${pkg.name} - ${pkg.version}${ pkg.installed ? "" : t("cmd.info.notInstalled")}${ pkg.installed && pkg.updateAvailable ? t("cmd.info.needUpdate") : ""}`)
         if (args.verbose) {
             log.info(`${ident}| baseDir...: ${pkg.baseDir}`)
             log.info(`${ident}| pkgDir....: ${pkg.pkgDir}`)
@@ -62,5 +64,5 @@ export default class InfoCommand implements Command {
         pkg.dependencies?.forEach(dep => this.showPackage(args, level+1, dep))    
     }
 
-    readonly oneLineExample = "  info [--verbose] <package name> ... <package name>"
+    readonly oneLineExample = t("cmd.info.example")
 }
