@@ -4,9 +4,11 @@ import {readLines} from 'https://deno.land/std/io/mod.ts'
 import OsUtils from "../os/os_utils.ts";
 import {ValidateResult} from "https://deno.land/x/cliffy/prompt/_generic_prompt.ts";
 
+import t from '../i18n.ts'
+
 export class InputLogin {
 
-    private static readonly message = "What's your LOGIN? (press return to confirm default value) ";
+    private static readonly message = t("lib.user_info.input_login.loginPrompt");
 
     static async inputAndValidate(defaultValue: string = ''): Promise<string> {
 
@@ -26,7 +28,7 @@ export class InputLogin {
             if (validateResult) {
                 console.log(validateResult)
             }
-            let message = "What's your LOGIN?"
+            let message = t("lib.user_info.input_login.loginPromptShort")
             fullName = await InputLogin.promptWithEncoding(message, defaultValue)
 
             validateResult = LoginValidator.validate(fullName)
@@ -41,7 +43,7 @@ export class InputLogin {
         encoding: string = 'utf8',
     ): Promise<string> {
         if (defaultValue) {
-            message += ` Press return for [${defaultValue}]`
+            message += t("lib.user_info.input_login.enterDefault", { defaultValue: defaultValue })
         }
 
         if (!encoding) {
@@ -53,9 +55,6 @@ export class InputLogin {
         }
 
         console.log(message)
-        // FIXME should print "João"
-        // await Deno.stdout.write(new TextEncoder().encode('João'))
-        // await Deno.stdout.write(new TextEncoder().encode(message, encoding))
 
         const {value} = await readLines(Deno.stdin, {encoding}).next()
         return <string>value || defaultValue

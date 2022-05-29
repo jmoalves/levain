@@ -99,6 +99,11 @@
             "input_name": {
                 "namePrompt": "What's your FULL NAME (for Git)?",
                 "enterDefault": " Press return for [{{defaultValue}}]"
+            },
+            "input_login": {
+                "loginPrompt": "What's your LOGIN? (press return to confirm default value) ",
+                "loginPromptShort": "What's your LOGIN?",
+                "enterDefault": " Press return for [{{defaultValue}}]"
             }
         }
     }
