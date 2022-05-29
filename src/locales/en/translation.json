@@ -24,6 +24,10 @@
             "errorIgnoringEntryPath": "Error {{error}} - Ignoring {{entryPath}}",
             "entryPathIgnoringError": "{{entryPath}} - Ignoring {{error}}",
             "example": "  clean --cache(optional) --backup(optional) --temp(optional) --logs(optional)"
+        },
+        "command_factory": {
+            "notFound": "Command '{{cmd}}' not found",
+            "didYouMean": "Did you mean one of these commands?"
         }
     }
 }

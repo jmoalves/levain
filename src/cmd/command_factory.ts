@@ -1,5 +1,7 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
+import t from '../lib/i18n.ts'
+
 import Config from "../lib/config.ts";
 import StringUtils from "../lib/utils/string_utils.ts";
 
@@ -35,9 +37,9 @@ export default class CommandFactory {
     
             let similar = StringUtils.findSimilar(cmd, this.list())
             if (similar.size > 0) {}
-                log.error(`Command '${cmd}' not found`)
+                log.error(t("cmd.command_factory.notFound", {cmd: cmd}))
                 log.error("")
-                log.error(`Did you mean one of these commands?`)
+                log.error(t("cmd.command_factory.didYouMean"))
                 similar.forEach(element => {
                     log.error(`\t${element}`)                    
                 });
@@ -58,6 +60,6 @@ export default class CommandFactory {
 
 export class CommandNotFoundError extends Error {
     constructor(cmd: string) {
-        super(`Command ${cmd} not found - Aborting...`)
+        super(t("cmd.command_factory.notFound", {cmd: cmd}))
     }
  }
