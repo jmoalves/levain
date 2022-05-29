@@ -60,14 +60,6 @@ export default class UserInfoUtil {
         };
         //
 
-        if (myArgs.askPassword) {
-            (separatorBegin ? separatorBegin() : undefined);
-
-            log.warning("--askPassword is Deprecated. Use --ask-login and --ask-password");
-            myArgs["ask-login"] = true;
-            myArgs["ask-password"] = true;
-        }
-
         if (myArgs["ask-fullname"]) {
             (separatorBegin ? separatorBegin() : undefined);
 

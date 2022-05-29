@@ -43,7 +43,6 @@ export default class Levain {
                     "add-log-dir",
                 ],
                 boolean: [
-                    "askPassword", // FIXME: Deprecated
                     "ask-fullname",
                     "ask-login",
                     "ask-email",
