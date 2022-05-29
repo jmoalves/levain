@@ -1,5 +1,7 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
+import t from '../lib/i18n.ts'
+
 import Config from "../lib/config.ts";
 import {parseArgs} from "../lib/parse_args.ts";
 import Package from "../lib/package/package.ts";
@@ -22,12 +24,12 @@ export default class ExplainCommand implements Command {
         let pkgNames: string[] = myArgs._
 
         if (pkgNames.length == 0) {
-            throw new Error(`explain - Nothing to explain.`)
+            throw new Error(t("cmd.explain.nothing"))
         }
 
         let pkgs: Package[] | null = this.config.packageManager.resolvePackages(pkgNames)
         if (!pkgs) {
-            throw new Error(`explain - Nothing to explain.`)
+            throw new Error(t("cmd.explain.nothing"))
         }
 
         log.info("");
@@ -63,5 +65,5 @@ export default class ExplainCommand implements Command {
         }
     }
 
-    readonly oneLineExample = "  explain <package>..."
+    readonly oneLineExample = t("cmd.explain.example")
 }

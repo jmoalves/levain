@@ -28,6 +28,10 @@
         "command_factory": {
             "notFound": "Command '{{cmd}}' not found",
             "didYouMean": "Did you mean one of these commands?"
+        },
+        "explain": {
+            "nothing": "explain - Nothing to explain.",
+            "example": "  explain <package>..."
         }
     }
 }
