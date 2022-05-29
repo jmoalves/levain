@@ -39,6 +39,28 @@
             "notInstalled": " - NOT installed",
             "needUpdate": " - need UPDATE",
             "example": "  info [--verbose] <package name> ... <package name>"
+        },
+        "install": {
+            "noPackages": "What packages do your want to install? Aborting...",
+            "unableToFind": "{{pkgNames}} - Unable to find some packages",
+            "similar": "=== Similar known packages",
+            "errorNotFound": "Couldn't find package {{pkgNames}} to install. Aborting...",
+            "installing": "- Installing - {{object}}",
+            "updating": "- Updating - {{object}}",
+            "updateAvailable": "Some packages have an update available.",
+            "updatePrompt": "Should we update them now (Y,n)?",
+            "askLater": "Ok. We will ask again later.",
+            "reloadInstalled": "Reloading packages - installed only.",
+            "nothing": "install - Nothing to install. Aborting...",
+            "finished": "install {{pkgNames}} - FINISHED",
+            "ignoreMinVer": "- We will IGNORE the package {{pkg}} installation. It needs a newer levain version {{min}} - Your version is {{current}}",
+            "mustUpgradeLevain": "You must upgrade your levain (or fix the package {{pkg}} configuration",
+            "pkgTook": "--> {{pkg}} took {{timer}}",
+            "goodNotSave": "Good. We do not need to save {{baseDir}} because it does not exist",
+            "keepingBaseDir": "- Keeping the baseDir for {{pkg}} as requested",
+            "ignoreError": "Ignoring - {{error}}",
+            "errorSaving": "- Found error saving {{pkg}}. Ignoring upgrade",
+            "example": "  install <package name>"
         }
     }
 }
