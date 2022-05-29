@@ -1,8 +1,9 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import {existsSync} from "https://deno.land/std/fs/mod.ts"
-import "https://deno.land/x/humanizer/ordinalize.ts"
 
 import {ValidateResult} from "https://deno.land/x/cliffy/prompt/_generic_prompt.ts";
+
+import t from '../i18n.ts'
 
 import {envChain, promptSecret} from '../utils/utils.ts';
 import Config from '../config.ts';
@@ -26,9 +27,9 @@ export default class UserInfoUtil {
     }
 
     load() {
-        log.debug(`loading user info from ${this.userinfoFileUri}`)
+        log.debug(t("lib.user_info.userinfo_utils.loadingUserinfo", { uri: this.userinfoFileUri }))
         if (!existsSync(this.userinfoFileUri)) {
-            log.debug(`User info will be saved in ${this.userinfoFileUri}`)
+            log.debug(t("lib.user_info.userinfo_utils.userinfoDest", { uri: this.userinfoFileUri }))
             this.userInfo = new UserInfo()
             return
         }
@@ -52,7 +53,7 @@ export default class UserInfoUtil {
 
             if (separatorBegin) {
                 console.log("");
-                console.log('Hello :-)')
+                console.log(t("lib.user_info.userinfo_utils.hello"))
             }
 
             separatorEnd = separatorBegin;
@@ -129,11 +130,11 @@ export default class UserInfoUtil {
                 log.debug(`defaultEmail = ${defaultValue}`);
             } else {
                 if (!config.login) {
-                    log.debug("No username for defaultEmail");
+                    log.debug(t("lib.user_info.userinfo_utils.noUsername"));
                 }
 
                 if (!emailDomain) {
-                    log.debug("No emailDomain for defaultEmail");
+                    log.debug(t("lib.user_info.userinfo_utils.noEmailDomain"));
                 }
             }
         }
@@ -141,7 +142,7 @@ export default class UserInfoUtil {
         const email = await InputEmail.inputAndValidate(defaultValue || '');
 
         if (!email) {
-            throw new Error(`Unable to collect email`);
+            throw new Error(t("lib.user_info.userinfo_utils.unableEmail"));
         }
 
         // TODO: Validate email
@@ -179,29 +180,29 @@ export default class UserInfoUtil {
         let alertPasswordSize = false
         do {
             tries++;
-            log.debug(`Asking for password, try ${tries}`)
+            log.debug(t("lib.user_info.userinfo_utils.askingPassword", { try: tries }))
 
             console.log('')
             console.log(' ========================================================================================')
-            console.log(' === ATTENTION PLEASE! The characters below are known to cause problems with passwords')
-            console.log(' === If you use one of them, please change your password and come back.')
-            console.log(' === Do not use:')
+            console.log(t("lib.user_info.userinfo_utils.passwordWarning.1"))
+            console.log(t("lib.user_info.userinfo_utils.passwordWarning.2"))
+            console.log(t("lib.user_info.userinfo_utils.passwordWarning.3"))
             console.log(` === ${forbiddenPasswordChars}`)
             console.log(' ========================================================================================')
             console.log('')
 
             if (alertPasswordSize) {
-                console.log("* Password must have at least 3 characters *")
+                console.log(t("lib.user_info.userinfo_utils.passwordSize"))
                 console.log("")
                 alertPasswordSize = false
             }
 
             if (tries > 1) {
-                console.log(`${tries.ordinalize()} attempt`)
+                console.log(t("lib.user_info.userinfo_utils.attempt", { try: tries}))
             }
 
-            // const password: string = await Secret.prompt("Please, inform your network password: ");
-            const password: string | undefined = promptSecret("Please, inform your network password: ")
+            // const password: string = await Secret.prompt(t("lib.user_info.userinfo_utils.passwordPrompt"));
+            const password: string | undefined = promptSecret(t("lib.user_info.userinfo_utils.passwordPrompt"))
             console.log("");
 
             if (!password) {
@@ -213,26 +214,26 @@ export default class UserInfoUtil {
                 continue;
             }
 
-            // const pw2 = await Secret.prompt("Confirm your password: ");
-            const pw2 = promptSecret("Confirm your password: ");
+            // const pw2 = await Secret.prompt(t("lib.user_info.userinfo_utils.confirmPassword"));
+            const pw2 = promptSecret(t("lib.user_info.userinfo_utils.confirmPassword"));
             console.log("");
 
             if (password == pw2) {
                 if (StringUtils.textContainsAtLeastOneChar(password || '', forbiddenPasswordChars)) {
-                    throw '****** INVALID CHAR IN PASSWORD. Please change your password and try again.'
+                    throw t("lib.user_info.userinfo_utils.invalidChar")
                 }
 
                 console.log("");
-                console.log("Perfect, the typed passwords are the same.");
+                console.log(t("lib.user_info.userinfo_utils.match"));
                 console.log("");
                 config.password = password;
                 return password;
             }
 
-            console.log("Password mismatch... Please, inform again.");
+            console.log(t("lib.user_info.userinfo_utils.mismatch"));
             console.log("");
         } while (tries < 3);
 
-        throw new Error(`Unable to collect password after ${tries} attempts`);
+        throw new Error(t("lib.user_info.userinfo_utils.unablePasswordAttempts", { tries: tries}));
     }
 }
