@@ -17,7 +17,7 @@ export default class ActionsCommand implements Command {
         const searchText = args?.join(' ') || '';
         log.info(`actions "${searchText}"`);
         log.info("");
-        log.info(`= Actions:`)
+        log.info(t("")`= Actions:`)
 
         const actions = new ActionFactory().list()
             .filter(it => it.includes(searchText))
