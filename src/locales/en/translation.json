@@ -104,6 +104,9 @@
                 "loginPrompt": "What's your LOGIN? (press return to confirm default value) ",
                 "loginPromptShort": "What's your LOGIN?",
                 "enterDefault": " Press return for [{{defaultValue}}]"
+            },
+            "input_email": {
+                "emailPrompt": "Do you have an EMAIL? (press return to confirm default value)"
             }
         }
     }
