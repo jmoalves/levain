@@ -15,6 +15,15 @@
         "actions": {
             "actionsFound": "= Actions:",
             "example": "  actions <optional search text>"
+        },
+        "clean": {
+            "startFeedback": "# CLEAN...",
+            "logs": "cleaning logs",
+            "cmd.clean.cleaned":"Cleaned {{amount}}",
+            "endFeedback": "# CLEAN - {{amount}}",
+            "errorIgnoringEntryPath": "Error {{error}} - Ignoring {{entryPath}}",
+            "entryPathIgnoringError": "{{entryPath}} - Ignoring {{error}}",
+            "example": "  clean --cache(optional) --backup(optional) --temp(optional) --logs(optional)"
         }
     }
 }

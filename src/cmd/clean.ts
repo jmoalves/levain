@@ -2,6 +2,8 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import {existsSync} from "https://deno.land/std/fs/mod.ts";
 
+import t from '../lib/i18n.ts'
+
 import Config from "../lib/config.ts";
 import {parseArgs} from "../lib/parse_args.ts";
 import ConsoleAndFileLogger from "../lib/logger/console_and_file_logger.ts";
@@ -51,7 +53,7 @@ export default class CleanCommand implements Command {
         //////////////////////////////////////////////////////////////////
         let total = 0
 
-        this.feedback.start(`# CLEAN...`)
+        this.feedback.start(t("cmd.clean.startFeedback"))
 
         if (myArgs.cache) {
             const cacheDir = this.config.levainCacheDir
@@ -93,14 +95,14 @@ export default class CleanCommand implements Command {
         }
 
         if (myArgs.logs) {
-            log.debug(`cleaning logs`)
+            log.debug(t("cmd.clean.logs"))
             let size = this.cleanLogs()
             total += size
         }
 
         log.debug("=================")
-        log.debug(`Cleaned ${StringUtils.humanizeBytes(total)}`)
-        this.feedback.reset(`# CLEAN - ${StringUtils.humanizeBytes(total)}`)
+        log.debug(t("cmd.clean.cleaned", { amount: StringUtils.humanizeBytes(total) }))
+        this.feedback.reset(t("cmd.clean.endFeedback", { amount: StringUtils.humanizeBytes(total) }))
     }
 
     private cleanDir(entry: string, includeResolver?:((dirEntry:Deno.DirEntry) => boolean)): number {
@@ -116,7 +118,7 @@ export default class CleanCommand implements Command {
                 // log.debug(`DEL-FILE ${entryPath} - ${entryInfo.size}`)
                 return entryInfo.size
             } catch (error) {
-                log.debug(`Error ${error} - Ignoring ${entryPath}`)
+                log.debug(t("cmd.clean.errorIgnoringEntryPath", { error: error, entryPath: entryPath }))
                 return 0
             }
         }
@@ -132,7 +134,7 @@ export default class CleanCommand implements Command {
         try {
             Deno.removeSync(entryPath)
         } catch (error) {
-            log.debug(`${entryPath} - Ignoring ${error}`)
+            log.debug(t("cmd.clean.entryPathIgnoringError", { error: error, entryPath: entryPath }))
         }
 
         // log.debug(`DEL-DIR  ${entryPath} - ${size}`)
@@ -213,5 +215,5 @@ export default class CleanCommand implements Command {
         return OsUtils.tempDir;
     }
 
-    readonly oneLineExample = "  clean --cache(optional) --backup(optional) --temp(optional) --logs(optional)"
+    readonly oneLineExample = t("cmd.clean.example")
 }
