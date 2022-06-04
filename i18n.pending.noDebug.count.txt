@@ -23,7 +23,6 @@
       2 ./src/lib/extract/untar_extractor.ts
       2 ./src/lib/cli_util.ts
       2 ./src/cmd/shell.ts
-      2 ./src/cmd/install.ts
       2 ./src/action/json/json_get.ts
       2 ./src/action/check/check_chain_dir_exists.ts
       2 ./src/action/assert_contains_action.ts

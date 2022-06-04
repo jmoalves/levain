@@ -49,6 +49,7 @@
             "updating": "- Updating - {{object}}",
             "updateAvailable": "Some packages have an update available.",
             "updatePrompt": "Should we update them now (Y,n)?",
+            "updatePromptDefault": "Y",
             "askLater": "Ok. We will ask again later.",
             "reloadInstalled": "Reloading packages - installed only.",
             "nothing": "install - Nothing to install. Aborting...",
