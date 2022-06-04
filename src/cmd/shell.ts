@@ -1,5 +1,7 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
+import t from '../lib/i18n.ts'
+
 import Config from "../lib/config.ts";
 import {OsShell} from '../lib/os/os_shell.ts';
 import Loader from '../lib/loader.ts';
@@ -36,7 +38,7 @@ export default class Shell implements Command {
 
         const loader = new Loader(this.config);
 
-        log.debug(`shell must check for updates? ${this.config.shellCheckForUpdate}`)
+        log.debug(t("cmd.shell.checkUpdates", { shouldCheck: this.config.shellCheckForUpdate }))
         if (this.config.shellCheckForUpdate) {
             await loader.command("install", pkgNames);
         } else {
@@ -49,7 +51,7 @@ export default class Shell implements Command {
             for (let action of pkgActions) {
                 // Infinite loop protection - https://github.com/jmoalves/levain/issues/111
                 if (action.startsWith('levainShell ')) {
-                    throw new Error(`levainShell action is not allowed here. Check your recipe - pkg: ${curDirPkg.name} action: ${action}`)
+                    throw new Error(t("cmd.shell.notAllowed", { pkg: curDirPkg.name, action: action }))
                 }
 
                 await loader.action(curDirPkg, action);
@@ -62,6 +64,5 @@ export default class Shell implements Command {
         await osShell.execute([]);
     }
 
-    readonly oneLineExample = "  shell <optional package name>"
-
+    readonly oneLineExample = t("cmd.shell.example")
 }
