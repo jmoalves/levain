@@ -97,20 +97,6 @@
 ./src/lib/parse_args.ts:            throw `Too many quotes - ${args}`;
 ./src/lib/parse_args.ts:        throw `Quote mismatch - ${args.join(" ")}`;
 ./src/lib/parse_args.ts:        throw `Quote mismatch - ${args.join(" ")}`;
-./src/lib/releases/levain_releases.ts:                        log.error(`Error looking for Levain releases ${error}`)
-./src/lib/releases/levain_releases.ts:                    log.error(`Error looking for Levain releases ${error}`)
-./src/lib/releases/levain_releases.ts:            throw Error(`No zip for undefined version`)
-./src/lib/releases/levain_releases.ts:                    log.info("We are ignoring the Levain update. We will ask you again another day.")
-./src/lib/releases/levain_releases.ts:                if (!answer || !["Y", "YES"].includes(answer.toUpperCase())) {
-./src/lib/releases/levain_releases.ts:                    log.info("Ok. We will ask again later.")
-./src/lib/releases/levain_releases.ts:            log.info("Upgrading Levain")
-./src/lib/releases/levain_releases.ts:            log.info(`Ignoring Levain updates`)
-./src/lib/releases/levain_releases.ts:        log.info("We have a new Levain release available!")
-./src/lib/releases/levain_releases.ts:        log.info(`- Your version: ${LevainVersion.levainVersion}`)
-./src/lib/releases/levain_releases.ts:        log.info(`-  New version: ${await this.latestVersion()}`)
-./src/lib/releases/levain_releases.ts:                log.error(`Unable to extract Levain version - ignoring upgrade (for now) ${JSON.stringify(error)}`)
-./src/lib/releases/levain_releases.ts:            log.error("Unable to load new Levain version - ignoring upgrade (for now)")
-./src/lib/releases/levain_releases.ts:        log.info("Restarting Levain for upgrade")
 ./src/lib/repository/file_system_repository.ts:            return description.replace(/\)/, ` resolved from ${this.rootDir})`)
 ./src/lib/repository/file_system_repository.ts:            throw new Error(`addRepo - dir not found: ${this.rootDir}`)
 ./src/lib/repository/file_system_repository.ts:            throw new Error(`addRepo - repository should exist and be a dir: ${this.rootDir}`)

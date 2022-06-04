@@ -108,6 +108,24 @@
             "input_email": {
                 "emailPrompt": "Do you have an EMAIL? (press return to confirm default value)"
             }
+        },
+        "releases": {
+            "levain_releases": {
+                "noRelease": "No release found",
+                "errorLookingFor": "Error looking for Levain releases {{error}}",
+                "undefinedVersion": "No zip for undefined version",
+                "ignoringToday": "We are ignoring the Levain update. We will ask you again another day.",
+                "updateNow": "Update now (Y,n)?",
+                "updateNowDefault": "Y",
+                "askLater": "Ok. We will ask again later.",
+                "upgrading": "Upgrading Levain",
+                "ignoring": "Ignoring Levain updates",
+                "newReleaseAvailable": 
+                    "\nWe have a new Levain release available!\n\n- Your version: {{yourVersion}}\n-  New version: {{newVersion}}",
+                "unableToExtract": "Unable to extract Levain version - ignoring upgrade (for now) {{error}}",
+                "unableToLoad": "Unable to load new Levain version - ignoring upgrade (for now)",
+                "restarting": "Restarting Levain for upgrade"
+            }
         }
     }
 }
