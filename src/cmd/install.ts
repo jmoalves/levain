@@ -98,7 +98,7 @@ export default class Install implements Command {
                 log.info("")
 
                 let answer = prompt(t("cmd.install.updatePrompt"), t("cmd.install.updatePromptDefault"))
-                if (!answer || !["Y"].includes(answer.toUpperCase())) {
+                if (!answer || ![t("cmd.install.updatePromptDefault")].includes(answer.toUpperCase())) {
                     log.info(t("cmd.install.askLater"))
                     shouldUpdate = false
 
