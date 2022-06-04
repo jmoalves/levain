@@ -1,5 +1,7 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
+import t from './i18n.ts'
+
 export default class CliUtil {
     public static testMode: boolean;
 
@@ -8,11 +10,11 @@ export default class CliUtil {
             return;
         }
 
-        let answer = prompt("Continue?", "Y");
-        if (!answer || !["Y", "YES"].includes(answer.toUpperCase())) {
+        let answer = prompt(t("lib.cli_util.continue"), t("lib.cli_util.continueDefault"));
+        if (!answer || ![t("lib.cli_util.continueDefault")].includes(answer.toUpperCase())) {
             log.info("");
-            log.info("Ok, aborting...");
-            throw '== Do not continue =='
+            log.info(t("lib.cli_util.aborting"));
+            throw t("lib.cli_util.doNotContinue")
         }
     }
 }

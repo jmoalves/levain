@@ -144,6 +144,12 @@
                 "unableToLoad": "Unable to load new Levain version - ignoring upgrade (for now)",
                 "restarting": "Restarting Levain for upgrade"
             }
-        }
+        },
+        "cli_util": {
+            "continue": "Continue?",
+            "continueDefault": "Y",
+            "aborting": "Ok, aborting...",
+            "doNotContinue": "== Do not continue =="
+        }   
     }
 }
