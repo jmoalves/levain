@@ -61,6 +61,18 @@
             "ignoreError": "Ignoring - {{error}}",
             "errorSaving": "- Found error saving {{pkg}}. Ignoring upgrade",
             "example": "  install <package name>"
+        },
+        "list_command": {
+            "repo": "= Repository:",
+            "noPackages": "no packages found",
+            "packagesFound": "{{pkg}} of {{count}} package found",
+            "packagesFound_other": "{{pkg}} of {{count}} packages found",
+            "packages": "Package",
+            "packages_other": "Packages",
+            "unableToList": "Unable to list some packages",
+            "unableToSimilar": "Unable to list similar packages too",
+            "similarPackages": "Listing similar packages",
+            "example": "  list <optional search text>"
         }
     },
     "lib": {
