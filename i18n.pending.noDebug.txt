@@ -51,15 +51,6 @@
 ./src/action/template.ts:            throw `Inform the template file and the destination file. ${args._}`
 ./src/cmd/install.ts:                if (!answer || !["Y", "YES"].includes(answer.toUpperCase())) {
 ./src/cmd/install.ts:             * However, this "tempDir" change could EASILY BREAK all the recipes
-./src/cmd/list_command.ts:        log.info(`= Repository:`)
-./src/cmd/list_command.ts:            log.info(`  no packages found`)
-./src/cmd/list_command.ts:                    ? `of ${packageCount} `
-./src/cmd/list_command.ts:                log.info(`  ${filteredPackageCount} ${repoPackageCountText}package${repoPluralChar} found`)
-./src/cmd/list_command.ts:                log.info(`== Package${filteredPluralChar}`);
-./src/cmd/list_command.ts:                log.info(`${searchText} - Unable to list some packages`)
-./src/cmd/list_command.ts:                    log.info(`${searchText} - Unable to list similar packages too`)
-./src/cmd/list_command.ts:                    log.info(`${searchText} - Listing similar packages`)
-./src/cmd/list_command.ts:    readonly oneLineExample = "  list <optional search text>"
 ./src/cmd/shell.ts:                    throw new Error(`levainShell action is not allowed here. Check your recipe - pkg: ${curDirPkg.name} action: ${action}`)
 ./src/cmd/shell.ts:    readonly oneLineExample = "  shell <optional package name>"
 ./src/lib/cli_util.ts:        if (!answer || !["Y", "YES"].includes(answer.toUpperCase())) {
