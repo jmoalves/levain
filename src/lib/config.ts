@@ -2,6 +2,8 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import {ensureDirSync, existsSync} from "https://deno.land/std/fs/mod.ts";
 
+import t from './i18n.ts'
+
 import LevainVersion from "../levain_version.ts";
 
 import PackageManager from "./package/package_manager.ts";
@@ -142,7 +144,7 @@ export default class Config {
         if (this._shellPath != shellPath) {
             log.warning("");
             log.warning("***********************************************************************************");
-            log.warning(`** Changing shell path: ${this._shellPath} => ${shellPath}`);
+            log.warning(`** ${t("lib.config.shellPath", { oldPath: this._shellPath, newPath: shellPath })}`);
             log.warning("***********************************************************************************");
             log.warning("");
         }
@@ -158,7 +160,7 @@ export default class Config {
         if (this._defaultPackage != pkgName) {
             log.warning("");
             log.warning("***********************************************************************************");
-            log.warning(`** Changing default package: ${this._defaultPackage} => ${pkgName}`);
+            log.warning(`** ${t("lib.config.defaultPackage", { oldPackage: this._defaultPackage, newPackage: pkgName })}`);
             log.warning("***********************************************************************************");
             log.warning("");
         }
@@ -303,7 +305,7 @@ export default class Config {
             }
         } catch (err) {
             if (err.name != "NotFound") {
-                log.error(`Error reading config - ${filename}`);
+                log.error(t("lib.config.errorReading", { filename: filename}));
                 throw err;
             }
         }
@@ -358,7 +360,7 @@ export default class Config {
             });
 
             if (!homeDir) {
-                throw `No valid levainHome in your list\n-> ${args["levainHome"]}`;
+                throw `${t("lib.config.noHomeValid")}\n-> ${args["levainHome"]}`;
             }
 
             this._env["levainHome"] = path.resolve(Deno.cwd(), homeDir);

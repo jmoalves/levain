@@ -150,6 +150,12 @@
             "continueDefault": "Y",
             "aborting": "Ok, aborting...",
             "doNotContinue": "== Do not continue =="
-        }   
+        },
+        "config": {
+            "shellPath": "Changing shell path: {{oldPath}} => {{newPath}}",
+            "defaultPackage": "Changing default package: {{oldPackage}} => {{newPackage}}",
+            "errorReading": "Error reading config - {{filename}}",
+            "noHomeValid": "No valid levainHome in your list"
+        }
     }
 }

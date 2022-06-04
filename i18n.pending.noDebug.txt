@@ -49,10 +49,6 @@
 ./src/action/template.ts:            throw "What do you need to replace with?"
 ./src/action/template.ts:            throw "There is a mismatch between --replace and --with"
 ./src/action/template.ts:            throw `Inform the template file and the destination file. ${args._}`
-./src/lib/config.ts:            log.warning(`** Changing shell path: ${this._shellPath} => ${shellPath}`);
-./src/lib/config.ts:            log.warning(`** Changing default package: ${this._defaultPackage} => ${pkgName}`);
-./src/lib/config.ts:                log.error(`Error reading config - ${filename}`);
-./src/lib/config.ts:                throw `No valid levainHome in your list\n-> ${args["levainHome"]}`;
 ./src/lib/extract/extractor.ts:                    throw `You should not ask for --strip if there are more than one directory`;
 ./src/lib/extract/extractor_factory.ts:        throw `${src} - file not supported.`;
 ./src/lib/extract/untar_extractor.ts:            throw `${Deno.build.os} not supported`;

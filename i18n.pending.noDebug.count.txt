@@ -9,7 +9,6 @@
       5 ./src/lib/parse_args.ts
       4 ./src/lib/repository/file_system_repository.ts
       4 ./src/lib/os/os_shell.ts
-      4 ./src/lib/config.ts
       4 ./src/action/template.ts
       3 ./src/lib/utils/git_utils.ts
       3 ./src/lib/user_info/inputAccentWorkaround/validateWithCliffy.ts
