@@ -91,14 +91,6 @@
 ./src/lib/repository/zip_repository.ts:            return description.replace(/\)/, ` resolved from ${this.rootUrl})`)
 ./src/lib/repository/zip_repository.ts:            throw Error(`${this.name} not loaded`)
 ./src/lib/repository/zip_repository.ts:            throw Error(`${this.name} not loaded`)
-./src/lib/user_info/inputAccentWorkaround/inputNomeComAcentos.ts:    "What's your name ã? (press return to confirm default value) ",
-./src/lib/user_info/inputAccentWorkaround/inputNomeComAcentos.ts:// console.log(`Name: ${nameDeno} ${decodedDenoName}`)
-./src/lib/user_info/inputAccentWorkaround/inputNomeComAcentos.ts:console.log(`NameDeno: ${nameDeno} ${nameDenoSemAcentos} ${encodedDenoName}`)
-./src/lib/user_info/inputAccentWorkaround/inputNomeComAcentos.ts:console.log(`encoded ã: ${encodedA}`)
-./src/lib/user_info/inputAccentWorkaround/inputNomeComAcentos.ts:console.log(`nameCliffy: ${nameCliffy} ${encodedCliffyName}`)
-./src/lib/user_info/inputAccentWorkaround/validateWithCliffy.ts:        message: "What's your github user name?",
-./src/lib/user_info/inputAccentWorkaround/validateWithCliffy.ts:            return `Value must be longer then 3 but has a length of ${text.length}.`
-./src/lib/user_info/inputAccentWorkaround/validateWithCliffy.ts:        const hint = "Only valid characters, please";
 ./src/lib/user_info/userinfo_util.ts:            throw new Error(`Invalid FULL NAME - ${validationResult}`);
 ./src/lib/user_info/validators/validators.ts:            return `Length must be at least ${this.minLength} but is ${text?.length}.`
 ./src/lib/user_info/validators/validators.ts:        const hint = "Only valid characters, please";

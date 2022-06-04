@@ -92,7 +92,7 @@
             }
         },
         "user_info": {
-            "userinfo_utils": {
+            "userinfo_util": {
                 "loadingUserinfo": "loading user info from {{uri}}",
                 "userinfoDest": "User info will be saved in {{uri}}",
                 "hello": "Hello :-)",
@@ -105,14 +105,15 @@
                     "2": " === If you use one of them, please change your password and come back.",
                     "3": " === Do not use:"
                 },
-                "passwordSize": "* Password must have at least 3 characters *",
+                "passwordSize": "* Password must have at least {{min}} characters *",
                 "attempt": "Attempt: {{try}}",
                 "passwordPrompt": "Please, inform your network password: ",
                 "confirmPassword": "Confirm your password: ",
                 "invalidChar": "****** INVALID CHAR IN PASSWORD. Please change your password and try again.",
                 "match": "Perfect, the typed passwords are the same.",
                 "mismatch": "Password mismatch... Please, inform again.",
-                "unablePasswordAttempts": "Unable to collect password after {{tries}} attempts"
+                "unablePasswordAttempts": "Unable to collect password after {{tries}} attempts",
+                "invalidFullName": "Invalid FULL NAME - {{result}}"
             },
             "input_name": {
                 "namePrompt": "What's your FULL NAME (for Git)?",

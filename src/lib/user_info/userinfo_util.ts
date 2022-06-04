@@ -17,6 +17,8 @@ import {InputFullName} from "./input_name.ts";
 import {InputEmail} from "./input_email.ts";
 import {InputLogin} from "./input_login.ts";
 
+const passwordSizeMin = 3;
+
 export default class UserInfoUtil {
 
     userInfo: UserInfo = new UserInfo()
@@ -27,9 +29,9 @@ export default class UserInfoUtil {
     }
 
     load() {
-        log.debug(t("lib.user_info.userinfo_utils.loadingUserinfo", { uri: this.userinfoFileUri }))
+        log.debug(t("lib.user_info.userinfo_util.loadingUserinfo", { uri: this.userinfoFileUri }))
         if (!existsSync(this.userinfoFileUri)) {
-            log.debug(t("lib.user_info.userinfo_utils.userinfoDest", { uri: this.userinfoFileUri }))
+            log.debug(t("lib.user_info.userinfo_util.userinfoDest", { uri: this.userinfoFileUri }))
             this.userInfo = new UserInfo()
             return
         }
@@ -53,7 +55,7 @@ export default class UserInfoUtil {
 
             if (separatorBegin) {
                 console.log("");
-                console.log(t("lib.user_info.userinfo_utils.hello"))
+                console.log(t("lib.user_info.userinfo_util.hello"))
             }
 
             separatorEnd = separatorBegin;
@@ -103,7 +105,7 @@ export default class UserInfoUtil {
         const validationResult: ValidateResult = NameValidator.validate(newValue)
 
         if (validationResult !== true) {
-            throw new Error(`Invalid FULL NAME - ${validationResult}`);
+            throw new Error(t("lib.user_info.userinfo_util.invalidFullName", { result: validationResult}));
         }
 
         if (this?.userInfo?.fullName != newValue) {
@@ -130,11 +132,11 @@ export default class UserInfoUtil {
                 log.debug(`defaultEmail = ${defaultValue}`);
             } else {
                 if (!config.login) {
-                    log.debug(t("lib.user_info.userinfo_utils.noUsername"));
+                    log.debug(t("lib.user_info.userinfo_util.noUsername"));
                 }
 
                 if (!emailDomain) {
-                    log.debug(t("lib.user_info.userinfo_utils.noEmailDomain"));
+                    log.debug(t("lib.user_info.userinfo_util.noEmailDomain"));
                 }
             }
         }
@@ -142,7 +144,7 @@ export default class UserInfoUtil {
         const email = await InputEmail.inputAndValidate(defaultValue || '');
 
         if (!email) {
-            throw new Error(t("lib.user_info.userinfo_utils.unableEmail"));
+            throw new Error(t("lib.user_info.userinfo_util.unableEmail"));
         }
 
         // TODO: Validate email
@@ -180,60 +182,60 @@ export default class UserInfoUtil {
         let alertPasswordSize = false
         do {
             tries++;
-            log.debug(t("lib.user_info.userinfo_utils.askingPassword", { try: tries }))
+            log.debug(t("lib.user_info.userinfo_util.askingPassword", { try: tries }))
 
             console.log('')
             console.log(' ========================================================================================')
-            console.log(t("lib.user_info.userinfo_utils.passwordWarning.1"))
-            console.log(t("lib.user_info.userinfo_utils.passwordWarning.2"))
-            console.log(t("lib.user_info.userinfo_utils.passwordWarning.3"))
+            console.log(t("lib.user_info.userinfo_util.passwordWarning.1"))
+            console.log(t("lib.user_info.userinfo_util.passwordWarning.2"))
+            console.log(t("lib.user_info.userinfo_util.passwordWarning.3"))
             console.log(` === ${forbiddenPasswordChars}`)
             console.log(' ========================================================================================')
             console.log('')
 
             if (alertPasswordSize) {
-                console.log(t("lib.user_info.userinfo_utils.passwordSize"))
+                console.log(t("lib.user_info.userinfo_util.passwordSize", { min: passwordSizeMin }))
                 console.log("")
                 alertPasswordSize = false
             }
 
             if (tries > 1) {
-                console.log(t("lib.user_info.userinfo_utils.attempt", { try: tries}))
+                console.log(t("lib.user_info.userinfo_util.attempt", { try: tries}))
             }
 
-            // const password: string = await Secret.prompt(t("lib.user_info.userinfo_utils.passwordPrompt"));
-            const password: string | undefined = promptSecret(t("lib.user_info.userinfo_utils.passwordPrompt"))
+            // const password: string = await Secret.prompt(t("lib.user_info.userinfo_util.passwordPrompt"));
+            const password: string | undefined = promptSecret(t("lib.user_info.userinfo_util.passwordPrompt"))
             console.log("");
 
             if (!password) {
                 continue;
             }
 
-            if (password.length < 3) {
+            if (password.length < passwordSizeMin) {
                 alertPasswordSize = true
                 continue;
             }
 
-            // const pw2 = await Secret.prompt(t("lib.user_info.userinfo_utils.confirmPassword"));
-            const pw2 = promptSecret(t("lib.user_info.userinfo_utils.confirmPassword"));
+            // const pw2 = await Secret.prompt(t("lib.user_info.userinfo_util.confirmPassword"));
+            const pw2 = promptSecret(t("lib.user_info.userinfo_util.confirmPassword"));
             console.log("");
 
             if (password == pw2) {
                 if (StringUtils.textContainsAtLeastOneChar(password || '', forbiddenPasswordChars)) {
-                    throw t("lib.user_info.userinfo_utils.invalidChar")
+                    throw t("lib.user_info.userinfo_util.invalidChar")
                 }
 
                 console.log("");
-                console.log(t("lib.user_info.userinfo_utils.match"));
+                console.log(t("lib.user_info.userinfo_util.match"));
                 console.log("");
                 config.password = password;
                 return password;
             }
 
-            console.log(t("lib.user_info.userinfo_utils.mismatch"));
+            console.log(t("lib.user_info.userinfo_util.mismatch"));
             console.log("");
         } while (tries < 3);
 
-        throw new Error(t("lib.user_info.userinfo_utils.unablePasswordAttempts", { tries: tries}));
+        throw new Error(t("lib.user_info.userinfo_util.unablePasswordAttempts", { tries: tries}));
     }
 }
