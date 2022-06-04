@@ -1,6 +1,5 @@
      14 ./src/lib/releases/levain_releases.ts
       9 ./src/cmd/list_command.ts
-      6 ./src/lib/utils/string_utils.ts
       6 ./src/lib/os/os_utils.ts
       6 ./src/lib/fs/file_utils.ts
       6 ./src/action/os/copy.ts

@@ -143,12 +143,6 @@
 ./src/lib/utils/json_utils.ts:        throw Error(`We must not arrive here...`);
 ./src/lib/utils/json_utils.ts:            throw Error(`Target must be an array: ${obj}`);
 ./src/lib/utils/json_utils.ts:                throw Error(`Invalid array task ${item}`);
-./src/lib/utils/string_utils.ts:            return "0.000s";
-./src/lib/utils/string_utils.ts:        let str = "";
-./src/lib/utils/string_utils.ts:            str += hours + "h" + " ";
-./src/lib/utils/string_utils.ts:            str += minutes + "min" + " ";
-./src/lib/utils/string_utils.ts:            str += "s";
-./src/lib/utils/string_utils.ts:        return (text == undefined ? "" : text + "").padEnd(size);
 ./src/lib/utils/utils.ts:    throw "No home for levain. Do you have a refrigerator?";
 ./src/lib/utils/version_number.ts:            throw new Error(`Invalid version number - ${this.versionNumber}`)
 ./src/lib/var_resolver.ts:                    throw new Error(`Var ${varName} not defined`)

@@ -7,7 +7,6 @@
       7 ./src/lib/utils/json_utils.ts
       7 ./src/lib/os/os_utils.ts
       7 ./src/action/check/check_file_exists.ts
-      6 ./src/lib/utils/string_utils.ts
       6 ./src/lib/utils/git_utils.ts
       6 ./src/action/os/copy.ts
       6 ./src/action/os/context_menu.ts
