@@ -1,0 +1,167 @@
+{
+    "enterFinish": "Tecle ENTER para encerrar",
+    "levain": {
+        "levainRan": "Levain rodou em {{timer}}",
+        "executionFailed": "execução FALHOU",
+        "executionSuccess": "execução com SUCESSO"
+    },
+    "levain_cli": {
+        "levainVersion": "Levain {{version}} com Deno v{{denoVersion}} em {{levainRootFile}}",
+        "levainUpgrade": "Upgrade do Levain concluído. Por favor, re-execute seu comando anterior",
+        "bye": "Até logo.",
+        "availableCommands": "Comandos disponíveis:"
+    },
+    "cmd": {
+        "actions": {
+            "actionsFound": "= Ações:",
+            "example": "  actions <optional search text>"
+        },
+        "clean": {
+            "startFeedback": "# CLEAN...",
+            "logs": "limpando logs",
+            "cmd.clean.cleaned":"Limpo {{amount}}",
+            "endFeedback": "# CLEAN - {{amount}}",
+            "errorIgnoringEntryPath": "Erro {{error}} - Ignorando {{entryPath}}",
+            "entryPathIgnoringError": "{{entryPath}} - Ignorando {{error}}",
+            "example": "  clean --cache(opcional) --backup(opcional) --temp(opcional) --logs(opcional)"
+        },
+        "command_factory": {
+            "notFound": "Commando '{{cmd}}' não encontrado",
+            "didYouMean": "Você quis dizer um desses comandos?"
+        },
+        "explain": {
+            "nothing": "explain - Nada para explicar.",
+            "example": "  explain <pacote>..."
+        },
+        "info": {
+            "yourPackages": "=== Seus pacotes",
+            "packageNotFound": "Pacote não encontrado - {{pkgName}}",
+            "notInstalled": " - NÃO instalado",
+            "needUpdate": " - requer UPDATE",
+            "example": "  info [--verbose] <pacote> ... <pacote>"
+        },
+        "install": {
+            "noPackages": "Quais pacotes você quer instalar? Abortando...",
+            "unableToFind": "{{pkgNames}} - Não encontrei algus pacotes",
+            "similar": "=== Pacotes similares conhecidos",
+            "errorNotFound": "Não encontrei os pacotes {{pkgNames}} para instalar. Abortando...",
+            "installing": "- Instalando - {{object}}",
+            "updating": "- Atualizando - {{object}}",
+            "updateAvailable": "Alguns pacotes têm atualização disponível.",
+            "updatePrompt": "Devo atualizá-los agora (S,n)?",
+            "updatePromptDefault": "S",
+            "askLater": "Ok. Perguntamos de novo em outra hora.",
+            "reloadInstalled": "Recarregando pacotes - só os já instalados.",
+            "nothing": "install - Nada para instalar. Abortando...",
+            "finished": "install {{pkgNames}} - CONCLUíDO",
+            "ignoreMinVer": "- Vamos IGNORAR a instalação do pacote {{pkg}}. Ele requer uma versão mais nova do Levain {{min}} - Sua versão é a {{current}}",
+            "mustUpgradeLevain": "Você precisa fazer upgrade do Levain (ou corrigir a configuração do pacote {{pkg}}",
+            "pkgTook": "--> {{pkg}} levou {{timer}}",
+            "goodNotSave": "Show! Não precisamos guardar {{baseDir}} porque ele não existe",
+            "keepingBaseDir": "- Mantendo o baseDir para {{pkg}} como solicitado",
+            "ignoreError": "Ignorando - {{error}}",
+            "errorSaving": "- Erro encontrado guardando {{pkg}}. Ignorando o upgrade",
+            "example": "  install <pacote> ... <pacote>"
+        },
+        "list_command": {
+            "repo": "= Repositório:",
+            "noPackages": "nenhum pacote encontrado",
+            "packagesFound": "{{pkg}} de {{count}} pacote encontrado",
+            "packagesFound_other": "{{pkg}} de {{count}} pacotes encontrados",
+            "packages": "Pacote",
+            "packages_other": "Pacotes",
+            "unableToList": "Não consegui listar alguns pacotes",
+            "unableToSimilar": "Não consegui encontrar similares também",
+            "similarPackages": "Pacotes similares",
+            "example": "  list <texto opcional de busca>"
+        },
+        "shell": {
+            "checkUpdates": "shell deve verificar se há updates? {{shouldCheck}}",
+            "notAllowed": "A ação levainShell não é permitida aqui. Verifique sua receita - pkg: {{pkg}} action: {{action}}",
+            "example": "  shell <pacote opcional>"
+        }
+    },
+    "lib": {
+        "repository": {
+            "repository_manager": {
+                "loaded": "- Lidos REPOS {{repos}}",
+                "currentMultiple": "Encontrei mais de um arquivo .levain.yaml => Usando {{chosen}} de {{choices}}",
+                "notInitialized": "RepositoryManager não foi inicializado",
+                "testOnly": "RepositoryManager.repository({{repo}}) - TEST ONLY!",
+                "notFound": "Erro inicializando RepositoryManager - repositórios não encontrados"
+            },
+            "file_system_repository": {
+                "resolvedFrom": " resolvido em {{dir}})",
+                "scanning": "# Varrendo {{dir}}...",
+                "found": "Pacotes: {{pkgNum}} em {{dir}} ({{timer}})"
+            }
+        },
+        "user_info": {
+            "userinfo_util": {
+                "loadingUserinfo": "Carregando user info de {{uri}}",
+                "userinfoDest": "User info será guardada em {{uri}}",
+                "hello": "Olá :-)",
+                "noUsername": "Sem userid para defaultEmail",
+                "noEmailDomain": "Sem emailDomain para defaultEmail",
+                "unableEmail": "Não consegui saber qual o email",
+                "askingPassword": "Perguntando pela senha, tentativa {{try}}",
+                "passwordWarning": {
+                    "1": " === ATENÇÃO! Os caracteres abaixo são conhecidos por causarem problemas na senha",
+                    "2": " === Se vcê usa algum deles, por favor, ALTERE sua senha e volte aqui depois.",
+                    "3": " === NÃO USE:"
+                },
+                "passwordSize": "* A senha precisa ter ao menos {{min}} caracteres *",
+                "attempt": "Tentativa: {{try}}",
+                "passwordPrompt": "Por favor, informe a sua senha: ",
+                "confirmPassword": "Confirme a sua senha: ",
+                "invalidChar": "****** Caracter INVÁLIDO na senha. Por favor, ALTERE a sua senha e tente novamente.",
+                "match": "Show, você digitou duas vezes a mesma senha.",
+                "mismatch": "As senhas não batem... Por favor, informe novamente.",
+                "unablePasswordAttempts": "Não consegui coletar a senha após {{tries}} tentativas",
+                "invalidFullName": "Nome complete INVÁLIDO - {{result}}"
+            },
+            "input_name": {
+                "namePrompt": "Qual seu NOME COMPLETO (para o Git)?",
+                "enterDefault": " Tecle ENTER para [{{defaultValue}}]"
+            },
+            "input_login": {
+                "loginPrompt": "Qual o seu LOGIN? (tecle ENTER para usar o valor default) ",
+                "loginPromptShort": "Qual o seu LOGIN?",
+                "enterDefault": " Tecle ENTER para [{{defaultValue}}]"
+            },
+            "input_email": {
+                "emailPrompt": "Qual o seu EMAIL? (tecle ENTER para usar o valor default)"
+            }
+        },
+        "releases": {
+            "levain_releases": {
+                "noRelease": "Release não encontrada",
+                "errorLookingFor": "Erro ao procurar por releases do Levain {{error}}",
+                "undefinedVersion": "Sem zip para uma versão indefinida",
+                "ignoringToday": "Vamos ignorar o update do Levain. Melhor perguntar de novo num outro dia.",
+                "updateNow": "Atualizar AGORA (S,n)?",
+                "updateNowDefault": "S",
+                "askLater": "Blz. Perguntamos de novo depois.",
+                "upgrading": "Atualizando Levain",
+                "ignoring": "Ignorando updates do Levain",
+                "newReleaseAvailable": 
+                    "\nTem uma versão NOVA do Levain disponível!\n\n- Sua versão: {{yourVersion}}\n-  Versão nova: {{newVersion}}",
+                "unableToExtract": "Não consegui extrair a versão do Levain - ignorando a atualização (por enquanto) {{error}}",
+                "unableToLoad": "Não consegui carregar a versão do Levain - ignorando a atualização (por enquanto)",
+                "restarting": "Recarregando o Levain para fazermos a atualização"
+            }
+        },
+        "cli_util": {
+            "continue": "Continuar?",
+            "continueDefault": "S",
+            "aborting": "Ok, abortando...",
+            "doNotContinue": "== Não continuar! =="
+        },
+        "config": {
+            "shellPath": "Alterando o shell path: {{oldPath}} => {{newPath}}",
+            "defaultPackage": "Alterando pacote default: {{oldPackage}} => {{newPackage}}",
+            "errorReading": "Erro ao ler o config - {{filename}}",
+            "noHomeValid": "Não há um levainHome válido na sua lista"
+        }
+    }
+}

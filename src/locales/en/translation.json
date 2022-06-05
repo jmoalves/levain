@@ -61,7 +61,7 @@
             "keepingBaseDir": "- Keeping the baseDir for {{pkg}} as requested",
             "ignoreError": "Ignoring - {{error}}",
             "errorSaving": "- Found error saving {{pkg}}. Ignoring upgrade",
-            "example": "  install <package name>"
+            "example": "  install <package name> ... <package name>"
         },
         "list_command": {
             "repo": "= Repository:",
@@ -89,6 +89,11 @@
                 "notInitialized": "RepositoryManager not initialized",
                 "testOnly": "RepositoryManager.repository({{repo}}) - TEST ONLY!",
                 "notFound": "Error initializing RepositoryManager - repositories not found"
+            },
+            "file_system_repository": {
+                "resolvedFrom": " resolved from {{dir}})",
+                "scanning": "# Scanning {{dir}}...",
+                "found": "Found {{pkgNum}} packages in {{dir}} ({{timer}})"
             }
         },
         "user_info": {

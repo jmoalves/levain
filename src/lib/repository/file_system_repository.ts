@@ -2,6 +2,8 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import {existsSync, ExpandGlobOptions} from "https://deno.land/std/fs/mod.ts";
 
+import t from '../i18n.ts'
+
 import Config from '../config.ts';
 import Package from '../package/package.ts'
 import FileSystemPackage from '../package/file_system_package.ts'
@@ -11,6 +13,7 @@ import ConsoleFeedback from "../utils/console_feedback.ts";
 
 import AbstractRepository from './abstract_repository.ts';
 import DirUtils from "../fs/dir_utils.ts";
+import StringUtils from "../utils/string_utils.ts";
 
 export default class FileSystemRepository extends AbstractRepository {
 
@@ -31,7 +34,7 @@ export default class FileSystemRepository extends AbstractRepository {
     describe(): string {
         const description: string = super.describe()
         if (this.rootDir !== this.absoluteURI) {
-            return description.replace(/\)/, ` resolved from ${this.rootDir})`)
+            return description.replace(/\)/, t("lib.repository.file_system_repository.resolvedFrom", { dir: this.rootDir }))
         }
         return description
     }
@@ -92,7 +95,7 @@ export default class FileSystemRepository extends AbstractRepository {
             return [];
         }
 
-        this.feedback.start(`# Scanning ${this.rootDir}...`);
+        this.feedback.start(t("lib.repository.file_system_repository.scanning", { dir: this.rootDir }));
 
         const timer = new Timer()
 
@@ -104,7 +107,10 @@ export default class FileSystemRepository extends AbstractRepository {
         }
         const packages: Array<Package> = await this.getPackageFiles(globOptions, this.rootOnly)
 
-        this.feedback.reset(`Found ${packages.length} packages in ${this.rootDir} (${timer.humanize()})`)
+        this.feedback.reset(t(
+            "lib.repository.file_system_repository.found", 
+            { pkgNum: StringUtils.padNum(packages.length, 3), dir: this.rootDir, timer: timer.humanize() }
+        ))
 
         return packages
     }
