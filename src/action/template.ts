@@ -31,10 +31,10 @@ export default class Template implements Action {
 
         log.debug(`TEMPLATE ${src} => ${dst}`);
         let data = Deno.readTextFileSync(src);
-        for (let x in args.replace) {
+        for (let x = 0; x < args.replace.length; x++) {
             let replacement = args.with[x];
             if (args.doubleBackslash) {
-                log.debug(`- DOUBLE-BACK ${replacement}`);
+                log.debug(`- ${x}: DOUBLE-BACK ${replacement}`);
                 replacement = replacement
                     .replace(/\//g, '\\')
                     .replace(/\\([^\\])/g, '\\\\$1')
@@ -45,10 +45,10 @@ export default class Template implements Action {
                 let regexp = args.replace[x].replace(/^\/(.+)\/([a-z]?)/, "$1");
                 let flags = args.replace[x].replace(/^\/(.+)\/([a-z]?)/, "$2");
 
-                log.debug(`- REPLACE[rxp] /${regexp}/${flags} => ${replacement}`);
+                log.debug(`- ${x}: REPLACE[rxp] /${regexp}/${flags} => ${replacement}`);
                 data = data.replace(new RegExp(regexp, flags), replacement);
             } else {
-                log.debug(`- REPLACE[str] ${args.replace[x]} => ${replacement}`);
+                log.debug(`- ${x}: REPLACE[str] ${args.replace[x]} => ${replacement}`);
                 data = data.replace(args.replace[x], replacement);
             }
         }
