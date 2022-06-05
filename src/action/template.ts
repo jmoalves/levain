@@ -12,7 +12,7 @@ export default class Template implements Action {
     }
 
     async execute(pkg: Package | undefined, parameters: string[]) {
-        log.debug(`TEMPLATE ${parameters}`);
+        log.debug(`INI - TEMPLATE ${parameters}`);
 
         let args = parseArgs(parameters, {
             stringMany: [
@@ -25,6 +25,8 @@ export default class Template implements Action {
         });
 
         this.verifyArgs(args); // throws
+
+        log.debug(`ARG - TEMPLATE ${JSON.stringify(args)}`);
 
         let src = (pkg ? path.resolve(pkg.pkgDir, args._[0]) : path.resolve(args._[0]));
         let dst = (pkg ? path.resolve(pkg.baseDir, args._[1]) : path.resolve(args._[1]));
