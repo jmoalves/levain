@@ -56,7 +56,11 @@ export function parseArgs(args: string[], optsDef?: Opts): any {
     if (optsDef?.stringMany) {
         optsDef.stringMany.forEach((key) => {
             if (typeof (myArgs[key]) == "string") {
-                myArgs[key] = [myArgs[key]];
+                myArgs[key] = [myArgs[key]]
+            }
+
+            if (myArgs[key] && myArgs[key].length == 0) {
+                delete myArgs[key]
             }
         })
     }

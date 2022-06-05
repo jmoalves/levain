@@ -1,4 +1,4 @@
-import {assertEquals, assertThrows} from "https://deno.land/std/testing/asserts.ts";
+import {assertEquals, assertThrows, assert} from "https://deno.land/std/testing/asserts.ts";
 
 import {parseArgs} from "./parse_args.ts";
 
@@ -85,6 +85,17 @@ Deno.test('should parse stringMany option', () => {
 
     assertEquals(args._.length, 0)
     assertEquals(args.nephew, ['Huey', 'Dewey', 'Louie',])
+})
+
+Deno.test('should parse stringMany option without values', () => {
+    const args = parseArgs([], {
+        stringMany: [
+            'nephew',
+        ]
+    })
+
+    assertEquals(args._.length, 0)
+    assertEquals(args.nephew, undefined)
 })
 
 Deno.test('should parse arg and option', () => {
