@@ -42,7 +42,7 @@
         },
         "install": {
             "noPackages": "Quais pacotes você quer instalar? Abortando...",
-            "unableToFind": "{{pkgNames}} - Não encontrei algus pacotes",
+            "unableToFind": "{{pkgNames}} - Não encontrei alguns pacotes",
             "similar": "=== Pacotes similares conhecidos",
             "errorNotFound": "Não encontrei os pacotes {{pkgNames}} para instalar. Abortando...",
             "installing": "- Instalando - {{object}}",
