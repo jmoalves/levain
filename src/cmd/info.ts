@@ -21,7 +21,7 @@ export default class InfoCommand implements Command {
 
 
         if (myArgs._ && myArgs._.length > 0) {
-            let pkgNames: string[] = [];
+            let pkgNames: string[] = myArgs._;
 
             this.config.packageManager.resolvePackages(pkgNames, false, false);
 
