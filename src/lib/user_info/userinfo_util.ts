@@ -1,8 +1,9 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import {existsSync} from "https://deno.land/std/fs/mod.ts"
-import "https://deno.land/x/humanizer@1.0/ordinalize.ts"
-// import {prompt} from "https://deno.land/x/cliffy@v0.19.5/prompt/mod.ts";
+
 import {ValidateResult} from "https://deno.land/x/cliffy/prompt/_generic_prompt.ts";
+
+import t from '../i18n.ts'
 
 import {envChain, promptSecret} from '../utils/utils.ts';
 import Config from '../config.ts';
@@ -12,6 +13,11 @@ import YamlFileUtils from "../utils/yaml_file_utils.ts";
 
 import {UserInfo} from "./user_info.ts"
 import {NameValidator} from "./validators/validators.ts";
+import {InputFullName} from "./input_name.ts";
+import {InputEmail} from "./input_email.ts";
+import {InputLogin} from "./input_login.ts";
+
+const passwordSizeMin = 3;
 
 export default class UserInfoUtil {
 
@@ -23,22 +29,22 @@ export default class UserInfoUtil {
     }
 
     load() {
-        log.debug(`loading user info from ${this.userinfoFileUri}`)
+        log.debug(t("lib.user_info.userinfo_util.loadingUserinfo", { uri: this.userinfoFileUri }))
         if (!existsSync(this.userinfoFileUri)) {
-            log.debug(`User info will be saved in ${this.userinfoFileUri}`)
+            log.debug(t("lib.user_info.userinfo_util.userinfoDest", { uri: this.userinfoFileUri }))
             this.userInfo = new UserInfo()
             return
         }
         const userInfo = YamlFileUtils.loadFileAsObjectSync<UserInfo>(this.userinfoFileUri)
         log.debug(`User info: ${JSON.stringify(userInfo)}`)
-        this.userInfo = userInfo
+        this.userInfo = userInfo || new UserInfo()
     }
 
     save() {
         YamlFileUtils.saveObjectAsFileSync(this.userinfoFileUri, this.userInfo)
     }
 
-    askUserInfo(config: Config, myArgs: any) {
+    async askUserInfo(config: Config, myArgs: any): Promise<UserInfo> {
         // Some nasty tricks... Should we refactor this?
         let separatorEnd: (() => void) | undefined = () => {
         };
@@ -49,7 +55,7 @@ export default class UserInfoUtil {
 
             if (separatorBegin) {
                 console.log("");
-                console.log('Hello :-)')
+                console.log(t("lib.user_info.userinfo_util.hello"))
             }
 
             separatorEnd = separatorBegin;
@@ -57,93 +63,88 @@ export default class UserInfoUtil {
         };
         //
 
-        if (myArgs.askPassword) {
-            (separatorBegin ? separatorBegin() : undefined);
-
-            log.warning("--askPassword is Deprecated. Use --ask-login and --ask-password");
-            myArgs["ask-login"] = true;
-            myArgs["ask-password"] = true;
-        }
-
-        const userInfoUtil = new UserInfoUtil()
-
         if (myArgs["ask-fullname"]) {
             (separatorBegin ? separatorBegin() : undefined);
 
-            userInfoUtil.askFullName(config);
+            await this.askFullName(config);
         }
 
         if (myArgs["ask-login"]) {
             (separatorBegin ? separatorBegin() : undefined);
 
-            userInfoUtil.askLogin(config);
+            await this.askLogin(config);
         }
 
         if (myArgs["ask-email"]) {
             (separatorBegin ? separatorBegin() : undefined);
 
-            userInfoUtil.askEmail(config, myArgs["email-domain"]);
+            await this.askEmail(config, myArgs["email-domain"]);
         }
 
         if (myArgs["ask-password"]) {
             (separatorBegin ? separatorBegin() : undefined);
 
-            userInfoUtil.askPassword(config);
+            await this.askPassword(config);
         }
 
         (separatorEnd ? separatorEnd() : undefined);
+
+        return this.userInfo
     }
 
-    askFullName(config: Config): string {
+    async askFullName(config: Config, defaultValue?: string): Promise<string> {
         log.debug(`Asking for full name`)
         this.load()
 
-        let fullName: string = prompt(
-            "What's your FULL NAME (do not use accent marks) for Git and other configs?",
-            this.userInfo.fullName || envChain("user", "fullname") || ""
-        ) || "undefined full name"
+        if (!defaultValue) {
+            defaultValue = this?.userInfo?.fullName || envChain("user", "fullname") || ""
+        }
 
-        const validationResult: ValidateResult = NameValidator.validate(fullName)
+        const newValue = await InputFullName.inputAndValidate(defaultValue);
+
+        const validationResult: ValidateResult = NameValidator.validate(newValue)
 
         if (validationResult !== true) {
-            throw new Error(`Invalid FULL NAME - ${validationResult}`);
+            throw new Error(t("lib.user_info.userinfo_util.invalidFullName", { result: validationResult}));
         }
 
-        if (this.userInfo.fullName != fullName) {
-            this.userInfo.fullName = fullName
+        if (this?.userInfo?.fullName != newValue) {
+            this.userInfo.fullName = newValue
             this.save()
         }
-        config.fullname = fullName;
-        return fullName
+        config.fullname = newValue;
+        return newValue
     }
 
-    askEmail(config: Config, emailDomain: string | undefined = undefined): string {
+    async askEmail(config: Config, emailDomain: string | undefined = undefined, defaultValue?: string): Promise<string> {
         log.debug(`Asking for email`)
         this.load()
         const loadedEmail = this.userInfo.email !== ""
             ? this.userInfo.email
             : undefined
 
-
-        let defaultEmail = config.email || loadedEmail;
-        if (!defaultEmail) {
+        if (!defaultValue) {
+            defaultValue = config.email || loadedEmail;
+        }
+        if (!defaultValue) {
             if (config.login && emailDomain) {
-                defaultEmail = config.login + (emailDomain.startsWith("@") ? "" : "@") + emailDomain;
-                log.debug(`defaultEmail = ${defaultEmail}`);
+                defaultValue = config.login + (emailDomain.startsWith("@") ? "" : "@") + emailDomain;
+                log.debug(`defaultEmail = ${defaultValue}`);
             } else {
                 if (!config.login) {
-                    log.debug("No username for defaultEmail");
+                    log.debug(t("lib.user_info.userinfo_util.noUsername"));
                 }
 
                 if (!emailDomain) {
-                    log.debug("No emailDomain for defaultEmail");
+                    log.debug(t("lib.user_info.userinfo_util.noEmailDomain"));
                 }
             }
         }
 
-        let email = prompt("Do you have an EMAIL? (press return to confirm default value) ", defaultEmail);
+        const email = await InputEmail.inputAndValidate(defaultValue || '');
+
         if (!email) {
-            throw new Error(`Unable to collect email`);
+            throw new Error(t("lib.user_info.userinfo_util.unableEmail"));
         }
 
         // TODO: Validate email
@@ -156,27 +157,24 @@ export default class UserInfoUtil {
         return email
     }
 
-    askLogin(config: Config): string {
+    async askLogin(config: Config, defaultValue?: string): Promise<string> {
         log.debug(`Asking for login`)
         this.load()
 
-        let login: string | null = prompt(
-            "What's your LOGIN? (press return to confirm default value) ",
-            this.userInfo.login || OsUtils.login?.toLowerCase()
-        );
-        if (!login) {
-            throw new Error(`Unable to collect login`);
+        if (!defaultValue) {
+            defaultValue = this.userInfo.login || OsUtils.login?.toLowerCase() || ""
         }
+        const newValue = await InputLogin.inputAndValidate(defaultValue)
 
-        if (this.userInfo.login != login) {
-            this.userInfo.login = login
+        if (this.userInfo.login != newValue) {
+            this.userInfo.login = newValue
             this.save()
         }
-        config.login = login;
-        return login
+        config.login = newValue;
+        return newValue
     }
 
-    askPassword(config: Config): void {
+    async askPassword(config: Config): Promise<string> {
         const forbiddenPasswordChars = '^&'
         // const allowedAndTestedPasswordChars = '#!@'
 
@@ -184,59 +182,60 @@ export default class UserInfoUtil {
         let alertPasswordSize = false
         do {
             tries++;
-            log.debug(`Asking for password, try ${tries}`)
+            log.debug(t("lib.user_info.userinfo_util.askingPassword", { try: tries }))
 
             console.log('')
             console.log(' ========================================================================================')
-            console.log(' === ATTENTION PLEASE! The characters below are known to cause problems with passwords')
-            console.log(' === If you use one of them, please change your password and come back.')
-            console.log(' === Do not use:')
+            console.log(t("lib.user_info.userinfo_util.passwordWarning.1"))
+            console.log(t("lib.user_info.userinfo_util.passwordWarning.2"))
+            console.log(t("lib.user_info.userinfo_util.passwordWarning.3"))
             console.log(` === ${forbiddenPasswordChars}`)
             console.log(' ========================================================================================')
             console.log('')
 
             if (alertPasswordSize) {
-                console.log("* Password must have at least 3 characters *")
+                console.log(t("lib.user_info.userinfo_util.passwordSize", { min: passwordSizeMin }))
                 console.log("")
                 alertPasswordSize = false
             }
 
             if (tries > 1) {
-                console.log(`${tries.ordinalize()} attempt`)
+                console.log(t("lib.user_info.userinfo_util.attempt", { try: tries}))
             }
 
-            // const password: string = await Secret.prompt("Please, inform your network password: ");
-            const password: string | undefined = promptSecret("Please, inform your network password: ")
+            // const password: string = await Secret.prompt(t("lib.user_info.userinfo_util.passwordPrompt"));
+            const password: string | undefined = promptSecret(t("lib.user_info.userinfo_util.passwordPrompt"))
             console.log("");
 
             if (!password) {
                 continue;
             }
 
-            if (password.length < 3) {
+            if (password.length < passwordSizeMin) {
                 alertPasswordSize = true
                 continue;
             }
 
-            const pw2 = promptSecret("Confirm your password: ");
+            // const pw2 = await Secret.prompt(t("lib.user_info.userinfo_util.confirmPassword"));
+            const pw2 = promptSecret(t("lib.user_info.userinfo_util.confirmPassword"));
             console.log("");
 
             if (password == pw2) {
                 if (StringUtils.textContainsAtLeastOneChar(password || '', forbiddenPasswordChars)) {
-                    throw '****** INVALID CHAR IN PASSWORD. Please change your password and try again.'
+                    throw t("lib.user_info.userinfo_util.invalidChar")
                 }
 
                 console.log("");
-                console.log("Perfect, the typed passwords are the same.");
+                console.log(t("lib.user_info.userinfo_util.match"));
                 console.log("");
                 config.password = password;
-                return;
+                return password;
             }
 
-            console.log("Password mismatch... Please, inform again.");
+            console.log(t("lib.user_info.userinfo_util.mismatch"));
             console.log("");
         } while (tries < 3);
 
-        throw new Error(`Unable to collect password after ${tries} attempts`);
+        throw new Error(t("lib.user_info.userinfo_util.unablePasswordAttempts", { tries: tries}));
     }
 }

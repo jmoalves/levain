@@ -4,9 +4,8 @@ import {existsSync} from "https://deno.land/std/fs/mod.ts";
 
 import Config from '../config.ts';
 import ProgressReader from '../io/progress_reader.ts';
-import FileReader from '../io/file_reader.ts';
 
-import { FileUtils } from './file_utils.ts';
+import {FileUtils} from './file_utils.ts';
 import ReaderFactory from "../io/reader_factory.ts";
 
 export default class FileCache {
@@ -18,8 +17,8 @@ export default class FileCache {
 
     public readonly dir: string;
 
-    async get(src: string | ProgressReader ): Promise<string> {
-        let r:ProgressReader | undefined = undefined
+    async get(src: string | ProgressReader): Promise<string> {
+        let r: ProgressReader | undefined = undefined
 
         if (typeof src == 'string') {
             r = ReaderFactory.readerFor(src)
@@ -38,7 +37,7 @@ export default class FileCache {
 
         if (existsSync(filePathInCache)) {
             log.debug(`Cache - invalidate ${filePathInCache}`)
-            Deno.removeSync(filePathInCache, { recursive: true })
+            Deno.removeSync(filePathInCache, {recursive: true})
         }
 
         return await this.copyToCache(r)
@@ -67,7 +66,7 @@ export default class FileCache {
 
     fileMatch(src: ProgressReader, cacheInfo: Deno.FileInfo): boolean {
         // We should check sha256 sum but it would take long...
-        if (src.size != cacheInfo.size ) {
+        if (src.size != cacheInfo.size) {
             log.debug(`Cache - size does not match - ${src.size} != ${cacheInfo.size}`)
             return false
         }

@@ -2,51 +2,36 @@ import {NameValidator} from "./validators/validators.ts"
 import {Input} from 'https://deno.land/x/cliffy/prompt/input.ts'
 import {readLines} from 'https://deno.land/std/io/mod.ts'
 import OsUtils from "../os/os_utils.ts";
+import {ValidateResult} from "https://deno.land/x/cliffy/prompt/_generic_prompt.ts";
+
+import t from '../i18n.ts'
 
 export class InputFullName {
 
-    static inputAndValidateSync(defaultValue: string) {
-        let newValue: string
-        let validationResult: ValidationResult
+    static readonly defaultMessage = t("lib.user_info.input_name.namePrompt");
 
-        do {
-            if (validationResult) {
-                console.log(validationResult)
-            }
-            let message = "What's your FULL NAME for Git and other configs?"
-            newValue = prompt(message, defaultValue)
+    static async inputAndValidate(defaultValue: string): Promise<string> {
 
-            validationResult = NameValidator.validate(newValue)
-        } while (validationResult !== true)
-
-        return newValue;
-    }
-
-    static async inputAndValidate(defaultValue: string) {
-
-        const fullName: string = await Input.prompt({
-                message: "What's your FULL NAME for Git and other configs?",
+        return await Input.prompt({
+                message: this.defaultMessage,
                 default: defaultValue,
                 validate: NameValidator.validate,
             }
         )
-
-        return fullName
     }
 
-    static async inputAndValidateWithEncoding(defaultValue: string) {
+    static async inputAndValidateWithEncoding(defaultValue: string): Promise<string> {
         let fullName: string
-        let validationResult: ValidationResult
+        let validateResult: ValidateResult = false
 
         do {
-            if (validationResult) {
-                console.log(validationResult)
+            if (validateResult) {
+                console.log(validateResult)
             }
-            let message = "What's your FULL NAME for Git and other configs?"
-            fullName = await InputFullName.promptWithEncoding(message, defaultValue)
+            fullName = await InputFullName.promptWithEncoding(this.defaultMessage, defaultValue)
 
-            validationResult = NameValidator.validate(fullName)
-        } while (validationResult !== true)
+            validateResult = NameValidator.validate(fullName)
+        } while (validateResult !== true)
 
         return fullName;
     }
@@ -54,10 +39,10 @@ export class InputFullName {
     static async promptWithEncoding(
         message: string,
         defaultValue: string = '',
-        encoding,
-    ): string {
+        encoding: string = 'utf8',
+    ): Promise<string> {
         if (defaultValue) {
-            message += ` Press return for [${defaultValue}]`
+            message += t("lib.user_info.input_name.enterDefault", { defaultValue: defaultValue })
         }
 
         if (!encoding) {
@@ -69,9 +54,6 @@ export class InputFullName {
         }
 
         console.log(message)
-        // FIXME should print "João"
-        // await Deno.stdout.write(new TextEncoder().encode('João'))
-        // await Deno.stdout.write(new TextEncoder().encode(message, encoding))
 
         const {value} = await readLines(Deno.stdin, {encoding}).next()
         return <string>value || defaultValue

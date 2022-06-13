@@ -3,6 +3,8 @@ import * as path from "https://deno.land/std/path/mod.ts";
 import {copySync} from "https://deno.land/std/fs/copy.ts";
 import {existsSync} from "https://deno.land/std/fs/mod.ts";
 
+import t from '../lib/i18n.ts'
+
 import Config from "../lib/config.ts";
 import Package from "../lib/package/package.ts";
 import Loader from '../lib/loader.ts';
@@ -35,28 +37,28 @@ export default class Install implements Command {
         let pkgNames: string[] = myArgs._;
 
         if (pkgNames.length == 0) {
-            let curDirPkg = this.config.repositoryManager.currentDirPackage
+            let curDirPkg = await this.config.repositoryManager.currentDirPackage()
             if (curDirPkg && curDirPkg.dependencies && curDirPkg.dependencies.length > 0) {
                 pkgNames = curDirPkg.dependencies
             }
         }
 
         if (pkgNames.length == 0) {
-            throw new Error(`What packages do your want to install? Aborting...`);
+            throw new Error(t("cmd.install.noPackages"));
         }
 
         let pkgs: Package[] | null = this.config.packageManager.resolvePackages(pkgNames);
         if (!pkgs) {
             log.info(``)
-            log.info(`${pkgNames} - Unable to find some packages`)
+            log.info(t("cmd.install.unableToFind", { pkgNames: pkgNames }))
 
             log.info("")
-            log.info("=== Similar known packages")
+            log.info(t("cmd.install.similar"))
             for (let name of pkgNames) {
                 log.info(`${name} => ${[...this.config.packageManager.getSimilarNames(name)]}`)
             }
             log.info("")
-            throw new Error(`Couldn't find package ${pkgNames} to install. Aborting...`);
+            throw new Error(t("cmd.install.errorNotFound", { pkgNames: pkgNames }));
         }
 
         log.info("");
@@ -86,25 +88,25 @@ export default class Install implements Command {
             }
 
             if (willInstall.length > 0) {
-                log.debug(`- Installing - ${JSON.stringify(willInstall)}`)
-                log.debug(`- Updating - ${JSON.stringify(willUpdate)}`)
+                log.debug(t("cmd.install.installing", { object: JSON.stringify(willInstall) }))
+                log.debug(t("cmd.install.updating", { object: JSON.stringify(willUpdate) }))
             } else if (willUpdate.length > 0) {
                 log.info("")
                 log.info("")
-                log.info(`Some packages have an update available.`)
+                log.info(t("cmd.install.updateAvailable"))
                 log.info(`${JSON.stringify(willUpdate, null, 3)}`)
                 log.info("")
 
-                let answer = prompt("Should we update them now (Y,n)?", "Y")
-                if (!answer || !["Y", "YES"].includes(answer.toUpperCase())) {
-                    log.info("Ok. We will ask again later.")
+                let answer = prompt(t("cmd.install.updatePrompt"), t("cmd.install.updatePromptDefault"))
+                if (!answer || ![t("cmd.install.updatePromptDefault")].includes(answer.toUpperCase())) {
+                    log.info(t("cmd.install.askLater"))
                     shouldUpdate = false
 
                     log.info("")
-                    log.info("Reloading packages - installed only.")
+                    log.info(t("cmd.install.reloadInstalled"))
                     pkgs = this.config.packageManager.resolvePackages(pkgNames, true);
                     if (!pkgs) {
-                        throw new Error(`install - Nothing to install. Aborting...`);
+                        throw new Error(t("cmd.install.nothing"));
                     }
                 }
             }
@@ -117,7 +119,7 @@ export default class Install implements Command {
 
         log.debug("");
         log.debug("-----------------");
-        log.debug(`install ${JSON.stringify(pkgNames)} - FINISHED`);
+        log.debug(t("cmd.install.finished", { pkgNames: pkgNames }));
     }
 
     private async installPackage(bkpTag: string, pkg: Package, force: boolean = false, shouldUpdate: boolean = true) {
@@ -137,16 +139,17 @@ export default class Install implements Command {
             } else if (force) {
                 verb = 'FORCE';
             } else {
-                verb = 'ENV (already installed)';
+                verb = 'ALREADY INSTALLED';
                 shouldInstall = false;
             }
         }
 
         if (shouldInstall) {
             log.info("")
+            log.info(`- ${verb} ${pkg.name}@${pkg.version}`);
+        } else {
+            log.info(`✓ ${pkg.name}@${pkg.version}`);
         }
-
-        log.info(`=== ${verb} ${pkg.name} - ${pkg.version}`);
 
         if (shouldInstall) {
             const levainTag = pkg.levainTag;
@@ -155,13 +158,13 @@ export default class Install implements Command {
             if (levainTag?.minVersion) {
                 const minVersion = new VersionNumber(levainTag?.minVersion)
                 if (minVersion.isNewerThan(this.currentLevainVersion)) {
-                    log.warning(`- We will IGNORE the package ${pkg.name} installation. It needs a newer levain version ${minVersion} - Your version is ${this.currentLevainVersion}`)
+                    log.warning(t("cmd.install.ignoreMinVer", { pkg: pkg.name, min: minVersion, current: this.currentLevainVersion}))
                     shouldInstall = false
                 }
             }
 
             if (!shouldInstall && !pkg.installed) {
-                log.error(`You must upgrade your levain (or fix the package ${pkg.name} configuration)`)
+                log.error(t("cmd.install.mustUpgradeLevain", { pkg: pkg.name}))
             }
         }
 
@@ -210,13 +213,13 @@ export default class Install implements Command {
             await loader.action(pkg, action);
         }
 
-        log.debug(`--> ${pkg.name} took ${timer.humanize()}`);
+        log.debug(t("cmd.install.pkgTook", { pkg: pkg.name, timer: timer.humanize()}));
         return;
     }
 
     savePreviousInstall(bkpTag: string, pkg: Package): boolean {
         if (!existsSync(pkg.baseDir)) {
-            log.debug(`Good. We do not need to save ${pkg.baseDir} because it does not exist`);
+            log.debug(t("cmd.install.goodNotSave", { baseDir: pkg.baseDir }));
             return true;
         }
 
@@ -236,7 +239,7 @@ export default class Install implements Command {
             copySync(src, dst);
 
             if (pkg.yamlItem("levain.preserveBaseDirOnUpdate")) {
-                log.info(`- Keeping the baseDir for ${pkg.name} as requested`);
+                log.info(t("cmd.install.keepingBaseDir", { pkg: pkg.name }));
                 return true;
             }
 
@@ -253,14 +256,14 @@ export default class Install implements Command {
                 log.debug(`- SAVE-DEL   ${renameDir}`);
                 Deno.removeSync(renameDir, {recursive: true})
             } catch (error) {
-                log.debug(`Ignoring - ${error}`)
+                log.debug(t("cmd.install.ignoreError", { error: error }))
             }
 
             log.debug(`SAVED ${src} => ${dst}`);
             return true;
 
         } catch (err) {
-            log.error(`- Found error saving ${pkg.name}. Ignoring upgrade`);
+            log.error(t("cmd.install.errorSaving", { pkg: pkg.name }));
             log.debug(`SAVE error -> ${err}`);
             // Upon any error saving, abort installation
             return false;
@@ -271,5 +274,5 @@ export default class Install implements Command {
         return `bkp-${DateUtils.dateTimeTag(dt)}`;
     }
 
-    readonly oneLineExample = "  install <package name>"
+    readonly oneLineExample = t("cmd.install.example")
 }

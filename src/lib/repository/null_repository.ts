@@ -4,11 +4,9 @@ import Package from "../package/package.ts";
 import AbstractRepository from './abstract_repository.ts';
 
 export default class NullRepository extends AbstractRepository {
-    name = 'nullRepo';
-    packages: Array<Package> = [];
 
     constructor(private config: Config) {
-        super();
+        super('nullRepo')
     }
 
     async init(): Promise<void> {
@@ -17,20 +15,15 @@ export default class NullRepository extends AbstractRepository {
     invalidatePackages() {
     }
 
-    get absoluteURI(): string {
-        return this.name;
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     resolvePackage(packageName: string): Package | undefined {
         return undefined;
     }
 
     listPackages(): Array<Package> {
-        return [];
+        return []
     }
-    
-    readPackages(): Array<Package> {
-        return [];
+
+    async readPackages(): Promise<Array<Package>> {
+        return []
     }
 }

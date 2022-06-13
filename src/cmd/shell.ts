@@ -1,10 +1,10 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
+import t from '../lib/i18n.ts'
+
 import Config from "../lib/config.ts";
 import {OsShell} from '../lib/os/os_shell.ts';
 import Loader from '../lib/loader.ts';
-import Action from "../action/action.ts";
-import Package from '../lib/package/package.ts';
 
 import Command from "./command.ts";
 
@@ -18,7 +18,7 @@ export default class Shell implements Command {
         let curDirPkg = undefined;
 
         if (pkgNames.length == 0) {
-            curDirPkg = this.config.repositoryManager.currentDirPackage
+            curDirPkg = await this.config.repositoryManager.currentDirPackage()
             if (curDirPkg && curDirPkg.dependencies && curDirPkg.dependencies.length > 0) {
                 pkgNames = curDirPkg.dependencies
                 let actions = curDirPkg.yamlItem("cmd.shell");
@@ -38,20 +38,20 @@ export default class Shell implements Command {
 
         const loader = new Loader(this.config);
 
-        log.debug(`shell must check for updates? ${this.config.shellCheckForUpdate}`)
+        log.debug(t("cmd.shell.checkUpdates", { shouldCheck: this.config.shellCheckForUpdate }))
         if (this.config.shellCheckForUpdate) {
             await loader.command("install", pkgNames);
         } else {
             await loader.command("install", ["--noUpdate"].concat(pkgNames));
         }
-        this.config.repositoryManager.invalidatePackages();
+        await this.config.repositoryManager.reload();
 
         // Actions
         if (curDirPkg && pkgActions) {
             for (let action of pkgActions) {
                 // Infinite loop protection - https://github.com/jmoalves/levain/issues/111
                 if (action.startsWith('levainShell ')) {
-                    throw new Error(`levainShell action is not allowed here. Check your recipe - pkg: ${curDirPkg.name} action: ${action}`)
+                    throw new Error(t("cmd.shell.notAllowed", { pkg: curDirPkg.name, action: action }))
                 }
 
                 await loader.action(curDirPkg, action);
@@ -61,10 +61,8 @@ export default class Shell implements Command {
         // Running shell
         const osShell: OsShell = new OsShell(this.config, pkgNames, true);
         osShell.interactive = true;
-
         await osShell.execute([]);
     }
 
-    readonly oneLineExample = "  shell <optional package name>"
-
+    readonly oneLineExample = t("cmd.shell.example")
 }

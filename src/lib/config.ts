@@ -2,14 +2,17 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import {ensureDirSync, existsSync} from "https://deno.land/std/fs/mod.ts";
 
+import t from './i18n.ts'
+
 import LevainVersion from "../levain_version.ts";
 
-import PackageManager from "./package/manager.ts";
-import UserInfoUtil from './user_info/userinfo_util.ts';
+import PackageManager from "./package/package_manager.ts";
 import Registry from './repository/registry.ts';
 import RepositoryManager from "./repository/repository_manager.ts";
 import {FileUtils} from './fs/file_utils.ts';
 import {homedir} from './utils/utils.ts';
+import VarResolver from "./var_resolver.ts";
+import ConfigPersistentAttributes from "./config-persistent-attributes.ts";
 
 export default class Config {
     packageManager: PackageManager;
@@ -35,16 +38,18 @@ export default class Config {
     private _lastUpdateQuestion: string | undefined;
     private _autoUpdate: boolean | undefined
     private _shellCheckForUpdate: boolean | undefined
+    private lastCfg?: ConfigPersistentAttributes;
 
-    constructor(args: any) {
+    constructor(args: any = {}) {
         this.packageManager = new PackageManager(this);
         this._repoManager = new RepositoryManager(this);
 
         this.configEnv(args);
         this.configHome(args);
-        this.configCache(args);
 
         this.load();
+
+        this.configCache(args);
 
         log.debug("");
         log.debug(`=== Config: \n${JSON.stringify(this._env, null, 3)}`);
@@ -139,7 +144,7 @@ export default class Config {
         if (this._shellPath != shellPath) {
             log.warning("");
             log.warning("***********************************************************************************");
-            log.warning(`** Changing shell path: ${this._shellPath} => ${shellPath}`);
+            log.warning(`** ${t("lib.config.shellPath", { oldPath: this._shellPath, newPath: shellPath })}`);
             log.warning("***********************************************************************************");
             log.warning("");
         }
@@ -155,7 +160,7 @@ export default class Config {
         if (this._defaultPackage != pkgName) {
             log.warning("");
             log.warning("***********************************************************************************");
-            log.warning(`** Changing default package: ${this._defaultPackage} => ${pkgName}`);
+            log.warning(`** ${t("lib.config.defaultPackage", { oldPackage: this._defaultPackage, newPackage: pkgName })}`);
             log.warning("***********************************************************************************");
             log.warning("");
         }
@@ -207,99 +212,23 @@ export default class Config {
         return this._env[name];
     }
 
-    replaceVars(text: string, pkgName?: string | undefined): string {
-        // TODO: Refactor this... Use ChainOfResponsibility Pattern...
+    async replaceVars(text: string, pkgName?: string | undefined): Promise<string> {
+        return VarResolver.replaceVars(text, pkgName, this)
+    }
 
-        let myText: string = text;
-        let vars = myText.match(/\${[^${}]+}/);
-        while (vars) {
-            for (let v of vars) {
-                let vName = v.replace("$", "").replace("{", "").replace("}", "");
-                let value: string | undefined = undefined;
+    public saveIfChanged(): void {
+        log.debug(`Config.saveIfChanged`)
 
-                // We handle reserved words first
-                if (!value && vName.match(/^levain\./)) {
-                    switch (vName) {
-                        case "levain.login":
-                            if (!this.login) {
-                                new UserInfoUtil().askLogin(this)
-                            }
-                            value = this.login;
-                            break;
-
-                        case "levain.password":
-                            if (!this.password) {
-                                new UserInfoUtil().askPassword(this)
-                            }
-                            value = this.password;
-                            break;
-
-                        case "levain.email":
-                            if (!this.email) {
-                                new UserInfoUtil().askEmail(this)
-                            }
-                            value = this.email;
-                            break;
-
-                        case "levain.fullname":
-                            if (!this.fullname) {
-                                new UserInfoUtil().askFullName(this)
-                            }
-                            value = this.fullname;
-                            break;
-
-                        default:
-                        // nothing
-                    }
-
-                    if (!value) {
-                        throw new Error(`Global attribute ${vName} is undefined`);
-                    }
-                } else if (!value && vName == "home") {
-                    value = homedir();
-                } else if (!value && vName.search(/^pkg\.(.+)\.([^.]*)/) != -1) {
-                    let pkgVarPkg = vName.replace(/^pkg\.(.+)\.([^.]*)/, "$1");
-                    let pkgVarName = vName.replace(/^pkg\.(.+)\.([^.]*)/, "$2");
-                    value = this.packageManager.getVar(pkgVarPkg, pkgVarName);
-                } else {
-                    // General items
-
-                    if (!value && pkgName) {
-                        value = this.packageManager.getVar(pkgName, vName);
-                    }
-
-                    if (!value && this._env) {
-                        value = this._env[vName];
-                    }
-
-                    if (!value) {
-                        value = Deno.env.get(vName);
-                    }
-                }
-
-                if (value) {
-                    myText = myText.replace(v, value);
-                } else {
-                    throw new Error(`${v} is undefined`);
-                }
-            }
-
-            vars = myText.match(/\${[^${}]+}/);
+        const currentCfg = this.buildCfg()
+        if (currentCfg !== this.lastCfg) {
+            log.debug(`saving changed config`)
+            return this.save()
         }
-
-        return myText;
     }
 
     public save(): void {
-        let cfg: any = {};
-        cfg.repos = this.repositoryManager.saveState;
-        cfg.defaultPackage = this._defaultPackage;
-        cfg.cacheDir = this.levainCacheDir;
-        cfg.shellPath = this._shellPath;
-        cfg.lastKnownVersion = this._lastKnownVersion;
-        cfg.lastUpdateQuestion = this._lastUpdateQuestion;
-        cfg.autoUpdate = this._autoUpdate;
-        cfg.shellCheckForUpdate = this._shellCheckForUpdate;
+        let cfg = this.buildCfg()
+        this.lastCfg = cfg
 
         let fileName = this.levainConfigFile;
 
@@ -309,6 +238,19 @@ export default class Config {
         ensureDirSync(this.levainConfigDir)
         Deno.writeTextFileSync(fileName, JSON.stringify(cfg, null, 3));
         log.debug(`saved ${fileName}`);
+    }
+
+    private buildCfg(): ConfigPersistentAttributes {
+        let cfg = new ConfigPersistentAttributes();
+        cfg.repos = this.repositoryManager.saveState;
+        cfg.defaultPackage = this._defaultPackage;
+        cfg.cacheDir = this.levainCacheDir;
+        cfg.shellPath = this._shellPath;
+        cfg.lastKnownVersion = this._lastKnownVersion;
+        cfg.lastUpdateQuestion = this._lastUpdateQuestion;
+        cfg.autoUpdate = this._autoUpdate;
+        cfg.shellCheckForUpdate = this._shellCheckForUpdate;
+        return cfg;
     }
 
     public load(): void {
@@ -325,6 +267,8 @@ export default class Config {
 
             let cfg = JSON.parse(data);
             log.debug(`- PARSE ${JSON.stringify(cfg)}`);
+            this.lastCfg = cfg
+
             if (cfg.repos) {
                 this.repositoryManager.saveState = cfg.repos;
             }
@@ -361,7 +305,7 @@ export default class Config {
             }
         } catch (err) {
             if (err.name != "NotFound") {
-                log.error(`Error reading config - ${filename}`);
+                log.error(t("lib.config.errorReading", { filename: filename}));
                 throw err;
             }
         }
@@ -416,7 +360,7 @@ export default class Config {
             });
 
             if (!homeDir) {
-                throw `No valid levainHome in your list\n-> ${args["levainHome"]}`;
+                throw `${t("lib.config.noHomeValid")}\n-> ${args["levainHome"]}`;
             }
 
             this._env["levainHome"] = path.resolve(Deno.cwd(), homeDir);

@@ -1,5 +1,7 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
+import t from '../lib/i18n.ts'
+
 import Config from "../lib/config.ts";
 import ActionFactory from "../action/action_factory.ts";
 
@@ -17,7 +19,7 @@ export default class ActionsCommand implements Command {
         const searchText = args?.join(' ') || '';
         log.info(`actions "${searchText}"`);
         log.info("");
-        log.info(`= Actions:`)
+        log.info(t("cmd.actions.actionsFound"))
 
         const actions = new ActionFactory().list()
             .filter(it => it.includes(searchText))
@@ -27,5 +29,5 @@ export default class ActionsCommand implements Command {
         })
     }
 
-    readonly oneLineExample = "  actions <optional search text>"
+    readonly oneLineExample = t("cmd.actions.example")
 }

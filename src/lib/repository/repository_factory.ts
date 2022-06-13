@@ -1,18 +1,15 @@
 import * as log from "https://deno.land/std/log/mod.ts";
-
-import Package from '../package/package.ts'
 import Config from '../config.ts';
 import OsUtils from "../os/os_utils.ts";
 import GitUtils from "../utils/git_utils.ts";
 
 import Repository from './repository.ts'
-import NullRepository from './null_repository.ts';
 import GitRepository from './git_repository.ts';
 import FileSystemRepository from './file_system_repository.ts';
 import ZipRepository from "./zip_repository.ts";
 
 export default class RepositoryFactory {
-    private knownRepos = new Map<string, Repository>()
+    static knownRepos = new Map<string, Repository>()
 
     constructor(private config: Config) {
     }
@@ -28,7 +25,7 @@ export default class RepositoryFactory {
     static normalizeList(repoPaths: string[]): string[] {
         let repos = new Set<string>()
         repoPaths.map(repo => RepositoryFactory.normalize(repo))
-                .forEach(repo => repos.add(repo))
+            .forEach(repo => repos.add(repo))
         return [...repos]
     }
 
@@ -46,7 +43,7 @@ export default class RepositoryFactory {
         return repoPath.toLowerCase().trim()
     }
 
-    create(repoURI: string, rootOnly: boolean = false): Repository {
+    async getOrCreate(repoURI: string, rootOnly: boolean = false): Promise<Repository> {
         log.debug(`RepoFactory.create - repo for uri ${repoURI}`)
 
         if (!repoURI) {
@@ -54,13 +51,13 @@ export default class RepositoryFactory {
         }
 
         let repoPath = RepositoryFactory.normalize(repoURI)
-        if (this.knownRepos.has(repoPath)) {
-            let repo = this.knownRepos.get(repoPath)!
-            log.debug(`RepoFactory.create - already known ${repo.name}`)
+        if (RepositoryFactory.knownRepos.has(repoPath)) {
+            let repo = RepositoryFactory.knownRepos.get(repoPath)!
+            log.debug(`Reusing repo ${repo.describe()}`)
             return repo
         }
 
-        let repo = undefined;
+        let repo: Repository
         if (RepositoryFactory.isGitPath(repoPath)) {
             repo = new GitRepository(this.config, repoPath, rootOnly)
         } else if (RepositoryFactory.isZipPath(repoPath)) {
@@ -69,7 +66,9 @@ export default class RepositoryFactory {
             repo = new FileSystemRepository(this.config, repoPath, rootOnly)
         }
 
-        this.knownRepos.set(repoPath, repo)
+        await repo.init()
+
+        RepositoryFactory.knownRepos.set(repoPath, repo)
         return repo
     }
 }

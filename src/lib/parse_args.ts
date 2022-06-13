@@ -26,9 +26,13 @@ export function parseArgs(args: string[], optsDef?: Opts): any {
                 opts.string.push(v);
             })
         }
+        // Handling BREAKING changes
+        // https://github.com/denoland/deno_std/commit/6a95e2954dd58b68dbbb246cc362a8906a01ec04
         if (optsDef?.stringMany) {
+            opts.collect = [];
             optsDef.stringMany.forEach((v) => {
                 opts.string.push(v);
+                opts.collect.push(v);
             })
         }
     }
@@ -52,7 +56,11 @@ export function parseArgs(args: string[], optsDef?: Opts): any {
     if (optsDef?.stringMany) {
         optsDef.stringMany.forEach((key) => {
             if (typeof (myArgs[key]) == "string") {
-                myArgs[key] = [myArgs[key]];
+                myArgs[key] = [myArgs[key]]
+            }
+
+            if (myArgs[key] && myArgs[key].length == 0) {
+                delete myArgs[key]
             }
         })
     }

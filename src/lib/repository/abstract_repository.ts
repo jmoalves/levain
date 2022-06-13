@@ -1,22 +1,36 @@
+import * as log from "https://deno.land/std/log/mod.ts";
 import Package from '../package/package.ts';
 
 import Repository from './repository.ts';
 
 export default abstract class AbstractRepository implements Repository {
-    abstract name: string
-    abstract absoluteURI: string
+    private _initialized:boolean = false;
+
+    constructor(
+        readonly name: string,
+        readonly absoluteURI?: string,
+    ) {
+        log.debug(`${this.describe()} constructor`)
+    }
 
     abstract init(): Promise<void>
-
-    abstract invalidatePackages(): void
-
-    abstract readPackages(): Array<Package>
-
-    abstract resolvePackage(packageName: string): Package | undefined
-
     abstract listPackages(): Array<Package>
+    abstract resolvePackage(packageName: string): Package | undefined
+    abstract reload(): Promise<void>
+    
+    describe(): string {
+        return `${this.name} (${this.absoluteURI})`
+    }
 
-    get length(): number {
+    size(): number {
         return this.listPackages()?.length
+    }
+
+    initialized(): boolean {
+        return this._initialized
+    }
+
+    protected setInitialized(): void {
+        this._initialized = true
     }
 }

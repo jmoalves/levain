@@ -1,7 +1,7 @@
 import {assertEquals} from "https://deno.land/std/testing/asserts.ts";
 import {OsShell} from "./os_shell.ts";
 import TestHelper from "../test/test_helper.ts";
-import {PackageManagerMock} from "../package/manager_mock.ts";
+import {PackageManagerMock} from "../package/package_manager_mock.ts";
 import {assertArrayEndsWith} from "../test/more_asserts.ts";
 
 Deno.test('OsShell.adjustArgs should add quotation marks around parameters with spaces', () => {

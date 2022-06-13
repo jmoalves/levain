@@ -2,6 +2,8 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import { ensureDirSync, existsSync } from "https://deno.land/std/fs/mod.ts";
 
+import t from '../i18n.ts'
+
 import Config from "../config.ts";
 import HttpUtils from "../utils/http_utils.ts";
 import DateUtils from "../utils/date_utils.ts";
@@ -32,7 +34,7 @@ export default class LevainReleases {
             HttpUtils.get(`${this.apiUrl}`)
                 .then(response => {
                     if (response.status == 404) {
-                        reject(Error("No release found"))
+                        reject(Error(t("lib.releases.levain_releases.noRelease")))
                         return
                     }
 
@@ -43,13 +45,13 @@ export default class LevainReleases {
                         return
                     })
                     .catch(error => {
-                        log.error(`Error looking for Levain releases ${error}`)
+                        log.error(t("lib.releases.levain_releases.errorLookingFor", { error: error }))
                         reject(error)
                         return
                     })    
                 })
                 .catch(error => {
-                    log.error(`Error looking for Levain releases ${error}`)
+                    log.error(t("lib.releases.levain_releases.errorLookingFor", { error: error }))
                     reject(error)
                     return
                 })
@@ -60,7 +62,7 @@ export default class LevainReleases {
         version = version || await this.latestVersion()
 
         if (!version) {
-            throw Error(`No zip for undefined version`)
+            throw Error(t("lib.releases.levain_releases.undefinedVersion"))
         }
 
         let versionPath = version.versionNumber
@@ -177,21 +179,21 @@ export default class LevainReleases {
 
             if (!this.config.autoUpdate) {
                 if (this.config.lastUpdateQuestion == DateUtils.dateTag()) {
-                    log.info("We are ignoring the Levain update. We will ask you again another day.")
+                    log.info(t("lib.releases.levain_releases.ignoringToday"))
                     return
                 }
 
                 console.log("")
                 this.config.lastUpdateQuestion = DateUtils.dateTag()
-                let answer = prompt("Update now (Y,n)?", "Y")
-                if (!answer || !["Y", "YES"].includes(answer.toUpperCase())) {
-                    log.info("Ok. We will ask again later.")
+                let answer = prompt(t("lib.releases.levain_releases.updateNow"), t("lib.releases.levain_releases.updateNowDefault"))
+                if (!answer || ![t("lib.releases.levain_releases.updateNowDefault")].includes(answer.toUpperCase())) {
+                    log.info(t("lib.releases.levain_releases.askLater"))
                     return
                 }
             }
 
             log.info("")
-            log.info("Upgrading Levain")
+            log.info(t("lib.releases.levain_releases.upgrading"))
             log.info("")
 
             this.config.shellCheckForUpdate = true
@@ -199,7 +201,7 @@ export default class LevainReleases {
             await levainReleases.prepareNewRelease()
         } catch(error) {
             log.debug(`Error ${error}`)
-            log.info(`Ignoring Levain updates`)
+            log.info(t("lib.releases.levain_releases.ignoring"))
         }
     }
 
@@ -231,10 +233,10 @@ export default class LevainReleases {
     async newReleaseInfo() {
         log.info("")
         log.info("*********************************************************")
-        log.info("We have a new Levain release available!")
-        log.info("")
-        log.info(`- Your version: ${LevainVersion.levainVersion}`)
-        log.info(`-  New version: ${await this.latestVersion()}`)
+        log.info(t(
+            "lib.releases.levain_releases.newReleaseAvailable", 
+            { yourVersion: LevainVersion.levainVersion, newVersion: await this.latestVersion()}
+        ))
         log.info("*********************************************************")
         log.info("")
     }
@@ -254,7 +256,7 @@ export default class LevainReleases {
                 let loader = new Loader(this.config)
                 await loader.action(undefined, action)    
             } catch (error) {
-                log.error(`Unable to extract Levain version - ignoring upgrade (for now) ${JSON.stringify(error)}`)
+                log.error(t("lib.releases.levain_releases.unableToExtract", { error: JSON.stringify(error) } ))
                 return
             }
         }
@@ -262,12 +264,12 @@ export default class LevainReleases {
         // Double check
         log.debug(`Checking (2) Levain at ${newVersionDir}`)
         if (!existsSync(newVersionDir)) {
-            log.error("Unable to load new Levain version - ignoring upgrade (for now)")
+            log.error(t("lib.releases.levain_releases.unableToLoad"))
             return
         }
 
         log.info("")
-        log.info("Restarting Levain for upgrade")
+        log.info(t("lib.releases.levain_releases.restarting"))
         log.info("")
 
         Deno.exit(UPDATE_REQUEST)

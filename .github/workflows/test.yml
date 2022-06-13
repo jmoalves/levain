@@ -1,10 +1,8 @@
 name: Run tests
 
 on:
-  #push:
-
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+  #[workflow_dispatch, push, pull_request]
+  [workflow_dispatch]
 
 jobs:
   runTests:

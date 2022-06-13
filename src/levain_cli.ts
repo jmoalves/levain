@@ -1,5 +1,7 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
+import t from './lib/i18n.ts'
+
 import Config from "./lib/config.ts";
 import ConsoleAndFileLogger from "./lib/logger/console_and_file_logger.ts";
 import Loader from "./lib/loader.ts";
@@ -15,7 +17,10 @@ import OsUtils from "./lib/os/os_utils.ts";
 export default class LevainCli {
 
     async execute(myArgs: any = {}): Promise<void> {
-        log.info(`Levain ${LevainVersion.levainVersion} with Deno v${Deno.version.deno} at ${Levain.levainRootFile}`);
+        log.info(t("levain_cli.levainVersion", { 
+            version: LevainVersion.levainVersion, 
+            denoVersion: Deno.version.deno,
+            levainRootFile: Levain.levainRootFile}));
         log.info("");
 
         log.debug("args " + JSON.stringify(myArgs));
@@ -50,7 +55,7 @@ export default class LevainCli {
         // Ask for user_info
         if (cmd === 'install') {
             const userInfoUtil = new UserInfoUtil()
-            userInfoUtil.askUserInfo(config, myArgs);
+            await userInfoUtil.askUserInfo(config, myArgs);
         }
 
         // Shell path
@@ -65,7 +70,7 @@ export default class LevainCli {
 
         // Repository Manager
         await config.repositoryManager.init({
-            repos: myArgs.addRepo,
+            extraRepos: myArgs.addRepo,
             tempRepos: myArgs.tempRepo
         })
 
@@ -79,18 +84,20 @@ export default class LevainCli {
                 log.info("");
                 log.info("");
                 log.info("");
-                log.info("Levain upgrade completed. Please re-execute your previous command")
+                log.info(t("levain_cli.levainUpgrade"));
                 log.info("");
-                prompt("Hit ENTER to finish");
+                prompt(t("enterFinish"));
                 log.info("");
-                log.info("Bye.");
+                log.info(t("levain_cli.bye"));
                 Deno.exit(0)
             } else {
-                if (cmd != "clean") {
+                if (cmd != "clean" && Math.random() > 0.75) {
                     await loader.command("clean", [])
                 }
 
                 await loader.command(cmd, myArgs._)
+                // FIXME Will this save a broken config?
+                // config.saveIfChanged()
             }
         } catch (err) {
             if (err instanceof CommandNotFoundError) {
@@ -105,7 +112,7 @@ export default class LevainCli {
         /////////////////////////////////////////////////////////////////////////////////
         log.debug("==================================");
 
-        config.save();
+        config.save()
     }
 
 
@@ -118,7 +125,7 @@ export default class LevainCli {
             .map(command => command.oneLineExample)
 
         log.info("");
-        log.info("Commands available:")
+        log.info(t("levain_cli.availableCommands"))
         examples.forEach(example => log.info(example))
     }
 }

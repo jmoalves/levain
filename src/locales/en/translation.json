@@ -1,0 +1,167 @@
+{
+    "enterFinish": "Hit ENTER to finish",
+    "levain": {
+        "levainRan": "Levain ran in {{timer}}",
+        "executionFailed": "execution FAILED",
+        "executionSuccess": "execution SUCCESS"
+    },
+    "levain_cli": {
+        "levainVersion": "Levain {{version}} with Deno v{{denoVersion}} at {{levainRootFile}}",
+        "levainUpgrade": "Levain upgrade completed. Please re-execute your previous command",
+        "bye": "Bye.",
+        "availableCommands": "Available commands:"
+    },
+    "cmd": {
+        "actions": {
+            "actionsFound": "= Actions:",
+            "example": "  actions <optional search text>"
+        },
+        "clean": {
+            "startFeedback": "# CLEAN...",
+            "logs": "cleaning logs",
+            "cmd.clean.cleaned":"Cleaned {{amount}}",
+            "endFeedback": "# CLEAN - {{amount}}",
+            "errorIgnoringEntryPath": "Error {{error}} - Ignoring {{entryPath}}",
+            "entryPathIgnoringError": "{{entryPath}} - Ignoring {{error}}",
+            "example": "  clean --cache(optional) --backup(optional) --temp(optional) --logs(optional)"
+        },
+        "command_factory": {
+            "notFound": "Command '{{cmd}}' not found",
+            "didYouMean": "Did you mean one of these commands?"
+        },
+        "explain": {
+            "nothing": "explain - Nothing to explain.",
+            "example": "  explain <package>..."
+        },
+        "info": {
+            "yourPackages": "=== Your packages",
+            "packageNotFound": "Package not found - {{pkgName}}",
+            "notInstalled": " - NOT installed",
+            "needUpdate": " - need UPDATE",
+            "example": "  info [--verbose] <package name> ... <package name>"
+        },
+        "install": {
+            "noPackages": "What packages do your want to install? Aborting...",
+            "unableToFind": "{{pkgNames}} - Unable to find some packages",
+            "similar": "=== Similar known packages",
+            "errorNotFound": "Couldn't find package {{pkgNames}} to install. Aborting...",
+            "installing": "- Installing - {{object}}",
+            "updating": "- Updating - {{object}}",
+            "updateAvailable": "Some packages have an update available.",
+            "updatePrompt": "Should we update them now (Y,n)?",
+            "updatePromptDefault": "Y",
+            "askLater": "Ok. We will ask again later.",
+            "reloadInstalled": "Reloading packages - installed only.",
+            "nothing": "install - Nothing to install. Aborting...",
+            "finished": "install {{pkgNames}} - FINISHED",
+            "ignoreMinVer": "- We will IGNORE the package {{pkg}} installation. It needs a newer levain version {{min}} - Your version is {{current}}",
+            "mustUpgradeLevain": "You must upgrade your levain (or fix the package {{pkg}} configuration",
+            "pkgTook": "--> {{pkg}} took {{timer}}",
+            "goodNotSave": "Good. We do not need to save {{baseDir}} because it does not exist",
+            "keepingBaseDir": "- Keeping the baseDir for {{pkg}} as requested",
+            "ignoreError": "Ignoring - {{error}}",
+            "errorSaving": "- Found error saving {{pkg}}. Ignoring upgrade",
+            "example": "  install <package name> ... <package name>"
+        },
+        "list_command": {
+            "repo": "= Repository:",
+            "noPackages": "no packages found",
+            "packagesFound": "{{pkg}} of {{count}} package found",
+            "packagesFound_other": "{{pkg}} of {{count}} packages found",
+            "packages": "Package",
+            "packages_other": "Packages",
+            "unableToList": "Unable to list some packages",
+            "unableToSimilar": "Unable to list similar packages too",
+            "similarPackages": "Listing similar packages",
+            "example": "  list <optional search text>"
+        },
+        "shell": {
+            "checkUpdates": "shell must check for updates? {{shouldCheck}}",
+            "notAllowed": "levainShell action is not allowed here. Check your recipe - pkg: {{pkg}} action: {{action}}",
+            "example": "  shell <optional package name>"
+        }
+    },
+    "lib": {
+        "repository": {
+            "repository_manager": {
+                "loaded": "- Loaded REPOS {{repos}}",
+                "currentMultiple": "Found more than one .levain.yaml file => Using {{chosen}} of {{choices}}",
+                "notInitialized": "RepositoryManager not initialized",
+                "testOnly": "RepositoryManager.repository({{repo}}) - TEST ONLY!",
+                "notFound": "Error initializing RepositoryManager - repositories not found"
+            },
+            "file_system_repository": {
+                "resolvedFrom": " resolved from {{dir}})",
+                "scanning": "# Scanning {{dir}}...",
+                "found": "Found {{pkgNum}} packages in {{dir}} ({{timer}})"
+            }
+        },
+        "user_info": {
+            "userinfo_util": {
+                "loadingUserinfo": "loading user info from {{uri}}",
+                "userinfoDest": "User info will be saved in {{uri}}",
+                "hello": "Hello :-)",
+                "noUsername": "No username for defaultEmail",
+                "noEmailDomain": "No emailDomain for defaultEmail",
+                "unableEmail": "Unable to collect email",
+                "askingPassword": "Asking for password, try {{try}}",
+                "passwordWarning": {
+                    "1": " === ATTENTION PLEASE! The characters below are known to cause problems with passwords",
+                    "2": " === If you use one of them, please change your password and come back.",
+                    "3": " === Do not use:"
+                },
+                "passwordSize": "* Password must have at least {{min}} characters *",
+                "attempt": "Attempt: {{try}}",
+                "passwordPrompt": "Please, inform your network password: ",
+                "confirmPassword": "Confirm your password: ",
+                "invalidChar": "****** INVALID CHAR IN PASSWORD. Please change your password and try again.",
+                "match": "Perfect, the typed passwords are the same.",
+                "mismatch": "Password mismatch... Please, inform again.",
+                "unablePasswordAttempts": "Unable to collect password after {{tries}} attempts",
+                "invalidFullName": "Invalid FULL NAME - {{result}}"
+            },
+            "input_name": {
+                "namePrompt": "What's your FULL NAME (for Git)?",
+                "enterDefault": " Press return for [{{defaultValue}}]"
+            },
+            "input_login": {
+                "loginPrompt": "What's your LOGIN? (press return to confirm default value) ",
+                "loginPromptShort": "What's your LOGIN?",
+                "enterDefault": " Press return for [{{defaultValue}}]"
+            },
+            "input_email": {
+                "emailPrompt": "Do you have an EMAIL? (press return to confirm default value)"
+            }
+        },
+        "releases": {
+            "levain_releases": {
+                "noRelease": "No release found",
+                "errorLookingFor": "Error looking for Levain releases {{error}}",
+                "undefinedVersion": "No zip for undefined version",
+                "ignoringToday": "We are ignoring the Levain update. We will ask you again another day.",
+                "updateNow": "Update now (Y,n)?",
+                "updateNowDefault": "Y",
+                "askLater": "Ok. We will ask again later.",
+                "upgrading": "Upgrading Levain",
+                "ignoring": "Ignoring Levain updates",
+                "newReleaseAvailable": 
+                    "\nWe have a new Levain release available!\n\n- Your version: {{yourVersion}}\n-  New version: {{newVersion}}",
+                "unableToExtract": "Unable to extract Levain version - ignoring upgrade (for now) {{error}}",
+                "unableToLoad": "Unable to load new Levain version - ignoring upgrade (for now)",
+                "restarting": "Restarting Levain for upgrade"
+            }
+        },
+        "cli_util": {
+            "continue": "Continue?",
+            "continueDefault": "Y",
+            "aborting": "Ok, aborting...",
+            "doNotContinue": "== Do not continue =="
+        },
+        "config": {
+            "shellPath": "Changing shell path: {{oldPath}} => {{newPath}}",
+            "defaultPackage": "Changing default package: {{oldPackage}} => {{newPackage}}",
+            "errorReading": "Error reading config - {{filename}}",
+            "noHomeValid": "No valid levainHome in your list"
+        }
+    }
+}

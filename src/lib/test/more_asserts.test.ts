@@ -1,21 +1,27 @@
-import * as path from "https://deno.land/std/path/mod.ts";
 import {AssertionError, assertThrows} from "https://deno.land/std/testing/asserts.ts";
 
 import {
-    assertArrayContainsInAnyOrder,
     assertArrayEndsWith,
+    assertArrayEqualsInAnyOrder,
     assertDirCount,
+    assertDirCountGreaterOrEqualTo,
     assertFileSizeAprox,
     assertFind,
     assertFolderDoesNotInclude,
     assertFolderIncludes,
+    assertGreaterOrEqualTo,
     assertGreaterThan,
     assertNotFind,
     assertNumberEquals,
     assertPathDoesNotExist,
+    assertPathEndsWith,
     assertStringEndsWith,
 } from "./more_asserts.ts";
 import TestHelper from "./test_helper.ts";
+
+const testdataMoreAssertsFolder = TestHelper.getTestDataPath('more_asserts');
+const testdataMoreAssertsFile = TestHelper.getTestDataPath('more_asserts/file.txt');
+const testdataAssertFolderIncludes = TestHelper.getTestDataPath('assertFolderIncludes')
 
 //
 // assertsStringEndsWith
@@ -42,7 +48,7 @@ Deno.test('MoreAsserts.assertArrayEndsWith should raise error when arrays are co
             assertArrayEndsWith([1, 2, 3], [6, 7, 8])
         },
         AssertionError,
-        "expected [1,2,3] to end with [6,7,8]"
+        // "expected [1,2,3] to end with [6,7,8]"
     )
 })
 Deno.test('MoreAsserts.assertArrayEndsWith should detect numeric array ending', () => {
@@ -54,7 +60,7 @@ Deno.test('MoreAsserts.assertArrayEndsWith should raise error when string array 
             assertArrayEndsWith(['abc', 'xyz'], ['abc'])
         },
         AssertionError,
-        `expected ["abc","xyz"] to end with ["abc"]`
+        // `expected ["abc","xyz"] to end with ["abc"]`
     )
 })
 Deno.test('MoreAsserts.assertArrayEndsWith should detect string array ending', () => {
@@ -92,12 +98,12 @@ Deno.test('MoreAsserts.assertNotFind should throw AssertionError when element is
 // assertArrayContainsInAnyOrder
 //
 Deno.test('MoreAsserts.assertArrayContainsInAnyOrder should assert that elements are equal, even in different order', () => {
-    assertArrayContainsInAnyOrder([1, 2, 3], [2, 3, 1])
+    assertArrayEqualsInAnyOrder([1, 2, 3], [2, 3, 1])
 })
 Deno.test('MoreAsserts.assertArrayContainsInAnyOrder should find out that one element is missing', () => {
     assertThrows(
         () => {
-            assertArrayContainsInAnyOrder([1, 2], [1, 2, 3])
+            assertArrayEqualsInAnyOrder([1, 2], [1, 2, 3])
         },
         AssertionError,
     )
@@ -106,12 +112,12 @@ Deno.test('MoreAsserts.assertArrayContainsInAnyOrder should find out that one el
 // assertFolderIncludes
 //
 Deno.test('MoreAsserts.assertFolderIncludes should assert a file is in a folder', () => {
-    assertFolderIncludes('testdata/assertFolderIncludes', ['file.txt'])
+    assertFolderIncludes(testdataAssertFolderIncludes, ['file.txt'])
 })
 Deno.test('MoreAsserts.assertFolderIncludes should find out that a file is missing', () => {
     assertThrows(
         () => {
-            assertFolderIncludes('testdata/assertFolderIncludes', ['abc123.doc'])
+            assertFolderIncludes(testdataAssertFolderIncludes, ['abc123.doc'])
         },
         AssertionError,
         "abc123.doc",
@@ -121,12 +127,12 @@ Deno.test('MoreAsserts.assertFolderIncludes should find out that a file is missi
 // assertFolderDoesNotInclude
 //
 Deno.test('MoreAsserts.assertFolderDoesNotInclude should assert a file is not in a folder', () => {
-    assertFolderDoesNotInclude('testdata/assertFolderIncludes', ['abc123.doc'])
+    assertFolderDoesNotInclude(testdataAssertFolderIncludes, ['abc123.doc'])
 })
 Deno.test('MoreAsserts.assertFolderIncludes should find out that a file exists in the folder', () => {
     assertThrows(
         () => {
-            assertFolderDoesNotInclude('testdata/assertFolderIncludes', ['file.txt'])
+            assertFolderDoesNotInclude(testdataAssertFolderIncludes, ['file.txt'])
         },
         AssertionError,
         "file.txt",
@@ -136,7 +142,7 @@ Deno.test('MoreAsserts.assertFolderIncludes should find out that a file exists i
 // assertDirCount
 //
 Deno.test('MoreAsserts.assertDirCount should verify element count', () => {
-    assertDirCount('testdata/more_asserts', 3)
+    assertDirCount(testdataMoreAssertsFolder, 3)
 })
 Deno.test('MoreAsserts.assertDirCount should throw when folder does not exist', () => {
     assertThrows(
@@ -144,19 +150,25 @@ Deno.test('MoreAsserts.assertDirCount should throw when folder does not exist', 
             assertDirCount(TestHelper.folderThatDoesNotExist, 1)
         },
         Deno.errors.NotFound,
-        '(os error 2)',
+        'this-folder-does-not-exist',
     )
+})
+//
+// assertDirCountGreaterOrEqualTo
+//
+Deno.test('MoreAsserts.assertDirCountGreaterOrEqualTo should verify element count', () => {
+    assertDirCountGreaterOrEqualTo(testdataMoreAssertsFolder, 3)
 })
 //
 // assertFileSize
 //
 Deno.test('MoreAsserts.assertFileSize should check file size', () => {
-    assertFileSizeAprox(path.join('testdata', 'more_asserts', 'file.txt'), 29)
+    assertFileSizeAprox(testdataMoreAssertsFile, 29)
 })
 Deno.test('MoreAsserts.assertFileSize should throw if file size doesnt match', () => {
     assertThrows(
         () => {
-            assertFileSizeAprox(path.join('testdata', 'more_asserts', 'file.txt'), 10)
+            assertFileSizeAprox(testdataMoreAssertsFile, 10)
         },
         AssertionError,
         'Values are not equal',
@@ -169,7 +181,7 @@ Deno.test('MoreAsserts.assertFileDoesNotExist should identify that file does not
     assertPathDoesNotExist(TestHelper.fileThatDoesNotExist)
 })
 Deno.test('MoreAsserts.assertFileDoesNotExist should raise when file exists', () => {
-    const filePath = path.join('testdata', 'more_asserts', 'file.txt')
+    const filePath = testdataMoreAssertsFile
 
     assertThrows(
         () => {
@@ -177,6 +189,28 @@ Deno.test('MoreAsserts.assertFileDoesNotExist should raise when file exists', ()
         },
         AssertionError,
         `Path ${filePath} should not exist`
+    )
+})
+//
+// assertPathEndsWith
+//
+Deno.test('MoreAsserts.assertPathEndsWith should work with Windows path separators', () => {
+    assertPathEndsWith('C:\\src\\dev-env\\levain\\testdata\\any-folder\\any-file.txt', 'any-folder\\any-file.txt')
+})
+Deno.test('MoreAsserts.assertPathEndsWith should work with Posix path separators', () => {
+    assertPathEndsWith('/levain/testdata/any-folder/any-file.txt', 'any-folder/any-file.txt')
+})
+Deno.test('MoreAsserts.assertPathEndsWith should work with mixed path separators', () => {
+    assertPathEndsWith('C:\\src\\dev-env\\levain\\testdata\\any-folder\\any-file.txt', 'any-folder/any-file.txt')
+    assertPathEndsWith('/levain/testdata/any-folder/any-file.txt', 'any-folder\\any-file.txt')
+})
+Deno.test('MoreAsserts.assertPathEndsWith should fail for different paths', () => {
+    assertThrows(
+        () => {
+            assertPathEndsWith('one-folder/one-file.txt', 'another-folder/another-file.txt')
+        },
+        Error,
+        'Expected path one-folder/one-file.txt to end with another-folder/another-file.txt'
     )
 })
 //
@@ -200,4 +234,46 @@ Deno.test('MoreAsserts.assertNumberEquals should work with zeros', () => {
 //
 Deno.test('MoreAsserts.assertGreaterThan should work with numbers', () => {
     assertGreaterThan(4, 1)
+})
+Deno.test('MoreAsserts.assertGreaterThan should fail with a message', () => {
+    assertThrows(
+        () => {
+            assertGreaterThan(2, 2000)
+        },
+        Error,
+        'Expected 2 to be greater than 2000'
+    )
+})
+Deno.test('MoreAsserts.assertGreaterThan should fail with custom message', () => {
+    assertThrows(
+        () => {
+            assertGreaterThan(1, 321, 'Do or do not, there is no try')
+        },
+        Error,
+        'Do or do not, there is no try'
+    )
+})
+//
+// assertGreaterOrEqualTo
+//
+Deno.test('MoreAsserts.assertGreaterOrEqualTo should work with numbers', () => {
+    assertGreaterOrEqualTo(12, 12)
+})
+Deno.test('MoreAsserts.assertGreaterOrEqualTo should fail with a message', () => {
+    assertThrows(
+        () => {
+            assertGreaterOrEqualTo(2, 2000)
+        },
+        Error,
+        'Expected 2 to be greater or equal to 2000'
+    )
+})
+Deno.test('MoreAsserts.assertGreaterOrEqualTo should fail with custom message', () => {
+    assertThrows(
+        () => {
+            assertGreaterOrEqualTo(1, 321, 'Always in motion is the future.')
+        },
+        Error,
+        'Always in motion is the future.',
+    )
 })

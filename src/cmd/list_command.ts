@@ -1,5 +1,7 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
+import t from '../lib/i18n.ts'
+
 import Config from "../lib/config.ts";
 import StringUtils from "../lib/utils/string_utils.ts";
 
@@ -17,8 +19,8 @@ export default class ListCommand implements Command {
         log.info("==================================");
         const searchText = args?.join(' ') || '';
         log.info(`list "${searchText}"`);
-        log.info(`= Repository:`)
-        log.info(`  ${repo.name}`)
+        log.info(t("cmd.list_command.repo"))
+        log.info(`  ${repo.describe()}`)
 
         const packages = repo.listPackages()
         const filteredPackages = args
@@ -27,33 +29,28 @@ export default class ListCommand implements Command {
 
         const packageCount = packages?.length;
         if (!packageCount) {
-            log.info(`  no packages found`)
+            log.info(`  ${t("cmd.list_command.noPackages")}`)
         } else {
             const filteredPackageCount = filteredPackages.length;
-            const repoPackageCountText =
-                filteredPackageCount !== packageCount
-                    ? `of ${packageCount} `
-                    : ''
             if (filteredPackageCount > 0) {
-                const repoPluralChar = packageCount > 1 ? 's' : ''
-                log.info(`  ${filteredPackageCount} ${repoPackageCountText}package${repoPluralChar} found`)
+                log.info(`  ${t("cmd.list_command.packagesFound", { pkg: filteredPackageCount, count: packageCount })}`)
                 log.info("");
                 const filteredPluralChar = filteredPackageCount > 1 ? 's' : ''
-                log.info(`== Package${filteredPluralChar}`);
+                log.info(`== ${t("cmd.list_command.packages", { count: filteredPackageCount })}`);
                 // TODO: Inform if package is already installed.
                 filteredPackages.forEach(pkg => {
                     log.info(`   ${StringUtils.padEnd(pkg?.name, 30)}`)
                 })
             }else{
                 log.info(``)
-                log.info(`${searchText} - Unable to list some packages`)
+                log.info(`${searchText} - ${t("cmd.list_command.unableToList")}`)
         
                 const similarPackages = packages?.filter(it => this.similarNames(it.name, searchText))
                 log.info(``)
                 if( !similarPackages || similarPackages.length == 0){
-                    log.info(`${searchText} - Unable to list similar packages too`)
+                    log.info(`${searchText} - ${t("cmd.list_command.unableToSimilar")}`)
                 }else{
-                    log.info(`${searchText} - Listing similar packages`)
+                    log.info(`${searchText} - ${t("cmd.list_command.similarPackages")}`)
                     for( let a of similarPackages){
                         log.info(a.name)
                     }
@@ -79,5 +76,5 @@ export default class ListCommand implements Command {
     }
 
 
-    readonly oneLineExample = "  list <optional search text>"
+    readonly oneLineExample = t("cmd.list_command.example")
 }
