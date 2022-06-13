@@ -20,10 +20,11 @@ export default class InfoCommand implements Command {
         });
 
 
+        let pkgs:Package[] | null = null
         if (myArgs._ && myArgs._.length > 0) {
             let pkgNames: string[] = myArgs._;
 
-            this.config.packageManager.resolvePackages(pkgNames, false, false);
+            pkgs = this.config.packageManager.resolvePackages(pkgNames, false, false);
 
             log.info("")
             log.info(t("cmd.info.yourPackages"))
@@ -35,6 +36,12 @@ export default class InfoCommand implements Command {
         log.info("")
         log.info("=== Levain")
         this.showPackage(myArgs, 0, "levain")
+
+        if (pkgs) {
+            log.info("")
+            log.info(t("cmd.info.installationOrder"))
+            pkgs.forEach(pkg => log.info(pkg.name))
+        }
     }
 
     showPackage(args: any, level: number, pkgName: string) {
@@ -57,8 +64,6 @@ export default class InfoCommand implements Command {
             log.info(`${ident}| pkgDir....: ${pkg.pkgDir}`)
             log.info(`${ident}| repo......: ${pkg.repo?.name}`)
             log.info(`${ident}\\ filePath..: ${pkg.filePath}`)
-            // log.info(pkg.yamlStruct: any;
-            // readonly dependencies: string[] | undefined;    
         }
     
         pkg.dependencies?.forEach(dep => this.showPackage(args, level+1, dep))    

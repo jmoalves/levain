@@ -38,6 +38,7 @@
             "packageNotFound": "Pacote não encontrado - {{pkgName}}",
             "notInstalled": " - NÃO instalado",
             "needUpdate": " - requer UPDATE",
+            "installationOrder": "=== Ordem de instalação",
             "example": "  info [--verbose] <pacote> ... <pacote>"
         },
         "install": {
