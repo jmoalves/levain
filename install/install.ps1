@@ -2,6 +2,9 @@
 # Inspired by https://deno.land/x/install@v0.1.4/install.ps1
 # TODO(everyone): Keep this script simple and easily auditable.
 
+# Example:
+# $v="0.80.7";iwr https://raw.githubusercontent.com/jmoalves/levain/master/install/install.ps1 -useb | iex
+
 $ErrorActionPreference = 'Stop'
 
 if ($v) {
