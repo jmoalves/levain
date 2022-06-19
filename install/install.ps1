@@ -34,7 +34,7 @@ if (!(Test-Path $TempLevain)) {
 }
 
 if (!(Test-Path $TempLevainZip)) {
-  Invoke-WebRequest -Headers @{"Cache-Control"="no-cache"} $LevainUri -OutFile $TempLevainZip -UseBasicParsing
+  Invoke-WebRequest $LevainUri -OutFile $TempLevainZip -UseBasicParsing
 }
 
 if (!(Test-Path $TempLevainDir)) {
