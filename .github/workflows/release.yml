@@ -99,6 +99,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
 
+      - name: Changelog
+        run: bash $GITHUB_WORKSPACE/githubScripts/changelog.sh LATEST $LEVAIN_VERSION > ${{ runner.temp }}/changelog.$LEVAIN_VERSION.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
+
       - name: Create release
         id: create_release
         uses: actions/create-release@v1
@@ -106,6 +112,7 @@ jobs:
           tag_name: v${{ env.LEVAIN_VERSION }}
           release_name: v${{ env.LEVAIN_VERSION }}
           commitish: master
+          body_path: ${{ runner.temp }}/changelog.$LEVAIN_VERSION.md
           draft: false
           prerelease: true
         env:
