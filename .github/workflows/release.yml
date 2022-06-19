@@ -185,10 +185,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
 
-      - name: Wait release - Timeout 5 min
-        run: timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' https://api.github.com/repos/jmoalves/levain/releases/tags/v${{ env.LEVAIN_VERSION }})" != "200" ]]; do echo Waiting...; sleep 5; done' || false
-        env:
-          LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
+      # - name: Wait release - Timeout 5 min
+      #   run: timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' https://api.github.com/repos/jmoalves/levain/releases/tags/v${{ env.LEVAIN_VERSION }})" != "200" ]]; do echo Waiting...; sleep 5; done' || false
+      #   env:
+      #     LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
 
       - name: Upload asset - levain-v${{ env.LEVAIN_VERSION }}-windows-x86_64.zip
         uses: actions/upload-release-asset@v1
