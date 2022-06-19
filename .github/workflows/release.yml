@@ -178,7 +178,7 @@ jobs:
           release_name: v${{ env.LEVAIN_VERSION }}
           commitish: master
           body_path: ${{ runner.temp }}/changelog.${{ env.LEVAIN_VERSION }}.md
-          draft: false
+          draft: true
           prerelease: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -276,3 +276,10 @@ jobs:
           asset_path: ${{ runner.temp }}/levainBootstrap-windows-x86_64.zip.sha256
           asset_name: levainBootstrap-windows-x86_64.zip.sha256
           asset_content_type: text/plain
+
+      - name: Publish release
+      - uses: eregon/publish-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          release_id: ${{ steps.create_release.outputs.id }}
