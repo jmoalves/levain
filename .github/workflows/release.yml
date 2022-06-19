@@ -114,7 +114,7 @@ jobs:
           tag_name: v${{ env.LEVAIN_VERSION }}
           release_name: v${{ env.LEVAIN_VERSION }}
           commitish: master
-          body_path: ${{ runner.temp }}/changelog.$LEVAIN_VERSION.md
+          body_path: ${{ runner.temp }}/changelog.${{ env.LEVAIN_VERSION }}.md
           draft: false
           prerelease: true
         env:
