@@ -28,7 +28,7 @@ $LevainUri = if (!$Version) {
 
 $TempLevain = "$env:TEMP\levain"
 $TempLevainZip = "$TempLevain\levain-v${Version}-windows-x86_64.zip"
-$TempLevainDir = "$TempLevain\levain-v${Version}"
+$TempLevainDir = "$TempLevain\levain-${Version}"
 if (!(Test-Path $TempLevain)) {
   New-Item $TempLevain -ItemType Directory | Out-Null
 }
@@ -46,4 +46,4 @@ if (!(Test-Path $TempLevainDir)) {
   }
 }
 
-Write-Output "Levain at $TempLevainDir"
+$TempLevainDir\levain install --addRepo https://github.com/jmoalves/levain-pkgs.git install levain
