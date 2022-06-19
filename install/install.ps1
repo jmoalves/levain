@@ -46,4 +46,4 @@ if (!(Test-Path $TempLevainDir)) {
   }
 }
 
-$TempLevainDir\levain install --addRepo https://github.com/jmoalves/levain-pkgs.git install levain
+"$TempLevainDir\levain" install --addRepo https://github.com/jmoalves/levain-pkgs.git install levain
