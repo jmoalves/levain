@@ -26,7 +26,7 @@ $LevainHome = if ($env:LEVAIN_HOME) {
 $LevainUri = if (!$Version) {
   "https://github.com/jmoalves/levain/releases/latest/download/levain-windows-x86_64.zip"
 } else {
-  "https://github.com/jmoalves/levain/releases/download/v${Version}/levain-v${Version}-windows-x86_64.zip"
+  "https://github.com/jmoalves/levain/releases/download/v${Version}/levain-windows-x86_64.zip"
 }
 
 $TempLevain = "$env:TEMP\levain"
