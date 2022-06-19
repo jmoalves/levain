@@ -34,6 +34,7 @@ if (!(Test-Path $TempLevain)) {
 }
 
 if (!(Test-Path $TempLevainZip)) {
+  Write-Output "Downloading Levain from $LevainUri"
   Invoke-WebRequest $LevainUri -OutFile $TempLevainZip -UseBasicParsing
 }
 
