@@ -189,7 +189,7 @@ jobs:
         env:
           LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
 
-      - name: Upload asset
+      - name: Upload asset - levain-v${{ env.LEVAIN_VERSION }}-windows-x86_64.zip
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -200,7 +200,7 @@ jobs:
           asset_name: levain-v${{ env.LEVAIN_VERSION }}-windows-x86_64.zip
           asset_content_type: application/zip
 
-      - name: Upload asset
+      - name: Upload asset - levain-v${{ env.LEVAIN_VERSION }}-windows-x86_64.zip.sha256
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -211,7 +211,7 @@ jobs:
           asset_name: levain-v${{ env.LEVAIN_VERSION }}-windows-x86_64.zip.sha256
           asset_content_type: text/plain
 
-      - name: Upload asset
+      - name: Upload asset - levain-windows-x86_64.zip
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -222,7 +222,7 @@ jobs:
           asset_name: levain-windows-x86_64.zip
           asset_content_type: application/zip
 
-      - name: Upload asset
+      - name: Upload asset - levain-windows-x86_64.zip.sha256
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -233,7 +233,7 @@ jobs:
           asset_name: levain-windows-x86_64.zip.sha256
           asset_content_type: text/plain
 
-      - name: Upload asset
+      - name: Upload asset - levain-extra-bin-windows-x86_64.zip
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -244,7 +244,7 @@ jobs:
           asset_name: levain-extra-bin-windows-x86_64.zip
           asset_content_type: application/zip
 
-      - name: Upload asset
+      - name: Upload asset - levain-extra-bin-windows-x86_64.zip.sha256
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -255,7 +255,7 @@ jobs:
           asset_name: levain-extra-bin-windows-x86_64.zip.sha256
           asset_content_type: text/plain
 
-      - name: Upload asset
+      - name: Upload asset - levainBootstrap-windows-x86_64.zip
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -266,7 +266,7 @@ jobs:
           asset_name: levainBootstrap-windows-x86_64.zip
           asset_content_type: application/zip
 
-      - name: Upload asset
+      - name: Upload asset - levainBootstrap-windows-x86_64.zip.sha256
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
