@@ -14,7 +14,7 @@ if ($args.Length -eq 1) {
 $LevainHome = if ($env:LEVAIN_HOME) {
   "$env:LEVAIN_HOME"
 } else {
-  "$Home\levain"
+  "$HOME\levain"
 }
 
 # GitHub requires TLS 1.2
@@ -26,7 +26,7 @@ $LevainUri = if (!$Version) {
   "https://github.com/jmoalves/levain/releases/download/v${Version}/levain-v${Version}-windows-x86_64.zip"
 }
 
-$TempLevain = "$TEMP\levain"
+$TempLevain = "$env:TEMP\levain"
 $TempLevainZip = "$TempLevain\levain-v${Version}-windows-x86_64.zip"
 $TempLevainDir = "$TempLevain\levain-v${Version}"
 if (!(Test-Path $TempLevain)) {
@@ -39,10 +39,10 @@ if (!(Test-Path $TempLevainZip)) {
 
 if (!(Test-Path $TempLevainDir)) {
   if (Get-Command Expand-Archive -ErrorAction SilentlyContinue) {
-    Expand-Archive $TempLevainZip -Destination $TempLevainDir -Force
+    Expand-Archive $TempLevainZip -Destination $TempLevain -Force
   } else {
     Add-Type -AssemblyName System.IO.Compression.FileSystem
-    [IO.Compression.ZipFile]::ExtractToDirectory($TempLevainZip, $TempLevainDir)
+    [IO.Compression.ZipFile]::ExtractToDirectory($TempLevainZip, $TempLevain)
   }
 }
 
