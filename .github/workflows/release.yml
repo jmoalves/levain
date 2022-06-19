@@ -167,8 +167,9 @@ jobs:
           LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
           LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ github.event.inputs.releaseNumber }}
 
+
       ##############################################################
-      ### Create Release
+      ### Create release
       ##############################################################
       - name: Create release
         id: create_release
@@ -277,8 +278,11 @@ jobs:
           asset_name: levainBootstrap-windows-x86_64.zip.sha256
           asset_content_type: text/plain
 
+      ##############################################################
+      ### Publish release
+      ##############################################################
       - name: Publish release
-      - uses: eregon/publish-release@v1
+        uses: eregon/publish-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
