@@ -18,12 +18,12 @@ if ($v) {
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 if (!$levainRootUrl) {
-  $levainRootUrl="https://github.com/jmoalves/levain/releases/latest/download"
+  $levainRootUrl="https://github.com/jmoalves/levain/releases"
 }
 $LevainUri = if (!$Version) {
-  "${levainRootUrl}/levain-windows-x86_64.zip"
+  "${levainRootUrl}/latest/download/levain-windows-x86_64.zip"
 } else {
-  "${levainRootUrl}/v${Version}/levain-windows-x86_64.zip"
+  "${levainRootUrl}/download/v${Version}/levain-windows-x86_64.zip"
 }
 
 $TempLevain = "$env:TEMP\levain"
