@@ -46,4 +46,4 @@ if (!(Test-Path $TempLevainDir)) {
   }
 }
 
-"$TempLevainDir\levain" install --addRepo https://github.com/jmoalves/levain-pkgs.git install levain
+Start-Process -FilePath "C:\Windows\System32\cmd.exe" -verb runas -ArgumentList {/c $TempLevainDir\levain.cmd install --addRepo https://github.com/jmoalves/levain-pkgs.git install levain}
