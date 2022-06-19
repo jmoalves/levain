@@ -20,10 +20,10 @@ if ($v) {
 if (!$levainRootUrl) {
   $levainRootUrl="https://github.com/jmoalves/levain/releases"
 }
-$LevainUri = if (!$Version) {
-  "${levainRootUrl}/latest/download/levain-windows-x86_64.zip"
-} else {
+$LevainUri = if ($Version) {
   "${levainRootUrl}/download/v${Version}/levain-windows-x86_64.zip"
+} else {
+  "${levainRootUrl}/latest/download/levain-windows-x86_64.zip"
 }
 
 $TempLevain = "$env:TEMP\levain"
