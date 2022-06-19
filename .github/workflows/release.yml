@@ -124,6 +124,12 @@ jobs:
           LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
           LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ github.event.inputs.releaseNumber }}
 
+      - name: Levain install - PowerShell
+        run: |
+          bash $LEVAIN_RELEASE_PATH/install/install.ps1 ${{ runner.temp }}/install.ps1
+        env:
+          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ github.event.inputs.releaseNumber }}
+
       - name: Levain bootstrap
         run: |
           bash $GITHUB_WORKSPACE/githubScripts/levain-bootstrap.sh $LEVAIN_RELEASE_PATH ${{ runner.temp }}/levainBootstrap-windows-x86_64.zip
@@ -276,6 +282,17 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ runner.temp }}/levainBootstrap-windows-x86_64.zip.sha256
           asset_name: levainBootstrap-windows-x86_64.zip.sha256
+          asset_content_type: text/plain
+
+      - name: Upload asset - install.ps1
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ runner.temp }}/install.ps1
+          asset_name: install.ps1
           asset_content_type: text/plain
 
       ##############################################################

@@ -9,8 +9,9 @@ if [ ! -d "$levainDir"]; then
 fi
 
 rm -rvf ${levainDir}/bootstrap &&
-rm -rvf ${levainDir}/scripts &&
-rm -rvf ${levainDir}/githubScripts &&
 rm -rvf ${levainDir}/ci &&
+rm -rvf ${levainDir}/githubScripts &&
+rm -rvf ${levainDir}/install &&
+rm -rvf ${levainDir}/scripts &&
 rm -rvf ${levainDir}/testdata &&
 find ${levainDir} -name '*.test.ts' -exec rm -vf {} \;

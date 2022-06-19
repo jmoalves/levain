@@ -2,31 +2,28 @@
 # Inspired by https://deno.land/x/install@v0.1.4/install.ps1
 # TODO(everyone): Keep this script simple and easily auditable.
 
-# Example:
-# $v="0.80.7";iwr https://raw.githubusercontent.com/jmoalves/levain/master/install/install.ps1 -useb | iex
+# Examples:
+# iwr https://github.com/jmoalves/levain/releases/latest/download/install.ps1 -useb | iex
+# $v="0.80.7";iwr https://github.com/jmoalves/levain/releases/latest/download/install.ps1 -useb | iex
+# $levainHome="C:\dev-env";iwr https://github.com/jmoalves/levain/releases/latest/download/install.ps1 -useb | iex
+# $repoUrl="https://github.com/jmoalves/levain-pkgs.git";$levainHome="C:\dev-env";iwr https://github.com/jmoalves/levain/releases/latest/download/install.ps1 -useb | iex
 
 $ErrorActionPreference = 'Stop'
 
 if ($v) {
   $Version = "${v}"
 }
-if ($args.Length -eq 1) {
-  $Version = $args.Get(0)
-}
-
-$LevainHome = if ($env:LEVAIN_HOME) {
-  "$env:LEVAIN_HOME"
-} else {
-  "$HOME\levain"
-}
 
 # GitHub requires TLS 1.2
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
+if (!$levainRootUrl) {
+  $levainRootUrl="https://github.com/jmoalves/levain/releases/latest/download"
+}
 $LevainUri = if (!$Version) {
-  "https://github.com/jmoalves/levain/releases/latest/download/levain-windows-x86_64.zip"
+  "${levainRootUrl}/levain-windows-x86_64.zip"
 } else {
-  "https://github.com/jmoalves/levain/releases/download/v${Version}/levain-windows-x86_64.zip"
+  "${levainRootUrl}/v${Version}/levain-windows-x86_64.zip"
 }
 
 $TempLevain = "$env:TEMP\levain"
@@ -49,4 +46,14 @@ if (!(Test-Path $TempLevainDir)) {
   }
 }
 
-& $TempLevainDir\levain.cmd --addRepo https://github.com/jmoalves/levain-pkgs.git install levain
+$opts=
+if ($levainHome) {
+  $opts="$opts --levainHome $levainHome"
+}
+
+if (!$repoUrl) {
+  $repoUrl="https://github.com/jmoalves/levain-pkgs.git"
+}
+$opts="$opts --addRepo $repoUrl"
+
+& $TempLevainDir\levain.cmd $opts install levain
