@@ -4,6 +4,9 @@
 
 $ErrorActionPreference = 'Stop'
 
+if ($v) {
+  $Version = "${v}"
+}
 if ($args.Length -eq 1) {
   $Version = $args.Get(0)
 }
@@ -40,6 +43,7 @@ if (!(Test-Path $TempLevainDir)) {
   } else {
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     [IO.Compression.ZipFile]::ExtractToDirectory($TempLevainZip, $TempLevainDir)
+  }
 }
 
 Write-Output "Levain at $TempLevainDir"
