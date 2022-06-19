@@ -21,11 +21,8 @@ if [ "$vStart" == "LATEST" -o "$vStart" == "latest" ]; then
     vStart=$( echo $levainRelease | jq -rc '.tag_name' | sed 's/v//g' )
 fi
 
-git fetch --prune
-git pull
-
 echo '# Changes from' $vStart to $vEnd
-git log v$vEnd ^v$vStart --no-merges --dense --pretty="- %s" \
+git log v${vStart}..v${vEnd} --no-merges --dense --pretty="- %s" \
     | grep -v "^- vHEAD" \
     | grep -v "^- v[0-9]\+" \
     | grep -v "^- (skipChangelog)"
