@@ -100,7 +100,8 @@ jobs:
           LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
 
       - name: Changelog
-        run: bash $GITHUB_WORKSPACE/githubScripts/changelog.sh LATEST $LEVAIN_VERSION > ${{ runner.temp }}/changelog.$LEVAIN_VERSION.md
+        #run: bash $GITHUB_WORKSPACE/githubScripts/changelog.sh LATEST $LEVAIN_VERSION > ${{ runner.temp }}/changelog.$LEVAIN_VERSION.md
+        run: bash $GITHUB_WORKSPACE/githubScripts/changelog.sh LATEST $LEVAIN_VERSION && exit 1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
