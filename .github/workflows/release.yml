@@ -126,7 +126,7 @@ jobs:
 
       - name: Levain install - PowerShell
         run: |
-          bash cp $LEVAIN_RELEASE_PATH/install/install.ps1 ${{ runner.temp }}/install.ps1
+          cp $LEVAIN_RELEASE_PATH/install/install.ps1 ${{ runner.temp }}/install.ps1
         env:
           LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ github.event.inputs.releaseNumber }}
 
