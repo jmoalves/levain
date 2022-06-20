@@ -5,8 +5,6 @@
 # Examples:
 # iwr https://github.com/jmoalves/levain/releases/latest/download/install.ps1 -useb | iex
 # $v="0.80.7";iwr https://github.com/jmoalves/levain/releases/latest/download/install.ps1 -useb | iex
-# $levainHome="C:\dev-env";iwr https://github.com/jmoalves/levain/releases/latest/download/install.ps1 -useb | iex
-# $repoUrl="https://github.com/jmoalves/levain-pkgs.git";$levainHome="C:\dev-env";iwr https://github.com/jmoalves/levain/releases/latest/download/install.ps1 -useb | iex
 
 $ErrorActionPreference = 'Stop'
 
@@ -17,44 +15,46 @@ if ($v) {
 # GitHub requires TLS 1.2
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-if (!$levainRootUrl) {
-  $levainRootUrl="https://github.com/jmoalves/levain/releases"
-}
+$TempLevain = "$env:TEMP\levain"
+
 $LevainUri = if ($Version) {
-  "${levainRootUrl}/download/v${Version}/levain-windows-x86_64.zip"
+  "https://github.com/jmoalves/levain/releases/download/v${Version}/levain-windows-x86_64.zip"
 } else {
-  "${levainRootUrl}/latest/download/levain-windows-x86_64.zip"
+  "https://github.com/jmoalves/levain/releases/latest/download/levain-windows-x86_64.zip"
 }
 
-$TempLevain = "$env:TEMP\levain"
-$TempLevainZip = "$TempLevain\levain-v${Version}-windows-x86_64.zip"
-$TempLevainDir = "$TempLevain\levain-${Version}"
+$TempLevainZip = "$TempLevain\levain-windows-x86_64.zip"
+$TempLevainDir = "$TempLevain\levain-install"
+
 if (!(Test-Path $TempLevain)) {
   New-Item $TempLevain -ItemType Directory | Out-Null
 }
 
-if (!(Test-Path $TempLevainZip)) {
-  Write-Output "Downloading Levain from $LevainUri"
-  Invoke-WebRequest $LevainUri -OutFile $TempLevainZip -UseBasicParsing
+if (Test-Path $TempLevainZip) {
+  Remove-Item $TempLevainZip
 }
 
-if (!(Test-Path $TempLevainDir)) {
-  if (Get-Command Expand-Archive -ErrorAction SilentlyContinue) {
-    Expand-Archive $TempLevainZip -Destination $TempLevain -Force
-  } else {
-    Add-Type -AssemblyName System.IO.Compression.FileSystem
-    [IO.Compression.ZipFile]::ExtractToDirectory($TempLevainZip, $TempLevain)
-  }
+Write-Output "Downloading Levain from $LevainUri"
+Invoke-WebRequest $LevainUri -OutFile $TempLevainZip -UseBasicParsing
+
+if (Test-Path $TempLevainDir) {
+  Remove-Item $TempLevainDir
 }
 
-$opts=
-if ($levainHome) {
-  $opts="$opts --levainHome $levainHome"
+Write-Output "Extrating Levain from $TempLevainZip to $TempLevainDir"
+if (Get-Command Expand-Archive -ErrorAction SilentlyContinue) {
+  Expand-Archive $TempLevainZip -Destination $TempLevainDir -Force
+} else {
+  Add-Type -AssemblyName System.IO.Compression.FileSystem
+  [IO.Compression.ZipFile]::ExtractToDirectory($TempLevainZip, $TempLevainDir)
 }
 
-if (!$repoUrl) {
-  $repoUrl="https://github.com/jmoalves/levain-pkgs.git"
-}
-$opts="$opts --addRepo $repoUrl"
+Write-Output ""
+Write-Output ""
+& $TempLevainDir\levain.cmd --addRepo https://github.com/jmoalves/levain-pkgs.git install levain
 
-& $TempLevainDir\levain.cmd $opts install levain
+Write-Output "Removing $TempLevainDir"
+Remove-Item $TempLevainDir
+
+Write-Output "Removing $TempLevainZip"
+Remove-Item $TempLevainZip

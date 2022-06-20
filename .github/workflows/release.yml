@@ -154,7 +154,7 @@ jobs:
 
       - name: Levain package
         run: |
-          bash $GITHUB_WORKSPACE/githubScripts/levain-package.sh $LEVAIN_RELEASE_PATH ${{ runner.temp }}/levain-windows-x86_64.zip
+          bash $GITHUB_WORKSPACE/githubScripts/levain-package.sh $LEVAIN_RELEASE_PATH ${{ runner.temp }}/levain-windows-x86_64.zip STRIP
         env:
           LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
           LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ github.event.inputs.releaseNumber }}
