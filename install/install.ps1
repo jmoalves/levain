@@ -53,6 +53,8 @@ Write-Output ""
 Write-Output ""
 & $TempLevainDir\levain.cmd --addRepo https://github.com/jmoalves/levain-pkgs.git install levain
 
+Write-Output ""
+Write-Output ""
 Write-Output "Removing $TempLevainDir"
 Remove-Item $TempLevainDir -Recurse -Force
 
