@@ -34,6 +34,8 @@ if (Test-Path $TempLevainZip) {
   Remove-Item $TempLevainZip -Force
 }
 
+Write-Output ""
+Write-Output ""
 Write-Output "Downloading Levain from $LevainUri"
 Invoke-WebRequest $LevainUri -OutFile $TempLevainZip -UseBasicParsing
 
