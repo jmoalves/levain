@@ -31,14 +31,14 @@ if (!(Test-Path $TempLevain)) {
 }
 
 if (Test-Path $TempLevainZip) {
-  Remove-Item $TempLevainZip
+  Remove-Item $TempLevainZip -Force
 }
 
 Write-Output "Downloading Levain from $LevainUri"
 Invoke-WebRequest $LevainUri -OutFile $TempLevainZip -UseBasicParsing
 
 if (Test-Path $TempLevainDir) {
-  Remove-Item $TempLevainDir
+  Remove-Item $TempLevainDir -Recurse -Force
 }
 
 Write-Output "Extrating Levain from $TempLevainZip to $TempLevainDir"
@@ -54,7 +54,7 @@ Write-Output ""
 & $TempLevainDir\levain.cmd --addRepo https://github.com/jmoalves/levain-pkgs.git install levain
 
 Write-Output "Removing $TempLevainDir"
-Remove-Item $TempLevainDir
+Remove-Item $TempLevainDir -Recurse -Force
 
 Write-Output "Removing $TempLevainZip"
-Remove-Item $TempLevainZip
+Remove-Item $TempLevainZip -Force
