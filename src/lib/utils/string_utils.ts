@@ -122,4 +122,21 @@ export default class StringUtils {
 
         return ret
     }
+
+    static compressText(text: string, maxSize: number) {
+        const ellipsis = '...'
+        const minLimit = (ellipsis.length + 2)
+        if (maxSize < minLimit) {
+            throw new Error(`maxSize should be at least ${minLimit}`)
+        }
+
+        if (text.length <= maxSize) {
+            return text
+        }
+
+        const split = (maxSize - ellipsis.length) / 2.0
+        const firstHalf = Math.ceil(split)
+        const secondHalf = Math.floor(split)
+        return text.substring(0, firstHalf) + ellipsis + text.substring(text.length - secondHalf, text.length)
+    }
 }

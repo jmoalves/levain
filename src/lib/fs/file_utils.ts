@@ -9,6 +9,7 @@ import DateUtils from '../utils/date_utils.ts';
 import FileWriter from '../io/file_writer.ts';
 import ProgressReader from '../io/progress_reader.ts';
 import ReaderFactory from "../io/reader_factory.ts";
+import StringUtils from "../utils/string_utils";
 
 export class FileUtils {
     static getModificationTimestamp(filePath: string): Date | undefined {
@@ -163,7 +164,7 @@ export class FileUtils {
                 await r.rewind();
                 let dst = new FileWriter(dstFile);
 
-                let title = r.title;
+                let title = StringUtils.compressText(r.title, 50);
                 let total = r.size;
 
                 if (total) {
