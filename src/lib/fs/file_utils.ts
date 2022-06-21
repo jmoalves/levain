@@ -9,7 +9,7 @@ import DateUtils from '../utils/date_utils.ts';
 import FileWriter from '../io/file_writer.ts';
 import ProgressReader from '../io/progress_reader.ts';
 import ReaderFactory from "../io/reader_factory.ts";
-import StringUtils from "../utils/string_utils";
+import StringUtils from "../utils/string_utils.ts";
 
 export class FileUtils {
     static getModificationTimestamp(filePath: string): Date | undefined {
