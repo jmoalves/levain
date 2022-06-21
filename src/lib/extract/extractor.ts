@@ -5,7 +5,7 @@ import Config from "../config.ts";
 import {Timer} from "../timer.ts";
 import {FileUtils} from "../fs/file_utils.ts";
 import ConsoleFeedback from "../utils/console_feedback.ts";
-import {StringUtils} from "../utils/string_utils.ts";
+import StringUtils from "../utils/string_utils.ts";
 
 export abstract class Extractor {
     readonly feedback = new ConsoleFeedback();
