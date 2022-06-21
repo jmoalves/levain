@@ -3,8 +3,8 @@
 # TODO(everyone): Keep this script simple and easily auditable.
 
 # Examples:
-# iwr https://github.com/jmoalves/levain/releases/latest/download/install.ps1 -useb | iex
-# $v="0.80.7";iwr https://github.com/jmoalves/levain/releases/latest/download/install.ps1 -useb | iex
+# iwr https://github.com/jmoalves/levain/releases/latest/download/install.ps1 | iex
+# $v="0.80.7";iwr https://github.com/jmoalves/levain/releases/latest/download/install.ps1 | iex
 
 $ErrorActionPreference = 'Stop'
 
