@@ -23,9 +23,10 @@ export default class AddPathAction implements Action {
         if (myArgs?._?.length !== 1) {
             throw "You must inform the path";
         }
-        const newPathItem = myArgs?._?.[0];
 
         log.debug("AddPathAction args: " + JSON.stringify(myArgs));
+
+        const newPathItem = path.resolve(myArgs?._?.[0]);
 
         this.addPathToCurrentShell(newPathItem);
 
@@ -47,8 +48,7 @@ export default class AddPathAction implements Action {
             this.config.context.action.addpath.path = [];
         }
 
-        const newPath = path.resolve(newPathItem);
-        log.debug(`ADD-PATH ${newPath}`);
-        this.config.context.action.addpath.path.push(newPath);
+        log.debug(`ADD-PATH ${newPathItem}`);
+        this.config.context.action.addpath.path.push(newPathItem);
     }
 }
