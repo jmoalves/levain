@@ -3,6 +3,7 @@ import * as path from "https://deno.land/std/path/mod.ts";
 
 import ExtraBin from "../extra_bin.ts";
 import OsUtils from "../os/os_utils.ts";
+import {Timer} from "../timer.ts";
 
 import ConsoleFeedback from "./console_feedback.ts";
 
@@ -45,6 +46,7 @@ export default class GitUtils {
         const gitPath = GitUtils.parseGitPath(gitUrl)
         log.debug(`# GIT - CLONE - ${JSON.stringify(gitPath)} => ${dst}`);
 
+        const timer = new Timer()
         this.feedback.start(`# GIT - CLONE - ${JSON.stringify(gitPath)} => ${dst}`)
         const tick = setInterval(() => this.feedback.show(), 300)
 
@@ -63,12 +65,13 @@ export default class GitUtils {
         }
 
         clearInterval(tick)
-        this.feedback.reset(`# GIT - CLONE - ${JSON.stringify(gitPath)} => ${dst} - OK`)
+        this.feedback.reset(`# GIT - CLONE - ${JSON.stringify(gitPath)} => ${dst} - ${timer.humanize()}`)
     }
 
     async pull(workingDir: string) {
         log.debug(`# GIT - PULL - ${workingDir}`);
 
+        const timer = new Timer()
         this.feedback.start(`# GIT - PULL - ${workingDir}`)
         const tick = setInterval(() => this.feedback.show(), 300)
 
@@ -89,10 +92,10 @@ export default class GitUtils {
 
                 clearInterval(tick)
 
-                log.debug(`# GIT - PULL - ${workingDir} - OK`);
+                log.debug(`# GIT - PULL - ${workingDir} - ${timer.humanize()}`);
                 log.debug("");
 
-                this.feedback.reset(`# GIT - PULL - ${workingDir} - OK`)
+                this.feedback.reset(`# GIT - PULL - ${workingDir} - ${timer.humanize()}`)
                 return;
             } catch (error) {
                 log.error(`git error - try ${tries} - ${error}`)
