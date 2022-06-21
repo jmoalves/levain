@@ -65,7 +65,7 @@ export default class GitUtils {
         }
 
         clearInterval(tick)
-        this.feedback.reset(`# GIT - CLONE - ${JSON.stringify(gitPath)} => ${dst} - ${timer.humanize()}`)
+        this.feedback.reset(`# GIT - CLONE - ${JSON.stringify(gitPath)} => ${dst} (${timer.humanize()})`)
     }
 
     async pull(workingDir: string) {
@@ -92,10 +92,10 @@ export default class GitUtils {
 
                 clearInterval(tick)
 
-                log.debug(`# GIT - PULL - ${workingDir} - ${timer.humanize()}`);
+                log.debug(`# GIT - PULL - ${workingDir} (${timer.humanize()})`);
                 log.debug("");
 
-                this.feedback.reset(`# GIT - PULL - ${workingDir} - ${timer.humanize()}`)
+                this.feedback.reset(`# GIT - PULL - ${workingDir} (${timer.humanize()})`)
                 return;
             } catch (error) {
                 log.error(`git error - try ${tries} - ${error}`)
