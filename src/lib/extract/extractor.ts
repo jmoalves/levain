@@ -61,13 +61,13 @@ export abstract class Extractor {
 
         const timer = new Timer()
         log.debug(`- EXTRACT ${file} => ${tempDir}`);
-        this.feedback.start(`# ${StringUtils.compressText(file)}`)
+        this.feedback.start(`# ${StringUtils.compressText(file, 80)}`)
 
         let tick = setInterval(() => this.feedback.show(), 300)
         await this.extractImpl(file, tempDir)
         clearInterval(tick)
         
-        this.feedback.reset(`# ${StringUtils.compressText(file)} in ${timer.humanize()}`)
+        this.feedback.reset(`# ${StringUtils.compressText(file, 80)} in ${timer.humanize()}`)
         log.debug(`- extracted in ${timer.humanize()}`);
         return tempDir
     }
