@@ -25,5 +25,5 @@ echo '# Changes from' $vStart to $vEnd
 git log v${vStart}..v${vEnd} --no-merges --dense --pretty="- %s" \
     | grep -v "^- vHEAD" \
     | grep -v "^- v[0-9]\+" \
-    | grep -v "^- (skipChangelog)"
+    | grep -v "^- (skipChangelog)" \
     | grep -v "^- skip:"
