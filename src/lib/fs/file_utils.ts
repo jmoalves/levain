@@ -2,7 +2,7 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import {ensureDirSync, existsSync} from "https://deno.land/std/fs/mod.ts";
 
-import ProgressBar from "https://deno.land/x/progress@v1.2.4/mod.ts";
+import ProgressBar from "https://deno.land/x/progress/mod.ts";
 
 import OsUtils from '../os/os_utils.ts';
 import DateUtils from '../utils/date_utils.ts';
@@ -164,7 +164,7 @@ export class FileUtils {
                 await r.rewind();
                 let dst = new FileWriter(dstFile);
 
-                let title = StringUtils.compressText(r.title, 50);
+                let title = r.title ? StringUtils.compressText(r.title, 50) : undefined;
                 let total = r.size;
 
                 if (total) {
