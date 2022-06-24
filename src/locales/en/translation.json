@@ -81,6 +81,8 @@
             "justOneURL": "You must inform just one url to prepare. Sorry...",
             "needGitPath": "We can handle only git urls. URL: {{url}}",
             "invalidDir": "Invalid directory. dir: {{dir}}",
+            "preparing": "Preparing {{- url}}",
+            "dirExists": "Directory {{dir}} already exists.\nLeaving git changes untouched",
             "example": "  prepare <git url>"
         },
         "shell": {
@@ -93,7 +95,7 @@
         "repository": {
             "repository_manager": {
                 "loaded": "- Loaded REPOS {{repos}}",
-                "currentMultiple": "Found more than one .levain.yaml file => Using {{chosen}} of {{choices}}",
+                "currentMultiple": "Found more than one .levain.yaml file\n  => Using {{chosen}}\n  => Options: {{choices}}",
                 "notInitialized": "RepositoryManager not initialized",
                 "testOnly": "RepositoryManager.repository({{repo}}) - TEST ONLY!",
                 "notFound": "Error initializing RepositoryManager - repositories not found"

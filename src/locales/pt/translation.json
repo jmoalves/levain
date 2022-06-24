@@ -76,6 +76,15 @@
             "similarPackages": "Pacotes similares",
             "example": "  list <texto opcional de busca>"
         },
+        "prepare": {
+            "informURL": "Indique a url que você quer preparar",
+            "justOneURL": "Indique apenas UMA url para preparar",
+            "needGitPath": "Só sei lidar com URL do git. URL: {{url}}",
+            "invalidDir": "Diretório inválido. dir: {{dir}}",
+            "preparing": "Preparando {{- url}}",
+            "dirExists": "O diretório {{dir}} já existe.\nUsando como está...",
+            "example": "  prepare <url git>"
+        },
         "shell": {
             "checkUpdates": "shell deve verificar se há updates? {{shouldCheck}}",
             "notAllowed": "A ação levainShell não é permitida aqui. Verifique sua receita - pkg: {{pkg}} action: {{action}}",
