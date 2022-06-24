@@ -46,8 +46,12 @@ export default class Prepare implements Command {
         }
 
         const parsedPath = GitUtils.parseGitPath(url)
-        log.info("")
-        log.info(`parsed: ${JSON.stringify(parsedPath)}`)
+        log.info("");
+        log.info("-----------------");
+        log.info(t("cmd.prepare.preparing", { url: url }))
+        log.info("");
+
+        log.debug(`parsed: ${JSON.stringify(parsedPath)}`)
 
         if (myArgs.dirs) {
             const parentDir = path.resolve(parsedPath.user)
@@ -63,10 +67,10 @@ export default class Prepare implements Command {
         const repoDir = path.resolve(parsedPath.repo)
 
         const git = new GitUtils()
-        if (!FileUtils.exists(repoDir)) {
-            await git.clone(parsedPath.url, repoDir)
+        if (FileUtils.exists(repoDir)) {
+            log.warning(t("cmd.prepare.dirExists", { dir: repoDir }));
         } else {
-            await git.pull(repoDir)
+            await git.clone(parsedPath.url, repoDir)
         }
 
         Deno.chdir(repoDir)
