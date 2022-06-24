@@ -83,7 +83,7 @@
             "invalidDir": "Invalid directory. dir: {{dir}}",
             "preparing": "Preparing {{- url}}",
             "dirExists": "Directory {{dir}} already exists.\nLeaving git changes untouched",
-            "example": "  prepare <git url>"
+            "example": "  prepare [--dirs] <git url>"
         },
         "shell": {
             "checkUpdates": "shell must check for updates? {{shouldCheck}}",

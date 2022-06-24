@@ -83,7 +83,7 @@
             "invalidDir": "Diretório inválido. dir: {{dir}}",
             "preparing": "Preparando {{- url}}",
             "dirExists": "O diretório {{dir}} já existe.\nUsando como está...",
-            "example": "  prepare <url git>"
+            "example": "  prepare [--dirs] <url git>"
         },
         "shell": {
             "checkUpdates": "shell deve verificar se há updates? {{shouldCheck}}",
