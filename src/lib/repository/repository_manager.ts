@@ -48,6 +48,10 @@ export default class RepositoryManager {
         await this.initRepositories()
     }
 
+    async reloadCurrentDir(): Promise<void> {
+        await (await this.createCurrentDirRepo()).init()
+    }
+
     get saveState(): any {
         return [...this.extraRepos]
     }

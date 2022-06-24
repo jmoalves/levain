@@ -75,7 +75,7 @@ export default class Prepare implements Command {
 
         Deno.chdir(repoDir)
 
-        await this.config.repositoryManager.reload();
+        await this.config.repositoryManager.reloadCurrentDir();
         const loader = new Loader(this.config);
         await loader.command("shell", []);
     }
