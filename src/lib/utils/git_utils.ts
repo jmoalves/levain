@@ -9,6 +9,8 @@ import ConsoleFeedback from "./console_feedback.ts";
 
 export default class GitUtils {
     static readonly GIT_REG_EXP = /(?<url>.*\.git)(:?#(?<branch>.+))?$/
+    static readonly GITHUB_REG_EXP = /^git@.*:(?<user>[^/]+)\/(?<repo>[^.]+)\.git$/
+
     readonly gitCmd: string;
 
     readonly feedback = new ConsoleFeedback();
@@ -26,7 +28,23 @@ export default class GitUtils {
     }
 
     static parseGitPath(gitUrl: string): any {
-        return gitUrl.match(GitUtils.GIT_REG_EXP)?.groups
+        const result = gitUrl.match(GitUtils.GIT_REG_EXP)?.groups
+        if (!result) {
+            return undefined
+        }
+
+        let urlGroups:any = undefined
+        if (result.url) {
+            urlGroups = result.url.match(GitUtils.GITHUB_REG_EXP)?.groups
+        }
+
+        if (urlGroups) {
+            for (let key in urlGroups) {
+                result[key] = urlGroups[key]
+            }
+        }
+
+        return result
     }
 
     static localBaseDir(gitUrl: string): string {
