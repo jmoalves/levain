@@ -86,7 +86,7 @@
         "repository": {
             "repository_manager": {
                 "loaded": "- Lidos REPOS {{repos}}",
-                "currentMultiple": "Encontrei mais de um arquivo .levain.yaml => Usando {{chosen}} de {{choices}}",
+                "currentMultiple": "Encontrei mais de um arquivo .levain.yaml\n  => Usando {{chosen}}\n  => Opções: {{choices}}",
                 "notInitialized": "RepositoryManager não foi inicializado",
                 "testOnly": "RepositoryManager.repository({{repo}}) - TEST ONLY!",
                 "notFound": "Erro inicializando RepositoryManager - repositórios não encontrados"

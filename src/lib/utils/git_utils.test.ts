@@ -18,6 +18,10 @@ const validUrls = [
     "git@github.com:jmoalves/levain.git#some-branch-name",
     "git@github.com:jmoalves/levain.git#some_branch_name",
     "https://github.com/jmoalves/levain.git#develop",
+    "git@gitlab.bndes.net:sist-pme/pme.git",
+    "https://gitlab.bndes.net/sist-pme/pme.git",
+    "git@gitlab.com:scout-manager/scout-manager-app.git",
+    "https://gitlab.com/scout-manager/scout-manager-app.git",
 ]
 validUrls.forEach(gitPath => {
     Deno.test(`GitUtils - isGitPath(${gitPath})`, () => {
@@ -39,12 +43,24 @@ Deno.test(`GitUtils - parseGitPath('git@github.com:jmoalves/levain.git#develop')
     let gitPath = GitUtils.parseGitPath('git@github.com:jmoalves/levain.git#develop')
     assertEquals(gitPath.url, 'git@github.com:jmoalves/levain.git')
     assertEquals(gitPath.branch, 'develop')
+    assertEquals(gitPath.user, 'jmoalves')
+    assertEquals(gitPath.repo, 'levain')
 })
 
 Deno.test(`GitUtils - parseGitPath('git@github.com:jmoalves/levain.git')`, () => {
     let gitPath = GitUtils.parseGitPath('git@github.com:jmoalves/levain.git')
     assertEquals(gitPath.url, 'git@github.com:jmoalves/levain.git')
     assertEquals(gitPath.branch, undefined)
+    assertEquals(gitPath.user, 'jmoalves')
+    assertEquals(gitPath.repo, 'levain')
+})
+
+Deno.test(`GitUtils - parseGitPath('git@gitlab.bndes.net:sist-pme/pme.git#develop')`, () => {
+    let gitPath = GitUtils.parseGitPath('git@gitlab.bndes.net:sist-pme/pme.git#develop')
+    assertEquals(gitPath.url, 'git@gitlab.bndes.net:sist-pme/pme.git')
+    assertEquals(gitPath.branch, 'develop')
+    assertEquals(gitPath.user, 'sist-pme')
+    assertEquals(gitPath.repo, 'pme')
 })
 
 Deno.test(`GitUtils - localBaseDir()`, () => {
