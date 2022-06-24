@@ -2,7 +2,7 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import { readerFromStreamReader } from "https://deno.land/std/io/streams.ts";
 
-import ProgressBar from "https://deno.land/x/progress@v1.2.4/mod.ts";
+import ProgressBar from "https://deno.land/x/progress/mod.ts";
 
 import HttpUtils from '../utils/http_utils.ts';
 import ProgressReader from "../io/progress_reader.ts";
