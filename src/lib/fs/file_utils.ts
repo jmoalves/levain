@@ -1,6 +1,7 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import {ensureDirSync, existsSync} from "https://deno.land/std/fs/mod.ts";
+import { copy } from "https://deno.land/std/streams/conversion.ts";
 
 import ProgressBar from "https://deno.land/x/progress/mod.ts";
 
@@ -179,7 +180,7 @@ export class FileUtils {
                     dst.progressBar = pb;
                 }
 
-                await Deno.copy(r, dst);
+                await copy(r, dst);
 
                 await r.close();
                 await dst.close();
@@ -200,8 +201,8 @@ export class FileUtils {
 
                 return;
             } catch (error) {
-                log.error("")
-                log.error(`Error ${error}`)
+                log.debug("")
+                log.debug(`Error ${error}`)
             }
         }
 
