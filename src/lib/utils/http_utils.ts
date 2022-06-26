@@ -3,19 +3,30 @@ import * as path from "https://deno.land/std/path/mod.ts";
 import * as deno_validator from 'https://deno.land/x/deno_validator/mod.ts'
 
 export default class HttpUtils {
-    static async get(url: string): Promise<Response> {
-        return new Promise((resolve, reject) => {
-            log.debug(`FETCH ${url} - GET`)
+    static async get(url: string, tries: number = 3): Promise<Response> {
+        if (tries <= 0) {
+            throw new Error(`Invalid value for tries: ${tries}`)
+        }
 
-            fetch(url)
-                .then((response) => {
-                    log.debug(`FETCH ${url} - RESP - STATUS ${response.status} - ${response.statusText}`);
-                    resolve(response)
-                }).catch((error) => {
-                log.debug(`FETCH ${url} - Error ${error}`);
-                reject(error);
-            })
-        })
+        let error = undefined
+
+        log.debug(`FETCH ${url} - GET`)
+        for (let t = 1; t <= tries; t++) {
+            try {
+                let response = await fetch(url)
+
+                if (response) {
+                    log.debug(`FETCH ${url} - RESP - STATUS ${response.status} - ${response.statusText}`)
+                }
+
+                return response
+            } catch(e) {
+                log.debug(`FETCH ${url} - Error ${e} - attempt: ${t}/${tries}`)
+                error = e
+            }
+        }
+
+        throw error
     }
 
     static resolve(uri: string) {
