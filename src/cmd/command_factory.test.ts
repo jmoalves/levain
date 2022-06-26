@@ -19,7 +19,7 @@ Deno.test('CommandFactory should list commands', () => {
         'actions',
         'info',
         'explain',
-        'prepare',
+        'clone',
     ])
 })
 Deno.test('CommandFactory should know the list command', () => {

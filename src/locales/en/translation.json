@@ -76,14 +76,14 @@
             "similarPackages": "Listing similar packages",
             "example": "  list [optional search text]"
         },
-        "prepare": {
-            "informURL": "You must inform the url to prepare",
-            "justOneURL": "You must inform just one url to prepare. Sorry...",
+        "clone": {
+            "informURL": "You must inform the url to clone",
+            "justOneURL": "You must inform just one url to clone. Sorry...",
             "needGitPath": "We can handle only git urls. URL: {{url}}",
             "invalidDir": "Invalid directory. dir: {{dir}}",
             "preparing": "Preparing {{- url}}",
             "dirExists": "Directory {{dir}} already exists.\nLeaving git changes untouched",
-            "example": "  prepare [--dirs] <git url>"
+            "example": "  clone [--dirs] <git url>"
         },
         "shell": {
             "checkUpdates": "shell must check for updates? {{shouldCheck}}",
