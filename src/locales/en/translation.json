@@ -14,7 +14,7 @@
     "cmd": {
         "actions": {
             "actionsFound": "= Actions:",
-            "example": "  actions <optional search text>"
+            "example": "  actions [optional search text]"
         },
         "clean": {
             "startFeedback": "# CLEAN...",
@@ -23,7 +23,7 @@
             "endFeedback": "# CLEAN - {{amount}}",
             "errorIgnoringEntryPath": "Error {{error}} - Ignoring {{entryPath}}",
             "entryPathIgnoringError": "{{entryPath}} - Ignoring {{error}}",
-            "example": "  clean --cache(optional) --backup(optional) --temp(optional) --logs(optional)"
+            "example": "  clean [--cache] [--backup] [--temp] [--logs]"
         },
         "command_factory": {
             "notFound": "Command '{{cmd}}' not found",
@@ -74,19 +74,28 @@
             "unableToList": "Unable to list some packages",
             "unableToSimilar": "Unable to list similar packages too",
             "similarPackages": "Listing similar packages",
-            "example": "  list <optional search text>"
+            "example": "  list [optional search text]"
+        },
+        "clone": {
+            "informURL": "You must inform the url to clone",
+            "justOneURL": "You must inform just one url to clone. Sorry...",
+            "needGitPath": "We can handle only git urls. URL: {{url}}",
+            "invalidDir": "Invalid directory. dir: {{dir}}",
+            "preparing": "Preparing {{- url}}",
+            "dirExists": "Directory {{dir}} already exists.\nLeaving git changes untouched",
+            "example": "  clone [--dirs] <git url>"
         },
         "shell": {
             "checkUpdates": "shell must check for updates? {{shouldCheck}}",
             "notAllowed": "levainShell action is not allowed here. Check your recipe - pkg: {{pkg}} action: {{action}}",
-            "example": "  shell <optional package name>"
+            "example": "  shell [optional package name]"
         }
     },
     "lib": {
         "repository": {
             "repository_manager": {
                 "loaded": "- Loaded REPOS {{repos}}",
-                "currentMultiple": "Found more than one .levain.yaml file => Using {{chosen}} of {{choices}}",
+                "currentMultiple": "Found more than one .levain.yaml file\n  => Using {{chosen}}\n  => Options: {{choices}}",
                 "notInitialized": "RepositoryManager not initialized",
                 "testOnly": "RepositoryManager.repository({{repo}}) - TEST ONLY!",
                 "notFound": "Error initializing RepositoryManager - repositories not found"

@@ -212,3 +212,14 @@ Deno.test('StringUtils.findSimilar should find similar names', () => {
                 'info'
             ]) 
 })
+
+Deno.test('StringUtils.compressText should shrink strings', () => {
+    assertEquals(StringUtils.compressText('name', 50), 'name')
+    assertEquals(StringUtils.compressText('long_name', 5), 'l...e')
+    assertEquals(StringUtils.compressText('long_name', 6), 'lo...e')
+    assertEquals(StringUtils.compressText('long_name', 7), 'lo...me')
+    assertEquals(
+        StringUtils.compressText('- HTTP ibm-semeru-open-jdk_x64_windows_17.0.3_7_openj9-0.32.0.zip', 50),
+        '- HTTP ibm-semeru-open-j...0.3_7_openj9-0.32.0.zip'
+    )
+})

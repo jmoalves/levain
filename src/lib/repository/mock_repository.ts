@@ -15,7 +15,20 @@ export default class MockRepository extends AbstractRepository {
         super(name, `mockURI-${name}`)
     }
 
-    async readPackages(): Promise<Array<Package>> {
+    init(): Promise<void> {
+        return Promise.resolve()
+    }
+
+    listPackages(): Array<Package> {
         return this.packages
+    }
+
+    resolvePackage(packageName: string): Package | undefined {
+        const pkg = this.packages.filter(pkg => pkg.name == packageName)
+        return ( pkg ? pkg[0] : undefined )
+    }
+
+    reload(): Promise<void> {
+        return Promise.resolve()
     }
 }

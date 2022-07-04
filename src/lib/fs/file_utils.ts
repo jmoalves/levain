@@ -1,14 +1,16 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import {ensureDirSync, existsSync} from "https://deno.land/std/fs/mod.ts";
+import { copy } from "https://deno.land/std/streams/conversion.ts";
 
-import ProgressBar from "https://deno.land/x/progress@v1.2.4/mod.ts";
+import ProgressBar from "https://deno.land/x/progress/mod.ts";
 
 import OsUtils from '../os/os_utils.ts';
 import DateUtils from '../utils/date_utils.ts';
 import FileWriter from '../io/file_writer.ts';
 import ProgressReader from '../io/progress_reader.ts';
 import ReaderFactory from "../io/reader_factory.ts";
+import StringUtils from "../utils/string_utils.ts";
 
 export class FileUtils {
     static getModificationTimestamp(filePath: string): Date | undefined {
@@ -163,7 +165,7 @@ export class FileUtils {
                 await r.rewind();
                 let dst = new FileWriter(dstFile);
 
-                let title = r.title;
+                let title = r.title ? StringUtils.compressText(r.title, 50) : undefined;
                 let total = r.size;
 
                 if (total) {
@@ -178,7 +180,7 @@ export class FileUtils {
                     dst.progressBar = pb;
                 }
 
-                await Deno.copy(r, dst);
+                await copy(r, dst);
 
                 await r.close();
                 await dst.close();
@@ -199,8 +201,8 @@ export class FileUtils {
 
                 return;
             } catch (error) {
-                log.error("")
-                log.error(`Error ${error}`)
+                log.debug("")
+                log.debug(`Error ${error}`)
             }
         }
 

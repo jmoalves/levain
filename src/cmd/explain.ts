@@ -19,8 +19,6 @@ export default class ExplainCommand implements Command {
 
     async execute(args: string[]): Promise<void> {
         const myArgs = parseArgs(args, {});
-
-        log.info(`EXPLAIN ${myArgs}`)
         let pkgNames: string[] = myArgs._
 
         if (pkgNames.length == 0) {

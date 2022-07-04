@@ -5,6 +5,7 @@ import Config from "../config.ts";
 import {Timer} from "../timer.ts";
 import {FileUtils} from "../fs/file_utils.ts";
 import ConsoleFeedback from "../utils/console_feedback.ts";
+import StringUtils from "../utils/string_utils.ts";
 
 export abstract class Extractor {
     readonly feedback = new ConsoleFeedback();
@@ -60,13 +61,13 @@ export abstract class Extractor {
 
         const timer = new Timer()
         log.debug(`- EXTRACT ${file} => ${tempDir}`);
-        this.feedback.start(`# ${file}`)
+        this.feedback.start(`# ${StringUtils.compressText(file, 80)}`)
 
         let tick = setInterval(() => this.feedback.show(), 300)
         await this.extractImpl(file, tempDir)
         clearInterval(tick)
         
-        this.feedback.reset(`# ${file} in ${timer.humanize()}`)
+        this.feedback.reset(`# ${StringUtils.compressText(file, 80)} in ${timer.humanize()}`)
         log.debug(`- extracted in ${timer.humanize()}`);
         return tempDir
     }

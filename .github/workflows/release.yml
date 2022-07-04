@@ -68,7 +68,9 @@ jobs:
 
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Get Deno
         run: |
@@ -94,34 +96,22 @@ jobs:
           git config pull.rebase true
 
       - name: Tag
-        run: bash $GITHUB_WORKSPACE/githubScripts/tag-release.sh $LEVAIN_VERSION
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
-
-      - name: Create release
-        id: create_release
-        uses: actions/create-release@v1
-        with:
-          tag_name: v${{ env.LEVAIN_VERSION }}
-          release_name: v${{ env.LEVAIN_VERSION }}
-          commitish: master
-          draft: false
-          prerelease: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
-
-      - name: Wait release - Timeout 5 min
-        run: timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' https://api.github.com/repos/jmoalves/levain/releases/tags/v${{ env.LEVAIN_VERSION }})" != "200" ]]; do echo Waiting...; sleep 5; done' || false
-        env:
-          LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
-
-      - name: Get Levain release
         run: |
-          rm -rf $LEVAIN_RELEASE_PATH
-          mkdir -p $LEVAIN_RELEASE_PATH
-          bash $GITHUB_WORKSPACE/githubScripts/get-levain-release.sh $LEVAIN_VERSION $LEVAIN_RELEASE_PATH
+          bash $GITHUB_WORKSPACE/githubScripts/tag-release.sh $LEVAIN_VERSION
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
+
+      - name: Changelog
+        run: |
+          bash $GITHUB_WORKSPACE/githubScripts/changelog.sh latest $LEVAIN_VERSION > ${{ runner.temp }}/changelog.$LEVAIN_VERSION.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
+
+      - name: Levain release with tag
+        run: |
+          bash $GITHUB_WORKSPACE/githubScripts/get-levain-tag.sh $LEVAIN_VERSION $LEVAIN_RELEASE_PATH
         env:
           LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
           LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ github.event.inputs.releaseNumber }}
@@ -132,6 +122,12 @@ jobs:
         env:
           DENO_ROOT_PATH: ${{ runner.temp }}/deno
           LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
+          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ github.event.inputs.releaseNumber }}
+
+      - name: Levain install - PowerShell
+        run: |
+          cp $LEVAIN_RELEASE_PATH/install/install.ps1 ${{ runner.temp }}/install.ps1
+        env:
           LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ github.event.inputs.releaseNumber }}
 
       - name: Levain bootstrap
@@ -158,6 +154,13 @@ jobs:
 
       - name: Levain package
         run: |
+          bash $GITHUB_WORKSPACE/githubScripts/levain-package.sh $LEVAIN_RELEASE_PATH ${{ runner.temp }}/levain-windows-x86_64.zip STRIP
+        env:
+          LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
+          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ github.event.inputs.releaseNumber }}
+
+      - name: Levain package - with version
+        run: |
           bash $GITHUB_WORKSPACE/githubScripts/levain-package.sh $LEVAIN_RELEASE_PATH ${{ runner.temp }}/levain-v$LEVAIN_VERSION-windows-x86_64.zip
         env:
           LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
@@ -170,25 +173,134 @@ jobs:
           LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
           LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ github.event.inputs.releaseNumber }}
 
-      - name: Upload assets
-        run: |
-          echo
-          bash $GITHUB_WORKSPACE/githubScripts/asset-upload.sh $LEVAIN_VERSION ${{ runner.temp }}/levain-v$LEVAIN_VERSION-windows-x86_64.zip application/zip
-          echo
-          echo
-          bash $GITHUB_WORKSPACE/githubScripts/asset-upload.sh $LEVAIN_VERSION ${{ runner.temp }}/levain-v$LEVAIN_VERSION-windows-x86_64.zip.sha256 text/plain
-          echo
-          echo
-          bash $GITHUB_WORKSPACE/githubScripts/asset-upload.sh $LEVAIN_VERSION ${{ runner.temp }}/levain-extra-bin-windows-x86_64.zip application/zip
-          echo
-          echo
-          bash $GITHUB_WORKSPACE/githubScripts/asset-upload.sh $LEVAIN_VERSION ${{ runner.temp }}/levain-extra-bin-windows-x86_64.zip.sha256 text/plain
-          echo
-          echo
-          bash $GITHUB_WORKSPACE/githubScripts/asset-upload.sh $LEVAIN_VERSION ${{ runner.temp }}/levainBootstrap-windows-x86_64.zip application/zip
-          echo
-          echo
-          bash $GITHUB_WORKSPACE/githubScripts/asset-upload.sh $LEVAIN_VERSION ${{ runner.temp }}/levainBootstrap-windows-x86_64.zip.sha256 text/plain
+
+      ##############################################################
+      ### Create release
+      ##############################################################
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: v${{ env.LEVAIN_VERSION }}
+          release_name: v${{ env.LEVAIN_VERSION }}
+          commitish: master
+          body_path: ${{ runner.temp }}/changelog.${{ env.LEVAIN_VERSION }}.md
+          draft: true
+          prerelease: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
+
+      # - name: Wait release - Timeout 5 min
+      #   run: timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' https://api.github.com/repos/jmoalves/levain/releases/tags/v${{ env.LEVAIN_VERSION }})" != "200" ]]; do echo Waiting...; sleep 5; done' || false
+      #   env:
+      #     LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
+
+      - name: Upload asset - levain-v${{ env.LEVAIN_VERSION }}-windows-x86_64.zip
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ runner.temp }}/levain-v${{ env.LEVAIN_VERSION }}-windows-x86_64.zip
+          asset_name: levain-v${{ env.LEVAIN_VERSION }}-windows-x86_64.zip
+          asset_content_type: application/zip
+
+      - name: Upload asset - levain-v${{ env.LEVAIN_VERSION }}-windows-x86_64.zip.sha256
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ runner.temp }}/levain-v${{ env.LEVAIN_VERSION }}-windows-x86_64.zip.sha256
+          asset_name: levain-v${{ env.LEVAIN_VERSION }}-windows-x86_64.zip.sha256
+          asset_content_type: text/plain
+
+      - name: Upload asset - levain-windows-x86_64.zip
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ runner.temp }}/levain-windows-x86_64.zip
+          asset_name: levain-windows-x86_64.zip
+          asset_content_type: application/zip
+
+      - name: Upload asset - levain-windows-x86_64.zip.sha256
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ runner.temp }}/levain-windows-x86_64.zip.sha256
+          asset_name: levain-windows-x86_64.zip.sha256
+          asset_content_type: text/plain
+
+      - name: Upload asset - levain-extra-bin-windows-x86_64.zip
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ runner.temp }}/levain-extra-bin-windows-x86_64.zip
+          asset_name: levain-extra-bin-windows-x86_64.zip
+          asset_content_type: application/zip
+
+      - name: Upload asset - levain-extra-bin-windows-x86_64.zip.sha256
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ runner.temp }}/levain-extra-bin-windows-x86_64.zip.sha256
+          asset_name: levain-extra-bin-windows-x86_64.zip.sha256
+          asset_content_type: text/plain
+
+      - name: Upload asset - levainBootstrap-windows-x86_64.zip
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ runner.temp }}/levainBootstrap-windows-x86_64.zip
+          asset_name: levainBootstrap-windows-x86_64.zip
+          asset_content_type: application/zip
+
+      - name: Upload asset - levainBootstrap-windows-x86_64.zip.sha256
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ runner.temp }}/levainBootstrap-windows-x86_64.zip.sha256
+          asset_name: levainBootstrap-windows-x86_64.zip.sha256
+          asset_content_type: text/plain
+
+      - name: Upload asset - install.ps1
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ runner.temp }}/install.ps1
+          asset_name: install.ps1
+          asset_content_type: text/plain
+
+      ##############################################################
+      ### Publish release
+      ##############################################################
+      - name: Publish release
+        uses: eregon/publish-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          release_id: ${{ steps.create_release.outputs.id }}

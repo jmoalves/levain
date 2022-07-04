@@ -3,11 +3,14 @@ import * as path from "https://deno.land/std/path/mod.ts";
 
 import ExtraBin from "../extra_bin.ts";
 import OsUtils from "../os/os_utils.ts";
+import {Timer} from "../timer.ts";
 
 import ConsoleFeedback from "./console_feedback.ts";
 
 export default class GitUtils {
     static readonly GIT_REG_EXP = /(?<url>.*\.git)(:?#(?<branch>.+))?$/
+    static readonly GITHUB_REG_EXP = /^git@.*:(?<user>[^/]+)\/(?<repo>[^.]+)\.git$/
+
     readonly gitCmd: string;
 
     readonly feedback = new ConsoleFeedback();
@@ -25,7 +28,23 @@ export default class GitUtils {
     }
 
     static parseGitPath(gitUrl: string): any {
-        return gitUrl.match(GitUtils.GIT_REG_EXP)?.groups
+        const result = gitUrl.match(GitUtils.GIT_REG_EXP)?.groups
+        if (!result) {
+            return undefined
+        }
+
+        let urlGroups:any = undefined
+        if (result.url) {
+            urlGroups = result.url.match(GitUtils.GITHUB_REG_EXP)?.groups
+        }
+
+        if (urlGroups) {
+            for (let key in urlGroups) {
+                result[key] = urlGroups[key]
+            }
+        }
+
+        return result
     }
 
     static localBaseDir(gitUrl: string): string {
@@ -45,6 +64,7 @@ export default class GitUtils {
         const gitPath = GitUtils.parseGitPath(gitUrl)
         log.debug(`# GIT - CLONE - ${JSON.stringify(gitPath)} => ${dst}`);
 
+        const timer = new Timer()
         this.feedback.start(`# GIT - CLONE - ${JSON.stringify(gitPath)} => ${dst}`)
         const tick = setInterval(() => this.feedback.show(), 300)
 
@@ -63,12 +83,13 @@ export default class GitUtils {
         }
 
         clearInterval(tick)
-        this.feedback.reset(`# GIT - CLONE - ${JSON.stringify(gitPath)} => ${dst} - OK`)
+        this.feedback.reset(`# GIT - CLONE - ${JSON.stringify(gitPath)} => ${dst} (${timer.humanize()})`)
     }
 
     async pull(workingDir: string) {
         log.debug(`# GIT - PULL - ${workingDir}`);
 
+        const timer = new Timer()
         this.feedback.start(`# GIT - PULL - ${workingDir}`)
         const tick = setInterval(() => this.feedback.show(), 300)
 
@@ -89,10 +110,10 @@ export default class GitUtils {
 
                 clearInterval(tick)
 
-                log.debug(`# GIT - PULL - ${workingDir} - OK`);
+                log.debug(`# GIT - PULL - ${workingDir} (${timer.humanize()})`);
                 log.debug("");
 
-                this.feedback.reset(`# GIT - PULL - ${workingDir} - OK`)
+                this.feedback.reset(`# GIT - PULL - ${workingDir} (${timer.humanize()})`)
                 return;
             } catch (error) {
                 log.error(`git error - try ${tries} - ${error}`)
