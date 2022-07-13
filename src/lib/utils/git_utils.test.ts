@@ -3,7 +3,7 @@ import {
     assertEquals,
     assertMatch,
     assertThrows,
-    assertThrowsAsync
+    assertRejects
 } from "https://deno.land/std/testing/asserts.ts";
 
 import GitUtils from "./git_utils.ts";
@@ -63,6 +63,46 @@ Deno.test(`GitUtils - parseGitPath('git@gitlab.bndes.net:sist-pme/pme.git#develo
     assertEquals(gitPath.repo, 'pme')
 })
 
+Deno.test(`GitUtils - parseGitPath('git@gitlab.bndes.net:sist-pme/pme.git')`, () => {
+    let gitPath = GitUtils.parseGitPath('git@gitlab.bndes.net:sist-pme/pme.git')
+    assertEquals(gitPath.url, 'git@gitlab.bndes.net:sist-pme/pme.git')
+    assertEquals(gitPath.branch, undefined)
+    assertEquals(gitPath.user, 'sist-pme')
+    assertEquals(gitPath.repo, 'pme')
+})
+
+Deno.test(`GitUtils - parseGitPath('https://github.com/jmoalves/levain.git#develop')`, () => {
+    let gitPath = GitUtils.parseGitPath('https://github.com/jmoalves/levain.git#develop')
+    assertEquals(gitPath.url, 'https://github.com/jmoalves/levain.git')
+    assertEquals(gitPath.branch, 'develop')
+    assertEquals(gitPath.user, 'jmoalves')
+    assertEquals(gitPath.repo, 'levain')
+})
+
+Deno.test(`GitUtils - parseGitPath('https://github.com/jmoalves/levain.git')`, () => {
+    let gitPath = GitUtils.parseGitPath('https://github.com/jmoalves/levain.git')
+    assertEquals(gitPath.url, 'https://github.com/jmoalves/levain.git')
+    assertEquals(gitPath.branch, undefined)
+    assertEquals(gitPath.user, 'jmoalves')
+    assertEquals(gitPath.repo, 'levain')
+})
+
+Deno.test(`GitUtils - parseGitPath('https://gitlab.bndes.net/sist-pme/pme.git#develop')`, () => {
+    let gitPath = GitUtils.parseGitPath('https://gitlab.bndes.net/sist-pme/pme.git#develop')
+    assertEquals(gitPath.url, 'https://gitlab.bndes.net/sist-pme/pme.git')
+    assertEquals(gitPath.branch, 'develop')
+    assertEquals(gitPath.user, 'sist-pme')
+    assertEquals(gitPath.repo, 'pme')
+})
+
+Deno.test(`GitUtils - parseGitPath('https://gitlab.bndes.net/sist-pme/pme.git')`, () => {
+    let gitPath = GitUtils.parseGitPath('https://gitlab.bndes.net/sist-pme/pme.git')
+    assertEquals(gitPath.url, 'https://gitlab.bndes.net/sist-pme/pme.git')
+    assertEquals(gitPath.branch, undefined)
+    assertEquals(gitPath.user, 'sist-pme')
+    assertEquals(gitPath.repo, 'pme')
+})
+
 Deno.test(`GitUtils - localBaseDir()`, () => {
     assertEquals(GitUtils.localBaseDir('git@github.com:jmoalves/levain.git'), 'git_github.com_jmoalves_levain')
     assertEquals(GitUtils.localBaseDir('git@github.com:jmoalves/levain.git#develop'), 'git_github.com_jmoalves_levain_develop')
@@ -87,7 +127,7 @@ Deno.test('GitUtils.localBaseDir should throw error if url is invalid', () => {
 })
 
 Deno.test('GitUtils.clone should throw error if url is invalid', async () => {
-    await assertThrowsAsync(
+    await assertRejects(
         async () => {
             await new GitUtils().clone('thisSourceDoesNotExist', 'thisDstDoesNotExist')
         },
@@ -112,7 +152,7 @@ Deno.test('GitUtils.localBaseDir should throw error if url is invalid', () => {
     )
 })
 Deno.test('GitUtils.clone should throw error if url is invalid', async () => {
-    await assertThrowsAsync(
+    await assertRejects(
         async () => {
             await new GitUtils().clone('thisSourceDoesNotExist', 'thisDstDoesNotExist')
         },
@@ -137,7 +177,7 @@ Deno.test('GitUtils.localBaseDir should throw error if url is invalid', () => {
     )
 })
 Deno.test('GitUtils.clone should throw error if url is invalid', async () => {
-    await assertThrowsAsync(
+    await assertRejects(
         async () => {
             await new GitUtils().clone('thisSourceDoesNotExist', 'thisDstDoesNotExist')
         },
@@ -175,7 +215,7 @@ Deno.test({
         const folder = TestHelper.folderThatAlwaysExists
         const gitUtils = new GitUtils()
 
-        await assertThrowsAsync(
+        await assertRejects(
             async () => {
                 await gitUtils.pull(folder)
             },

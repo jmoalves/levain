@@ -9,7 +9,7 @@ import ConsoleFeedback from "./console_feedback.ts";
 
 export default class GitUtils {
     static readonly GIT_REG_EXP = /(?<url>.*\.git)(:?#(?<branch>.+))?$/
-    static readonly GITHUB_REG_EXP = /^git@.*:(?<user>[^/]+)\/(?<repo>[^.]+)\.git$/
+    static readonly GITHUB_REG_EXP = /^(git@.*:|https:\/\/.*\/)(?<user>[^/]+)\/(?<repo>[^.]+)\.git$/
 
     readonly gitCmd: string;
 
