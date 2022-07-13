@@ -7,6 +7,10 @@ set levainRoot=%myPath%\..
 
 set PWS=powershell.exe -ExecutionPolicy Bypass -NoLogo -NonInteractive -NoProfile
 
+set proxyCfg=
+if not "a%HTTP_PROXY%"=="a" set proxyCfg=-ProxyUseDefaultCredentials -Proxy %HTTP_PROXY% 
+if not "a%HTTPS_PROXY%"=="a" set proxyCfg=-ProxyUseDefaultCredentials -Proxy %HTTPS_PROXY% 
+
 if not exist %levainRoot%\bin (
     mkdir %levainRoot%\bin
 )
@@ -16,7 +20,8 @@ echo === Deno latest
 set denoPath=%TEMP%\deno
 if exist %denoPath% rmdir /q /s %denoPath%
 mkdir %denoPath%
-%PWS% Invoke-WebRequest https://github.com/denoland/deno/releases/latest/download/deno-x86_64-pc-windows-msvc.zip -OutFile %denoPath%\deno-x86_64-pc-windows-msvc.zip
+
+%PWS% Invoke-WebRequest %proxyCfg% https://github.com/denoland/deno/releases/latest/download/deno-x86_64-pc-windows-msvc.zip -OutFile %denoPath%\deno-x86_64-pc-windows-msvc.zip
 %PWS% Expand-Archive %denoPath%\deno-x86_64-pc-windows-msvc.zip -DestinationPath %levainRoot%\bin -Force
 rmdir /q /s %denoPath%
 
@@ -25,9 +30,8 @@ echo === EXTRA-BIN latest
 set binPath=%TEMP%\levain\extra-bin
 if exist %binPath% rmdir /q /s %binPath%
 mkdir %binPath%
-REM FIXME - Change to latest below
-%PWS% Invoke-WebRequest https://github.com/jmoalves/levain/releases/download/v0.60.2/levain-extra-bin-windows-x86_64.zip -OutFile %binPath%\levain-extra-bin-windows-x86_64.zip
-REM %PWS% Invoke-WebRequest https://github.com/jmoalves/levain/releases/latest/download/levain-extra-bin-windows-x86_64.zip -OutFile %binPath%\levain-extra-bin-windows-x86_64.zip
+
+%PWS% Invoke-WebRequest %proxyCfg% https://github.com/jmoalves/levain/releases/latest/download/levain-extra-bin-windows-x86_64.zip -OutFile %binPath%\levain-extra-bin-windows-x86_64.zip
 
 if exist %levainRoot%\extra-bin\windows\7-zip rmdir /q /s %levainRoot%\extra-bin\windows\7-zip
 if exist %levainRoot%\extra-bin\windows\curl rmdir /q /s %levainRoot%\extra-bin\windows\curl
