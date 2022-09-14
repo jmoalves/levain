@@ -58,8 +58,9 @@ export default class ExplainCommand implements Command {
 
         log.info('')
         for (let action of list) {
-            const actionWithVars = await this.config.replaceVars(action, pkg.name)
-            log.info(`* ${actionWithVars}`)
+            // const actionWithVars = await this.config.replaceVars(action, pkg.name)
+            // log.info(`* ${actionWithVars}`)
+            log.info(`* ${action}`)
         }
     }
 
