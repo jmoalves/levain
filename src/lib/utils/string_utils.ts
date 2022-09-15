@@ -94,7 +94,6 @@ export default class StringUtils {
 
         for (let name of database) {
             let d = this.partialDistance(search.toLowerCase(), name.toLowerCase())
-            log.info(`1 - |${search} - ${name}| = ${d}`)
             if (d>=0 && d <= 2) {
                 names.add(name)
             }
