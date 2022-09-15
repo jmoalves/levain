@@ -1,7 +1,7 @@
 import StringUtils from "../../utils/string_utils.ts";
 import * as path from "https://deno.land/std/path/mod.ts"
 import {decode, encode,} from 'https://deno.land/std/encoding/utf8.ts';
-import {Input} from "https://deno.land/x/cliffy/prompt/input.ts";
+import {Input} from 'https://deno.land/x/cliffy@v0.24.2/prompt/mod.ts'
 
 const myFolder = 'C:\\src\\dev-env\\levain\\src/lib/user_info'
 

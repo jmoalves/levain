@@ -1,4 +1,4 @@
-import {Input} from "https://deno.land/x/cliffy/prompt/input.ts";
+import {Input} from 'https://deno.land/x/cliffy@v0.24.2/prompt/mod.ts'
 import {NameValidator} from "../validators/validators.ts";
 import {Validator} from "../validators/validator.ts";
 

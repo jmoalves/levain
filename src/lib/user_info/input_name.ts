@@ -1,8 +1,7 @@
 import {NameValidator} from "./validators/validators.ts"
-import {Input} from 'https://deno.land/x/cliffy/prompt/input.ts'
+import {ValidateResult,Input} from 'https://deno.land/x/cliffy@v0.24.2/prompt/mod.ts'
 import {readLines} from 'https://deno.land/std/io/mod.ts'
 import OsUtils from "../os/os_utils.ts";
-import {ValidateResult} from "https://deno.land/x/cliffy/prompt/_generic_prompt.ts";
 
 import t from '../i18n.ts'
 

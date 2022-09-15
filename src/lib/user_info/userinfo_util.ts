@@ -1,7 +1,7 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import {existsSync} from "https://deno.land/std/fs/mod.ts"
 
-import {ValidateResult} from "https://deno.land/x/cliffy/prompt/_generic_prompt.ts";
+import {ValidateResult} from 'https://deno.land/x/cliffy@v0.24.2/prompt/mod.ts'
 
 import t from '../i18n.ts'
 
