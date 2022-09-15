@@ -1,5 +1,5 @@
 import {EmailValidator} from "./validators/validators.ts";
-import {Input} from 'https://deno.land/x/cliffy@v0.24.2/prompt/mod.ts'
+import {Input} from 'https://deno.land/x/cliffy/prompt/mod.ts'
 
 import t from '../i18n.ts'
 
