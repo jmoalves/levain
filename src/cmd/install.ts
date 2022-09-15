@@ -49,16 +49,18 @@ export default class Install implements Command {
 
         let pkgs: Package[] | null = this.config.packageManager.resolvePackages(pkgNames);
         if (!pkgs) {
+            let missing = pkgNames.filter(name => !this.config.packageManager.getSimilarNames(name).has(name))
+
             log.info(``)
-            log.info(t("cmd.install.unableToFind", { pkgNames: pkgNames }))
+            log.info(t("cmd.install.unableToFind", { pkgNames: missing }))
 
             log.info("")
             log.info(t("cmd.install.similar"))
-            for (let name of pkgNames) {
+            for (let name of missing) {
                 log.info(`${name} => ${[...this.config.packageManager.getSimilarNames(name)]}`)
             }
             log.info("")
-            throw new Error(t("cmd.install.errorNotFound", { pkgNames: pkgNames }));
+            throw new Error(t("cmd.install.errorNotFound", { pkgNames: missing }));
         }
 
         log.info("");

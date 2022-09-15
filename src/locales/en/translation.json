@@ -43,7 +43,7 @@
         },
         "install": {
             "noPackages": "What packages do your want to install? Aborting...",
-            "unableToFind": "{{pkgNames}} - Unable to find some packages",
+            "unableToFind": "Unable to find these packages - {{pkgNames}}",
             "similar": "=== Similar known packages",
             "errorNotFound": "Couldn't find package {{pkgNames}} to install. Aborting...",
             "installing": "- Installing - {{object}}",
