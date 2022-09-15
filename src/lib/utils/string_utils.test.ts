@@ -210,6 +210,36 @@ Deno.test('StringUtils.findSimilar should find similar names', () => {
             ]) 
 })
 
+Deno.test('StringUtils.findSimilar should find similar names', () => {
+    assertEquals(
+        [... StringUtils.findSimilar(
+            'jdk',
+            [
+                'test-add-to-startup',
+                'insideSubfolder',
+                'mousse-de-chocolate',
+                'superDuper',
+                'reciepe-in-a-folder-in-a-zip',
+                'openjdk-11',
+                'openjdk-12',
+                'openjdk-13',
+                'openjdk-14',
+                'openjdk-15',
+                'openjdk-16',
+                'jdk-17-ibm',
+                'ganttProject'
+            ])], 
+            [
+                'openjdk-11',
+                'openjdk-12',
+                'openjdk-13',
+                'openjdk-14',
+                'openjdk-15',
+                'openjdk-16',
+                'jdk-17-ibm'
+            ]) 
+})
+
 Deno.test('StringUtils.compressText should shrink strings', () => {
     assertEquals(StringUtils.compressText('name', 50), 'name')
     assertEquals(StringUtils.compressText('long_name', 5), 'l...e')

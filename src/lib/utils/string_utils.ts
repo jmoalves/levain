@@ -94,7 +94,9 @@ export default class StringUtils {
 
         for (let name of database) {
             let d = this.partialDistance(search.toLowerCase(), name.toLowerCase())
-            if (d>=0 && d <= 2) {
+            let perc = d / search.length
+            // log.info(`|${search} - ${name}| = ${d} - ${perc}`)
+            if ((d>=0) && (perc <= 0.40)) {
                 names.add(name)
             }
         }
@@ -105,7 +107,7 @@ export default class StringUtils {
     private static partialDistance(str1: string, str2: string): number {
         // http://www.augustobaffa.pro.br/wiki/Dist%C3%A2ncia_de_Levenshtein
         let diff = str2.length - str1.length
-        if ( diff <= 0) {
+        if (diff <= 0) {
             return distance(str1, str2)
         }
 
