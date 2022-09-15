@@ -178,6 +178,20 @@ export default class Install implements Command {
             shouldInstall = this.savePreviousInstall(bkpTag, pkg);
         }
 
+        // https://github.com/jmoalves/levain/issues/148
+        if (shouldInstall) {
+            let registryEntry = path.resolve(this.config.levainRegistryDir, path.basename(pkg.filePath));
+            if (existsSync(registryEntry)) {
+                try {
+                    log.debug(`REMOVE ${registryEntry}`)
+                    Deno.removeSync(registryEntry);
+                } catch (error) {
+                    log.debug(t("cmd.install.ignoreError", { error: error }))
+                    shouldInstall = false
+                }
+            }
+        }
+
         let actions = [];
 
         if (shouldInstall) {
