@@ -10,6 +10,7 @@ echoDebug() { $debug && printf "DEBUG: %s\n" "$*" >&2; }
 # FIXME: Check parameters
 vStart=$1
 vEnd=$2
+denoDir=$3
 
 if [ "$vStart" == "LATEST" -o "$vStart" == "latest" ]; then
     # Levain latest
@@ -21,6 +22,9 @@ if [ "$vStart" == "LATEST" -o "$vStart" == "latest" ]; then
     vStart=$( echo $levainRelease | jq -rc '.tag_name' | sed 's/v//g' )
 fi
 
+echo
+echo '* Deno version: ' $( ${denoDir}/deno -V | sed 's/deno //ig' )
+echo
 echo '# Changes from' $vStart to $vEnd
 git log v${vStart}..v${vEnd} --no-merges --dense --pretty="- %s" \
     | grep -v "^- vHEAD" \

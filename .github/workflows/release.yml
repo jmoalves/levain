@@ -104,10 +104,11 @@ jobs:
 
       - name: Changelog
         run: |
-          bash $GITHUB_WORKSPACE/githubScripts/changelog.sh latest $LEVAIN_VERSION > ${{ runner.temp }}/changelog.$LEVAIN_VERSION.md
+          bash $GITHUB_WORKSPACE/githubScripts/changelog.sh latest $LEVAIN_VERSION $DENO_ROOT_PATH/linux > ${{ runner.temp }}/changelog.$LEVAIN_VERSION.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
+          DENO_ROOT_PATH: ${{ runner.temp }}/deno
 
       - name: Levain release with tag
         run: |
