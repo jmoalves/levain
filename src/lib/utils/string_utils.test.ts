@@ -188,7 +188,6 @@ Deno.test('StringUtils.findSimilar should find similar names', () => {
                 'maven-3.8',
                 'eclipse-maven',
                 'new-maven-version',
-                'mav',
                 'automav-en'
             ]) 
 })
@@ -207,9 +206,7 @@ Deno.test('StringUtils.findSimilar should find similar names', () => {
                 'actions'
             ])], 
             [
-                'install',
-                'list',
-                'info'
+                'install'
             ]) 
 })
 
