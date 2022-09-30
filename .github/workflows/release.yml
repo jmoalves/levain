@@ -92,6 +92,8 @@ jobs:
           echo NEXT ${{ env.NEXT_VERSION }}
           echo LEVAIN_VERSION $LEVAIN_VERSION
           exit 1
+        env:
+          LEVAIN_VERSION: ${{ env.LEVAIN_VERSION }} 
 
       - name: Get Deno
         run: |
