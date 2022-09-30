@@ -4,9 +4,9 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
     inputs:
-      releaseNumber:
-        description: 'Release number'     
-        required: true
+      # releaseNumber:
+      #   description: 'Release number'     
+      #   required: true
       denoVersion:
         description: 'Deno version (optional)'     
         required: false
@@ -17,27 +17,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check releaseNumber
-        run: |
-          version=$LEVAIN_VERSION
-          if [[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo Version v${version};
-          else
-            echo Invalid version number - $version;
-            echo
-            echo You must use the pattern
-            echo major.minor.patch
-            echo
-            echo Examples:
-            echo 0.20.1
-            echo 1.0.3
-            echo 2.5.0
-            echo
+      # - name: Check releaseNumber
+      #   run: |
+      #     version=$LEVAIN_VERSION
+      #     if [[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+      #       echo Version v${version};
+      #     else
+      #       echo Invalid version number - $version;
+      #       echo
+      #       echo You must use the pattern
+      #       echo major.minor.patch
+      #       echo
+      #       echo Examples:
+      #       echo 0.20.1
+      #       echo 1.0.3
+      #       echo 2.5.0
+      #       echo
 
-            exit 1
-          fi
-        env:
-          LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
+      #       exit 1
+      #     fi
+      #   env:
+      #     LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
 
       - name: Check denoVersion
         run: |
@@ -190,10 +190,6 @@ jobs:
         env:
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
           LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ env.RELEASE_VERSION }}
-
-
-      - name: Abort
-        run: exit 1
 
 
       ##############################################################
