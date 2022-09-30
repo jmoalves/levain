@@ -81,6 +81,7 @@ jobs:
           version-file-extraction-pattern: 'version: (.+)'
 
       - name: Set version
+        run: echo LEVAIN_VERSION $LEVAIN_VERSION
         env:
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
 
@@ -89,7 +90,7 @@ jobs:
           echo CURRENT ${{ env.CURRENT_VERSION }}
           echo RELEASE ${{ env.RELEASE_VERSION }}
           echo NEXT ${{ env.NEXT_VERSION }}
-          echo LEVAIN_VERSION ${{ env.LEVAIN_VERSION }}
+          echo LEVAIN_VERSION $LEVAIN_VERSION
           exit 1
 
       - name: Get Deno
