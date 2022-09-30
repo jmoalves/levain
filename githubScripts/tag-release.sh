@@ -1,9 +1,15 @@
 #!/bin/bash
 
 version=$1
+nextVersion=$2
 
 if [ -z "$version" ]; then
   echo You must inform the version number. Aborting...
+  exit 1
+fi
+
+if [ -z "$nextVersion" ]; then
+  echo You must inform the NEXT version number. Aborting...
   exit 1
 fi
 
@@ -40,17 +46,23 @@ done
 cp -f recipes/levain.levain.yaml recipes/levain.levain.yaml.bkp
 cat recipes/levain.levain.yaml.bkp |
   sed "s/version: .*/version: ${version}/g" \
-    >recipes/levain.levain.yaml
+    > recipes/levain.levain.yaml
+rm recipes/levain.levain.yaml.bkp
 
 # Commit version
 git add src/levain_cli.ts recipes/levain.levain.yaml
-git commit -m "$tag"
+git commit -m "skip: $tag"
 git tag $tag
 
-# Restore file
-cp -f recipes/levain.levain.yaml.bkp recipes/levain.levain.yaml
+# Next version at yaml file
+cp -f recipes/levain.levain.yaml recipes/levain.levain.yaml.bkp
+cat recipes/levain.levain.yaml.bkp |
+  sed "s/version: .*/version: ${nextVersion}/g" \
+    > recipes/levain.levain.yaml
+rm recipes/levain.levain.yaml.bkp
+
 git add recipes/levain.levain.yaml
-git commit -m "vHEAD"
+git commit -m "skip: ${nextVersion}"
 rm recipes/levain.levain.yaml.bkp
 
 # PUSH
