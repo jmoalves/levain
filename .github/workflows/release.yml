@@ -10,6 +10,7 @@ on:
       denoVersion:
         description: 'Deno version (optional)'     
         required: false
+        default: '1.23.2' # Remove this after Deno fix https://github.com/c4spar/deno-cliffy/issues/458
 
 jobs:
   createRelease:
