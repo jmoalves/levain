@@ -73,6 +73,21 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Generate versions
+        uses: HardNorth/github-version-generate@v1.1.2
+        with:
+          version-source: file
+          version-file: $GITHUB_WORKSPACE/recipes/levain.levain.yaml
+          version-file-extraction-pattern: 'version: (.+)'
+
+      - name: Echo version
+        run: |
+          echo CURRENT ${{ env.CURRENT_VERSION }}
+          echo RELEASE ${{ env.RELEASE_VERSION }}
+          echo NEXT ${{ env.NEXT_VERSION }}
+          echo NEXT_RELEASE ${{ env.NEXT_RELEASE_VERSION }}
+          exit 1
+
       - name: Get Deno
         run: |
           rm -rf $DENO_ROOT_PATH && mkdir -p $DENO_ROOT_PATH
