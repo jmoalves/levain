@@ -17,9 +17,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check parameters
+      - name: Check releaseNumber
         run: |
-          # Check releaseNumber
           version=$LEVAIN_VERSION
           if [[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo Version v${version};
@@ -37,8 +36,11 @@ jobs:
 
             exit 1
           fi
+        env:
+          LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
 
-          # Check denoVersion
+      - name: Check denoVersion
+        run: |
           version=${{ github.event.inputs.denoVersion }}
           if [ -n "$version" ]; then
             if [[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
@@ -58,8 +60,6 @@ jobs:
               exit 1
             fi
           fi
-        env:
-          LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
 
       - name: Clean TEMP
         run: rm -rf $RUNNER_TEMP && mkdir -p $RUNNER_TEMP
