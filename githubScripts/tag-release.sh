@@ -63,7 +63,6 @@ rm recipes/levain.levain.yaml.bkp
 
 git add recipes/levain.levain.yaml
 git commit -m "skip: ${nextVersion}"
-rm recipes/levain.levain.yaml.bkp
 
 # PUSH
 git push
