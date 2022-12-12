@@ -6,6 +6,7 @@ import {Timer} from "../timer.ts";
 import {FileUtils} from "../fs/file_utils.ts";
 import ConsoleFeedback from "../utils/console_feedback.ts";
 import StringUtils from "../utils/string_utils.ts";
+import {retry} from "../utils/utils.ts";
 
 export abstract class Extractor {
     readonly feedback = new ConsoleFeedback();
@@ -44,11 +45,11 @@ export abstract class Extractor {
             } else {
                 let dst = path.resolve(dstDir, child.name);
                 log.debug(`- MOVE ${from} => ${dst}`);
-                Deno.renameSync(from, dst);
+                retry(3, () => Deno.renameSync(from, dst));
             }
         }
 
-        Deno.removeSync(srcDir);
+        retry(3, () => Deno.removeSync(srcDir));
     }
 
     async extractToTemp(file: string): Promise<string> {

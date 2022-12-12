@@ -1,4 +1,7 @@
+import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
+
+import { sleepRandomAmountOfSeconds } from "https://deno.land/x/sleep/mod.ts";
 
 export var homedir = function (): string {
     // Common option
@@ -74,4 +77,21 @@ export function envChain(...names: string[]): string | undefined {
     }
 
     return undefined;
+}
+
+export function retry(maxRetries: number, codeToRun:(() => void)): void {
+    let lastError = undefined
+
+    for (let retries = 0; retries < maxRetries; retries++) {
+        try {
+            codeToRun()
+            return
+        } catch (error) {
+            log.warn("RETRY - Ignoring " + error)
+            lastError = error
+            sleepRandomAmountOfSeconds(0, 2)
+        }
+    }
+
+    throw lastError
 }
