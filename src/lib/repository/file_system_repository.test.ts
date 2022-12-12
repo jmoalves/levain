@@ -3,7 +3,7 @@ import {
     assertEquals,
     assertMatch,
     assertNotEquals,
-    assertThrowsAsync
+    assertRejects
 } from "https://deno.land/std/testing/asserts.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import {ensureDirSync} from "https://deno.land/std/fs/mod.ts";
@@ -46,7 +46,7 @@ Deno.test({
     // only: true,
     fn: async () => {
 
-        await assertThrowsAsync(
+        await assertRejects(
             async () => {
                 await getInitedRepo('thisFolderDoesNotExist')
             },

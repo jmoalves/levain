@@ -1,4 +1,4 @@
-import {assertEquals, assertThrowsAsync,} from "https://deno.land/std/testing/asserts.ts"
+import {assertEquals, assertRejects,} from "https://deno.land/std/testing/asserts.ts"
 
 //
 // inputAndValidate
@@ -19,7 +19,7 @@ Deno.test('InputEmail.inputAndValidate should accept a default value', async () 
     await verifyInput(myInput, defaultValue, expectedValue)
 })
 Deno.test('InputEmail.inputAndValidate should reject an invalid value', () => {
-    assertThrowsAsync(
+    assertRejects(
         async () => {
             await verifyInput('--invalid-email--', 'defaultValue@server.com', 'doesntMatter')
         },

@@ -1,7 +1,7 @@
 import Repository from "./repository.ts";
 import Config from "../config.ts";
 
-import {assertEquals, assertThrowsAsync,} from "https://deno.land/std/testing/asserts.ts";
+import {assertEquals, assertRejects,} from "https://deno.land/std/testing/asserts.ts";
 import GitRepository from "./git_repository.ts";
 import LevainAsserts from "../test/levain_asserts.ts";
 
@@ -26,7 +26,7 @@ Deno.test({
     // only: true,
     fn: async () => {
         const rootUrl = 'thisFolderDoesNotExist'
-        await assertThrowsAsync(
+        await assertRejects(
             async () => {
                 const repo = await getRepo(rootUrl)
                 await repo.init()

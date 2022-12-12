@@ -1,4 +1,4 @@
-import {assertEquals, assertThrowsAsync,} from "https://deno.land/std/testing/asserts.ts";
+import {assertEquals, assertRejects,} from "https://deno.land/std/testing/asserts.ts";
 
 import TestHelper from '../../lib/test/test_helper.ts';
 import {MockPackage} from '../../lib/package/mock_package.ts';
@@ -17,7 +17,7 @@ Deno.test('RemoveFromRegistry should remove package from registry', async () => 
     assertEquals(registry.size(), 0)
 })
 Deno.test('RemoveFromRegistry should throw when no package was passed as parameter', async () => {
-    await assertThrowsAsync(
+    await assertRejects(
         async () => {
             const registry = await TestHelper.getNewInitedTempRegistry()
             const action = new RemoveFromRegistry(registry)

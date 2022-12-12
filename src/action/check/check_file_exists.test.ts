@@ -1,4 +1,4 @@
-import {assert, assertThrowsAsync} from "https://deno.land/std/testing/asserts.ts";
+import {assert, assertRejects} from "https://deno.land/std/testing/asserts.ts";
 
 import TestHelper from "../../lib/test/test_helper.ts";
 import ActionFactory from "../action_factory.ts";
@@ -15,7 +15,7 @@ Deno.test('CheckFileExists should throw error when param list is empty', async (
     const action = new CheckFileExists(TestHelper.getConfig())
     const params: string[] = []
 
-    await assertThrowsAsync(
+    await assertRejects(
         async () => {
             await action.execute(TestHelper.mockPackage(), params)
         },
@@ -28,7 +28,7 @@ Deno.test('CheckFileExists should throw error when one file does not exist', asy
     const action = new CheckFileExists(TestHelper.getConfig())
     const params = [TestHelper.fileThatDoesNotExist]
 
-    await assertThrowsAsync(
+    await assertRejects(
         async () => {
             await action.execute(TestHelper.mockPackage(), params)
         },
@@ -41,7 +41,7 @@ Deno.test('CheckFileExists should throw error when param list contains only dirs
     const action = new CheckFileExists(TestHelper.getConfig())
     const params = [TestHelper.folderThatAlwaysExists, TestHelper.folderThatDoesNotExist]
 
-    await assertThrowsAsync(
+    await assertRejects(
         async () => {
             await action.execute(TestHelper.mockPackage(), params)
         },

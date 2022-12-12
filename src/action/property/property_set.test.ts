@@ -1,4 +1,4 @@
-import {assert, assertEquals, assertNotEquals, assertThrowsAsync} from "https://deno.land/std/testing/asserts.ts";
+import {assert, assertEquals, assertNotEquals, assertRejects} from "https://deno.land/std/testing/asserts.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 
 import TestHelper from "../../lib/test/test_helper.ts";
@@ -42,7 +42,7 @@ Deno.test({
         const config = new Config({})
         const action = new PropertySetAction(config)
 
-        await assertThrowsAsync(
+        await assertRejects(
             async () => {
                 await action.execute(TestHelper.mockPackage(), [])
             },
@@ -57,7 +57,7 @@ Deno.test({
         const config = new Config({})
         const action = new PropertySetAction(config)
 
-        await assertThrowsAsync(
+        await assertRejects(
             async () => {
                 await action.execute(TestHelper.mockPackage(), ['filename', 'property'])
             },

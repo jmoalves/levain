@@ -1,4 +1,4 @@
-import {assertEquals, assertMatch, assertThrowsAsync} from "https://deno.land/std/testing/asserts.ts";
+import {assertEquals, assertMatch, assertRejects} from "https://deno.land/std/testing/asserts.ts";
 
 import VarResolver from "./var_resolver.ts";
 import Config from "./config.ts";
@@ -18,7 +18,7 @@ Deno.test('VarResolver.replaceVars should not change a text without vars', async
 Deno.test('VarResolver.replaceVars should throw error for unknown vars', async () => {
     const config = TestHelper.getConfig()
 
-    await assertThrowsAsync(
+    await assertRejects(
         async () => {
             await VarResolver.replaceVars('${var-that-does-not-exist}', undefined, config)
         },

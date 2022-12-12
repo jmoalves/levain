@@ -1,6 +1,6 @@
 import TestHelper from "../../lib/test/test_helper.ts";
 import ActionFactory from "../action_factory.ts";
-import {assert, assertThrowsAsync} from "https://deno.land/std/testing/asserts.ts";
+import {assert, assertRejects} from "https://deno.land/std/testing/asserts.ts";
 import KillProcessAction from "./killProcess.ts";
 
 Deno.test('KillProcessAction should be obtainable from ActionFactory', () => {
@@ -21,7 +21,7 @@ Deno.test('KillProcessAction should require process name', async () => {
 
     // When I execute the action without parameters
     // Then I get a message requiring a process name
-    await assertThrowsAsync(
+    await assertRejects(
         async () => {
             await action.execute(undefined, [])
         },

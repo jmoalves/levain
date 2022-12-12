@@ -1,4 +1,4 @@
-import {assertEquals, assertThrowsAsync} from "https://deno.land/std/testing/asserts.ts";
+import {assertEquals, assertRejects} from "https://deno.land/std/testing/asserts.ts";
 
 import TestHelper from "../../lib/test/test_helper.ts";
 
@@ -6,7 +6,7 @@ import JsonGet from "./json_get.ts";
 
 Deno.test('JsonGet - should throw exception for missing parameters', async () => {
     const action = new JsonGet(TestHelper.getConfig());
-    await assertThrowsAsync(
+    await assertRejects(
         async () => {
             await action.execute(TestHelper.mockPackage(), []);
         },
@@ -17,7 +17,7 @@ Deno.test('JsonGet - should throw exception for missing parameters', async () =>
 
 Deno.test('JsonGet - should throw exception for missing parameters', async () => {
     const action = new JsonGet(TestHelper.getConfig());
-    await assertThrowsAsync(
+    await assertRejects(
         async () => {
             await action.execute(TestHelper.mockPackage(), ["property"]);
         },
@@ -28,7 +28,7 @@ Deno.test('JsonGet - should throw exception for missing parameters', async () =>
 
 Deno.test('JsonGet - should throw exception for missing parameters', async () => {
     const action = new JsonGet(TestHelper.getConfig());
-    await assertThrowsAsync(
+    await assertRejects(
         async () => {
             await action.execute(TestHelper.mockPackage(), ["filename", "property"]);
         },
@@ -39,7 +39,7 @@ Deno.test('JsonGet - should throw exception for missing parameters', async () =>
 
 Deno.test('JsonGet - should throw exception for missing parameters', async () => {
     const action = new JsonGet(TestHelper.getConfig());
-    await assertThrowsAsync(
+    await assertRejects(
         async () => {
             await action.execute(TestHelper.mockPackage(), ["--setVar", "filename"]);
         },
@@ -50,7 +50,7 @@ Deno.test('JsonGet - should throw exception for missing parameters', async () =>
 
 Deno.test('JsonGet - should throw exception for missing parameters', async () => {
     const action = new JsonGet(TestHelper.getConfig());
-    await assertThrowsAsync(
+    await assertRejects(
         async () => {
             await action.execute(TestHelper.mockPackage(), ["--setVar=var", "filename"]);
         },
@@ -98,7 +98,7 @@ Deno.test('JsonGet - object property must throw exception', async () => {
     const varName = "my.var";
     const params = [`--setVar=${varName}`, TestHelper.resolveTestFile('json/test.json'), "objectProperty"];
 
-    await assertThrowsAsync(
+    await assertRejects(
         async () => {
             await action.execute(TestHelper.mockPackage(), params);
         },
@@ -113,7 +113,7 @@ Deno.test('JsonGet - array property must throw exception', async () => {
     const varName = "my.var";
     const params = [`--setVar=${varName}`, TestHelper.resolveTestFile('json/test.json'), "arrayProperty"];
 
-    await assertThrowsAsync(
+    await assertRejects(
         async () => {
             await action.execute(TestHelper.mockPackage(), params);
         },

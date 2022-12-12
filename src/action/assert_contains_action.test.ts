@@ -1,4 +1,4 @@
-import {assertThrowsAsync} from "https://deno.land/std/testing/asserts.ts";
+import {assertRejects} from "https://deno.land/std/testing/asserts.ts";
 
 import {MockPackage} from "../lib/package/mock_package.ts";
 import Config from "../lib/config.ts";
@@ -13,7 +13,7 @@ Deno.test('should assert the the first text is contained in the second', async (
 })
 
 Deno.test('should throw error when not contained', async () => {
-    await assertThrowsAsync(
+    await assertRejects(
         async () => {
             await command.execute(pkg, ["abc", "123"])
         },
@@ -23,7 +23,7 @@ Deno.test('should throw error when not contained', async () => {
 })
 
 Deno.test('should throw Error with help when not enough args were supplied', async () => {
-    await assertThrowsAsync(
+    await assertRejects(
         async () => {
             await command.execute(pkg, [])
         },
@@ -33,7 +33,7 @@ Deno.test('should throw Error with help when not enough args were supplied', asy
 })
 
 Deno.test('should throw custom message', async () => {
-    await assertThrowsAsync(
+    await assertRejects(
         async () => {
             await command.execute(pkg, ['--message', 'custom message', 'qwe', 'poi'])
         },

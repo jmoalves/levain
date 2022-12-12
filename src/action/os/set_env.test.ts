@@ -1,4 +1,4 @@
-import {assertEquals, assertThrowsAsync, fail} from "https://deno.land/std/testing/asserts.ts";
+import {assertEquals, assertRejects, fail} from "https://deno.land/std/testing/asserts.ts";
 
 import TestHelper from "../../lib/test/test_helper.ts";
 import OsUtils from "../../lib/os/os_utils.ts";
@@ -31,7 +31,7 @@ Deno.test('SetEnv should setEnv in config', async () => {
     assertEquals(config.context.action.setEnv.env[envKey], envValue)
 })
 Deno.test('SetEnv should throw exception on unexpected param', async () => {
-    await assertThrowsAsync(
+    await assertRejects(
         async () => {
             const config = TestHelper.getConfig();
             const action: Action = new SetEnv(config)
@@ -55,7 +55,7 @@ Deno.test('SetEnv should allow --permanent option', async () => {
 
         assertEquals(config.context.action.setEnv.env[envKey], envValue)
     } else {
-        await assertThrowsAsync(
+        await assertRejects(
             async () => {
                 await action.execute(mockPackage, ['--permanent', envKey, envValue])
             },

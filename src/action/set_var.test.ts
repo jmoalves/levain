@@ -1,4 +1,4 @@
-import {assert, assertEquals, assertThrowsAsync,} from "https://deno.land/std/testing/asserts.ts";
+import {assert, assertEquals, assertRejects,} from "https://deno.land/std/testing/asserts.ts";
 
 import TestHelper from '../lib/test/test_helper.ts';
 
@@ -24,7 +24,7 @@ Deno.test('SetVarAction should ask for two parameters', async () => {
     const config = TestHelper.getConfig()
     const action = new SetVarAction(config)
 
-    await assertThrowsAsync(
+    await assertRejects(
         async () => {
             await action.execute(TestHelper.mockPackage(), [])
         },

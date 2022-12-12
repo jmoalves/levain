@@ -1,4 +1,4 @@
-import {assertEquals, assertThrowsAsync} from "https://deno.land/std/testing/asserts.ts";
+import {assertEquals, assertRejects} from "https://deno.land/std/testing/asserts.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 
 import TestHelper from "../../lib/test/test_helper.ts";
@@ -7,7 +7,7 @@ import JsonSet from "./json_set.ts";
 
 Deno.test('JsonSet - should throw exception for missing parameters', async () => {
     const action = new JsonSet(TestHelper.getConfig());
-    await assertThrowsAsync(
+    await assertRejects(
         async () => {
             await action.execute(TestHelper.mockPackage(), []);
         },
@@ -18,7 +18,7 @@ Deno.test('JsonSet - should throw exception for missing parameters', async () =>
 
 Deno.test('JsonSet - should throw exception for missing parameters', async () => {
     const action = new JsonSet(TestHelper.getConfig());
-    await assertThrowsAsync(
+    await assertRejects(
         async () => {
             await action.execute(TestHelper.mockPackage(), ["property"]);
         },
@@ -29,7 +29,7 @@ Deno.test('JsonSet - should throw exception for missing parameters', async () =>
 
 Deno.test('JsonSet - should throw exception for missing parameters', async () => {
     const action = new JsonSet(TestHelper.getConfig());
-    await assertThrowsAsync(
+    await assertRejects(
         async () => {
             await action.execute(TestHelper.mockPackage(), ["--ifNotExists", "filename"]);
         },
@@ -40,7 +40,7 @@ Deno.test('JsonSet - should throw exception for missing parameters', async () =>
 
 Deno.test('JsonSet - should throw exception for missing parameters', async () => {
     const action = new JsonSet(TestHelper.getConfig());
-    await assertThrowsAsync(
+    await assertRejects(
         async () => {
             await action.execute(TestHelper.mockPackage(), ["filename", "--ifNotExists"]);
         },
@@ -52,7 +52,7 @@ Deno.test('JsonSet - should throw exception for missing parameters', async () =>
 
 Deno.test('JsonSet - should throw exception for missing parameters', async () => {
     const action = new JsonSet(TestHelper.getConfig());
-    await assertThrowsAsync(
+    await assertRejects(
         async () => {
             await action.execute(TestHelper.mockPackage(), ["property", "value", "--ifNotExists"]);
         },

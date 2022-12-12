@@ -1,5 +1,5 @@
 import {ensureDirSync} from "https://deno.land/std/fs/mod.ts";
-import {assertEquals, assertThrowsAsync,} from "https://deno.land/std/testing/asserts.ts";
+import {assertEquals, assertRejects,} from "https://deno.land/std/testing/asserts.ts";
 
 import TestHelper from '../test/test_helper.ts';
 import FileSystemPackage from '../package/file_system_package.ts';
@@ -23,7 +23,7 @@ Deno.test('Registry should throw when package file does not exist', async () => 
     try {
         ensureDirSync(registry.rootDir)
         const pkg = TestHelper.getTestFilePackage('fileThatDoesNotExist.levain.yaml')
-        await assertThrowsAsync(
+        await assertRejects(
             async () => {
                 await registry.add(pkg)
             },

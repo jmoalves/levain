@@ -1,4 +1,4 @@
-import {assert, assertEquals, assertThrowsAsync} from "https://deno.land/std/testing/asserts.ts";
+import {assert, assertEquals, assertRejects} from "https://deno.land/std/testing/asserts.ts";
 import * as path from 'https://deno.land/std/path/mod.ts'
 
 import TestHelper from "../test/test_helper.ts";
@@ -17,7 +17,7 @@ Deno.test('JsonUtils - should load json file', async () => {
 Deno.test('JsonUtils - should inform that file does not exist', async () => {
     let filename = TestHelper.resolveTestFile('missing_file.json');
 
-    await assertThrowsAsync(
+    await assertRejects(
         async () => {
             JsonUtils.load(filename);
         },

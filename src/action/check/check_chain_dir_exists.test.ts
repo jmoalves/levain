@@ -1,4 +1,4 @@
-import {assertEquals, assertThrowsAsync} from "https://deno.land/std/testing/asserts.ts";
+import {assertEquals, assertRejects} from "https://deno.land/std/testing/asserts.ts";
 
 import TestHelper from "../../lib/test/test_helper.ts";
 
@@ -14,7 +14,7 @@ Deno.test('should throw error if dirs do not exist', async () => {
     const action = new CheckChainDirExists(TestHelper.getConfig())
     const params = [TestHelper.folderThatDoesNotExist, '123']
 
-    await assertThrowsAsync(
+    await assertRejects(
         async () => {
             await action.execute(TestHelper.mockPackage(), params)
         },

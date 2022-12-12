@@ -1,4 +1,4 @@
-import {assertEquals, assertThrowsAsync,} from "https://deno.land/std/testing/asserts.ts";
+import {assertEquals, assertRejects,} from "https://deno.land/std/testing/asserts.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 
 import Config from "../config.ts";
@@ -34,7 +34,7 @@ Deno.test({
     fn: async () => {
         const absoluteURI = path.resolve('thisFolderDoesNotExist')
 
-        await assertThrowsAsync(
+        await assertRejects(
             async () => {
                 const repo = await getRepo('thisFolderDoesNotExist')
                 await repo.init()
