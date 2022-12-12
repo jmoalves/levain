@@ -87,7 +87,7 @@ export function retry(maxRetries: number, codeToRun:(() => void)): void {
             codeToRun()
             return
         } catch (error) {
-            log.warn("RETRY - Ignoring " + error)
+            log.warning("RETRY - Ignoring " + error)
             lastError = error
             sleepRandomAmountOfSeconds(0, 2)
         }
