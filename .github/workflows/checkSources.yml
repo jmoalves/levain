@@ -25,7 +25,7 @@ jobs:
         run: |
           rm -rf $DENO_ROOT_PATH && mkdir -p $DENO_ROOT_PATH
           echo Deno Linux
-          bash $GITHUB_WORKSPACE/githubScripts/get-deno.sh $DENO_ROOT_PATH/linux Linux
+          bash $GITHUB_WORKSPACE/githubScripts/get-deno.sh $DENO_ROOT_PATH/linux Linux 1.23.2
         env:
           DENO_ROOT_PATH: ${{ runner.temp }}/deno
 
