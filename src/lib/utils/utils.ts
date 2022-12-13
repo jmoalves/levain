@@ -30,7 +30,7 @@ export var homedir = function (): string {
 export function promptSecret(message: string): string | undefined {
     Deno.stdout.writeSync(new TextEncoder().encode(message));
 
-    Deno.setRaw(0, true);
+    Deno.stdin.setRaw(true);
 
     let input = "";
     while (true) {
@@ -46,12 +46,12 @@ export function promptSecret(message: string): string | undefined {
             switch (char) {
                 case "\u0003":
                 case "\u0004":
-                    Deno.setRaw(Deno.stdin.rid, false);
+                    Deno.stdin.setRaw(false);
                     return undefined;
 
                 case "\r":
                 case "\n":
-                    Deno.setRaw(Deno.stdin.rid, false);
+                    Deno.stdin.setRaw(false);
                     return input;
 
                 case "\u0008":
