@@ -8,10 +8,10 @@ import ProgressReader from "./progress_reader.ts";
 
 export default class FileReader implements ProgressReader {
     private filePath: string;
-    private file: Deno.File | undefined;
+    private file: Deno.FsFile | undefined;
     private fileInfo: Deno.FileInfo | undefined;
 
-    private bytesRead: number = 0;
+    private bytesRead = 0;
 
     private pb: ProgressBar | undefined;
 
@@ -71,7 +71,7 @@ export default class FileReader implements ProgressReader {
         }
 
         return new Promise((resolve, reject) => {
-            this.file?.read(p).then(size => {
+            this.file?.read(p).then((size:number|null) => {
                 if (size) {
                     this.bytesRead += size;
                     if (this.progressBar) {
