@@ -14,7 +14,7 @@ jobs:
       - name: Run tests
         run: |
           denoTemp=$( mktemp -d )  
-          bash $GITHUB_WORKSPACE/githubScripts/get-deno.sh $denoTemp Linux 1.23.2
+          bash $GITHUB_WORKSPACE/githubScripts/get-deno.sh $denoTemp Linux
           export PATH=${denoTemp}:$PATH
           cd $GITHUB_WORKSPACE
           bash ./scripts/test.sh
