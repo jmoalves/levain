@@ -11,11 +11,11 @@ import Timestamps from "./timestamps.ts";
 export default class FileWriter implements Deno.Writer, Progress, Timestamps, Deno.Closer {
     private filePath: string
     private tempPath: string
-    private file: Deno.File
+    private file: Deno.FsFile
     private fileInfo: Deno.FileInfo | undefined
     private fileSize: number | undefined
 
-    private written: number = 0
+    private written = 0
 
     private pb: ProgressBar | undefined
 
@@ -63,7 +63,7 @@ export default class FileWriter implements Deno.Writer, Progress, Timestamps, De
     // Deno.Writer
     async write(p: Uint8Array): Promise<number> {
         return new Promise((resolve, reject) => {
-            this.file.write(p).then(size => {
+            this.file.write(p).then((size:number) => {
                 this.written += size;
                 if (this.progressBar) {
                     this.progressBar.render(this.written);
