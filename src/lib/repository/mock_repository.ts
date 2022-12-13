@@ -16,6 +16,7 @@ export default class MockRepository extends AbstractRepository {
     }
 
     init(): Promise<void> {
+        this.setInitialized()
         return Promise.resolve()
     }
 

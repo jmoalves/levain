@@ -27,7 +27,4 @@ Deno.test('AbstractRepository.initialized should reflect if packages are valid',
 
     await repo.init()
     assertEquals(repo.initialized(), true)
-
-    repo.invalidatePackages()
-    assertEquals(repo.initialized(), false)
 })

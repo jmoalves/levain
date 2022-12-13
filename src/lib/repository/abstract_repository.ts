@@ -4,7 +4,7 @@ import Package from '../package/package.ts';
 import Repository from './repository.ts';
 
 export default abstract class AbstractRepository implements Repository {
-    private _initialized:boolean = false;
+    private _initialized = false;
 
     constructor(
         readonly name: string,
