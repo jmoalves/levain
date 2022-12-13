@@ -171,7 +171,7 @@ export default class RepositoryManager {
         }
     }
 
-    private async createCurrentDirRepo(): Promise<Repository> {
+    public async createCurrentDirRepo(): Promise<Repository> {
         const currentDir = Deno.cwd()
         let dirs = [currentDir]
 
@@ -186,19 +186,19 @@ export default class RepositoryManager {
         return currentDirRepo
     }
 
-    private async createInstalledRepo(): Promise<Repository> {
+    public async createInstalledRepo(): Promise<Repository> {
         log.debug("createInstalledRepo")
         let repos = await this.repoList(true)
         return this.repositories.installed = await this.createRepos(repos)
     }
 
-    private async createRegularRepositories(): Promise<Repository> {
+    public async createRegularRepositories(): Promise<Repository> {
         log.debug("createRegularRepository")
         let repos = await this.repoList(false)
         return this.repositories.regular = await this.createRepos(repos)
     }
 
-    private async repoList(installedOnly: boolean): Promise<string[]> {
+    public async repoList(installedOnly: boolean): Promise<string[]> {
         let repos: string[] = [];
 
         if (installedOnly) {
