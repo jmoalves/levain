@@ -14,3 +14,4 @@ levain.bundle.js
 /extra-bin/windows/git/
 /node_modules/
 deno.lock
+testdata/template/result.txt
