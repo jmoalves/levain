@@ -1,12 +1,12 @@
 {
     "imports": {
-        "https://deno.land/std/": "https://deno.land/std@0.158.0/",
-        "https://deno.land/x/i18next/": "https://deno.land/x/i18next@v21.9.2/",
-        "https://deno.land/x/fastest_levenshtein/": "https://deno.land/x/fastest_levenshtein@1.0.10/",
-        "https://deno.land/x/cliffy/": "https://deno.land/x/cliffy@v0.25.1/",
-        "https://deno.land/x/progress/": "https://deno.land/x/progress@v1.2.8/",
-        "https://deno.land/x/deno_validator/": "https://deno.land/x/deno_validator@v0.0.5/",
-        "https://deno.land/x/zip/": "https://deno.land/x/zip@v1.2.4/",
-        "https://deno.land/x/sleep/": "https://deno.land/x/sleep@v1.2.1/"
+        "https://deno.land/std/": "https://deno.land/std/",
+        "https://deno.land/x/i18next/": "https://deno.land/x/i18next/",
+        "https://deno.land/x/fastest_levenshtein/": "https://deno.land/x/fastest_levenshtein/",
+        "https://deno.land/x/cliffy/": "https://deno.land/x/cliffy/",
+        "https://deno.land/x/progress/": "https://deno.land/x/progress/",
+        "https://deno.land/x/deno_validator/": "https://deno.land/x/deno_validator/",
+        "https://deno.land/x/zip/": "https://deno.land/x/zip/",
+        "https://deno.land/x/sleep/": "https://deno.land/x/sleep/"
     }
 }

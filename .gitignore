@@ -13,3 +13,4 @@ levain.bundle.js
 /extra-bin/windows/curl/
 /extra-bin/windows/git/
 /node_modules/
+deno.lock
