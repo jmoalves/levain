@@ -89,7 +89,7 @@ Deno.test('JsonGet - should get simple boolean property', async () => {
 
     await action.execute(TestHelper.mockPackage(), params);
 
-    assertEquals(config.getVar(varName), true);
+    assertEquals(config.getVar(varName), "true");
 })
 
 Deno.test('JsonGet - object property must throw exception', async () => {
