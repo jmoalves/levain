@@ -4,12 +4,12 @@ import Package from "../package/package.ts";
 import AbstractRepository from './abstract_repository.ts';
 
 export default class NullRepository extends AbstractRepository {
-
     constructor(private config: Config) {
         super('nullRepo')
     }
 
     async init(): Promise<void> {
+        this.setInitialized()
     }
 
     invalidatePackages() {
@@ -26,4 +26,9 @@ export default class NullRepository extends AbstractRepository {
     async readPackages(): Promise<Array<Package>> {
         return []
     }
+
+    reload(): Promise<void> {
+        return Promise.resolve()
+    }
+
 }
