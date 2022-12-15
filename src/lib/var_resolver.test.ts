@@ -59,7 +59,6 @@ Deno.test({
         const varsFoundInText = VarResolver.findVarsInText('no vars in this text')
         assertEquals(varsFoundInText, [])
     },
-    // only: true,
 })
 Deno.test({
     name: 'VarResolver.findVarsInText should match multiple vars',
@@ -73,7 +72,6 @@ Deno.test({
             text: "${anotherVar}",
         }])
     },
-    // only: true,
 })
 //
 // getVarValue
