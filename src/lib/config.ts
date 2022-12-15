@@ -208,8 +208,13 @@ export default class Config {
         this._env[name] = value;
     }
 
-    getVar(name: string): string {
-        return this._env[name];
+    getVar(name: string): string | undefined {
+        const value = this._env[name];
+        if (value) {
+            return '' + value;
+        } else {
+            return value;
+        }
     }
 
     async replaceVars(text: string, pkgName?: string | undefined): Promise<string> {
