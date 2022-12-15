@@ -87,7 +87,7 @@ echo = 7Zip - Tool
 zipDir=$( mktemp -d )
 rm -rf $zipDir
 mkdir -p $zipDir
-curl -ks -o ${zipDir}/7z.tar.xz https://www.7-zip.org/a/7z2107-linux-x64.tar.xz
+curl -ks -o ${zipDir}/7z.tar.xz https://www.7-zip.org/a/7z2201-linux-x64.tar.xz
 tar xf ${zipDir}/7z.tar.xz --xz -C ${zipDir}
 zipTool=${zipDir}/7zzs
 
