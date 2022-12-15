@@ -43,7 +43,6 @@ Deno.test('FileSystemRepository.describe should not repeat absoluteURI when equa
 })
 Deno.test({
     name: 'FileSystemRepository should throw an error when root folder does not exist',
-    // only: true,
     fn: async () => {
 
         await assertRejects(
@@ -60,7 +59,6 @@ Deno.test({
 //
 Deno.test({
     name: 'FileSystemRepository should list packages from an empty dir',
-    // only: true,
     fn: async () => {
         const emptyRepo = 'testdata/file_system_repo/empty'
         ensureDirSync(emptyRepo)

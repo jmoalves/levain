@@ -205,7 +205,6 @@ Deno.test({
 
         assertDirCountGreaterOrEqualTo(tempFolder, 3)
     },
-    // only: true,
 })
 Deno.test({
     name: 'GitUtils.pull should throw an error if folder is not a git repo',
@@ -227,5 +226,4 @@ Deno.test({
         assertMatch(lastMessage, /^ERROR git error - try 3 - Error 128/m)
         assertMatch(lastMessage, /fatal: not a git repository \(or any of the parent directories\): .git/)
     },
-    // only: true
 })

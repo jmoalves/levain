@@ -23,7 +23,6 @@ Deno.test('GitRepository should have a description', () => {
 })
 Deno.test({
     name: 'GitRepository should throw an error when root url is invalid',
-    // only: true,
     fn: async () => {
         const rootUrl = 'thisFolderDoesNotExist'
         await assertRejects(

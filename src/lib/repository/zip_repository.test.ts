@@ -30,7 +30,6 @@ Deno.test('ZipRepository should have a description', () => {
 })
 Deno.test({
     name: 'ZipRepository should throw an error when root folder does not exist',
-    // only: true,
     fn: async () => {
         const absoluteURI = path.resolve('thisFolderDoesNotExist')
 

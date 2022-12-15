@@ -26,7 +26,6 @@ Deno.test('OsUtils should know where is the temp folder', () => {
 
 Deno.test({
     name: 'OsUtils should know where is the home folder',
-    // only: true,
     fn: () => {
         log.info(`OsUtils.homeDir ${OsUtils.homeDir}`,)
         assert(OsUtils.homeDir)
@@ -126,7 +125,6 @@ if (OsUtils.isWindows()) {
 
     Deno.test({
         name: 'OsUtils.addToDesktop should create a shortcut to a file',
-        // only: true,
         fn: async () => {
             // Given that I have a file
             const aFile = referenceFile
@@ -146,7 +144,6 @@ if (OsUtils.isWindows()) {
 
     Deno.test({
         name: 'OsUtils.addToStartup should create a shortcut to a file',
-        // only: true,
         fn: async () => {
             // Given that I have a file
             const aFile = referenceFile
@@ -166,7 +163,6 @@ if (OsUtils.isWindows()) {
 
     Deno.test({
         name: 'OsUtils.addToStartMenu should create a shortcut to a file',
-        // only: true,
         fn: async () => {
             // Given that I have a file
             const aFile = referenceFile
@@ -186,7 +182,6 @@ if (OsUtils.isWindows()) {
 
     Deno.test({
         name: 'OsUtils.addToStartMenu should create a shortcut to a file in a group',
-        // only: true,
         fn: async () => {
             // Given that I have a file
             const aFile = referenceFile
@@ -291,5 +286,4 @@ Deno.test({
         const normalizedPath = DirUtils.normalizePath(pathInOutput)
         assertMatch(normalizedPath, /[\\\/]+testdata/)
     },
-    // only: true,
 })
