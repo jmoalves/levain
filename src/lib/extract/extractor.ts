@@ -16,7 +16,7 @@ export abstract class Extractor {
 
     async extract(strip: boolean, src: string, dst: string) {
         let extractedTempDir = await this.extractToTemp(src)
-        this.move(strip, extractedTempDir, dst);
+        await this.move(strip, extractedTempDir, dst);
     }
 
 
@@ -29,7 +29,7 @@ export abstract class Extractor {
 
     abstract extractImpl(src: string, dst: string): void;
 
-    move(strip: boolean, srcDir: string, dstDir: string): void {
+    async move(strip: boolean, srcDir: string, dstDir: string): Promise<void> {
         let count = 0;
         for (let child of Deno.readDirSync(srcDir)) {
             count++;
@@ -41,15 +41,15 @@ export abstract class Extractor {
                 }
 
                 log.debug(`- STRIP ${from}`);
-                this.move(false, from, dstDir);
+                await this.move(false, from, dstDir);
             } else {
                 let dst = path.resolve(dstDir, child.name);
                 log.debug(`- MOVE ${from} => ${dst}`);
-                retry(3, () => Deno.renameSync(from, dst));
+                await retry(3, () => Deno.renameSync(from, dst));
             }
         }
 
-        retry(3, () => Deno.removeSync(srcDir));
+        await retry(3, () => Deno.removeSync(srcDir));
     }
 
     async extractToTemp(file: string): Promise<string> {
