@@ -79,7 +79,7 @@ export function envChain(...names: string[]): string | undefined {
     return undefined;
 }
 
-export function retry(maxRetries: number, codeToRun:(() => void)): void {
+export async function retry(maxRetries: number, codeToRun:(() => void)): void {
     let lastError = undefined
 
     for (let retries = 0; retries < maxRetries; retries++) {
@@ -89,7 +89,7 @@ export function retry(maxRetries: number, codeToRun:(() => void)): void {
         } catch (error) {
             log.warning("RETRY - Ignoring " + error)
             lastError = error
-            sleepRandomAmountOfSeconds(0, 2)
+            await sleepRandomAmountOfSeconds(0, 2)
         }
     }
 
