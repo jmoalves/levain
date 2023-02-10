@@ -111,7 +111,7 @@ downloadBinary -i git -u $gitUrl -d $gitDir
 
 
 # EXTRA-BIN: 7-Zip
-sevenUrl=https://www.7-zip.org/a/7z2107-x64.exe
+sevenUrl=https://www.7-zip.org/a/7z2201-x64.exe
 sevenDir=${levainDir}/extra-bin/windows/7-zip
 
 echo
