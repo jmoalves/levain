@@ -39,12 +39,7 @@ if exist %levainRoot%\extra-bin\windows\git rmdir /q /s %levainRoot%\extra-bin\w
 %PWS% Expand-Archive %binPath%\levain-extra-bin-windows-x86_64.zip -DestinationPath %levainRoot%
 rmdir /q /s %binPath%
 
-echo.
-echo === Deno cache
-set DENO_DIR=%levainRoot%\bin
-%levainRoot%\bin\deno.exe -V info
-%levainRoot%\bin\deno.exe cache --unstable --reload %levainRoot%\levain.ts
-::%levainRoot%\bin\deno.exe bundle --unstable --reload %levainRoot%\levain.ts %levainRoot%\levain.bundle.js
+call %myPath%\levainCache.cmd
 if errorlevel 1 exit /b %ERRORLEVEL%
 
 echo.
