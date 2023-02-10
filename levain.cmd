@@ -27,6 +27,7 @@ exit /b 0
 rem echo.
 rem echo Running %myPath%levain.ts
 
+set DENO_NO_UPDATE_CHECK=true
 set NO_COLOR=true
 set DENO_DIR=%denoPath%
 %denoPath%deno.exe run ^
