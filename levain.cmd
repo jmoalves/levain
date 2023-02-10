@@ -32,6 +32,7 @@ set NO_COLOR=true
 set DENO_DIR=%denoPath%
 %denoPath%deno.exe run ^
     --no-check ^
+    --cached-only ^
     %levainOpt% ^
     --allow-read --allow-write --allow-env --allow-net --allow-run ^
     --unstable ^
