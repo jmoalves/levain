@@ -93,7 +93,7 @@ zipTool=${zipDir}/7zzs
 
 
 # EXTRA-BIN: curl
-curlVersion=7.86.0
+curlVersion=7.87.0
 curlUrl=https://curl.se/windows/dl-${curlVersion}/curl-${curlVersion}-win64-mingw.zip
 curlDir=${levainDir}/extra-bin/windows/curl
 
@@ -102,7 +102,7 @@ downloadBinary -i curl -u $curlUrl -d $curlDir -s
 
 
 # EXTRA-BIN: git
-gitVersion=2.39.0
+gitVersion=2.39.1
 gitUrl=https://github.com/git-for-windows/git/releases/download/v${gitVersion}.windows.1/MinGit-${gitVersion}-64-bit.zip
 gitDir=${levainDir}/extra-bin/windows/git
 
