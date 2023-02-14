@@ -11,6 +11,8 @@ import {retry} from "../utils/utils.ts";
 export abstract class Extractor {
     readonly feedback = new ConsoleFeedback();
 
+    private readonly maxRetries = 5;
+
     constructor(protected config: Config) {
     }
 
@@ -45,11 +47,11 @@ export abstract class Extractor {
             } else {
                 let dst = path.resolve(dstDir, child.name);
                 log.debug(`- MOVE ${from} => ${dst}`);
-                await retry(3, () => Deno.renameSync(from, dst));
+                await retry(this.maxRetries, () => Deno.renameSync(from, dst));
             }
         }
 
-        await retry(3, () => Deno.removeSync(srcDir));
+        await retry(this.maxRetries, () => Deno.removeSync(srcDir));
     }
 
     async extractToTemp(file: string): Promise<string> {
