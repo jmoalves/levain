@@ -67,7 +67,7 @@ Deno.test('should use stringOnce option only once', () => {
             })
         },
         Error,
-        'Use option stringOption only once'
+        'Use option --stringOption only once'
     )
 })
 
@@ -105,6 +105,18 @@ Deno.test('should parse arg and option', () => {
         ]
     })
 
+    assertEquals(args._, ['firstArg'])
+    assertEquals(args.myOption, 'yes')
+})
+
+Deno.test('should ignore multiple spaces', () => {
+    const args = parseArgs(['--myOption', '', '', '', 'yes', '', '', '', 'firstArg', '', '', ''], {
+        stringOnce: [
+            'myOption'
+        ]
+    })
+
+    assertEquals(args._.length, 1)
     assertEquals(args._, ['firstArg'])
     assertEquals(args.myOption, 'yes')
 })
