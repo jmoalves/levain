@@ -7,7 +7,7 @@ class Opts {
     boolean?: string[]
 }
 
-export function parseArgs(args: string[], optsDef?: Opts): any {
+export function parseArgs(pArgs: string[], optsDef?: Opts): any {
     let opts: any = {
         stopEarly: true,
         unknown: (v: string) => {
@@ -26,6 +26,7 @@ export function parseArgs(args: string[], optsDef?: Opts): any {
                 opts.string.push(v);
             })
         }
+
         // Handling BREAKING changes
         // https://github.com/denoland/deno_std/commit/6a95e2954dd58b68dbbb246cc362a8906a01ec04
         if (optsDef?.stringMany) {
@@ -41,17 +42,11 @@ export function parseArgs(args: string[], optsDef?: Opts): any {
         opts.boolean = optsDef?.boolean;
     }
 
-    let myArgs = parse(args, opts);
+    let args = normalizeArgs(pArgs)
 
-    if (optsDef?.stringOnce) {
-        optsDef.stringOnce.forEach((key) => {
-            if (myArgs[key]) {
-                if (typeof (myArgs[key]) != "string") {
-                    throw new Error(`Use option ${key} only once`);
-                }
-            }
-        })
-    }
+    checkStringOnce(args, optsDef?.stringOnce)
+    
+    let myArgs = parse(args, opts);
 
     if (optsDef?.stringMany) {
         optsDef.stringMany.forEach((key) => {
@@ -135,3 +130,31 @@ function countQuotes(text: string): number {
 function addArg(args: string[], text: string): void {
     args.push(text.replace(/"/g, ''));
 }
+
+function normalizeArgs(args: string[]): string[] {
+    return args
+        .filter(item => item)
+        .map(item => item.trim())
+        .filter(item => item.length > 0)
+}
+
+function checkStringOnce(args: string[], stringOnce: string[] | undefined) {
+    if (!stringOnce || !args || args.length == 0) {
+        return
+    }
+
+    let knownKeys = new Set()
+    let stringOnceSet = new Set(stringOnce)
+
+    args
+        .filter(element => element?.startsWith('-'))
+        .filter(element => stringOnceSet.has(element.replace(/^-{1,2}/, '')))
+        .forEach(option => {
+            if (knownKeys.has(option)) {
+                throw new Error(`Use option ${option} only once`)
+            }
+
+            knownKeys.add(option)
+        })
+}
+
