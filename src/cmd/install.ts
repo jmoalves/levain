@@ -114,9 +114,11 @@ export default class Install implements Command {
             }
         }
 
+        let pkgNameSet = new Set(pkgNames);
         let bkpTag = this.bkpTag();
         for (let pkg of pkgs) {
-            await this.installPackage(bkpTag, pkg, myArgs.force, shouldUpdate);
+            let forcePkg = myArgs.force && pkgNameSet.has(pkg.name);
+            await this.installPackage(bkpTag, pkg, forcePkg, shouldUpdate);
         }
 
         log.debug("");
