@@ -73,8 +73,12 @@ export default class Config {
         return dir;
     }
 
-    get levainConfigFile(): string {
+    get oldLevainConfigFile(): string {
         return path.resolve(this.levainConfigDir, "config.json");
+    }
+
+    get levainConfigFile(): string {
+        return path.resolve(homedir(), "levain.config.json");
     }
 
     get levainRegistryDir(): string {
@@ -243,6 +247,16 @@ export default class Config {
         ensureDirSync(this.levainConfigDir)
         Deno.writeTextFileSync(fileName, JSON.stringify(cfg, null, 3));
         log.debug(`saved ${fileName}`);
+
+        try {
+            Deno.removeSync(this.oldLevainConfigFile);
+            log.debug(`DEL ${this.oldLevainConfigFile}`);
+        } catch (err) {
+            if (err.name != "NotFound") {
+                log.error(t("lib.config.errorReading", { filename: this.oldLevainConfigFile}));
+                throw err;
+            }
+        }
     }
 
     private buildCfg(): ConfigPersistentAttributes {
@@ -264,55 +278,71 @@ export default class Config {
             return;
         }
 
+        let oldCfgData = this.loadText(this.oldLevainConfigFile);
+        let data = this.loadText(filename);
+
+        if (oldCfgData && !data) {
+            data = oldCfgData;
+        }
+
+        if (!data) {
+            return;
+        }
+
+        let cfg = JSON.parse(data);
+        log.debug(`- PARSE ${JSON.stringify(cfg)}`);
+        this.lastCfg = cfg
+
+        if (cfg.repos) {
+            this.repositoryManager.saveState = cfg.repos;
+        }
+
+        if (cfg.defaultPackage) {
+            this._defaultPackage = cfg.defaultPackage;
+            log.debug(`- DEFAULT-PACKAGE ${this._defaultPackage}`);
+        }
+
+        if (cfg.cacheDir) {
+            this.levainCacheDir = cfg.cacheDir;
+        }
+
+        if (cfg.shellPath) {
+            this._shellPath = cfg.shellPath;
+        }
+
+        if (cfg.lastKnownVersion) {
+            this._lastKnownVersion = cfg.lastKnownVersion;
+        }
+
+        if (cfg.lastUpdateQuestion) {
+            this._lastUpdateQuestion = cfg.lastUpdateQuestion;
+        }
+
+        if (cfg.autoUpdate) {
+            this._autoUpdate = cfg.autoUpdate;
+        }
+
+        if (cfg.hasOwnProperty('shellCheckForUpdate')) {
+            this._shellCheckForUpdate = cfg.shellCheckForUpdate;
+        } else {
+            this._shellCheckForUpdate = true
+        }
+    }
+
+    private loadText(filename: string): string|null {
         try {
             log.debug(`LOAD ${filename}`);
-
             let data = Deno.readTextFileSync(filename);
             log.debug(`- DATA ${data}`);
-
-            let cfg = JSON.parse(data);
-            log.debug(`- PARSE ${JSON.stringify(cfg)}`);
-            this.lastCfg = cfg
-
-            if (cfg.repos) {
-                this.repositoryManager.saveState = cfg.repos;
-            }
-
-            if (cfg.defaultPackage) {
-                this._defaultPackage = cfg.defaultPackage;
-                log.debug(`- DEFAULT-PACKAGE ${this._defaultPackage}`);
-            }
-
-            if (cfg.cacheDir) {
-                this.levainCacheDir = cfg.cacheDir;
-            }
-
-            if (cfg.shellPath) {
-                this._shellPath = cfg.shellPath;
-            }
-
-            if (cfg.lastKnownVersion) {
-                this._lastKnownVersion = cfg.lastKnownVersion;
-            }
-
-            if (cfg.lastUpdateQuestion) {
-                this._lastUpdateQuestion = cfg.lastUpdateQuestion;
-            }
-
-            if (cfg.autoUpdate) {
-                this._autoUpdate = cfg.autoUpdate;
-            }
-
-            if (cfg.hasOwnProperty('shellCheckForUpdate')) {
-                this._shellCheckForUpdate = cfg.shellCheckForUpdate;
-            } else {
-                this._shellCheckForUpdate = true
-            }
+            return data;
         } catch (err) {
             if (err.name != "NotFound") {
                 log.error(t("lib.config.errorReading", { filename: filename}));
                 throw err;
             }
+
+            log.debug(`NOTFOUND ${filename}`);
+            return null;
         }
     }
 
