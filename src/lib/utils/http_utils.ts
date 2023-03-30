@@ -13,7 +13,10 @@ export default class HttpUtils {
         log.debug(`FETCH ${url} - GET`)
         for (let t = 1; t <= tries; t++) {
             try {
-                let response = await fetch(url)
+                const c = new AbortController();
+                const id = setTimeout(() => c.abort(), 1000);
+                let response = await fetch(url, {signal: c.signal});
+                clearTimeout(id);
 
                 if (response) {
                     log.debug(`FETCH ${url} - RESP - STATUS ${response.status} - ${response.statusText}`)
