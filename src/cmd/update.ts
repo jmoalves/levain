@@ -36,7 +36,7 @@ export default class Update implements Command {
         let pkgNames: string[] = myArgs._;
 
         if (pkgNames.length == 0) {
-            let installedPkgs = await this.config.repositoryManager.repositoryInstalled().listPackages()
+            let installedPkgs = await this.config.repositoryManager.repositoryInstalled.listPackages()
             if (installedPkgs?.length > 0) {
                 pkgNames = installedPkgs.map(pkg => pkg.name)
             }
