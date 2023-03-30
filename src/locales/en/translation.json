@@ -64,6 +64,9 @@
             "errorSaving": "- Found error saving {{pkg}}. Ignoring upgrade",
             "example": "  install <package name> ... <package name>"
         },
+        "update": {
+            "example": "  update <package name> ... <package name>"
+        },
         "list_command": {
             "repo": "= Repository:",
             "noPackages": "no packages found",

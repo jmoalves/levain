@@ -64,6 +64,9 @@
             "errorSaving": "- Erro encontrado guardando {{pkg}}. Ignorando o upgrade",
             "example": "  install <pacote> ... <pacote>"
         },
+        "update": {
+            "example": "  update <pacote> ... <pacote>"
+        },
         "list_command": {
             "repo": "= Repositório:",
             "noPackages": "nenhum pacote encontrado",

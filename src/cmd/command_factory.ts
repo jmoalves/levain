@@ -14,6 +14,7 @@ import ActionsCommand from "./actions.ts";
 import InfoCommand from "./info.ts";
 import ExplainCommand from "./explain.ts";
 import Clone from "./clone.ts";
+import Update from "./update.ts";
 
 const commandMap = new Map<string, (config: Config) => Command>([
     ['install', (config: Config) => new Install(config)],
@@ -24,6 +25,7 @@ const commandMap = new Map<string, (config: Config) => Command>([
     ['info', (config: Config) => new InfoCommand(config)],
     ['explain', (config: Config) => new ExplainCommand(config)],
     ['clone', (config: Config) => new Clone(config)],
+    ['update', (config: Config) => new Update(config)],
 ])
 export default class CommandFactory {
 
