@@ -7,4 +7,5 @@ export default class ConfigPersistentAttributes {
     lastUpdateQuestion?: string
     autoUpdate?: boolean
     shellCheckForUpdate?: boolean
+    levainHome?: string
 }

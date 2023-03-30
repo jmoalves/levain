@@ -44,10 +44,14 @@ export default class Config {
         this.packageManager = new PackageManager(this);
         this._repoManager = new RepositoryManager(this);
 
+        let loaded = this.load(this.levainConfigFile);
+
         this.configEnv(args);
         this.configHome(args);
 
-        this.load();
+        if (!loaded) {
+            this.load(this.oldLevainConfigFile); // Backward compatibility
+        }
 
         this.configCache(args);
 
@@ -269,24 +273,18 @@ export default class Config {
         cfg.lastUpdateQuestion = this._lastUpdateQuestion;
         cfg.autoUpdate = this._autoUpdate;
         cfg.shellCheckForUpdate = this._shellCheckForUpdate;
+        cfg.levainHome = this._env["levainHome"];
         return cfg;
     }
 
-    public load(): void {
-        let filename = this.levainConfigFile;
-        if (!filename) {
-            return;
+    private load(configFile: string): boolean {
+        if (!configFile) {
+            return false;
         }
 
-        let oldCfgData = this.loadText(this.oldLevainConfigFile);
-        let data = this.loadText(filename);
-
-        if (oldCfgData && !data) {
-            data = oldCfgData;
-        }
-
+        let data = this.loadText(configFile);
         if (!data) {
-            return;
+            return false;
         }
 
         let cfg = JSON.parse(data);
@@ -327,6 +325,12 @@ export default class Config {
         } else {
             this._shellCheckForUpdate = true
         }
+
+        if (cfg.levainHome) {
+            this._env["levainHome"] = cfg.levainHome
+        }
+
+        return true
     }
 
     private loadText(filename: string): string|null {
@@ -378,7 +382,13 @@ export default class Config {
     }
 
     private configHome(args: any): void {
-        delete this._env["levainHome"];
+        if (Array.isArray(this._env["levainHome"])) {
+            this._env["levainHome"] = this._env["levainHome"][0]
+        }
+
+        if (typeof(this._env["levainHome"]) == 'string') {
+            return
+        }
 
         if (args["levainHome"]) {
             let dirs: string[] = args["levainHome"];
