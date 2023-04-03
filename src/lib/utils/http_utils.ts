@@ -1,6 +1,7 @@
 import * as log from "https://deno.land/std/log/mod.ts"
 import * as path from "https://deno.land/std/path/mod.ts";
 import * as deno_validator from 'https://deno.land/x/deno_validator/mod.ts'
+import { sleepRandomAmountOfSeconds } from "https://deno.land/x/sleep/mod.ts";
 
 export default class HttpUtils {
     static async get(url: string, tries: number = 3): Promise<Response> {
@@ -26,6 +27,7 @@ export default class HttpUtils {
             } catch(e) {
                 log.debug(`FETCH ${url} - Error ${e} - attempt: ${t}/${tries}`)
                 error = e
+                await sleepRandomAmountOfSeconds(0, Math.max(1, 5))
             }
         }
 
