@@ -14,7 +14,7 @@ export default class HttpUtils {
         for (let t = 1; t <= tries; t++) {
             try {
                 const c = new AbortController();
-                const id = setTimeout(() => c.abort(), 1000);
+                const id = setTimeout(() => c.abort(), 5000);
                 let response = await fetch(url, {signal: c.signal});
                 clearTimeout(id);
 
