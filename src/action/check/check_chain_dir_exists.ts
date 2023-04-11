@@ -28,8 +28,13 @@ export default class CheckChainDirExists implements Action {
 
         let found = dirs
                 .find(it => {
-                    log.debug(`checking dir ${it}`)
-                    return existsSync(it)
+                    try {
+                        log.debug(`checking dir ${it}`)
+                        return existsSync(it)
+                    } catch (error) {
+                        log.debug(`ignoring error ${error}`)
+                        return false
+                    }
                 })
             || defaultValue
 
@@ -37,6 +42,7 @@ export default class CheckChainDirExists implements Action {
             throw new Error(`dirs not found: ${dirs.join(', ')}`)
         }
 
+        log.debug(`found ${found}`)
         this.config.setVar(args.saveVar, found);
     }
 
