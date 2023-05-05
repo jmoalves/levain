@@ -1,6 +1,6 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
-import * as yaml from "https://deno.land/std/encoding/yaml.ts";
+import * as yaml from "https://deno.land/std/yaml/mod.ts";
 import {existsSync} from "https://deno.land/std/fs/mod.ts";
 
 import Repository from '../repository/repository.ts'
