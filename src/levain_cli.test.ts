@@ -43,7 +43,7 @@ if (OsUtils.isWindows()) {
             const logger = await TestHelper.setupTestLogger()
             const levainCli = new LevainCli()
 
-            await levainCli.execute({_: ["shell"]})
+            await levainCli.execute({_: ["--skip-levain-updates", "shell"]})
         }
     })
 }
