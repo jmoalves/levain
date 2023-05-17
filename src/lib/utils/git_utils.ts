@@ -71,7 +71,7 @@ export default class GitUtils {
         const branchOption = (gitPath.branch ? `--branch ${gitPath.branch} ` : '')
         const shallowOption = (shallow ? `--single-branch --no-tags --depth 1 ` : '')
         // We must have NO spaces after ${branchOption} in the command below
-        let gitCommand = `${this.gitCmd} clone --progress ${branchOption}${shallowOption}${gitPath.url} ${dst}`;
+        let gitCommand = `${this.gitCmd} clone --progress --config core.autocrlf=true ${branchOption}${shallowOption}${gitPath.url} ${dst}`;
         if (OsUtils.isWindows()) {
             gitCommand = `cmd /u /c ${gitCommand}`
         }
