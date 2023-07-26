@@ -1,5 +1,6 @@
 levain
 ======
+[![Check sources](https://github.com/jmoalves/levain/actions/workflows/checkSources.yml/badge.svg)](https://github.com/jmoalves/levain/actions/workflows/checkSources.yml)
 
 Something to help you make your software grow
 
