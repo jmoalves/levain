@@ -31,6 +31,7 @@ set levainCMD=%levainDir%\levain.cmd
 set levainZipFile=levain-v%levainVersion%-windows-x86_64.zip
 
 if exist %tempDir% rmdir /s /q %tempDir%
+mkdir %tempDir%
 
 call:fnGetLevainZip
 if errorlevel 1 exit /b %ERRORLEVEL%
@@ -43,6 +44,7 @@ set args=
 if not "a%1" == "a" set args=%args% %1& shift & goto getArgs
 
 pushd %levainDir%
+echo levainBootstrap - Starting levain
 call %levainCMD% %args%
 popd
 goto:eof
@@ -68,6 +70,7 @@ if "a%levainUrl%" == "a" (
 :: Download Levain Zip
 set url=%levainUrl%/v%levainVersion%/%levainZipFile%
 echo levainBootstrap - Downloading Levain zip from %url%
+set levainZipPath=%tempDir%
 %currentFileDir%\extra-bin\windows\curl\bin\curl.exe -# -L -f %url% -o%levainZipPath%\%levainZipFile%
 if errorlevel 1 (
     echo.
@@ -116,4 +119,5 @@ if errorlevel 1 (
     exit /b 1
 )
 
+echo levainBootstrap - Extracted
 goto:eof
