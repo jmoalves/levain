@@ -30,7 +30,7 @@ set levainDir=%tempDir%\levain-%levainVersion%
 set levainCMD=%levainDir%\levain.cmd
 set levainZipFile=levain-v%levainVersion%-windows-x86_64.zip
 
-if not exist %tempDir% mkdir %tempDir%
+if exist %tempDir% rmdir /s /q %tempDir%
 
 call:fnGetLevainZip
 if errorlevel 1 exit /b %ERRORLEVEL%
@@ -52,17 +52,6 @@ goto:eof
 :: Get Levain
 ::
 :fnGetLevainZip
-
-:: Is Levain already available?
-if exist %levainCMD% goto:eof
-
-:: tempDir should appear last
-for %%d in (%currentFileDir% %tempDir%) do (
-    set levainZipPath=%%d
-    :: Is Levain zip already available?
-    echo levainBootstrap - CHECK - %%d\%levainZipFile%
-    if exist %%d\%levainZipFile% exit /b 0
-)
 
 if "a%levainUrl%" == "a" (
     echo.
@@ -98,9 +87,6 @@ goto:eof
 :: Expand Levain
 ::
 :fnExpandLevainZip
-
-:: Is Levain already available?
-if exist %levainCMD% goto:eof
 
 :: Do we have the Levain Zip?
 if not exist %levainZipPath%\%levainZipFile% (
