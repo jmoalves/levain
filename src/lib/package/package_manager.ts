@@ -31,6 +31,9 @@ export default class PackageManager {
         let names: Set<string> = new Set(); // Solving circular references - Issue #11
         let error: boolean = false;
         for (const pkgName of pkgNames) {
+            if (!pkgName || !pkgName.trim()) {
+                continue
+            }
             let repo = (installedOnly ? this.config.repositoryManager.repositoryInstalled : this.config.repositoryManager.repository);
             let myError: boolean = this.resolveInRepo(repo, pkgs, names, pkgName, showLog);
             error = error || myError;
@@ -62,16 +65,24 @@ export default class PackageManager {
     }
 
     static removeExtension(pkgNames: string[]) {
-        log.debug(`removeExtension <- ${pkgNames}`)
+        log.debug(`removeExtension <- ${pkgNames}`);
 
-        for (let idx in pkgNames) {
-            pkgNames[idx] = pkgNames[idx]
-                .replace(/\.levain\.yaml$/, "")
-                .replace(/\.levain\.yml$/, "")
-                .replace(/\.levain$/, "")
-        }
+        let filteredPkgNames = pkgNames
+            .map(pkgName => {
+                if (!pkgName || !pkgName.trim()) {
+                    log.warning(`Ignoring package with null name, check your configuration file.`)
+                    return "";
+                } else {
+                    return pkgName
+                        .replace(/\.levain\.yaml$/, "")
+                        .replace(/\.levain\.yml$/, "")
+                        .replace(/\.levain$/, "");
+                }})
+            .filter(pkg => pkg !== "");
 
-        log.debug(`removeExtension -> ${pkgNames}`)
+        pkgNames.splice(0, pkgNames.length, ...filteredPkgNames);
+
+        log.debug(`removeExtension -> ${pkgNames}`);
     }
 
     package(pkgName: string): Package | undefined {
