@@ -65,11 +65,16 @@ export default class PackageManager {
         log.debug(`removeExtension <- ${pkgNames}`)
 
         for (let idx in pkgNames) {
-            pkgNames[idx] = pkgNames[idx]
-                .replace(/\.levain\.yaml$/, "")
-                .replace(/\.levain\.yml$/, "")
-                .replace(/\.levain$/, "")
-        }
+            let pkg = pkgNames[idx];
+			if(pkg != null) {
+				pkgNames[idx] = pkg
+					.replace(/\.levain\.yaml$/, "")
+					.replace(/\.levain\.yml$/, "")
+					.replace(/\.levain$/, "")
+			} else {
+				log.warn("Ignoring package with null name, check your configuration file.");
+			}
+		}
 
         log.debug(`removeExtension -> ${pkgNames}`)
     }
