@@ -36,10 +36,10 @@ jobs:
           fi
 
       - name: Clean TEMP
-        run: rm -rf $RUNNER_TEMP && mkdir -p $RUNNER_TEMP
+        run: echo === RUNNER_TEMP=$RUNNER_TEMP && rm -rf $RUNNER_TEMP && mkdir -p $RUNNER_TEMP
 
       - name: Clean Workspace
-        run: rm -rf $GITHUB_WORKSPACE && mkdir -p $GITHUB_WORKSPACE
+        run: echo === GITHUB_WORKSPACE=$GITHUB_WORKSPACE && rm -rf $GITHUB_WORKSPACE && mkdir -p $GITHUB_WORKSPACE
 
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout
@@ -68,13 +68,13 @@ jobs:
           echo Deno Linux
           bash $GITHUB_WORKSPACE/githubScripts/get-deno.sh $DENO_ROOT_PATH/linux Linux ${{ github.event.inputs.denoVersion }}
         env:
-          DENO_ROOT_PATH: ${{ runner.temp }}/deno
+          DENO_ROOT_PATH: ${{ env.RUNNER_TEMP }}/deno
 
       - name: Check sources
         run: |
           bash $GITHUB_WORKSPACE/githubScripts/levain-check.sh $DENO_ROOT_PATH/linux/deno
         env:
-          DENO_ROOT_PATH: ${{ runner.temp }}/deno
+          DENO_ROOT_PATH: ${{ env.RUNNER_TEMP }}/deno
 
       - name: Git config commit user
         run: |
@@ -83,95 +83,98 @@ jobs:
           git config --local user.name "GitHub Action"
           git config pull.rebase true
 
-      # - name: Tag
-      #   run: |
-      #     bash $GITHUB_WORKSPACE/githubScripts/tag-release.sh $LEVAIN_VERSION $NEXT_VERSION
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     LEVAIN_VERSION: ${{ env.RELEASE_VERSION }}
-      #     NEXT_VERSION: ${{ env.NEXT_VERSION }}
-
+      - name: Tag
+        run: |
+          bash $GITHUB_WORKSPACE/githubScripts/tag-release.sh $LEVAIN_VERSION $NEXT_VERSION
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LEVAIN_VERSION: ${{ env.RELEASE_VERSION }}
+          NEXT_VERSION: ${{ env.NEXT_VERSION }}
+  
       - name: Changelog
         run: |
-          bash $GITHUB_WORKSPACE/githubScripts/changelog.sh latest $LEVAIN_VERSION $DENO_ROOT_PATH/linux > ${{ runner.temp }}/changelog.$LEVAIN_VERSION.md
+          bash $GITHUB_WORKSPACE/githubScripts/changelog.sh latest $LEVAIN_VERSION $DENO_ROOT_PATH/linux > $RUNNER_TEMP/changelog.$LEVAIN_VERSION.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
-          DENO_ROOT_PATH: ${{ runner.temp }}/deno
+          DENO_ROOT_PATH: ${{ env.RUNNER_TEMP }}/deno
 
-      - name: Levain release with tag
+      - name: Copy tagged version
         run: |
           bash $GITHUB_WORKSPACE/githubScripts/get-levain-tag.sh $LEVAIN_VERSION $LEVAIN_RELEASE_SRC_PATH
         env:
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
-          LEVAIN_RELEASE_SRC_PATH: ${{ runner.temp }}/src/levain-${{ env.RELEASE_VERSION }}
+          LEVAIN_RELEASE_SRC_PATH: ${{ env.RUNNER_TEMP }}/src/levain-${{ env.RELEASE_VERSION }}
 
       - name: Levain compile
         run: |
           bash $GITHUB_WORKSPACE/githubScripts/levain-compile.sh $DENO_ROOT_PATH/linux/deno $LEVAIN_RELEASE_SRC_PATH $LEVAIN_RELEASE_BIN_PATH 
         env:
-          DENO_ROOT_PATH: ${{ runner.temp }}/deno
+          DENO_ROOT_PATH: ${{ env.RUNNER_TEMP }}/deno
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
-          LEVAIN_RELEASE_SRC_PATH: ${{ runner.temp }}/src/levain-${{ env.RELEASE_VERSION }}
-          LEVAIN_RELEASE_BIN_PATH: ${{ runner.temp }}/bin/levain-${{ env.RELEASE_VERSION }}
+          LEVAIN_RELEASE_SRC_PATH: ${{ env.RUNNER_TEMP }}/src/levain-${{ env.RELEASE_VERSION }}
+          LEVAIN_RELEASE_BIN_PATH: ${{ env.RUNNER_TEMP }}/bin/levain-${{ env.RELEASE_VERSION }}
 
+      - name: Copy config
+        run: |
+          bash $GITHUB_WORKSPACE/githubScripts/copy-config.sh $LEVAIN_RELEASE_SRC_PATH $LEVAIN_RELEASE_BIN_PATH
+        env:
+          LEVAIN_RELEASE_SRC_PATH: ${{ env.RUNNER_TEMP }}/src/levain-${{ env.RELEASE_VERSION }}
+          LEVAIN_RELEASE_BIN_PATH: ${{ env.RUNNER_TEMP }}/bin/levain-${{ env.RELEASE_VERSION }}
+  
       - name: Levain embedded binaries
         run: |
           bash $GITHUB_WORKSPACE/githubScripts/levain-embedded-binaries.sh $LEVAIN_RELEASE_BIN_PATH
         env:
-          DENO_ROOT_PATH: ${{ runner.temp }}/deno
+          DENO_ROOT_PATH: ${{ env.RUNNER_TEMP }}/deno
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
-          LEVAIN_RELEASE_BIN_PATH: ${{ runner.temp }}/bin/levain-${{ env.RELEASE_VERSION }}
+          LEVAIN_RELEASE_BIN_PATH: ${{ env.RUNNER_TEMP }}/bin/levain-${{ env.RELEASE_VERSION }}
 
       - name: Levain install - PowerShell
         run: |
-          cp $LEVAIN_RELEASE_SRC_PATH/install/install.ps1 ${{ runner.temp }}/install.ps1
+          cp $LEVAIN_RELEASE_SRC_PATH/install/install.ps1 $RUNNER_TEMP/install.ps1
         env:
-          LEVAIN_RELEASE_SRC_PATH: ${{ runner.temp }}/src/levain-${{ env.RELEASE_VERSION }}
+          LEVAIN_RELEASE_SRC_PATH: ${{ env.RUNNER_TEMP }}/src/levain-${{ env.RELEASE_VERSION }}
 
       - name: Levain bootstrap
         run: |
-          bash $GITHUB_WORKSPACE/githubScripts/levain-bootstrap.sh $LEVAIN_RELEASE_SRC_PATH ${{ runner.temp }}/levainBootstrap-windows-x86_64.zip
+          bash $GITHUB_WORKSPACE/githubScripts/levain-bootstrap.sh $LEVAIN_RELEASE_SRC_PATH $RUNNER_TEMP/levainBootstrap-windows-x86_64.zip
         env:
-          DENO_ROOT_PATH: ${{ runner.temp }}/deno
+          DENO_ROOT_PATH: ${{ env.RUNNER_TEMP }}/deno
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
-          LEVAIN_RELEASE_SRC_PATH: ${{ runner.temp }}/src/levain-${{ env.RELEASE_VERSION }}
+          LEVAIN_RELEASE_SRC_PATH: ${{ env.RUNNER_TEMP }}/src/levain-${{ env.RELEASE_VERSION }}
 
       - name: Levain package
         run: |
-          bash $GITHUB_WORKSPACE/githubScripts/levain-package.sh $LEVAIN_RELEASE_BIN_PATH ${{ runner.temp }}/levain-windows-x86_64.zip STRIP
+          bash $GITHUB_WORKSPACE/githubScripts/levain-package.sh $LEVAIN_RELEASE_BIN_PATH $RUNNER_TEMP/levain-windows-x86_64.zip STRIP
         env:
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
-          LEVAIN_RELEASE_BIN_PATH: ${{ runner.temp }}/bin/levain-${{ env.RELEASE_VERSION }}
+          LEVAIN_RELEASE_BIN_PATH: ${{ env.RUNNER_TEMP }}/bin/levain-${{ env.RELEASE_VERSION }}
 
       - name: Levain package - with version
         run: |
-          bash $GITHUB_WORKSPACE/githubScripts/levain-package.sh $LEVAIN_RELEASE_BIN_PATH ${{ runner.temp }}/levain-v$LEVAIN_VERSION-windows-x86_64.zip
+          bash $GITHUB_WORKSPACE/githubScripts/levain-package.sh $LEVAIN_RELEASE_BIN_PATH $RUNNER_TEMP/levain-v$LEVAIN_VERSION-windows-x86_64.zip
         env:
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
-          LEVAIN_RELEASE_BIN_PATH: ${{ runner.temp }}/bin/levain-${{ env.RELEASE_VERSION }}
+          LEVAIN_RELEASE_BIN_PATH: ${{ env.RUNNER_TEMP }}/bin/levain-${{ env.RELEASE_VERSION }}
 
       - name: Levain package binaries
         run: |
-          bash $GITHUB_WORKSPACE/githubScripts/levain-package-binaries.sh $LEVAIN_RELEASE_BIN_PATH ${{ runner.temp }}/levain-extra-bin-windows-x86_64.zip
+          bash $GITHUB_WORKSPACE/githubScripts/levain-package-binaries.sh $LEVAIN_RELEASE_BIN_PATH $RUNNER_TEMP/levain-extra-bin-windows-x86_64.zip
         env:
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
-          LEVAIN_RELEASE_BIN_PATH: ${{ runner.temp }}/bin/levain-${{ env.RELEASE_VERSION }}
+          LEVAIN_RELEASE_BIN_PATH: ${{ env.RUNNER_TEMP }}/bin/levain-${{ env.RELEASE_VERSION }}
 
 
-      - name: FAIL
+      ##############################################################
+      ### Push release
+      ##############################################################
+      - name: Push tag
         run: |
-          echo && echo === $DENO_ROOT_PATH && find $DENO_ROOT_PATH
-          echo && echo === $LEVAIN_RELEASE_SRC_PATH && find $LEVAIN_RELEASE_SRC_PATH
-          echo && echo === $LEVAIN_RELEASE_BIN_PATH && find $LEVAIN_RELEASE_BIN_PATH
-          exit 1
+          bash $GITHUB_WORKSPACE/githubScripts/push-release.sh $LEVAIN_VERSION
         env:
-          DENO_ROOT_PATH: ${{ runner.temp }}/deno
-          LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
-          LEVAIN_RELEASE_SRC_PATH: ${{ runner.temp }}/src/levain-${{ env.RELEASE_VERSION }}
-          LEVAIN_RELEASE_BIN_PATH: ${{ runner.temp }}/bin/levain-${{ env.RELEASE_VERSION }}
-
-
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LEVAIN_VERSION: ${{ env.RELEASE_VERSION }}
 
       ##############################################################
       ### Create release
@@ -182,8 +185,8 @@ jobs:
         with:
           tag_name: v${{ env.RELEASE_VERSION }}
           release_name: v${{ env.RELEASE_VERSION }}
-          commitish: master
-          body_path: ${{ runner.temp }}/changelog.${{ env.RELEASE_VERSION }}.md
+          commitish: ${{ env.GITHUB_REF_NAME }}
+          body_path: ${{ env.RUNNER_TEMP }}/changelog.${{ env.RELEASE_VERSION }}.md
           draft: true
           prerelease: true
         env:
@@ -197,7 +200,7 @@ jobs:
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ runner.temp }}/levain-v${{ env.RELEASE_VERSION }}-windows-x86_64.zip
+          asset_path: ${{ env.RUNNER_TEMP }}/levain-v${{ env.RELEASE_VERSION }}-windows-x86_64.zip
           asset_name: levain-v${{ env.RELEASE_VERSION }}-windows-x86_64.zip
           asset_content_type: application/zip
 
@@ -208,7 +211,7 @@ jobs:
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ runner.temp }}/levain-v${{ env.RELEASE_VERSION }}-windows-x86_64.zip.sha256
+          asset_path: ${{ env.RUNNER_TEMP }}/levain-v${{ env.RELEASE_VERSION }}-windows-x86_64.zip.sha256
           asset_name: levain-v${{ env.RELEASE_VERSION }}-windows-x86_64.zip.sha256
           asset_content_type: text/plain
 
@@ -219,7 +222,7 @@ jobs:
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ runner.temp }}/levain-windows-x86_64.zip
+          asset_path: ${{ env.RUNNER_TEMP }}/levain-windows-x86_64.zip
           asset_name: levain-windows-x86_64.zip
           asset_content_type: application/zip
 
@@ -230,7 +233,7 @@ jobs:
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ runner.temp }}/levain-windows-x86_64.zip.sha256
+          asset_path: ${{ env.RUNNER_TEMP }}/levain-windows-x86_64.zip.sha256
           asset_name: levain-windows-x86_64.zip.sha256
           asset_content_type: text/plain
 
@@ -241,7 +244,7 @@ jobs:
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ runner.temp }}/levain-extra-bin-windows-x86_64.zip
+          asset_path: ${{ env.RUNNER_TEMP }}/levain-extra-bin-windows-x86_64.zip
           asset_name: levain-extra-bin-windows-x86_64.zip
           asset_content_type: application/zip
 
@@ -252,7 +255,7 @@ jobs:
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ runner.temp }}/levain-extra-bin-windows-x86_64.zip.sha256
+          asset_path: ${{ env.RUNNER_TEMP }}/levain-extra-bin-windows-x86_64.zip.sha256
           asset_name: levain-extra-bin-windows-x86_64.zip.sha256
           asset_content_type: text/plain
 
@@ -263,7 +266,7 @@ jobs:
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ runner.temp }}/levainBootstrap-windows-x86_64.zip
+          asset_path: ${{ env.RUNNER_TEMP }}/levainBootstrap-windows-x86_64.zip
           asset_name: levainBootstrap-windows-x86_64.zip
           asset_content_type: application/zip
 
@@ -274,7 +277,7 @@ jobs:
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ runner.temp }}/levainBootstrap-windows-x86_64.zip.sha256
+          asset_path: ${{ env.RUNNER_TEMP }}/levainBootstrap-windows-x86_64.zip.sha256
           asset_name: levainBootstrap-windows-x86_64.zip.sha256
           asset_content_type: text/plain
 
@@ -285,7 +288,7 @@ jobs:
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ runner.temp }}/install.ps1
+          asset_path: ${{ env.RUNNER_TEMP }}/install.ps1
           asset_name: install.ps1
           asset_content_type: text/plain
 
