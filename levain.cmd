@@ -3,12 +3,8 @@
 SETLOCAL
 
 set myPath=%~dp0
-
-set denoPath=%myPath%bin\
-if "a%myPath%" == "a" set denoPath=
-if not "a%denoPath%" == "a" (
-    if not exist %denoPath%deno.exe set denoPath=
-)
+:: removing the trailing backslash
+set myPath=%myPath:~0,-1%
 
 call:fnRun %*
 if "a%ERRORLEVEL%" == "a42" (
@@ -24,20 +20,9 @@ exit /b 0
 
 :fnRun
 
-rem echo.
-rem echo Running %myPath%levain.ts
-
 set DENO_NO_UPDATE_CHECK=true
 set NO_COLOR=true
-set DENO_DIR=%denoPath%
-%denoPath%deno.exe run ^
-    --no-check ^
-    --cached-only ^
-    %levainOpt% ^
-    --allow-read --allow-write --allow-env --allow-net --allow-run ^
-    --unstable ^
-    %myPath%levain.ts ^
-    %*
+%myPath%\levain.exe %*
 if errorlevel 1 exit /b %ERRORLEVEL%
 
 goto:eof
@@ -58,5 +43,5 @@ if "a%levainDir%" == "a" (
     exit /b 1
 )
 
-START /max "Levain Upgrade" CMD /c %levainDir%\levain.cmd --levainHome=%myPath%.. --levain-upgrade %*
+START /max "Levain Upgrade" CMD /c %levainDir%\levain.cmd --levainHome=%myPath%\.. --levain-upgrade %*
 exit /b 0
