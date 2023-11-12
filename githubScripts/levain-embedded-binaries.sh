@@ -64,23 +64,11 @@ downloadBinary() {
 scriptPath="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd && cd - >/dev/null 2>&1 )"
 
 levainDir=$1
-denoWindowsDir=$2
 
 if [ -z "$levainDir" ]; then
   echo You must inform the levain dir
   exit 1
 fi
-
-if [ -z "$denoWindowsDir" ]; then
-  echo You must inform the Deno Windows dir
-  exit 1
-fi
-
-# # Deno embedded
-echo = Deno embedded
-rm -rf ${levainDir}/bin
-mkdir -p ${levainDir}/bin
-cp $denoWindowsDir/deno.exe ${levainDir}/bin
 
 # 7Zip - Linux
 echo = 7Zip - Tool

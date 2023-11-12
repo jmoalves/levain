@@ -4,41 +4,15 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
     inputs:
-      # releaseNumber:
-      #   description: 'Release number'     
-      #   required: true
       denoVersion:
         description: 'Deno version (optional)'     
         required: false
-        #default: '1.23.2' # Remove this after Deno fix https://github.com/c4spar/deno-cliffy/issues/458
-                          # Check test.yml and checkSources.yml
+
 jobs:
   createRelease:
     runs-on: ubuntu-latest
 
     steps:
-      # - name: Check releaseNumber
-      #   run: |
-      #     version=$LEVAIN_VERSION
-      #     if [[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-      #       echo Version v${version};
-      #     else
-      #       echo Invalid version number - $version;
-      #       echo
-      #       echo You must use the pattern
-      #       echo major.minor.patch
-      #       echo
-      #       echo Examples:
-      #       echo 0.20.1
-      #       echo 1.0.3
-      #       echo 2.5.0
-      #       echo
-
-      #       exit 1
-      #     fi
-      #   env:
-      #     LEVAIN_VERSION: ${{ github.event.inputs.releaseNumber }} 
-
       - name: Check denoVersion
         run: |
           version=${{ github.event.inputs.denoVersion }}
@@ -91,8 +65,6 @@ jobs:
       - name: Get Deno
         run: |
           rm -rf $DENO_ROOT_PATH && mkdir -p $DENO_ROOT_PATH
-          echo Deno Windows
-          bash $GITHUB_WORKSPACE/githubScripts/get-deno.sh $DENO_ROOT_PATH/windows Windows ${{ github.event.inputs.denoVersion }}
           echo Deno Linux
           bash $GITHUB_WORKSPACE/githubScripts/get-deno.sh $DENO_ROOT_PATH/linux Linux ${{ github.event.inputs.denoVersion }}
         env:
@@ -129,67 +101,76 @@ jobs:
 
       - name: Levain release with tag
         run: |
-          bash $GITHUB_WORKSPACE/githubScripts/get-levain-tag.sh $LEVAIN_VERSION $LEVAIN_RELEASE_PATH
+          bash $GITHUB_WORKSPACE/githubScripts/get-levain-tag.sh $LEVAIN_VERSION $LEVAIN_RELEASE_SRC_PATH
         env:
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
-          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ env.RELEASE_VERSION }}
+          LEVAIN_RELEASE_SRC_PATH: ${{ runner.temp }}/src/levain-${{ env.RELEASE_VERSION }}
+
+      - name: Levain compile
+        run: |
+          bash $GITHUB_WORKSPACE/githubScripts/levain-compile.sh $DENO_ROOT_PATH/linux/deno $LEVAIN_RELEASE_SRC_PATH $LEVAIN_RELEASE_BIN_PATH 
+        env:
+          DENO_ROOT_PATH: ${{ runner.temp }}/deno
+          LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
+          LEVAIN_RELEASE_SRC_PATH: ${{ runner.temp }}/src/levain-${{ env.RELEASE_VERSION }}
+          LEVAIN_RELEASE_BIN_PATH: ${{ runner.temp }}/bin/levain-${{ env.RELEASE_VERSION }}
 
       - name: Levain embedded binaries
         run: |
-          bash $GITHUB_WORKSPACE/githubScripts/levain-embedded-binaries.sh $LEVAIN_RELEASE_PATH $DENO_ROOT_PATH/windows
+          bash $GITHUB_WORKSPACE/githubScripts/levain-embedded-binaries.sh $LEVAIN_RELEASE_BIN_PATH
         env:
           DENO_ROOT_PATH: ${{ runner.temp }}/deno
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
-          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ env.RELEASE_VERSION }}
+          LEVAIN_RELEASE_BIN_PATH: ${{ runner.temp }}/bin/levain-${{ env.RELEASE_VERSION }}
 
       - name: Levain install - PowerShell
         run: |
-          cp $LEVAIN_RELEASE_PATH/install/install.ps1 ${{ runner.temp }}/install.ps1
+          cp $LEVAIN_RELEASE_SRC_PATH/install/install.ps1 ${{ runner.temp }}/install.ps1
         env:
-          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ env.RELEASE_VERSION }}
+          LEVAIN_RELEASE_SRC_PATH: ${{ runner.temp }}/src/levain-${{ env.RELEASE_VERSION }}
 
       - name: Levain bootstrap
         run: |
-          bash $GITHUB_WORKSPACE/githubScripts/levain-bootstrap.sh $LEVAIN_RELEASE_PATH ${{ runner.temp }}/levainBootstrap-windows-x86_64.zip
+          bash $GITHUB_WORKSPACE/githubScripts/levain-bootstrap.sh $LEVAIN_RELEASE_SRC_PATH ${{ runner.temp }}/levainBootstrap-windows-x86_64.zip
         env:
           DENO_ROOT_PATH: ${{ runner.temp }}/deno
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
-          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ env.RELEASE_VERSION }}
-
-      - name: Clean Levain release
-        run: |
-          bash $GITHUB_WORKSPACE/githubScripts/clean-levain-release.sh $LEVAIN_RELEASE_PATH
-        env:
-          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ env.RELEASE_VERSION }}
-
-      - name: Levain bundle
-        run: |
-          bash $GITHUB_WORKSPACE/githubScripts/levain-bundle.sh $LEVAIN_RELEASE_PATH $DENO_ROOT_PATH/linux/deno
-        env:
-          DENO_ROOT_PATH: ${{ runner.temp }}/deno
-          LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
-          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ env.RELEASE_VERSION }}
+          LEVAIN_RELEASE_SRC_PATH: ${{ runner.temp }}/src/levain-${{ env.RELEASE_VERSION }}
 
       - name: Levain package
         run: |
-          bash $GITHUB_WORKSPACE/githubScripts/levain-package.sh $LEVAIN_RELEASE_PATH ${{ runner.temp }}/levain-windows-x86_64.zip STRIP
+          bash $GITHUB_WORKSPACE/githubScripts/levain-package.sh $LEVAIN_RELEASE_BIN_PATH ${{ runner.temp }}/levain-windows-x86_64.zip STRIP
         env:
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
-          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ env.RELEASE_VERSION }}
+          LEVAIN_RELEASE_BIN_PATH: ${{ runner.temp }}/bin/levain-${{ env.RELEASE_VERSION }}
 
       - name: Levain package - with version
         run: |
-          bash $GITHUB_WORKSPACE/githubScripts/levain-package.sh $LEVAIN_RELEASE_PATH ${{ runner.temp }}/levain-v$LEVAIN_VERSION-windows-x86_64.zip
+          bash $GITHUB_WORKSPACE/githubScripts/levain-package.sh $LEVAIN_RELEASE_BIN_PATH ${{ runner.temp }}/levain-v$LEVAIN_VERSION-windows-x86_64.zip
         env:
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
-          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ env.RELEASE_VERSION }}
+          LEVAIN_RELEASE_BIN_PATH: ${{ runner.temp }}/bin/levain-${{ env.RELEASE_VERSION }}
 
       - name: Levain package binaries
         run: |
-          bash $GITHUB_WORKSPACE/githubScripts/levain-package-binaries.sh $LEVAIN_RELEASE_PATH ${{ runner.temp }}/levain-extra-bin-windows-x86_64.zip
+          bash $GITHUB_WORKSPACE/githubScripts/levain-package-binaries.sh $LEVAIN_RELEASE_BIN_PATH ${{ runner.temp }}/levain-extra-bin-windows-x86_64.zip
         env:
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
-          LEVAIN_RELEASE_PATH: ${{ runner.temp }}/levain-${{ env.RELEASE_VERSION }}
+          LEVAIN_RELEASE_BIN_PATH: ${{ runner.temp }}/bin/levain-${{ env.RELEASE_VERSION }}
+
+
+      - name: FAIL
+        run: |
+          bash echo && echo === $DENO_ROOT_PATH && find $DENO_ROOT_PATH
+          bash echo && echo === $LEVAIN_RELEASE_SRC_PATH && find $LEVAIN_RELEASE_SRC_PATH
+          bash echo && echo === $LEVAIN_RELEASE_BIN_PATH && find $LEVAIN_RELEASE_BIN_PATH
+          bash exit 1
+        env:
+          DENO_ROOT_PATH: ${{ runner.temp }}/deno
+          LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
+          LEVAIN_RELEASE_SRC_PATH: ${{ runner.temp }}/src/levain-${{ env.RELEASE_VERSION }}
+          LEVAIN_RELEASE_BIN_PATH: ${{ runner.temp }}/bin/levain-${{ env.RELEASE_VERSION }}
+
 
 
       ##############################################################
