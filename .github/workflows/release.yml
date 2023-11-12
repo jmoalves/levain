@@ -8,12 +8,14 @@ on:
         description: 'Deno version (optional)'     
         required: false
 
+env:
+  RUNNER_TEMP: ${{ runner.temp }}
+  DENO_ROOT_PATH: ${{ runner.temp }}/deno
+
 jobs:
   createRelease:
     runs-on: ubuntu-latest
 
-    env:
-      DENO_ROOT_PATH: ${{ env.RUNNER_TEMP }}/deno
 
     steps:
       - name: Check denoVersion
