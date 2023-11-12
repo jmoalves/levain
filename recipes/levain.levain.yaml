@@ -1,4 +1,4 @@
-version: 0.86.8
+version: 0.86.9-SNAPSHOT
 
 cmd.install:
   - copy --verbose ../src ../levain.ts ../bin ../extra-bin ../levain.cmd ../levain.sh ../recipes ${baseDir}
