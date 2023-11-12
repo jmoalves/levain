@@ -12,9 +12,6 @@ jobs:
   createRelease:
     runs-on: ubuntu-latest
 
-    env:
-      DENO_ROOT_PATH: ${{ runner.temp }}/deno
-
     steps:
       - name: Check denoVersion
         run: |
@@ -70,11 +67,15 @@ jobs:
           rm -rf $DENO_ROOT_PATH && mkdir -p $DENO_ROOT_PATH
           echo Deno Linux
           bash $GITHUB_WORKSPACE/githubScripts/get-deno.sh $DENO_ROOT_PATH/linux Linux ${{ github.event.inputs.denoVersion }}
+        env:
+          DENO_ROOT_PATH: ${{ env.RUNNER_TEMP }}/deno
 
       - name: Check sources
         run: |
           bash $GITHUB_WORKSPACE/githubScripts/levain-check.sh $DENO_ROOT_PATH/linux/deno
-
+        env:
+          DENO_ROOT_PATH: ${{ env.RUNNER_TEMP }}/deno
+  
       - name: Git config commit user
         run: |
           # Git config commit user
@@ -94,6 +95,7 @@ jobs:
         run: |
           bash $GITHUB_WORKSPACE/githubScripts/changelog.sh latest $LEVAIN_VERSION $DENO_ROOT_PATH/linux > $RUNNER_TEMP/changelog.$LEVAIN_VERSION.md
         env:
+          DENO_ROOT_PATH: ${{ env.RUNNER_TEMP }}/deno
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
 
@@ -108,6 +110,7 @@ jobs:
         run: |
           bash $GITHUB_WORKSPACE/githubScripts/levain-compile.sh $DENO_ROOT_PATH/linux/deno $LEVAIN_RELEASE_SRC_PATH $LEVAIN_RELEASE_BIN_PATH 
         env:
+          DENO_ROOT_PATH: ${{ env.RUNNER_TEMP }}/deno
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
           LEVAIN_RELEASE_SRC_PATH: ${{ env.RUNNER_TEMP }}/src/levain-${{ env.RELEASE_VERSION }}
           LEVAIN_RELEASE_BIN_PATH: ${{ env.RUNNER_TEMP }}/bin/levain-${{ env.RELEASE_VERSION }}
