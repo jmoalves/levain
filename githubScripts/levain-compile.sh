@@ -28,7 +28,6 @@ levainCompile() {
 
     ${myDeno} compile \
         --unstable \
-        --reload \
         --allow-read --allow-write --allow-env --allow-net --allow-run \
         --target ${target} --output ${output} \
         ${levainSrcDir}/levain.ts
@@ -41,6 +40,6 @@ levainCompile() {
 # x86_64-apple-darwin
 # aarch64-apple-darwin
 ##
-levainCompile -t x86_64-unknown-linux-gnu -o ${levainBinDir}/levain
-#levainCompile -t x86_64-apple-darwin -o levain-mcos
+# levainCompile -t x86_64-unknown-linux-gnu -o ${levainBinDir}/levain
+# levainCompile -t x86_64-apple-darwin -o levain-mcos
 levainCompile -t x86_64-pc-windows-msvc -o ${levainBinDir}/levain.exe
