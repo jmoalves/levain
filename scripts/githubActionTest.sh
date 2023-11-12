@@ -14,4 +14,4 @@ act \
     --env GITHUB_WORKSPACE=${GITHUB_WORKSPACE} --var github.workspace=${GITHUB_WORKSPACE} \
     --rm \
     $*
-# rm -rf ${actWorkDir}
+rm -rf ${actWorkDir}
