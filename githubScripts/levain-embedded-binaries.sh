@@ -81,7 +81,7 @@ zipTool=${zipDir}/7zzs
 
 
 # EXTRA-BIN: curl
-curlVersion=7.87.0
+curlVersion=8.4.0
 curlUrl=https://curl.se/windows/dl-${curlVersion}/curl-${curlVersion}-win64-mingw.zip
 curlDir=${levainDir}/extra-bin/windows/curl
 
