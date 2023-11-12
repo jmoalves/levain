@@ -83,13 +83,13 @@ jobs:
           git config --local user.name "GitHub Action"
           git config pull.rebase true
 
-      - name: Tag
-        run: |
-          bash $GITHUB_WORKSPACE/githubScripts/tag-release.sh $LEVAIN_VERSION $NEXT_VERSION
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LEVAIN_VERSION: ${{ env.RELEASE_VERSION }}
-          NEXT_VERSION: ${{ env.NEXT_VERSION }}
+      # - name: Tag
+      #   run: |
+      #     bash $GITHUB_WORKSPACE/githubScripts/tag-release.sh $LEVAIN_VERSION $NEXT_VERSION
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #     LEVAIN_VERSION: ${{ env.RELEASE_VERSION }}
+      #     NEXT_VERSION: ${{ env.NEXT_VERSION }}
 
       - name: Changelog
         run: |
@@ -161,10 +161,10 @@ jobs:
 
       - name: FAIL
         run: |
-          bash echo && echo === $DENO_ROOT_PATH && find $DENO_ROOT_PATH
-          bash echo && echo === $LEVAIN_RELEASE_SRC_PATH && find $LEVAIN_RELEASE_SRC_PATH
-          bash echo && echo === $LEVAIN_RELEASE_BIN_PATH && find $LEVAIN_RELEASE_BIN_PATH
-          bash exit 1
+          echo && echo === $DENO_ROOT_PATH && find $DENO_ROOT_PATH
+          echo && echo === $LEVAIN_RELEASE_SRC_PATH && find $LEVAIN_RELEASE_SRC_PATH
+          echo && echo === $LEVAIN_RELEASE_BIN_PATH && find $LEVAIN_RELEASE_BIN_PATH
+          exit 1
         env:
           DENO_ROOT_PATH: ${{ runner.temp }}/deno
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
