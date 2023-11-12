@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      DENO_ROOT_PATH: ${{ env.RUNNER_TEMP }}/deno
+      DENO_ROOT_PATH: ${{ runner.temp }}/deno
 
     steps:
       - name: Check denoVersion
