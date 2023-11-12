@@ -5,14 +5,18 @@
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
 	"image": "mcr.microsoft.com/devcontainers/base:jammy",
 	"features": {
-		"ghcr.io/devcontainers-contrib/features/deno:1": {}
+		"ghcr.io/devcontainers-contrib/features/deno:1": {},
+		"ghcr.io/devcontainers/features/node:1": {}, // for Github actions
+		"ghcr.io/devcontainers-contrib/features/act:1": {}, // for Github actions
+		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},  // for Github actions
 	},
 
 	"customizations": {
 		"vscode": {
 			// Add the IDs of extensions you want installed when the container is created.
 			"extensions": [
-				"denoland.vscode-deno"
+				"denoland.vscode-deno",
+				"github.vscode-github-actions"
     		]
 		}
 	}
