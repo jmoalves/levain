@@ -33,7 +33,7 @@ set DENO_DIR=%tempPath%
 
 echo.
 echo Levain sources
-%myDenoExe% check --reload -q levain.ts
+%myDenoExe% check --reload levain.ts
 if errorlevel 1 (
     echo Levain sources - ERROR
     rmdir /q/s %tempPath%
@@ -43,7 +43,7 @@ echo Levain sources - OK
 
 echo.
 echo Levain TEST sources
-%myDenoExe% test --reload --no-run -q
+%myDenoExe% test --reload --no-run
 if errorlevel 1 (
     echo Levain TEST sources - ERROR
     rmdir /q/s %tempPath%
