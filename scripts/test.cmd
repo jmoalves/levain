@@ -42,7 +42,7 @@ if errorlevel 1 goto:eof
 echo.
 echo Running tests
 @echo on
-%myDenoExe% test --allow-all
+%myDenoExe% test --allow-all --coverage
 @echo off
 
 popd
