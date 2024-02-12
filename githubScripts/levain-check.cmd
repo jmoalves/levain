@@ -32,7 +32,7 @@ mkdir %tempPath%
 set DENO_DIR=%tempPath%
 
 echo.
-echo Levain sources - checking
+echo Levain sources
 %myDenoExe% check --reload -q levain.ts
 if errorlevel 1 (
     echo Levain sources - ERROR
