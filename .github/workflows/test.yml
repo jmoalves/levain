@@ -23,9 +23,14 @@ jobs:
           call %GITHUB_WORKSPACE%\githubScripts\get-deno.cmd %DENO_ROOT_PATH%
 
           call %GITHUB_WORKSPACE%\scripts\test.cmd %DENO_ROOT_PATH%
+          %DENO_ROOT_PATH%\deno coverage --lcov --output=%GITHUB_WORKSPACE%\coverage\levain.windows.lcov
         env:
           DENO_ROOT_PATH: ${{ runner.temp }}\deno
           GITHUB_WORKSPACE: ${{ github.workspace }}
+
+      - name: Coverage Badge
+        uses: GoogleCloudPlatform/github-badge-lcov@v1.0.0
+          file: ${{ github.workspace }}/coverage/levain.windows.lcov
 
   test-nix:
     strategy:
