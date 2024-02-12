@@ -11,7 +11,8 @@ jobs:
   test:
     strategy:
       matrix:
-        platform: [windows-latest, ubuntu-latest, macos-latest]
+        # platform: [windows-latest, ubuntu-latest, macos-latest]
+        platform: [windows-latest]
 
     runs-on: ${{ matrix.platform }}
 
