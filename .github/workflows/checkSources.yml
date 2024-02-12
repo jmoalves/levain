@@ -18,11 +18,15 @@ jobs:
         run: |
           rmdir /q/s %RUNNER_TEMP%
           mkdir %RUNNER_TEMP%
+        env:
+          RUNNER_TEMP: ${{ runner.temp }}
 
       - name: Clean Workspace
         run: |
           rmdir /q/s %GITHUB_WORKSPACE%
           mkdir %GITHUB_WORKSPACE%
+        env:
+          GITHUB_WORKSPACE: ${{ github.workspace }}
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,9 +39,11 @@ jobs:
           cmd /c %GITHUB_WORKSPACE%/githubScripts/get-deno.cmd %DENO_ROOT_PATH%
         env:
           DENO_ROOT_PATH: ${{ runner.temp }}/deno
+          GITHUB_WORKSPACE: ${{ github.workspace }}
 
       - name: Check sources
         run: |
           cmd /c %GITHUB_WORKSPACE%/githubScripts/levain-chech.cmd %DENO_ROOT_PATH%/deno
         env:
           DENO_ROOT_PATH: ${{ runner.temp }}/deno
+          GITHUB_WORKSPACE: ${{ github.workspace }}
