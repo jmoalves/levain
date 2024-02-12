@@ -30,7 +30,8 @@ jobs:
 
       - name: Coverage Badge
         uses: GoogleCloudPlatform/github-badge-lcov@v1.0.0
-        file: ${{ github.workspace }}/coverage/levain.windows.lcov
+        with:
+          file: ${{ github.workspace }}/coverage/levain.windows.lcov
 
   test-nix:
     strategy:
