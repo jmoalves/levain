@@ -68,7 +68,7 @@ export default class Clone implements Command {
 
         const git = new GitUtils()
         if (FileUtils.exists(repoDir)) {
-            log.warning(t("cmd.clone.dirExists", { dir: repoDir }));
+            log.warn(t("cmd.clone.dirExists", { dir: repoDir }));
         } else {
             await git.clone(parsedPath.url, repoDir)
         }

@@ -102,7 +102,7 @@ export default class Update implements Command {
             if (levainTag?.minVersion) {
                 const minVersion = new VersionNumber(levainTag?.minVersion)
                 if (minVersion.isNewerThan(this.currentLevainVersion)) {
-                    log.warning(t("cmd.install.ignoreMinVer", { pkg: pkg.name, min: minVersion, current: this.currentLevainVersion}))
+                    log.warn(t("cmd.install.ignoreMinVer", { pkg: pkg.name, min: minVersion, current: this.currentLevainVersion}))
                     shouldInstall = false
                 }
             }

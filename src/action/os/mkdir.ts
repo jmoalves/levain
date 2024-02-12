@@ -39,7 +39,7 @@ export default class Mkdir implements Action {
 
     private async compactSync(dirname: string) {
         if (!OsUtils.isWindows()) {
-            log.warning(`MKDIR - ignoring --compact - Windows only`);
+            log.warn(`MKDIR - ignoring --compact - Windows only`);
             return;
         }
 
