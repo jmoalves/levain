@@ -28,8 +28,6 @@
     }
   },
   "test": {
-    "files": {
-      "include": ["src/", "levain.test.ts"]
-    }
+    "include": ["src/", "levain.test.ts"]
   }
 }
