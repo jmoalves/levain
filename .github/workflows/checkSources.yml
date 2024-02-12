@@ -14,20 +14,6 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Clean TEMP
-        run: |
-          cmd /c rmdir /q/s %RUNNER_TEMP%
-          cmd /c mkdir %RUNNER_TEMP%
-        env:
-          RUNNER_TEMP: ${{ runner.temp }}
-
-      - name: Clean Workspace
-        run: |
-          cmd /c rmdir /q/s %GITHUB_WORKSPACE%
-          cmd /c mkdir %GITHUB_WORKSPACE%
-        env:
-          GITHUB_WORKSPACE: ${{ github.workspace }}
-
       - name: Checkout
         uses: actions/checkout@v4
 
