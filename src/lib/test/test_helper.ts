@@ -1,10 +1,8 @@
 import * as log from "https://deno.land/std/log/mod.ts";
-import {LogRecord} from "https://deno.land/std/log/logger.ts"
-import {LogLevels} from "https://deno.land/std/log/levels.ts"
+import {LogRecord, LogLevels} from "https://deno.land/std/log/mod.ts"
 import * as path from "https://deno.land/std/path/mod.ts"
 
-import {copySync} from "https://deno.land/std/fs/copy.ts";
-import {existsSync} from "https://deno.land/std/fs/mod.ts"
+import {existsSync, copySync} from "https://deno.land/std/fs/mod.ts"
 
 import Config from "../config.ts";
 import {MockPackage} from "../package/mock_package.ts";
@@ -35,7 +33,7 @@ export default class TestHelper {
 
     static logRecord(
         msg = 'mock logRecord',
-        level: LogLevels = LogLevels.INFO,
+        level: (typeof LogLevels.INFO) = LogLevels.INFO,
     ) {
         return new LogRecord({
             msg,
