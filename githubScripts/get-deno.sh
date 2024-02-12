@@ -105,4 +105,6 @@ tempFile=$( mktemp ) &&
 curl -ks -o ${tempFile} -L $denoUrl &&
 unzip ${tempFile} -d ${dir} >/dev/null &&
 rm -rf ${tempFile} &&
+
 echo === END = Deno for $denoOS at $dir 
+$dir/deno -V info

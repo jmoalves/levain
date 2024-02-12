@@ -22,4 +22,6 @@ mkdir %tempPath%
 %PWS% Expand-Archive %tempPath%\deno-x86_64-pc-windows-msvc.zip -DestinationPath %denoDST% -Force
 rmdir /q /s %tempPath%
 
+%denoDST%\deno -V info
+
 ENDLOCAL
