@@ -87,7 +87,7 @@ export async function retry(maxRetries: number, codeToRun:(() => void), sleepAmo
             codeToRun()
             return
         } catch (error) {
-            log.warning(`RETRY - Ignoring ${error}`)
+            log.warn(`RETRY - Ignoring ${error}`)
             lastError = error
             await sleepRandomAmountOfSeconds(0, Math.max(1, sleepAmountMax))
         }

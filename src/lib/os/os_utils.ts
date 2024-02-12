@@ -69,7 +69,7 @@ export default class OsUtils {
             if (isError) {
                 throw new Error(message)
             } else {
-                log.warning(message)
+                log.warn(message)
             }
         }
     }

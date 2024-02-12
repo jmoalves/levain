@@ -13,8 +13,8 @@ echo.
 echo === Deno cache
 set DENO_DIR=%levainRoot%\bin
 %levainRoot%\bin\deno.exe -V info
-%levainRoot%\bin\deno.exe cache --unstable --reload %levainRoot%\levain.ts
-::%levainRoot%\bin\deno.exe bundle --unstable --reload %levainRoot%\levain.ts %levainRoot%\levain.bundle.js
+%levainRoot%\bin\deno.exe cache --reload %levainRoot%\levain.ts
+%levainRoot%\bin\deno.exe check --reload %levainRoot%\levain.ts
 if errorlevel 1 exit /b %ERRORLEVEL%
 
 ENDLOCAL

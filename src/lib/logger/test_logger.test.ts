@@ -11,7 +11,7 @@ Deno.test({
 
         log.debug('Are we there yet?')
         log.info('Hello, log world')
-        log.warning('I have a bad feeling about this...')
+        log.warn('I have a bad feeling about this...')
         log.error('Error message')
         log.critical('Danger! Danger! Danger, Will Robinson!')
 

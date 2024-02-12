@@ -70,7 +70,7 @@ export default class PackageManager {
         let filteredPkgNames = pkgNames
             .map(pkgName => {
                 if (!pkgName || !pkgName.trim()) {
-                    log.warning(`Ignoring package with null name, check your configuration file.`)
+                    log.warn(`Ignoring package with null name, check your configuration file.`)
                     return "";
                 } else {
                     return pkgName

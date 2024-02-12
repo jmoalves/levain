@@ -79,8 +79,8 @@ export default class RepositoryManager {
 
         // TODO: Could we provide a default mechanism?
         if (pkgs && pkgs.length > 1) {
-            log.warning("")
-            log.warning(t("lib.repository.repository_manager.currentMultiple", { chosen: pkgs[0].filePath, choices: pkgs.map(p => p.filePath) }))
+            log.warn("")
+            log.warn(t("lib.repository.repository_manager.currentMultiple", { chosen: pkgs[0].filePath, choices: pkgs.map(p => p.filePath) }))
             return this.repositories.currentDir.resolvePackage(pkgs[0].name)
         }
 
@@ -96,7 +96,7 @@ export default class RepositoryManager {
     }
 
     set repository(repo: Repository) {
-        log.warning(t("lib.repository.repository_manager.testOnly", { repo: repo.name }));
+        log.warn(t("lib.repository.repository_manager.testOnly", { repo: repo.name }));
         this.repositories.regular = repo;
     }
 

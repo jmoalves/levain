@@ -150,11 +150,11 @@ export default class Config {
 
     set shellPath(shellPath: string | undefined) {
         if (this._shellPath != shellPath) {
-            log.warning("");
-            log.warning("***********************************************************************************");
-            log.warning(`** ${t("lib.config.shellPath", { oldPath: this._shellPath, newPath: shellPath })}`);
-            log.warning("***********************************************************************************");
-            log.warning("");
+            log.warn("");
+            log.warn("***********************************************************************************");
+            log.warn(`** ${t("lib.config.shellPath", { oldPath: this._shellPath, newPath: shellPath })}`);
+            log.warn("***********************************************************************************");
+            log.warn("");
         }
 
         this._shellPath = shellPath;
@@ -166,11 +166,11 @@ export default class Config {
 
     set defaultPackage(pkgName: string) {
         if (this._defaultPackage != pkgName) {
-            log.warning("");
-            log.warning("***********************************************************************************");
-            log.warning(`** ${t("lib.config.defaultPackage", { oldPackage: this._defaultPackage, newPackage: pkgName })}`);
-            log.warning("***********************************************************************************");
-            log.warning("");
+            log.warn("");
+            log.warn("***********************************************************************************");
+            log.warn(`** ${t("lib.config.defaultPackage", { oldPackage: this._defaultPackage, newPackage: pkgName })}`);
+            log.warn("***********************************************************************************");
+            log.warn("");
         }
 
         this._defaultPackage = pkgName;

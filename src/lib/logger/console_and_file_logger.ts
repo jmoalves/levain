@@ -1,5 +1,5 @@
 import * as log from "https://deno.land/std/log/mod.ts";
-import {ConsoleHandler, FileHandler} from "https://deno.land/std/log/handlers.ts";
+import {ConsoleHandler, FileHandler} from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 
 import Config from "../config.ts";
@@ -92,7 +92,7 @@ export default class ConsoleAndFileLogger {
         try {
             const logFolder = path.dirname(logFile)
             if (!FileUtils.canWriteSync(logFolder)) {
-                log.warning(`Could not write to log file ${logFile}`)
+                log.warn(`Could not write to log file ${logFile}`)
                 return
             }
             const handler = this.getLogFileHandler(logFile);
