@@ -13,7 +13,7 @@ if not "a%HTTP_PROXY%"=="a" set proxyCfg=-ProxyUseDefaultCredentials -Proxy %HTT
 if not "a%HTTPS_PROXY%"=="a" set proxyCfg=-ProxyUseDefaultCredentials -Proxy %HTTPS_PROXY% 
 
 echo.
-echo === Deno latest
+echo === Deno for Windows - downloading...
 set tempPath=%TEMP%\deno
 if exist %tempPath% rmdir /q /s %tempPath%
 mkdir %tempPath%

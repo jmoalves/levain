@@ -22,9 +22,8 @@ jobs:
         run: |
           if exist %DENO_ROOT_PATH% rmdir /q/s %DENO_ROOT_PATH%
           if not exist %DENO_ROOT_PATH% mkdir %DENO_ROOT_PATH%
-          echo Downloading Deno for Windows
-          %GITHUB_WORKSPACE%\githubScripts\get-deno.cmd %DENO_ROOT_PATH%
-          %GITHUB_WORKSPACE%\githubScripts\levain-check.cmd %DENO_ROOT_PATH%\deno
+          call %GITHUB_WORKSPACE%\githubScripts\get-deno.cmd %DENO_ROOT_PATH%
+          call %GITHUB_WORKSPACE%\githubScripts\levain-check.cmd %DENO_ROOT_PATH%\deno
         env:
           DENO_ROOT_PATH: ${{ runner.temp }}\deno
           GITHUB_WORKSPACE: ${{ github.workspace }}
