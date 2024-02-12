@@ -29,6 +29,7 @@ levainCompile() {
     ${myDeno} compile \
         --unstable \
         --allow-read --allow-write --allow-env --allow-net --allow-run \
+        --include recipes \
         --target ${target} --output ${output} \
         ${levainSrcDir}/levain.ts
 }
@@ -36,10 +37,10 @@ levainCompile() {
 # Create levain executable
 ## Target options
 # x86_64-unknown-linux-gnu
-# x86_64-pc-windows-msvc,
+# x86_64-pc-windows-msvc
 # x86_64-apple-darwin
 # aarch64-apple-darwin
 ##
-# levainCompile -t x86_64-unknown-linux-gnu -o ${levainBinDir}/levain
-# levainCompile -t x86_64-apple-darwin -o levain-mcos
-levainCompile -t x86_64-pc-windows-msvc -o ${levainBinDir}/levain.exe
+# levainCompile -t x86_64-unknown-linux-gnu -o ${levainBinDir}/bin/levain
+# levainCompile -t x86_64-apple-darwin -o ${levainBinDir}/bin/levain-mcos
+levainCompile -t x86_64-pc-windows-msvc -o ${levainBinDir}/bin/levain.exe
