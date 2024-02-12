@@ -6,7 +6,7 @@
         "executionSuccess": "execução com SUCESSO"
     },
     "levain_cli": {
-        "levainVersion": "Levain {{version}} com Deno v{{denoVersion}}",
+        "levainVersion": "Levain {{version}} com Deno v{{denoVersion}} em {{levainRootFile}}",
         "levainUpgrade": "Upgrade do Levain concluído. Por favor, re-execute seu comando anterior",
         "bye": "Até logo.",
         "availableCommands": "Comandos disponíveis:"

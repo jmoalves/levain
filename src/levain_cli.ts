@@ -19,7 +19,8 @@ export default class LevainCli {
     async execute(myArgs: any = {}): Promise<void> {
         log.info(t("levain_cli.levainVersion", { 
             version: LevainVersion.levainVersion, 
-            denoVersion: Deno.version.deno}));
+            denoVersion: Deno.version.deno,
+            levainRootFile: Levain.levainRootFile}));
         log.info("");
 
         log.debug("args " + JSON.stringify(myArgs));
