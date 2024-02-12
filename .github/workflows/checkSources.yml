@@ -16,15 +16,15 @@ jobs:
     steps:
       - name: Clean TEMP
         run: |
-          rmdir /q/s %RUNNER_TEMP%
-          mkdir %RUNNER_TEMP%
+          cmd /c rmdir /q/s %RUNNER_TEMP%
+          cmd /c mkdir %RUNNER_TEMP%
         env:
           RUNNER_TEMP: ${{ runner.temp }}
 
       - name: Clean Workspace
         run: |
-          rmdir /q/s %GITHUB_WORKSPACE%
-          mkdir %GITHUB_WORKSPACE%
+          cmd /c rmdir /q/s %GITHUB_WORKSPACE%
+          cmd /c mkdir %GITHUB_WORKSPACE%
         env:
           GITHUB_WORKSPACE: ${{ github.workspace }}
 
@@ -33,9 +33,9 @@ jobs:
 
       - name: Get Deno
         run: |
-          rmdir /q/s %DENO_ROOT_PATH%
-          mkdir %DENO_ROOT_PATH%
-          echo Deno Windows
+          cmd /c rmdir /q/s %DENO_ROOT_PATH%
+          cmd /c mkdir %DENO_ROOT_PATH%
+          cmd /c echo Deno Windows
           cmd /c %GITHUB_WORKSPACE%/githubScripts/get-deno.cmd %DENO_ROOT_PATH%
         env:
           DENO_ROOT_PATH: ${{ runner.temp }}/deno
