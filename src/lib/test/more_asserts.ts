@@ -80,10 +80,7 @@ export function assertArrayEqualsInAnyOrder<T>(
 }
 
 export function assertFolderIncludes(folder: string, expectedFiles: string[]) {
-    let separator = path.SEP
-    if (OsUtils.isWindows()) {
-        if (separator === "\\\\") throw "fixed in Deno, please remove this code block"
-    }
+    let separator = path.SEPARATOR
     const dstRelativeFiles = DirUtils.listFileNames(folder)
         .map(it => path.resolve(it))
     // .map(it => it.toString().replace(dstWithSlash, ''))
@@ -98,10 +95,7 @@ export function assertFolderIncludes(folder: string, expectedFiles: string[]) {
 }
 
 export function assertFolderDoesNotInclude(folder: string, expectedFiles: string[]) {
-    let separator = path.SEP
-    if (OsUtils.isWindows()) {
-        if (separator === "\\\\") throw "fixed in Deno, please remove this code block"
-    }
+    let separator = path.SEPARATOR
     const dstRelativeFiles = DirUtils.listFileNames(folder)
         .map(it => path.resolve(it))
     // .map(it => it.toString().replace(dstWithSlash, ''))

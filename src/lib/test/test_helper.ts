@@ -157,7 +157,7 @@ export default class TestHelper {
     static async logToConsole() {
         await log.setup({
             handlers: {
-                console: new log.handlers.ConsoleHandler("DEBUG"),
+                console: new log.ConsoleHandler("DEBUG"),
                 //
                 // file: new log.handlers.FileHandler("WARNING", {
                 //     filename: "./log.txt",
