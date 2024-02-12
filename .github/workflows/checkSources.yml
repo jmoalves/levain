@@ -17,19 +17,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Get Deno
-        run: |
-          cmd /c if exist %DENO_ROOT_PATH% rmdir /q/s %DENO_ROOT_PATH%
-          cmd /c if not exist %DENO_ROOT_PATH% mkdir %DENO_ROOT_PATH%
-          cmd /c echo Downloading Deno for Windows
-          cmd /c %GITHUB_WORKSPACE%\githubScripts\get-deno.cmd %DENO_ROOT_PATH%
-        env:
-          DENO_ROOT_PATH: ${{ runner.temp }}\\deno
-          GITHUB_WORKSPACE: ${{ github.workspace }}
-
       - name: Check sources
+        shell: cmd
         run: |
-          cmd /c %GITHUB_WORKSPACE%\githubScripts\levain-check.cmd %DENO_ROOT_PATH%\deno
+          if exist %DENO_ROOT_PATH% rmdir /q/s %DENO_ROOT_PATH%
+          if not exist %DENO_ROOT_PATH% mkdir %DENO_ROOT_PATH%
+          echo Downloading Deno for Windows
+          %GITHUB_WORKSPACE%\githubScripts\get-deno.cmd %DENO_ROOT_PATH%
+          %GITHUB_WORKSPACE%\githubScripts\levain-check.cmd %DENO_ROOT_PATH%\deno
         env:
-          DENO_ROOT_PATH: ${{ runner.temp }}\\deno
+          DENO_ROOT_PATH: ${{ runner.temp }}\deno
           GITHUB_WORKSPACE: ${{ github.workspace }}
