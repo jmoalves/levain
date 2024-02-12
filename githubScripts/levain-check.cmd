@@ -23,7 +23,9 @@ if not exist %myDenoExe% (
     exit 1
 )
 
+set DENO_DIR=%myDeno%
 echo Deno at %myDenoExe%
+%myDenoExe% -V info
 
 set tempPath=%TEMP%\denoTemp
 if exist %tempPath% rmdir /q /s %tempPath%

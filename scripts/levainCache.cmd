@@ -14,11 +14,11 @@ set DENO_DIR=%levainRoot%\bin
 %levainRoot%\bin\deno.exe -V info
 
 echo === Deno cache - sources
-%levainRoot%\bin\deno.exe cache --reload --check -q %levainRoot%\levain.ts
+%levainRoot%\bin\deno.exe cache --reload --check %levainRoot%\levain.ts
 if errorlevel 1 exit /b %ERRORLEVEL%
 
 echo === Deno cache - tests
-%levainRoot%\bin\deno.exe test --reload --no-run -q
+%levainRoot%\bin\deno.exe test --reload --no-run
 if errorlevel 1 exit /b %ERRORLEVEL%
 
 ENDLOCAL
