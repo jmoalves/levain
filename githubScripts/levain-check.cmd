@@ -12,9 +12,11 @@ if "a%myDeno%" == "a" (
 )
 
 if not exist %myDeno% (
-    echo We can\'t run $myDeno
+    echo We can\'t run %myDeno%
     exit 1
 )
+
+echo Deno at %myDeno%
 
 set tempPath=%TEMP%\denoTemp
 if exist %tempPath% rmdir /q /s %tempPath%
