@@ -28,11 +28,6 @@ jobs:
           DENO_ROOT_PATH: ${{ runner.temp }}\deno
           GITHUB_WORKSPACE: ${{ github.workspace }}
 
-      - name: Coverage Badge
-        uses: GoogleCloudPlatform/github-badge-lcov@v1.0.0
-        with:
-          file: ${{ github.workspace }}/coverage/levain.windows.lcov
-
   test-nix:
     strategy:
       matrix:
