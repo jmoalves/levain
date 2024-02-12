@@ -24,12 +24,12 @@ jobs:
           cmd /c echo Deno Windows
           cmd /c %GITHUB_WORKSPACE%/githubScripts/get-deno.cmd %DENO_ROOT_PATH%
         env:
-          DENO_ROOT_PATH: ${{ runner.temp }}/deno
+          DENO_ROOT_PATH: ${{ runner.temp }}\\deno
           GITHUB_WORKSPACE: ${{ github.workspace }}
 
       - name: Check sources
         run: |
           cmd /c %GITHUB_WORKSPACE%/githubScripts/levain-chech.cmd %DENO_ROOT_PATH%/deno
         env:
-          DENO_ROOT_PATH: ${{ runner.temp }}/deno
+          DENO_ROOT_PATH: ${{ runner.temp }}\\deno
           GITHUB_WORKSPACE: ${{ github.workspace }}
