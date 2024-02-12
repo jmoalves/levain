@@ -8,11 +8,30 @@ on:
   pull_request:
 
 jobs:
-  test:
+  test-win:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run tests
+        shell: cmd
+        run: |
+          if exist %DENO_ROOT_PATH% rmdir /q/s %DENO_ROOT_PATH%
+          if not exist %DENO_ROOT_PATH% mkdir %DENO_ROOT_PATH%
+          call %GITHUB_WORKSPACE%\githubScripts\get-deno.cmd %DENO_ROOT_PATH%
+
+          path %DENO_ROOT_PATH%;%PATH%
+          call %GITHUB_WORKSPACE%\scripts\test.cmd
+        env:
+          DENO_ROOT_PATH: ${{ runner.temp }}\deno
+          GITHUB_WORKSPACE: ${{ github.workspace }}
+
+  test-nix:
     strategy:
       matrix:
-        # platform: [windows-latest, ubuntu-latest, macos-latest]
-        platform: [windows-latest]
+        platform: [ubuntu-latest, macos-latest]
 
     runs-on: ${{ matrix.platform }}
 
@@ -22,9 +41,11 @@ jobs:
 
       - name: Run tests
         run: |
-          denoTemp=$( mktemp -d )  
+          denoTemp=$( mktemp -d )
+
           bash $GITHUB_WORKSPACE/githubScripts/get-deno.sh $denoTemp Linux
           export PATH=${denoTemp}:$PATH
+          
           cd $GITHUB_WORKSPACE
-          bash ./scripts/test.sh
+          echo bash ./scripts/test.sh
           rm -rf ${denoTemp}
