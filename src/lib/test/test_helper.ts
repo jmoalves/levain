@@ -103,13 +103,7 @@ export default class TestHelper {
         const tempDir = Deno.makeTempDirSync({prefix: 'levain-', suffix: ".tmp"});
         console.debug(`getNewTempDir ${tempDir}`)
 
-        // remove on exit
-        globalThis.addEventListener("unload", () => {
-            if (existsSync(tempDir)) {
-                console.debug(`TMP - Removing ${tempDir}`)
-                Deno.removeSync(tempDir, {recursive: true})
-            }
-        })
+        TestHelper.removeOnExit(tempDir)
 
         return tempDir
     }
@@ -120,15 +114,18 @@ export default class TestHelper {
             copySync(copyFile, fileName, {overwrite: true})
         }
 
-        // remove on exit
-        globalThis.addEventListener("unload", () => {
-            if (existsSync(fileName)) {
-                console.debug(`TMP - Removing ${fileName}`)
-                Deno.removeSync(fileName)
-            }
-        })
+        TestHelper.removeOnExit(fileName)
 
         return fileName
+    }
+
+    private static removeOnExit(pathname: string): void {
+        globalThis.addEventListener("unload", () => {
+            if (existsSync(pathname)) {
+                console.debug(`TMP - Removing ${pathname}`)
+                Deno.removeSync(pathname, {recursive: true})
+            }
+        })
     }
 
     static addRandomFilesToDir(dir: string, number: number) {
