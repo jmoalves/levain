@@ -1,4 +1,4 @@
-import {assertEquals} from "https://deno.land/std/testing/asserts.ts";
+import {assertEquals} from "https://deno.land/std/assert/mod.ts";
 import {ArrayUtils} from "./array_utils.ts";
 
 Deno.test('ArrayUtils should remove the number from an array', () => {

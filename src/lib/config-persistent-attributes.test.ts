@@ -1,5 +1,5 @@
 import ConfigPersistentAttributes from "./config-persistent-attributes.ts";
-import {assertEquals, assertNotEquals,} from "https://deno.land/std/testing/asserts.ts";
+import {assertEquals, assertNotEquals,} from "https://deno.land/std/assert/mod.ts";
 
 Deno.test('ConfigPersistentAttributes with no attrs changed should be equal', () => {
     const config1 = new ConfigPersistentAttributes()

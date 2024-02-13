@@ -1,4 +1,4 @@
-import {assertEquals, assertThrows, assert} from "https://deno.land/std/testing/asserts.ts";
+import {assertEquals, assertThrows, assert} from "https://deno.land/std/assert/mod.ts";
 
 import {parseArgs} from "./parse_args.ts";
 

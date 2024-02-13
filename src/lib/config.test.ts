@@ -1,4 +1,4 @@
-import {assertEquals, assertMatch, assertNotEquals} from "https://deno.land/std/testing/asserts.ts";
+import {assertEquals, assertMatch, assertNotEquals} from "https://deno.land/std/assert/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 
 import Config from './config.ts';

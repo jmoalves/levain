@@ -1,4 +1,4 @@
-import {assertEquals, assertMatch,} from "https://deno.land/std/testing/asserts.ts";
+import {assertEquals, assertMatch,} from "https://deno.land/std/assert/mod.ts";
 
 import Config from "../config.ts";
 import ConsoleAndFileLogger from "./console_and_file_logger.ts";

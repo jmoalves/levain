@@ -1,5 +1,5 @@
 import * as path from "https://deno.land/std/path/mod.ts";
-import {assert, assertEquals, assertNotEquals, assertThrows,} from "https://deno.land/std/testing/asserts.ts";
+import {assert, assertEquals, assertNotEquals, assertThrows,} from "https://deno.land/std/assert/mod.ts";
 import {ensureDirSync, ensureFileSync, existsSync} from "https://deno.land/std/fs/mod.ts";
 
 import OsUtils from '../os/os_utils.ts';

@@ -1,4 +1,4 @@
-import {assertEquals} from "https://deno.land/std/testing/asserts.ts";
+import {assertEquals} from "https://deno.land/std/assert/mod.ts";
 import {OsShell} from "./os_shell.ts";
 import TestHelper from "../test/test_helper.ts";
 import {PackageManagerMock} from "../package/package_manager_mock.ts";

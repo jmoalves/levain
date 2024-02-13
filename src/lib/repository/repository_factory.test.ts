@@ -1,7 +1,7 @@
 import RepositoryFactory from "./repository_factory.ts";
 import Config from "../config.ts";
 import TestHelper from "../test/test_helper.ts";
-import {assert, assertNotEquals} from "https://deno.land/std/testing/asserts.ts";
+import {assert, assertNotEquals} from "https://deno.land/std/assert/mod.ts";
 
 Deno.test('RepositoryFactory.getOrCreate should return same repository for the same uri', async () => {
     const config = new Config()

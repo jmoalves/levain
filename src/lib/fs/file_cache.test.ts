@@ -1,5 +1,5 @@
 import * as path from "https://deno.land/std/path/mod.ts";
-import {assertEquals,} from "https://deno.land/std/testing/asserts.ts";
+import {assertEquals,} from "https://deno.land/std/assert/mod.ts";
 
 import TestHelper from '../test/test_helper.ts';
 import {assertFolderIncludes, assertStringEndsWith} from '../test/more_asserts.ts';

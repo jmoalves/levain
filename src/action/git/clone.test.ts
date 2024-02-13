@@ -1,6 +1,6 @@
 import TestHelper from "../../lib/test/test_helper.ts";
 import GitCloneAction from "./clone.ts";
-import {assert, assertEquals, assertRejects,} from "https://deno.land/std/testing/asserts.ts";
+import {assert, assertEquals, assertRejects,} from "https://deno.land/std/assert/mod.ts";
 import {assertDirCount, assertFolderDoesNotInclude, assertFolderIncludes,} from "../../lib/test/more_asserts.ts";
 import {ensureFileSync,} from "https://deno.land/std/fs/mod.ts"
 import * as path from "https://deno.land/std/path/mod.ts"

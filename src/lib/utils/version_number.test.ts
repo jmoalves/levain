@@ -1,4 +1,4 @@
-import {assert, assertEquals} from "https://deno.land/std/testing/asserts.ts";
+import {assert, assertEquals} from "https://deno.land/std/assert/mod.ts";
 
 import VersionNumber from './version_number.ts';
 

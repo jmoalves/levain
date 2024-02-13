@@ -1,4 +1,4 @@
-import {assertArrayIncludes, assertEquals, assertThrows} from "https://deno.land/std/testing/asserts.ts";
+import {assertArrayIncludes, assertEquals, assertThrows} from "https://deno.land/std/assert/mod.ts";
 
 import DirUtils from "./dir_utils.ts";
 import TestHelper from "../test/test_helper.ts";

@@ -1,4 +1,4 @@
-import {assertArrayIncludes, assertEquals} from "https://deno.land/std/testing/asserts.ts";
+import {assertArrayIncludes, assertEquals} from "https://deno.land/std/assert/mod.ts";
 
 import DateUtils from "./date_utils.ts";
 

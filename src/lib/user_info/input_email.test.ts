@@ -1,4 +1,4 @@
-import {assertEquals, assertRejects,} from "https://deno.land/std/testing/asserts.ts"
+import {assertEquals, assertRejects,} from "https://deno.land/std/assert/mod.ts"
 
 //
 // inputAndValidate
