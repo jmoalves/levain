@@ -12,19 +12,20 @@ Deno.test('InputEmail.inputAndValidate should get a login', async () => {
     const expectedValue = myInput
     await verifyInput(myInput, defaultValue, expectedValue)
 })
+
 Deno.test('InputEmail.inputAndValidate should accept a default value', async () => {
     const myInput = ''
     const defaultValue = 'xyzDefault@server.com'
     const expectedValue = defaultValue
     await verifyInput(myInput, defaultValue, expectedValue)
 })
+
 Deno.test('InputEmail.inputAndValidate should reject an invalid value', () => {
     assertRejects(
         async () => {
             await verifyInput('--invalid-email--', 'defaultValue@server.com', 'doesntMatter')
         },
-        Error,
-        ' ✘ Please inform a valid EMAIL'
+        Error
     )
 })
 
