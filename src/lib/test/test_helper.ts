@@ -95,13 +95,22 @@ export default class TestHelper {
     static getNewTempRegistry(): Registry {
         return new Registry(
             TestHelper.getConfig(),
-            Deno.makeTempDirSync()
+            TestHelper.getNewTempDir()
         )
     }
 
     static getNewTempDir(): string {
-        const tempDir = Deno.makeTempDirSync({prefix: 'levain-'});
+        const tempDir = Deno.makeTempDirSync({prefix: 'levain-', suffix: ".tmp"});
         console.debug(`getNewTempDir ${tempDir}`)
+
+        // remove on exit
+        globalThis.addEventListener("unload", () => {
+            if (existsSync(tempDir)) {
+                console.debug(`TMP - Removing ${tempDir}`)
+                Deno.removeSync(tempDir, {recursive: true})
+            }
+        })
+
         return tempDir
     }
 
@@ -110,6 +119,15 @@ export default class TestHelper {
         if (copyFile) {
             copySync(copyFile, fileName, {overwrite: true})
         }
+
+        // remove on exit
+        globalThis.addEventListener("unload", () => {
+            if (existsSync(fileName)) {
+                console.debug(`TMP - Removing ${fileName}`)
+                Deno.removeSync(fileName)
+            }
+        })
+
         return fileName
     }
 

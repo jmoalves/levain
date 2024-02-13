@@ -8,7 +8,7 @@ import FileCache from './file_cache.ts';
 
 Deno.test('FileCache should get file from cache', async () => {
         const config = TestHelper.getConfig()
-        config.levainCacheDir = Deno.makeTempDirSync()
+        config.levainCacheDir = TestHelper.getNewTempDir()
         const fileCache = new FileCache(config)
 
         const cachedFile = await fileCache.get(TestHelper.validZipFile)

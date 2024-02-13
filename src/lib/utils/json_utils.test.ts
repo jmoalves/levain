@@ -29,7 +29,7 @@ Deno.test('JsonUtils - should inform that file does not exist', async () => {
 // save
 //
 Deno.test('JsonUtils.save should create folder when it does not exist', async () => {
-    const tempdir = Deno.makeTempDirSync();
+    const tempdir = TestHelper.getNewTempDir();
     let fileInFolderThatDoesNotExist = path.join(
         tempdir,
         'folder-that-does-not-exist',

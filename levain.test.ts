@@ -4,6 +4,7 @@ import * as path from "https://deno.land/std/path/mod.ts";
 import {assertFind} from "./src/lib/test/more_asserts.ts";
 import OsUtils from "./src/lib/os/os_utils.ts";
 import CliUtil from "./src/lib/cli_util.ts";
+import TestHelper from "./src/lib/test/test_helper.ts";
 
 import Levain from "./levain.ts";
 
@@ -48,7 +49,7 @@ Deno.test('should add an extra log file', async () => {
 Deno.test('should add an extra log dir', async () => {
     let logger
     try {
-        const extraLogDir = Deno.makeTempDirSync();
+        const extraLogDir = TestHelper.getNewTempDir();
         const params = `--add-log-dir ${extraLogDir}`
 
         const levain = new Levain()

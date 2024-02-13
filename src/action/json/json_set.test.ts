@@ -238,7 +238,7 @@ Deno.test('JsonSet - should set an string property with a windows path', async (
     assertEquals(json.pathProperty, "d:\\test\\dir\\subdir");
 })
 Deno.test('JsonSet should create file when it doesnt exist', () => {
-    const tempDir = Deno.makeTempDirSync()
+    const tempDir = TestHelper.getNewTempDir()
     const newFilePath = path.join(tempDir, 'new.json')
     const action = getJsonSetAction()
 
