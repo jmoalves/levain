@@ -79,10 +79,10 @@ export function envChain(...names: string[]): string | undefined {
     return undefined;
 }
 
-export async function retry(maxRetries: number, codeToRun:(() => void), sleepAmountMax: number = 5): Promise<void> {
+export async function retry(maxAttempts: number, codeToRun:(() => void), sleepAmountMax: number = 5): Promise<void> {
     let lastError = undefined
 
-    for (let retries = 0; retries < maxRetries; retries++) {
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         try {
             codeToRun()
             return
