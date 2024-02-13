@@ -81,8 +81,9 @@ export default class FileSystemRepository extends AbstractRepository {
     }
 
     async reload(): Promise<void> {
+        const newPackages = await this.readPackages()
         this._packages.clear();
-        (await this.readPackages()).forEach( pkg => {
+        newPackages.forEach( pkg => {
             this._packages.set(pkg.name, pkg)
         })
     }
