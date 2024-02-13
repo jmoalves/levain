@@ -11,16 +11,15 @@ Deno.test('AbstractRepository.listPackages should return a list of packages', as
     const expectedPackageNames = ['aPackage', 'anotherPackage',]
     LevainAsserts.assertPackageNames(packages, expectedPackageNames)
 })
-Deno.test('AbstractRepository should throw error when listing before init', () => {
+
+Deno.test('AbstractRepository.listPackages should return a list of packages without init', async () => {
     const repo = new MockRepository()
-    assertThrows(
-        () => {
-            repo.listPackages()
-        },
-        Error,
-        'Please init repository MockRepo (mockURI-MockRepo) before listing packages'
-    )
+    const packages = repo.listPackages()
+
+    const expectedPackageNames = ['aPackage', 'anotherPackage',]
+    LevainAsserts.assertPackageNames(packages, expectedPackageNames)
 })
+
 Deno.test('AbstractRepository.initialized should reflect if packages are valid', async () => {
     const repo = new MockRepository()
     assertEquals(repo.initialized(), false)
