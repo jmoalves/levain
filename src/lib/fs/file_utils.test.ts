@@ -133,8 +133,7 @@ if (OsUtils.isWindows()) {
             () => {
                 Deno.chmodSync(readOnlyFolder, 0o000);
             },
-            Error,
-            'Not implemented'
+            Error
         )
     })
 } else {
