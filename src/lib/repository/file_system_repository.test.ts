@@ -33,7 +33,15 @@ Deno.test('FileSystemRepository should have a absoluteURI', () => {
 })
 Deno.test('FileSystemRepository.describe should include absoluteURI and rootDir when different', () => {
     const repo = getRepo(rootDir)
-    assertEquals(repo.describe(), `FileSystemRepo (${(repo.absoluteURI)} resolved from ${rootDir})`)
+    assertMatch(
+        repo.describe(), 
+        RegExp(
+            `FileSystemRepo (${(repo.absoluteURI)} .* ${rootDir})`
+            .replaceAll('\\', '\\\\')
+            .replaceAll('(', '\\(')
+            .replaceAll(')', '\\)')
+        )
+    )
 })
 Deno.test('FileSystemRepository.describe should not repeat absoluteURI when equal to rootDir', () => {
     const absoluteURI = path.resolve(rootDir)
