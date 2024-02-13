@@ -8,7 +8,7 @@ set levainRoot=%myPath%\..
 
 :getOpts
 if "a%1" == "a" goto endGetOpts
-if "%1" == "--" goto endGetOpts
+if "%1" == "--" shift & goto endGetOpts
 
 if /I "%1" == "--denoDir" (
     if "a%2" == "a" (
@@ -23,10 +23,20 @@ if /I "%1" == "--denoDir" (
 set checkOption=%1
 if /i "%checkOption:~0,1%"=="-" (
     echo Unknown option %1
-    exit /b 1
+    exit 1
 )
 
 :endGetOpts
+
+set allParameters=
+:allParm
+if "a%1" == "a" goto endParm
+
+set allParameters=%allParameters% %1
+shift
+
+goto allParm
+:endParm
 
 if "a%myDenoDir%" == "a" (
     set myDenoDir=%levainRoot%\bin
@@ -67,11 +77,11 @@ echo.
 
 set coverOps=--coverage
 :: If we got a specific test to run, skip coverage
-if not "a%1" == "a" set coverOps=
+if not "a%allParameters%" == "a" set coverOps=
 
 echo Running tests
 @echo on
-%myDenoExe% test --allow-all %coverOps% %*
+%myDenoExe% test --allow-all %coverOps% %allParameters%
 @echo off
 
 if "a%coverOps%" == "a" goto skipCoverage
