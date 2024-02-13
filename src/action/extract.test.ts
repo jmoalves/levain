@@ -15,7 +15,6 @@ Deno.test('ExtractAction should check if source exists', async () => {
     try {
         await action.execute(pkg, [src, dst])
     } catch (err) {
-
         const expectedMsg = `File ${src} does not exist`
         assertEquals(err.message, expectedMsg)
     }
@@ -43,6 +42,7 @@ Deno.test({
     sanitizeResources: false,
     sanitizeOps: false,
 })
+
 Deno.test({
     name: 'ExtractAction should use cache',
     fn: async () => {
