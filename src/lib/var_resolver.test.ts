@@ -4,6 +4,8 @@ import VarResolver from "./var_resolver.ts";
 import Config from "./config.ts";
 import TestHelper from "./test/test_helper.ts";
 
+import {homedir} from './utils/utils.ts';
+
 //
 // replaceVars
 //
@@ -27,28 +29,28 @@ Deno.test('VarResolver.replaceVars should throw error for unknown vars', async (
     )
 })
 Deno.test('VarResolver.replaceVars should replace a var', async () => {
-    const config = new Config()
+    const config = new Config({ myVar: "myValue" })
 
-    const text = 'home: ${home}';
+    const text = 'home: ${myVar}';
     const replacedVars = await VarResolver.replaceVars(text, undefined, config)
 
-    assertMatch(replacedVars, /home: .*levain/)
+    assertMatch(replacedVars, /home: myValue/)
 })
 Deno.test('VarResolver.replaceVars should replace a var multiple times', async () => {
-    const config = new Config()
+    const config = new Config({ myVar: "myValue" })
 
-    const text = 'home: ${home} ${home}';
+    const text = 'home: ${myVar} ${myVar}';
     const replacedVars = await VarResolver.replaceVars(text, undefined, config)
 
-    assertMatch(replacedVars, /home: .*levain .*levain/)
+    assertMatch(replacedVars, /home: myValue myValue/)
 })
 Deno.test('VarResolver.replaceVars should replace multiple vars', async () => {
-    const config = new Config({levainCache: 'cache/'})
+    const config = new Config({ myVar: "myValue", levainCache: 'cache/'})
 
-    const text = 'home: ${home} ${levainCache}';
+    const text = 'home: ${myVar} ${levainCache}';
     const replacedVars = await VarResolver.replaceVars(text, undefined, config)
 
-    assertMatch(replacedVars, /home: .*levain cache\//)
+    assertMatch(replacedVars, /home: myValue cache\//)
 })
 //
 // findVarsInText
@@ -80,7 +82,7 @@ Deno.test('VarResolver.getVarValue should return undefined for unknown vars', as
     await verifyVarValueEquals('var-that-does-not-exist', undefined)
 })
 Deno.test('VarResolver.getVarValue should get home', async () => {
-    await verifyVarValueMatches('home', /.*levain/)
+    await verifyVarValueEquals('home', `${homedir()}`)
 })
 Deno.test('VarResolver.getVarValue should get levain.homeDir', async () => {
     await verifyVarValueMatches('levain.homeDir', /.*levain/)
