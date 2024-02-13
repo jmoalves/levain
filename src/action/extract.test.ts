@@ -25,9 +25,9 @@ Deno.test({
     name: 'ExtractAction should extract src to dst',
     fn: async () => {
         const src = TestHelper.validZipFile
-        const dst = Deno.makeTempDirSync()
+        const dst = TestHelper.getNewTempDir()
         const config = TestHelper.getConfig()
-        config.levainCacheDir = Deno.makeTempDirSync()
+        config.levainCacheDir = TestHelper.getNewTempDir()
         const action = new Extract(config)
         const pkg = TestHelper.mockPackage()
 
@@ -47,9 +47,9 @@ Deno.test({
     name: 'ExtractAction should use cache',
     fn: async () => {
         const src = TestHelper.validZipFile
-        const dst = Deno.makeTempDirSync()
+        const dst = TestHelper.getNewTempDir()
         const config = TestHelper.getConfig()
-        config.levainCacheDir = Deno.makeTempDirSync()
+        config.levainCacheDir = TestHelper.getNewTempDir()
         const action = new Extract(config)
         const pkg = TestHelper.mockPackage()
         const cachedSrc = new FileCache(config).cachedFilePath(src)

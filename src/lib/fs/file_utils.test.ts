@@ -120,7 +120,7 @@ Deno.test('FileUtils - should detect that a dir is a dir', () => {
 // canCreateTempFileInDir
 //
 Deno.test('FileUtils - canCreateTempFileInDir should be able to write in a temp dir', () => {
-    const tempDir = Deno.makeTempDirSync()
+    const tempDir = TestHelper.getNewTempDir()
 
     const canWrite = FileUtils.canCreateTempFileInDir(tempDir)
 
