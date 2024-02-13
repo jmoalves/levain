@@ -120,12 +120,16 @@ export default class TestHelper {
     }
 
     private static removeOnExit(pathname: string): void {
-        globalThis.addEventListener("unload", () => {
+        TestHelper.runOnExit(() => {
             if (existsSync(pathname)) {
                 console.debug(`TMP - Removing ${pathname}`)
                 Deno.removeSync(pathname, {recursive: true})
             }
         })
+    }
+
+    private static runOnExit(handler: EventListener) {
+        globalThis.addEventListener("unload", handler)
     }
 
     static addRandomFilesToDir(dir: string, number: number) {
