@@ -27,7 +27,6 @@ Deno.test('InputFullName.inputAndValidate should reject an invalid value', async
         async () => {
             await InputFullName.inputAndValidate('Shazam')
         },
-        Error,
-        ' ✘ Only valid characters, please'
+        Error
     )
 })

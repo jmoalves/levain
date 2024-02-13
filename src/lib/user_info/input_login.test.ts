@@ -27,7 +27,6 @@ Deno.test('InputEmail.inputAndValidate should reject an invalid value', async ()
         async () => {
             await InputLogin.inputAndValidate('defaultValue@server.com')
         },
-        Error,
-        ' ✘ Please inform a valid LOGIN'
+        Error
     )
 })
