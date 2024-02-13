@@ -189,4 +189,24 @@ export default class TestHelper {
             },
         });
     }
+
+    static pathRegExp(strPath: string, options?: RegExpOptions): RegExp {
+        let flags: string | undefined = undefined 
+
+        if (options?.ignoreCase) {
+            flags = ( flags || '') + 'i'
+        }
+
+        let regExpStr = 
+            `${strPath}`
+            .replaceAll('\\', '\\\\')
+            .replaceAll('/', '\\/')
+
+        return RegExp(regExpStr, flags)
+    }
 }
+
+export class RegExpOptions {
+    ignoreCase?: boolean
+}
+
