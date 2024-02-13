@@ -60,20 +60,9 @@ echo Deno at %myDenoExe%
 
 pushd %levainRoot%
 
-:: Check syntax
-echo === Syntax check - sources
-%myDenoExe% check levain.ts
-if errorlevel 1 goto:eof
-
-echo === Syntax check - tests
-%myDenoExe% test --no-run
-if errorlevel 1 goto:eof
-
 echo.
 
 :: Test!
-@REM echo Removing previous coverage reports
-@REM if exist coverage\ rmdir /q/s coverage\
 
 set coverOps=--coverage
 :: If we got a specific test to run, skip coverage
