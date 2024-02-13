@@ -13,8 +13,25 @@ Deno.test("Utils", () => {
 
 Deno.test("retry", async () => {
     const startTime = performance.now()
-    await retry(3, () => { throw "Abort" })
+    const retries = 2
+    const attempts = retries+1;
+    const runner = new FailFixedCount(retries)
+    await retry(attempts, () => { runner.run() })
     const endTime = performance.now()
+
+    assertEquals(attempts, runner.amount)
 
     console.log(`Test took ${endTime - startTime}ms`)
 })
+
+class FailFixedCount {
+    public amount: number = 0;
+
+    constructor(private failAmount: number) {}
+    run() {
+        this.amount++
+        if (this.amount <= this.failAmount) {
+            throw `${this.amount} - Abort`
+        }
+    }
+}
