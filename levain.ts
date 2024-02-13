@@ -11,9 +11,12 @@ import LevainCli from "./src/levain_cli.ts";
 
 export default class Levain {
     static get levainRootFile(): string {
-        // https://stackoverflow.com/questions/61829367/node-js-dirname-filename-equivalent-in-deno
-        // return path.fromFileUrl(import.meta.url)
-        return path.fromFileUrl(Deno.mainModule)
+        // log.info(`Deno execPath...: ${Deno.execPath()}`)
+        // log.info(`Deno mainModule.: ${Deno.mainModule}`)
+        // log.info(`import.meta.url.: ${import.meta.url}`)
+        // TODO: Check if import.meta.url works with deno compile 
+        let mainModule = import.meta.url
+        return path.fromFileUrl(mainModule)
     }
 
     static get levainRootDir(): string {
