@@ -100,7 +100,7 @@ export default class TestHelper {
     }
 
     static getNewTempDir(): string {
-        const tempDir = Deno.makeTempDirSync({prefix: 'levain-', suffix: ".tmp"});
+        const tempDir = Deno.makeTempDirSync({prefix: 'levain-test-', suffix: ".dir.tmp"});
         console.debug(`getNewTempDir ${tempDir}`)
 
         TestHelper.removeOnExit(tempDir)
@@ -109,7 +109,7 @@ export default class TestHelper {
     }
 
     static getNewTempFile(copyFile?: string): string {
-        const fileName = Deno.makeTempFileSync()
+        const fileName = Deno.makeTempFileSync({prefix: 'levain-test-', suffix: ".file.tmp"})
         if (copyFile) {
             copySync(copyFile, fileName, {overwrite: true})
         }
