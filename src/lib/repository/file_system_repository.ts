@@ -159,6 +159,12 @@ export default class FileSystemRepository extends AbstractRepository {
             // User feedback
             this.feedback.show();
 
+            if (entry.isFile && !this.isPackageFile(entry.name)) {
+                // An attempt to optmize search in a crowded directory without packages
+                // Perhaps it would be better to read entries with a pattern
+                continue
+            }
+
             const fullUri = path.resolve(dirname, entry.name);
             if (!FileUtils.canReadSync(fullUri)) {
                 log.debug(`not crawling ${fullUri} - can't read`)
@@ -171,7 +177,7 @@ export default class FileSystemRepository extends AbstractRepository {
                 } else {
                     promisesDir.push(this.crawlPackages(fullUri, options, false, nextLevel))
                 }
-            } else if (entry.isFile) {
+            } else if (entry.isFile && this.isPackageFile(fullUri)) {
                 promisesFile.push(this.readPackage(fullUri))
             }
         }
@@ -197,8 +203,12 @@ export default class FileSystemRepository extends AbstractRepository {
         return packages;
     }
 
+    private isPackageFile(yamlFile: string): boolean {
+        return yamlFile.match(/\.levain\.ya?ml$/) != null
+    }
+
     private async readPackage(yamlFile: string): Promise<Package | undefined> {
-        if (!yamlFile.match(/\.levain\.ya?ml$/)) {
+        if (!this.isPackageFile(yamlFile)) {
             return undefined;
         }
 
