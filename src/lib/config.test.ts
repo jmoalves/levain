@@ -82,9 +82,9 @@ Deno.test('Config should config levainCache with cli args', () => {
     assertEquals(config.levainCacheDir, 'cache/')
 })
 Deno.test('Config should replaceVars', async () => {
-    const config = new Config({levainCache: 'cache/'})
+    const config = new Config({myVar: 'myValue'})
 
-    const replacedVars = await config.replaceVars('home: ${home}')
+    const replacedVars = await config.replaceVars('home: ${myVar}')
 
-    assertMatch(replacedVars, /home: .*levain/)
+    assertMatch(replacedVars, /home: myValue/)
 })
