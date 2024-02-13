@@ -23,6 +23,11 @@ if /I "%1" == "--denoDir" (
 set checkOption=%1
 if /i "%checkOption:~0,1%"=="-" (
     echo Unknown option %1
+    echo.
+    echo TIP: if you want to pass options to deno test, use -- as separator
+    echo Examples: 
+    echo test.cmd -- --fail-fast
+    echo test.cmd -- %checkOption%
     exit 1
 )
 
