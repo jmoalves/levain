@@ -18,7 +18,7 @@ Deno.test({
         assertEquals([
             'DEBUG Are we there yet?',
             'INFO Hello, log world',
-            "WARNING I have a bad feeling about this...",
+            "WARN I have a bad feeling about this...",
             'ERROR Error message',
             "CRITICAL Danger! Danger! Danger, Will Robinson!",
         ], logger.messages)
