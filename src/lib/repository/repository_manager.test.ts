@@ -1,7 +1,7 @@
 import RepositoryManager from "./repository_manager.ts";
 import Config from "../config.ts";
 import TestHelper from "../test/test_helper.ts";
-import {assert, assertEquals} from "https://deno.land/std/asserts/mod.ts";
+import {assert, assertEquals} from "https://deno.land/std/assert/mod.ts";
 
 Deno.test({
     name: 'RepositoryManager.init should prepare repos for package resolving',
@@ -14,28 +14,14 @@ Deno.test({
         assertEquals(myPackage?.name, 'superDuper')
     }
 })
+
 Deno.test('RepositoryManager.repoList should list repos without repetition', async () => {
     const repositoryManager = await getInitializedRepositoryManager()
     const repos = await repositoryManager.repoList(false)
 
     assertEquals(repos.length, 2)
-    assert(repos[0].endsWith('levain'))
-    assert(repos[1].endsWith('repository_manager/extraRepo'))
-})
-Deno.test({
-    name: 'RepositoryManager.initRepositories should init without repetition',
-    fn: async () => {
-        const repositoryManager = await getInitializedRepositoryManager()
-
-        const initializedRepositoriesPaths = repositoryManager?.repositories?.describe()
-            || []
-
-        assertEquals(initializedRepositoriesPaths,
-            `currentDir: CacheRepo (FileSystemRepo (/Users/rafaelwalter/git.repo/levain))\n`
-            + `installed: CacheRepo (FileSystemRepo (/Users/rafaelwalter/levain/.levain/registry))\n`
-            + `regular: CacheRepo (ChainRepo (FileSystemRepo (/Users/rafaelwalter/git.repo/levain), FileSystemRepo (/Users/rafaelwalter/git.repo/levain/testdata/repository_manager/extraRepo)))\n`
-        )
-    },
+    assert(repos[0].match(/levain$/), "repos[0] does not end with 'levain'")
+    assert(repos[1].match(/repository_manager(\/|\\)extraRepo$/), "repos[1] does not contain extraRepo")
 })
 
 async function getInitializedRepositoryManager() {
@@ -43,15 +29,13 @@ async function getInitializedRepositoryManager() {
     const repositoryManager = new RepositoryManager(config)
 
     await repositoryManager.init({
-        extraRepos: [TestHelper.getTestDataPath('repository_manager/extraRepo')],
+        extraRepos: [TestHelper.getTestDataPath('repository_manager/extraRepo'), TestHelper.getTestDataPath('repository_manager/extraRepo')],
         tempRepos: [],
     })
+
     return repositoryManager;
 }
 
-//
-// RepositoryManager.createCurrentDirRepo
-//
 Deno.test('RepositoryManager.createCurrentDirRepo should user currentDir', async () => {
     const config = new Config()
     const repositoryManager = new RepositoryManager(config)
@@ -59,12 +43,11 @@ Deno.test('RepositoryManager.createCurrentDirRepo should user currentDir', async
     const repo = await repositoryManager.createCurrentDirRepo()
 
     const currentDir = Deno.cwd()
-    assertEquals(repo.describe(), `CacheRepo (FileSystemRepo (${currentDir}))`)
+
+    assert(repo.describe().match(TestHelper.pathRegExp(currentDir, { ignoreCase: true})), "repo does not contain currentDir")
     assertEquals(repo.initialized(), true)
 })
-//
-// RepositoryManager.createInstalledDirRepo
-//
+
 Deno.test('RepositoryManager.createInstalledRepo should user registryDir', async () => {
     const config = new Config()
     const repositoryManager = new RepositoryManager(config)
@@ -72,12 +55,10 @@ Deno.test('RepositoryManager.createInstalledRepo should user registryDir', async
     const repo = await repositoryManager.createInstalledRepo()
 
     const registryDir = config.levainRegistryDir
-    assertEquals(repo.describe(), `CacheRepo (FileSystemRepo (${registryDir}))`)
+    assert(repo.describe().match(TestHelper.pathRegExp(registryDir, { ignoreCase: true})), "repo does not contain registryDir")
     assertEquals(repo.initialized(), true)
 })
-//
-// RepositoryManager.createInstalledDirRepo
-//
+
 Deno.test('RepositoryManager.createRegularRepositories should use levainSrcDir', async () => {
     const config = new Config()
     const repositoryManager = new RepositoryManager(config)
@@ -85,9 +66,10 @@ Deno.test('RepositoryManager.createRegularRepositories should use levainSrcDir',
     const repo = await repositoryManager.createRegularRepositories()
 
     const repoDir = config.levainSrcDir
-    assertEquals(repo.describe(), `CacheRepo (FileSystemRepo (${repoDir}))`)
+    assert(repo.describe().match(TestHelper.pathRegExp(repoDir, { ignoreCase: true})), "repoDir does not match levainSrcDir")
     assertEquals(repo.initialized(), true)
 })
+
 Deno.test('RepositoryManager.createRegularRepositories should add tempRepos and extraRepos', async () => {
     const config = new Config()
     const repositoryManager = new RepositoryManager(config)
@@ -102,8 +84,9 @@ Deno.test('RepositoryManager.createRegularRepositories should add tempRepos and 
     await repositoryManager.init({extraRepos, tempRepos})
     const repo = await repositoryManager.createRegularRepositories()
 
-
     const repoDir = config.levainSrcDir
-    assertEquals(repo.describe(), `CacheRepo (ChainRepo (FileSystemRepo (${repoDir}), FileSystemRepo (${tempRepoDir}), FileSystemRepo (${extraRepoDir})))`)
+    assert(repo.describe().match(TestHelper.pathRegExp(repoDir, { ignoreCase: true})), "repo does not contain levainSrcDir")
+    assert(repo.describe().match(TestHelper.pathRegExp(tempRepoDir, { ignoreCase: true})), "repo does not contain tempRepoDir")
+    assert(repo.describe().match(TestHelper.pathRegExp(extraRepoDir, { ignoreCase: true})), "repo does not contain extraRepoDir")
     assertEquals(repo.initialized(), true)
 })
