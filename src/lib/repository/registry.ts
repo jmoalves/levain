@@ -1,7 +1,6 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
-import {copySync} from "https://deno.land/std/fs/copy.ts";
-import {ensureDirSync, existsSync} from "https://deno.land/std/fs/mod.ts";
+import {ensureDirSync, existsSync, copySync} from "https://deno.land/std/fs/mod.ts";
 
 import Config from '../config.ts';
 import FileSystemPackage from '../package/file_system_package.ts';
@@ -27,7 +26,7 @@ export default class Registry extends FileSystemRepository {
         log.debug(`COPY ${pkg.fullPath} ${path.join(this.rootDir, pkg.filePath)}`)
         copySync(pkg.fullPath, path.join(this.rootDir, pkg.filePath))
 
-        this.reload()
+        await this.reload()
     }
 
     async remove(name: string) {
@@ -46,7 +45,7 @@ export default class Registry extends FileSystemRepository {
         })
 
         if (shouldInvalidate) {
-            this.reload()
+            await this.reload()
         }
     }
 }
