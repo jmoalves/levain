@@ -4,7 +4,7 @@ import {
     assertMatch,
     assertNotEquals,
     assertRejects
-} from "https://deno.land/std/testing/asserts.ts";
+} from "https://deno.land/std/assert/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import {ensureDirSync} from "https://deno.land/std/fs/mod.ts";
 

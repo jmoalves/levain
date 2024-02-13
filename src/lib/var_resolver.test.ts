@@ -1,4 +1,4 @@
-import {assertEquals, assertMatch, assertRejects} from "https://deno.land/std/testing/asserts.ts";
+import {assertEquals, assertMatch, assertRejects} from "https://deno.land/std/assert/mod.ts";
 
 import VarResolver from "./var_resolver.ts";
 import Config from "./config.ts";

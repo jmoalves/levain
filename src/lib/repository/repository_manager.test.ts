@@ -1,7 +1,7 @@
 import RepositoryManager from "./repository_manager.ts";
 import Config from "../config.ts";
 import TestHelper from "../test/test_helper.ts";
-import {assert, assertEquals} from "https://deno.land/std/testing/asserts.ts";
+import {assert, assertEquals} from "https://deno.land/std/asserts/mod.ts";
 
 Deno.test({
     name: 'RepositoryManager.init should prepare repos for package resolving',

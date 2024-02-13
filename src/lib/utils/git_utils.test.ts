@@ -4,7 +4,7 @@ import {
     assertMatch,
     assertThrows,
     assertRejects
-} from "https://deno.land/std/testing/asserts.ts";
+} from "https://deno.land/std/assert/mod.ts";
 
 import GitUtils from "./git_utils.ts";
 import TestHelper from "../test/test_helper.ts";

@@ -1,4 +1,4 @@
-import {assertRejects} from "https://deno.land/std/testing/asserts.ts";
+import {assertRejects} from "https://deno.land/std/assert/mod.ts";
 
 import {MockPackage} from "../lib/package/mock_package.ts";
 import Config from "../lib/config.ts";

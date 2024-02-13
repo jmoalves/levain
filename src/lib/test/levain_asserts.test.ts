@@ -1,6 +1,6 @@
 import MockRepository from "../repository/mock_repository.ts";
 import LevainAsserts from "./levain_asserts.ts";
-import {assertThrows,} from "https://deno.land/std/testing/asserts.ts";
+import {assertThrows,} from "https://deno.land/std/assert/mod.ts";
 
 Deno.test('LevainAsserts.assertPackageNames should sort packages', async () => {
     const repo = new MockRepository()

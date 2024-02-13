@@ -1,6 +1,6 @@
 import MockRepository from "./mock_repository.ts";
 import LevainAsserts from "../test/levain_asserts.ts";
-import {assertEquals, assertThrows} from "https://deno.land/std/testing/asserts.ts";
+import {assertEquals, assertThrows} from "https://deno.land/std/assert/mod.ts";
 
 
 Deno.test('AbstractRepository.listPackages should return a list of packages', async () => {

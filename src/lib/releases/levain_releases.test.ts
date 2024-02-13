@@ -1,4 +1,4 @@
-import {assert} from "https://deno.land/std/testing/asserts.ts";
+import {assert} from "https://deno.land/std/assert/mod.ts";
 
 import LevainReleases from "./levain_releases.ts";
 

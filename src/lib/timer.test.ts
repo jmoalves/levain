@@ -1,4 +1,4 @@
-import {assert, assertNotEquals} from "https://deno.land/std/testing/asserts.ts";
+import {assert, assertNotEquals} from "https://deno.land/std/assert/mod.ts";
 
 import {Timer} from "./timer.ts";
 

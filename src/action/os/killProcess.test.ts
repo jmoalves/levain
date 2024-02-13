@@ -1,6 +1,6 @@
 import TestHelper from "../../lib/test/test_helper.ts";
 import ActionFactory from "../action_factory.ts";
-import {assert, assertRejects} from "https://deno.land/std/testing/asserts.ts";
+import {assert, assertRejects} from "https://deno.land/std/assert/mod.ts";
 import KillProcessAction from "./killProcess.ts";
 
 Deno.test('KillProcessAction should be obtainable from ActionFactory', () => {

@@ -1,4 +1,4 @@
-import {AssertionError, assertThrows} from "https://deno.land/std/testing/asserts.ts";
+import {AssertionError, assertThrows} from "https://deno.land/std/assert/mod.ts";
 
 import {
     assertArrayEndsWith,
