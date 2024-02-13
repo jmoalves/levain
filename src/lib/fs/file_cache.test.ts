@@ -7,18 +7,21 @@ import {assertFolderIncludes, assertStringEndsWith} from '../test/more_asserts.t
 import FileCache from './file_cache.ts';
 
 Deno.test('FileCache should get file from cache', async () => {
-        const config = TestHelper.getConfig()
-        config.levainCacheDir = TestHelper.getNewTempDir()
-        const fileCache = new FileCache(config)
+    const config = TestHelper.getConfig()
+    config.levainCacheDir = TestHelper.getNewTempDir()
+    const fileCache = new FileCache(config)
 
-        const cachedFile = await fileCache.get(TestHelper.validZipFile)
+    const cachedFile = await fileCache.get(TestHelper.validZipFile)
 
-        const expectedFile = fileCache.cachedFilePath(TestHelper.validZipFile)
-        assertEquals(cachedFile, expectedFile)
+    const expectedFile = fileCache.cachedFilePath(TestHelper.validZipFile)
+    assertEquals(cachedFile, expectedFile)
 
-        assertFolderIncludes(fileCache.dir, [expectedFile])
-    }
-)
+    assertFolderIncludes(fileCache.dir, [expectedFile])
+
+    // Workaround - https://github.com/denoland/deno/issues/15425
+    await new Promise((resolve) => setTimeout(resolve, 0));
+})
+
 Deno.test('FileCache should calc cached file path', () => {
     const config = TestHelper.getConfig()
     const fileCache = new FileCache(config)
