@@ -22,6 +22,8 @@ jobs:
           if not exist %DENO_ROOT_PATH% mkdir %DENO_ROOT_PATH%
           call %GITHUB_WORKSPACE%\githubScripts\get-deno.cmd %DENO_ROOT_PATH%
 
+          call %GITHUB_WORKSPACE%\githubScripts\get-extraBin.cmd
+
           call %GITHUB_WORKSPACE%\scripts\test.cmd --denoDir %DENO_ROOT_PATH%
           %DENO_ROOT_PATH%\deno coverage --lcov --output=%GITHUB_WORKSPACE%\coverage\levain.windows.lcov
         env:
