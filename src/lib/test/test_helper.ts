@@ -101,10 +101,7 @@ export default class TestHelper {
 
     static getNewTempDir(): string {
         const tempDir = Deno.makeTempDirSync({prefix: 'levain-test-', suffix: ".dir"});
-        console.debug(`getNewTempDir ${tempDir}`)
-
         TestHelper.removeOnExit(tempDir)
-
         return tempDir
     }
 
@@ -122,7 +119,6 @@ export default class TestHelper {
     private static removeOnExit(pathname: string): void {
         globalThis.addEventListener("unload", () => {
             if (existsSync(pathname)) {
-                console.debug(`TMP - Removing ${pathname}`)
                 Deno.removeSync(pathname, {recursive: true})
             }
         })
