@@ -9,7 +9,7 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - name: Download release
-        shell: cmd
+      - name: Download latest release
         run: |
-          echo Download release
+          iwr https://github.com/jmoalves/levain/releases/latest/download/install.ps1 | iex
+          call levain
