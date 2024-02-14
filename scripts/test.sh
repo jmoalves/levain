@@ -1,1 +1,2 @@
-deno test --unstable --allow-all
+deno -V info
+deno test --coverage --allow-all --reload
