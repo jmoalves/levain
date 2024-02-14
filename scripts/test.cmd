@@ -87,8 +87,8 @@ if not "a%coverOps%" == "a" (
     echo Coverage report - TEXT
     %myDenoExe% coverage
 
-    echo Coverage report - LCOV
-    %myDenoExe% coverage --lcov --output=coverage/levain.lcov
+    @REM echo Coverage report - LCOV
+    @REM %myDenoExe% coverage --lcov --output=coverage/levain.lcov
 
     @REM echo Coverage report - HTML
     @REM %myDenoExe% coverage --html
