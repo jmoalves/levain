@@ -11,15 +11,15 @@ jobs:
     steps:
       - name: Download latest release
         run: |
-          iwr https://github.com/jmoalves/levain/releases/latest/download/install.ps1 | iex
-          # Add levain to PATH
-          $LevainDir=[Environment]::GetEnvironmentVariable("HOME", "User") + "\" + "levain"
-          Write-Output "Levain at $LevainDir"
-          if (Test-Path $LevainDir) {
-            $Path = $LevainDir + "levain"
-            $Path = [Environment]::GetEnvironmentVariable("PATH", "User") + [IO.Path]::PathSeparator + $Path
-            [Environment]::SetEnvironmentVariable( "Path", $Path, "User" )
-          }
+          # Which levain version?
+          # $v="0.80.7"
+
+          # Install script
+          $scriptUrl = https://raw.githubusercontent.com/jmoalves/levain/master/install/install.ps1
+          # $scriptUrl = https://github.com/jmoalves/levain/releases/latest/download/install.ps1
+
+          # Install
+          iwr $scriptUrl | iex
 
       - name: Run levain
         shell: cmd
