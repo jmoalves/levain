@@ -4,12 +4,12 @@ on:
   workflow_dispatch:
 
 jobs:
-  test-win:
+  e2e-win:
     runs-on: windows-latest
     timeout-minutes: 30
 
     steps:
-      - name: Download latest release
+      - name: Install Levain
         run: |
           # Which levain version?
           # $v="0.80.7"
@@ -22,8 +22,8 @@ jobs:
           iwr $scriptUrl | iex
           $v=[Environment]::GetEnvironmentVariable("PATH", "User"); Write-Output "UserPath = $v"
 
-      - name: Run levain
+      - name: Run Levain
         shell: cmd
         run: |
-          echo UserPath = $PATH
+          path
           call levain
