@@ -66,3 +66,12 @@ if (Test-Path $TempLevainZip) {
   Write-Output "Removing $TempLevainZip"
   Remove-Item $TempLevainZip -Force
 }
+
+# Add levain to PATH
+$LevainDir=[Environment]::GetEnvironmentVariable("HOME", "User") + "\" + "levain"
+Write-Output "Levain at $LevainDir"
+if (Test-Path $LevainDir) {
+  $Path = $LevainDir + "levain"
+  $Path = [Environment]::GetEnvironmentVariable("PATH", "User") + [IO.Path]::PathSeparator + $Path
+  [Environment]::SetEnvironmentVariable( "Path", $Path, "User" )
+}
