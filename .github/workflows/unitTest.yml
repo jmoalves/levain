@@ -10,6 +10,7 @@ on:
 jobs:
   unit-win:
     runs-on: windows-latest
+    timeout-minutes: 10
 
     steps:
       - name: Checkout
@@ -36,6 +37,7 @@ jobs:
         platform: [ubuntu-latest, macos-latest]
 
     runs-on: ${{ matrix.platform }}
+    timeout-minutes: 10
 
     steps:
       - name: Checkout

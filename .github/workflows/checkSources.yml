@@ -12,6 +12,7 @@ on:
 jobs:
   checkSources:
     runs-on: windows-latest
+    timeout-minutes: 5
 
     steps:
       - name: Checkout
