@@ -6,6 +6,8 @@ set myPath=%~dp0
 set myPath=%mypath:~0,-1%
 set levainRoot=%myPath%\..
 
+set coverOps=
+
 :getOpts
 if "a%1" == "a" goto endGetOpts
 if "%1" == "--" shift & goto endGetOpts
@@ -17,6 +19,10 @@ if /I "%1" == "--denoDir" (
     )
 
     set myDenoDir=%2& shift & shift & goto getOpts
+)
+
+if /I "%1" == "--coverage" (
+    set coverOps=--coverage & shift & goto getOpts
 )
 
 :: Invalid option?
@@ -73,7 +79,6 @@ if exist coverage (
     rmdir /q/s coverage
 )
 
-set coverOps=--coverage
 :: If we got a specific test to run, skip coverage
 if not "a%allParameters%" == "a" set coverOps=
 
@@ -83,15 +88,15 @@ echo Running tests
 @echo off
 
 if not "a%coverOps%" == "a" (
-    @REM echo.
-    @REM echo Coverage report - TEXT
-    @REM %myDenoExe% coverage
+    echo.
+    echo Coverage report - TEXT
+    %myDenoExe% coverage
 
-    @REM echo Coverage report - LCOV
-    @REM %myDenoExe% coverage --lcov --output=coverage/levain.lcov
+    echo Coverage report - LCOV
+    %myDenoExe% coverage --lcov --output=coverage/levain.lcov
 
-    @REM echo Coverage report - HTML
-    @REM %myDenoExe% coverage --html
+    echo Coverage report - HTML
+    %myDenoExe% coverage --html
 )
 
 popd

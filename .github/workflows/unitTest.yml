@@ -25,8 +25,7 @@ jobs:
 
           call %GITHUB_WORKSPACE%\githubScripts\get-extraBin.cmd
 
-          call %GITHUB_WORKSPACE%\scripts\test.cmd --denoDir %DENO_ROOT_PATH%
-          %DENO_ROOT_PATH%\deno coverage --lcov --output=%GITHUB_WORKSPACE%\coverage\levain.windows.lcov
+          call %GITHUB_WORKSPACE%\scripts\test.cmd --denoDir %DENO_ROOT_PATH% --coverage
         env:
           DENO_ROOT_PATH: ${{ runner.temp }}\deno
           GITHUB_WORKSPACE: ${{ github.workspace }}
