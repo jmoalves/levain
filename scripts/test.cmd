@@ -7,6 +7,7 @@ set myPath=%mypath:~0,-1%
 set levainRoot=%myPath%\..
 
 set coverOps=
+set checkSources=
 
 :getOpts
 if "a%1" == "a" goto endGetOpts
@@ -22,7 +23,11 @@ if /I "%1" == "--denoDir" (
 )
 
 if /I "%1" == "--coverage" (
-    set coverOps=--coverage & shift & goto getOpts
+    set coverOps=--coverage& shift & goto getOpts
+)
+
+if /I "%1" == "--checkSources" (
+    set checkSources=true& shift & goto getOpts
 )
 
 :: Invalid option?
@@ -72,6 +77,10 @@ echo Deno at %myDenoExe%
 pushd %levainRoot%
 
 echo.
+echo checkSources='%checkSources%'
+if "%checkSources%" == "true" (
+    call %myPath%\check-sources.cmd %myDenoDir%
+)
 
 :: Test!
 if exist coverage (
