@@ -90,8 +90,8 @@ if not "a%coverOps%" == "a" (
     echo Coverage report - LCOV
     %myDenoExe% coverage --lcov --output=coverage/levain.lcov
 
-    echo Coverage report - HTML
-    %myDenoExe% coverage --html
+    @REM echo Coverage report - HTML
+    @REM %myDenoExe% coverage --html
 )
 
 popd
