@@ -2,7 +2,7 @@ name: Test - unit
 
 on:
   workflow_dispatch:
-  push:
+  # push:
   pull_request:
 
 jobs:
