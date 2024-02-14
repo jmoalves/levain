@@ -1,0 +1,15 @@
+name: Test - e2e
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-win:
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Download release
+        shell: cmd
+        run: |
+          echo Download release
