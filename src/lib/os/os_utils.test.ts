@@ -91,24 +91,6 @@ Deno.test('OsUtils should know if we are running in Linux', () => {
 })
 
 if (OsUtils.isWindows()) {
-    Deno.test('Deno.symlinkSync throws unnecessary permission error. Use it in OsUtils.createShortcut when fixed.', () => {
-        const tempDir = 'c:\\temp\\'
-        fs.ensureDirSync(tempDir)
-        const filePath = 'c:\\temp\\arquivo.txt'
-        fs.ensureFileSync(filePath)
-        const linkPath = 'c:\\temp\\arquivo.txt.lnk';
-        OsUtils.removeFile(linkPath)
-
-        assertThrows(
-            () => {
-                fs.ensureSymlinkSync(filePath, linkPath)
-            },
-            Error,
-            // '(os error 5)',
-            '(os error 1314)',
-        )
-    })
-
     Deno.test('OsUtils.createShortcut should create a shortcut/symlink to a file', async () => {
         // Given that I have an empty dir
         const tempDir = TestHelper.getNewTempDir()
@@ -226,6 +208,7 @@ if (OsUtils.isWindows()) {
         name: 'OsUtils.getUserPath should get path',
         async fn() {
             const path = await OsUtils.getUserPath()
+            console.debug(`userPath: ${path}`)
             assertGreaterThan(path?.length, 5)
         }
     })
