@@ -20,8 +20,10 @@ jobs:
 
           # Install
           iwr $scriptUrl | iex
+          $v=[Environment]::GetEnvironmentVariable("PATH", "User"); Write-Output "UserPath = $v"
 
       - name: Run levain
         shell: cmd
         run: |
+          echo UserPath = $PATH
           call levain
