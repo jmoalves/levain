@@ -15,8 +15,8 @@ jobs:
           # $v="0.80.7"
 
           # Install script
-          $scriptUrl = https://raw.githubusercontent.com/jmoalves/levain/master/install/install.ps1
-          # $scriptUrl = https://github.com/jmoalves/levain/releases/latest/download/install.ps1
+          $scriptUrl = "https://raw.githubusercontent.com/jmoalves/levain/master/install/install.ps1"
+          # $scriptUrl = "https://github.com/jmoalves/levain/releases/latest/download/install.ps1"
 
           # Install
           iwr $scriptUrl | iex
