@@ -68,6 +68,10 @@ pushd %levainRoot%
 echo.
 
 :: Test!
+if exist coverage (
+    echo Removing previous coverage info
+    rmdir /q/s coverage
+)
 
 set coverOps=--coverage
 :: If we got a specific test to run, skip coverage
@@ -78,19 +82,18 @@ echo Running tests
 %myDenoExe% test --allow-all %coverOps% %allParameters%
 @echo off
 
-if "a%coverOps%" == "a" goto skipCoverage
+if not "a%coverOps%" == "a" (
+    echo.
+    echo Coverage report - TEXT
+    %myDenoExe% coverage
 
-echo.
-echo Coverage report - TEXT
-%myDenoExe% coverage
+    echo Coverage report - LCOV
+    %myDenoExe% coverage --lcov --output=coverage/levain.lcov
 
-echo Coverage report - LCOV
-%myDenoExe% coverage --lcov --output=coverage/levain.lcov
-
-echo Coverage report - HTML
-%myDenoExe% coverage --html
-
-:skipCoverage
+    echo Coverage report - HTML
+    %myDenoExe% coverage --html
+)
 
 popd
+
 ENDLOCAL
