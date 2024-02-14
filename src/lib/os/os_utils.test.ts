@@ -208,8 +208,7 @@ if (OsUtils.isWindows()) {
         name: 'OsUtils.getUserPath should get path',
         async fn() {
             const path = await OsUtils.getUserPath()
-            console.debug(`userPath: ${path}`)
-            assertGreaterThan(path?.length, 5)
+            assertGreaterThan(path?.length, 3) // userPath for github runner is pretty small
         }
     })
 
