@@ -23,7 +23,7 @@ jobs:
 
           call %GITHUB_WORKSPACE%\githubScripts\get-extraBin.cmd
 
-          call %GITHUB_WORKSPACE%\scripts\test.cmd --denoDir %DENO_ROOT_PATH% --coverage -- --parallel
+          call %GITHUB_WORKSPACE%\scripts\test.cmd --denoDir %DENO_ROOT_PATH% --coverage --checkSources -- --parallel
         env:
           DENO_ROOT_PATH: ${{ runner.temp }}\deno
           GITHUB_WORKSPACE: ${{ github.workspace }}
