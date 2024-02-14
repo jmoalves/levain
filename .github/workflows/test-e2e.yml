@@ -12,4 +12,9 @@ jobs:
       - name: Download latest release
         run: |
           iwr https://github.com/jmoalves/levain/releases/latest/download/install.ps1 | iex
+
+      - name: Run levain
+        shell: cmd
+        run: |
           call levain
+  
