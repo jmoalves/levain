@@ -1,4 +1,4 @@
-name: Run tests
+name: Unit tests
 
 on:
   workflow_dispatch:
@@ -8,7 +8,7 @@ on:
   pull_request:
 
 jobs:
-  test-win:
+  unit-win:
     runs-on: windows-latest
 
     steps:
@@ -30,7 +30,7 @@ jobs:
           DENO_ROOT_PATH: ${{ runner.temp }}\deno
           GITHUB_WORKSPACE: ${{ github.workspace }}
 
-  test-nix:
+  unit-nix:
     strategy:
       matrix:
         platform: [ubuntu-latest, macos-latest]
