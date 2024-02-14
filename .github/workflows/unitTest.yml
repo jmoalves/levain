@@ -28,25 +28,25 @@ jobs:
           DENO_ROOT_PATH: ${{ runner.temp }}\deno
           GITHUB_WORKSPACE: ${{ github.workspace }}
 
-  unit-nix:
-    strategy:
-      matrix:
-        platform: [ubuntu-latest, macos-latest]
+  # unit-nix:
+  #   strategy:
+  #     matrix:
+  #       platform: [ubuntu-latest, macos-latest]
 
-    runs-on: ${{ matrix.platform }}
-    timeout-minutes: 10
+  #   runs-on: ${{ matrix.platform }}
+  #   timeout-minutes: 10
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
 
-      - name: Run tests
-        run: |
-          denoTemp=$( mktemp -d )
+  #     - name: Run tests
+  #       run: |
+  #         denoTemp=$( mktemp -d )
 
-          bash $GITHUB_WORKSPACE/githubScripts/get-deno.sh $denoTemp Linux
-          export PATH=${denoTemp}:$PATH
+  #         bash $GITHUB_WORKSPACE/githubScripts/get-deno.sh $denoTemp Linux
+  #         export PATH=${denoTemp}:$PATH
           
-          cd $GITHUB_WORKSPACE
-          echo bash ./scripts/test.sh
-          rm -rf ${denoTemp}
+  #         cd $GITHUB_WORKSPACE
+  #         echo bash ./scripts/test.sh
+  #         rm -rf ${denoTemp}
