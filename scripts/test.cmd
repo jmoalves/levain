@@ -83,9 +83,9 @@ echo Running tests
 @echo off
 
 if not "a%coverOps%" == "a" (
-    echo.
-    echo Coverage report - TEXT
-    %myDenoExe% coverage
+    @REM echo.
+    @REM echo Coverage report - TEXT
+    @REM %myDenoExe% coverage
 
     @REM echo Coverage report - LCOV
     @REM %myDenoExe% coverage --lcov --output=coverage/levain.lcov
