@@ -68,7 +68,7 @@ if (Test-Path $TempLevainZip) {
 }
 
 # Add levain to PATH
-$LevainDir=[Environment]::GetEnvironmentVariable("HOME", "User") + "\" + "levain"
+$LevainDir=$HOME + "\" + "levain"
 Write-Output "Levain at $LevainDir"
 if (Test-Path $LevainDir) {
   $Path = $LevainDir + "levain"
