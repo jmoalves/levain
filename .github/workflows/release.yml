@@ -159,9 +159,9 @@ jobs:
           LEVAIN_RELEASE_BIN_PATH: ${{ runner.temp }}/bin/levain-${{ env.RELEASE_VERSION }}
 
 
-      # FOR TEST
-      - name: FAIL
-        run: exit 1
+      # # FOR TEST
+      # - name: FAIL
+      #   run: exit 1
 
 
       ##############################################################
