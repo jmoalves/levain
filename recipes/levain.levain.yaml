@@ -1,7 +1,7 @@
 version: 0.86.9-SNAPSHOT
 
 cmd.install:
-  - copy --verbose ../../levain.cmd ../../levain.sh ../build ${baseDir}
+  - copy --verbose ../../levain.cmd ../build ${baseDir}
   - addPath --permanent ${baseDir}/bin
   - addPath --permanent ${baseDir}
   # Tab completion
