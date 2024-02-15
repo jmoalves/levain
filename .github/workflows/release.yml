@@ -153,7 +153,7 @@ jobs:
 
       - name: Levain package binaries
         run: |
-          bash $GITHUB_WORKSPACE/githubScripts/levain-package-binaries.sh $LEVAIN_RELEASE_BIN_PATH $RUNNER_TEMP/levain-extra-bin-windows-x86_64.zip
+          bash $GITHUB_WORKSPACE/githubScripts/levain-package-binaries.sh $LEVAIN_RELEASE_BIN_PATH/build $RUNNER_TEMP/levain-extra-bin-windows-x86_64.zip
         env:
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
           LEVAIN_RELEASE_BIN_PATH: ${{ runner.temp }}/bin/levain-${{ env.RELEASE_VERSION }}
