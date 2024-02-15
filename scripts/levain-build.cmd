@@ -82,6 +82,7 @@ if exist %levainOutputDir% (
 
 :: Copy auxiliary files
 xcopy /q/s %levainRoot%\levain.cmd %levainOutputDir%\
+xcopy /q/s %levainRoot%\LICENSE %levainOutputDir%\
 xcopy /q/s %levainRoot%\recipes\ %levainOutputDir%\build\recipes\
 xcopy /q/s %levainRoot%\extra-bin\ %levainOutputDir%\build\extra-bin\
 
