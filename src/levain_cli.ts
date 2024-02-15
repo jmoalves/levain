@@ -86,7 +86,11 @@ export default class LevainCli {
                 log.info("");
                 log.info(t("levain_cli.levainUpgrade"));
                 log.info("");
-                prompt(t("enterFinish"));
+                
+                if (Deno.stdout.isTerminal()) {
+                    prompt(t("enterFinish"));
+                }
+                
                 log.info("");
                 log.info(t("levain_cli.bye"));
                 Deno.exit(0)
