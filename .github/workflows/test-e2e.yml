@@ -28,7 +28,18 @@ jobs:
           # Workaround - ADD Levain to GitHub PATH
           Add-Content $env:GITHUB_PATH "$HOME\levain\levain"
 
-      - name: Run Levain
+      - name: Levian list
         shell: cmd
         run: |
           levain list
+
+      - name: Levian install
+        shell: cmd
+        run: |
+          levain install wlp-runtime-22.0.0.6 jdk-17-ibm git maven-3.8 deno umlet
+
+      - name: Levian update
+        shell: cmd
+        run: |
+          levain update
+  
