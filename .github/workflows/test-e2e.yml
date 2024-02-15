@@ -2,6 +2,10 @@ name: Test - e2e
 
 on:
   workflow_dispatch:
+    inputs:
+      levainVersion:
+        description: 'Levain version (optional - Default=latest)'
+        required: false
 
 jobs:
   e2e-win:
@@ -12,7 +16,7 @@ jobs:
       - name: Install Levain
         run: |
           # Which levain version?
-          # $v="0.80.7"
+          $v = "${{ github.event.inputs.levainVersion }}"
 
           # Install script
           $scriptUrl = "https://raw.githubusercontent.com/jmoalves/levain/master/install/install.ps1"
