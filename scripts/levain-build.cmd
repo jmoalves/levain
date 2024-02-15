@@ -76,6 +76,8 @@ if exist %levainOutputDir% (
     
     @REM --is_compiled_binary - Workaround for Levain compile vs uncompiled
     @REM https://stackoverflow.com/questions/76647896/determine-if-running-uncompiled-ts-script-or-compiled-deno-executable
+    @REM SEE ALSO: levain-build.cmd
+    @REM SEE ALSO: levain-build.sh
     @REM SEE ALSO: levain.ts - get levainRootFile()
 
 :: Copy auxiliary files

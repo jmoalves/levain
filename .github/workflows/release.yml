@@ -107,22 +107,15 @@ jobs:
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
           LEVAIN_RELEASE_SRC_PATH: ${{ runner.temp }}/src/levain-${{ env.RELEASE_VERSION }}
 
-      - name: Levain compile
+      - name: Levain build
         run: |
-          bash $GITHUB_WORKSPACE/githubScripts/levain-compile.sh $DENO_ROOT_PATH/linux/deno $LEVAIN_RELEASE_SRC_PATH $LEVAIN_RELEASE_BIN_PATH 
+          bash $GITHUB_WORKSPACE/githubScripts/levain-build.sh $DENO_ROOT_PATH/linux/deno $LEVAIN_RELEASE_SRC_PATH $LEVAIN_RELEASE_BIN_PATH 
         env:
           DENO_ROOT_PATH: ${{ runner.temp }}/deno
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
           LEVAIN_RELEASE_SRC_PATH: ${{ runner.temp }}/src/levain-${{ env.RELEASE_VERSION }}
           LEVAIN_RELEASE_BIN_PATH: ${{ runner.temp }}/bin/levain-${{ env.RELEASE_VERSION }}
 
-      - name: Copy config
-        run: |
-          bash $GITHUB_WORKSPACE/githubScripts/copy-config.sh $LEVAIN_RELEASE_SRC_PATH $LEVAIN_RELEASE_BIN_PATH
-        env:
-          LEVAIN_RELEASE_SRC_PATH: ${{ runner.temp }}/src/levain-${{ env.RELEASE_VERSION }}
-          LEVAIN_RELEASE_BIN_PATH: ${{ runner.temp }}/bin/levain-${{ env.RELEASE_VERSION }}
-  
       - name: Levain embedded binaries
         run: |
           bash $GITHUB_WORKSPACE/githubScripts/levain-embedded-binaries.sh $LEVAIN_RELEASE_BIN_PATH
@@ -166,8 +159,9 @@ jobs:
           LEVAIN_RELEASE_BIN_PATH: ${{ runner.temp }}/bin/levain-${{ env.RELEASE_VERSION }}
 
 
-      # - name: FAIL
-      #   run: exit 1
+      # FOR TEST
+      - name: FAIL
+        run: exit 1
 
 
       ##############################################################
