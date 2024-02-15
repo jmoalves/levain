@@ -14,7 +14,12 @@ set DENO_DIR=%levainRoot%\bin
     --allow-read --allow-write --allow-env --allow-net --allow-run ^
     --target x86_64-pc-windows-msvc ^
     --output %levainRoot%\bin\levain.exe ^
-    %levainRoot%\levain.ts
+    %levainRoot%\levain.ts ^
+    --is_compiled_binary
+    
+    @REM --is_compiled_binary - Workaround for Levain compile vs uncompiled
+    @REM https://stackoverflow.com/questions/76647896/determine-if-running-uncompiled-ts-script-or-compiled-deno-executable
+    @REM SEE ALSO: levain.ts - get levainRootFile()
 
     @REM --include recipes ^
 

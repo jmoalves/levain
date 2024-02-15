@@ -11,12 +11,13 @@ import LevainCli from "./src/levain_cli.ts";
 
 export default class Levain {
     static get levainRootFile(): string {
-        // log.info(`Deno execPath...: ${Deno.execPath()}`)
-        // log.info(`Deno mainModule.: ${Deno.mainModule}`)
-        // log.info(`import.meta.url.: ${import.meta.url}`)
-        // TODO: Check if import.meta.url works with deno compile 
-        let mainModule = import.meta.url
-        return path.fromFileUrl(mainModule)
+        //https://stackoverflow.com/questions/76647896/determine-if-running-uncompiled-ts-script-or-compiled-deno-executable
+        // SEE ALSO: scripts\levain-compile.cmd
+
+        const isCompiled = Deno.args.includes("--is_compiled_binary");
+        return isCompiled
+            ? Deno.execPath()
+            : path.fromFileUrl(import.meta.url)
     }
 
     static get levainRootDir(): string {
@@ -37,7 +38,8 @@ export default class Levain {
                 stringOnce: [
                     "email-domain",
                     "levainCache",
-                    "shellPath"
+                    "shellPath",
+                    "is_compiled_binary"
                 ],
                 stringMany: [
                     "levainHome",
@@ -57,8 +59,8 @@ export default class Levain {
                     "levain-upgrade"
                 ]
             });
-
-            await this.prepareLogs(this.myArgs);
+            
+            await this.prepareLogs(this.myArgs)
 
             log.info("");
             log.info(`levain ${cmdArgs.join(' ')}`)
@@ -128,5 +130,5 @@ export default class Levain {
 
 // https://deno.land/manual/tools/script_installer
 if (import.meta.main) {
-    await new Levain().runLevinWithLog(Deno.args);
+    await new Levain().runLevinWithLog(Deno.args.filter(it => it != '--is_compiled_binary'));
 }
