@@ -50,10 +50,12 @@ levainCompile() {
 ##
 # levainCompile -t x86_64-unknown-linux-gnu -o ${targetDir}/levain
 # levainCompile -t x86_64-apple-darwin -o ${targetDir}/levain-mcos
+rm -rf ${targetDir}
 mkdir -p ${targetDir}
+mkdir -p ${targetDir}/build
 
-levainCompile -t x86_64-pc-windows-msvc -o ${targetDir}/levain.exe
+levainCompile -t x86_64-pc-windows-msvc -o ${targetDir}/build/levain.exe
 cp -rv ${levainSrcDir}/levain.cmd ${targetDir}/
 cp -rv ${levainSrcDir}/LICENSE ${targetDir}/
-cp -rv ${levainSrcDir}/recipes/ ${targetDir}/build/recipes/
-cp -rv ${levainSrcDir}/extra-bin/ ${targetDir}/build/extra-bin/
+cp -rv ${levainSrcDir}/recipes/ ${targetDir}/recipes/
+cp -rv ${levainSrcDir}/extra-bin/ ${targetDir}/extra-bin/
