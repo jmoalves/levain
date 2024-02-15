@@ -1,4 +1,4 @@
-version: 0.86.12
+version: 0.86.13-SNAPSHOT
 
 cmd.install:
   - copy --verbose ../../levain.cmd ../../build ${baseDir}
