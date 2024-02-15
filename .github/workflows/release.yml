@@ -118,7 +118,7 @@ jobs:
 
       - name: Levain embedded binaries
         run: |
-          bash $GITHUB_WORKSPACE/githubScripts/levain-embedded-binaries.sh $LEVAIN_RELEASE_BIN_PATH
+          bash $GITHUB_WORKSPACE/githubScripts/levain-embedded-binaries.sh $LEVAIN_RELEASE_BIN_PATH/build
         env:
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
           LEVAIN_RELEASE_BIN_PATH: ${{ runner.temp }}/bin/levain-${{ env.RELEASE_VERSION }}
