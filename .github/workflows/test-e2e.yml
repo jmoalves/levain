@@ -20,19 +20,11 @@ jobs:
 
           # Install
           iwr $scriptUrl | iex
-          $v=[Environment]::GetEnvironmentVariable("PATH", "User"); Write-Output "UserPath = $v"
+          
+          # Workaround - ADD Levain to GitHub PATH
+          Add-Content $env:GITHUB_PATH "$HOME\levain\levain"
 
       - name: Run Levain
         shell: cmd
         run: |
-          echo.
-          echo === User Path -- PowerShell
-          powershell -Command $v=[Environment]::GetEnvironmentVariable(\"PATH\", \"User\"); Write-Output $v
-
-          echo.
-          echo === PATH
-          path
-
-          echo.
-          echo === Levain
           call levain
