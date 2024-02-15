@@ -9,7 +9,10 @@
 $ErrorActionPreference = 'Stop'
 
 if ($v) {
+  Write-Output "=== Levain version - $v"
   $Version = "${v}"
+} else {
+  Write-Output "=== Levain version - LATEST"
 }
 
 # GitHub requires TLS 1.2
