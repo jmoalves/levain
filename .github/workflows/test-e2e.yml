@@ -31,4 +31,4 @@ jobs:
       - name: Run Levain
         shell: cmd
         run: |
-          call levain
+          levain list
