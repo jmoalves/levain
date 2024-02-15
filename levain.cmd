@@ -13,9 +13,10 @@ if "a%ERRORLEVEL%" == "a42" (
     echo After Levain upgrade, please re-execute your previous command.
     echo %0 %*
     echo.
+    exit /b 0
 )
 
-exit /b 0
+exit /b %ERRORLEVEL%
 
 
 :fnRun
