@@ -17,3 +17,4 @@ deno.lock
 testdata/template/result.txt
 levain
 levain.exe
+embed/

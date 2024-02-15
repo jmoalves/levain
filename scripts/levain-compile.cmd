@@ -13,7 +13,7 @@ set DENO_DIR=%levainRoot%\bin
     --reload ^
     --allow-read --allow-write --allow-env --allow-net --allow-run ^
     --target x86_64-pc-windows-msvc ^
-    --output %levainRoot%\bin\levain.exe ^
+    --output %levainRoot%\levain.exe ^
     %levainRoot%\levain.ts ^
     --is_compiled_binary
     
