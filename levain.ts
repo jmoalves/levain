@@ -93,9 +93,11 @@ export default class Levain {
                 log.debug(t("levain.executionSuccess"))
             }
 
-            if (this.error || (this.myArgs && this.myArgs["wait-after-end"])) {
-                console.log("");
-                prompt(t("enterFinish"));
+            if (Deno.stdout.isTerminal()) {
+                if (this.error || (this.myArgs && this.myArgs["wait-after-end"])) {
+                    console.log("");
+                    prompt(t("enterFinish"));
+                }
             }
         }
 
