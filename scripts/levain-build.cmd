@@ -78,6 +78,7 @@ if exist %levainRoot%\deno.lock del /q %levainRoot%\deno.lock
     @REM SEE ALSO: levain-build.cmd
     @REM SEE ALSO: levain-build.sh
     @REM SEE ALSO: levain.ts - get levainRootFile()
+if errorlevel 1 exit /b 1
 
 :: Copy auxiliary files
 xcopy /q/s %levainRoot%\levain.cmd %levainOutputDir%\
