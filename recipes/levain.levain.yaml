@@ -1,5 +1,7 @@
 version: 0.86.16-SNAPSHOT
 
+recipesDir: ${baseDir}/build/recipes
+
 cmd.install:
   - copy --verbose ../../levain.cmd ../../build ${baseDir}
   - addPath --permanent ${baseDir}/bin

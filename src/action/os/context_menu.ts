@@ -56,7 +56,7 @@ export default class ContextMenu implements Action {
     private async templateRegistry(pkg: Package, args: any) {
         const tempFilename = Deno.makeTempFileSync({prefix: 'levain-temp-'});
         log.debug(`- tempReg - ${tempFilename}`);
-        let action = `template --replace=/@@shellID@@/g --with="${args.id}" --replace=/@@shellName@@/g --with="${args.name}" --replace=/@@shellCmd@@/g --with="${args.cmd}" --doubleBackslash \${pkg.levain.baseDir}/recipes/levain-shell.reg ${tempFilename}`;
+        let action = `template --replace=/@@shellID@@/g --with="${args.id}" --replace=/@@shellName@@/g --with="${args.name}" --replace=/@@shellCmd@@/g --with="${args.cmd}" --doubleBackslash \${pkg.levain.recipesDir}/levain-shell.reg ${tempFilename}`;
         let loader = new Loader(this.config);
         await loader.action(pkg, action);
 
