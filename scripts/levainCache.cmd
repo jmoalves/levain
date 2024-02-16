@@ -13,6 +13,8 @@ echo.
 set DENO_DIR=%levainRoot%\bin
 %levainRoot%\bin\deno.exe -V info
 
+if exist %levainRoot%\deno.lock del /q %levainRoot%\deno.lock
+
 echo === Deno cache - sources
 %levainRoot%\bin\deno.exe cache --reload --check %levainRoot%\levain.ts
 if errorlevel 1 exit /b %ERRORLEVEL%

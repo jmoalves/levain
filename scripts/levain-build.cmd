@@ -61,9 +61,8 @@ if "a%levainOutputDir%" == "a" (
 echo.
 echo Building Levain at %levainOutputDir%
 
-if exist %levainOutputDir% (
-    rmdir /q/s %levainOutputDir%
-)
+if exist %levainOutputDir% rmdir /q/s %levainOutputDir%
+if exist %levainRoot%\deno.lock del /q %levainRoot%\deno.lock
 
 :: COMPILE Levain
 %levainRoot%\bin\deno.exe compile ^

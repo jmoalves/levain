@@ -4,6 +4,7 @@ SETLOCAL EnableDelayedExpansion
 
 set myPath=%~dp0
 set myPath=%mypath:~0,-1%
+set levainRoot=%myPath%\..
 
 set myDeno=%1
 
@@ -33,12 +34,16 @@ mkdir %tempPath%
 
 set DENO_DIR=%tempPath%
 
+pushd %levainRoot%
+if exist deno.lock del /q deno.lock
+
 echo.
 echo Levain sources
 %myDenoExe% check --reload levain.ts
 if errorlevel 1 (
     echo Levain sources - ERROR
     rmdir /q/s %tempPath%
+    popd
     exit 1
 )
 echo Levain sources - OK
@@ -49,13 +54,14 @@ echo Levain TEST sources
 if errorlevel 1 (
     echo Levain TEST sources - ERROR
     rmdir /q/s %tempPath%
+    popd
     exit 1
 )
 echo Levain TEST sources - OK
 
-::FIXME: Run Tests!
-
 rmdir /q/s %tempPath%
+
+popd
 
 echo.
 echo === CHECK - OK
