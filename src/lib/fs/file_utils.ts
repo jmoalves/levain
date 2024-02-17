@@ -200,6 +200,9 @@ export class FileUtils {
                     log.debug(`Could not preserve timestamps - ${dstFile}`)
                 }
 
+                // Workaround - let console flush after progress bar
+                await new Promise(r => setTimeout(r, 0))
+
                 return;
             } catch (error) {
                 log.debug("")
