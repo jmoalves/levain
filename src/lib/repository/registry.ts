@@ -35,6 +35,7 @@ export default class Registry extends FileSystemRepository {
         const possibleFiles = [
             path.join(this.rootDir, `${name}.levain.yaml`),
             path.join(this.rootDir, `${name}.levain.yml`),
+            path.join(this.rootDir, `${name}.levain`),
         ]
         possibleFiles.forEach(it => {
             log.debug(`Trying to remove ${it}`)

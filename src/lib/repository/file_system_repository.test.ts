@@ -81,7 +81,7 @@ Deno.test('FileSystemRepository should list .yml and .yaml packages, and include
     const packages = repo.listPackages()
 
     const packageNames = packages.map(pkg => pkg.name)
-    assertArrayEqualsInAnyOrder(packageNames, ['amazingYml', 'awesomeYaml', 'insideSubfolder'])
+    assertArrayEqualsInAnyOrder(packageNames, ['amazingYml', 'awesomeYaml', 'beatifulLevain', 'insideSubfolder'])
 })
 Deno.test('FileSystemRepository should optionally list only root', async () => {
     const repo = await getInitedRepo(undefined, true)
@@ -89,7 +89,7 @@ Deno.test('FileSystemRepository should optionally list only root', async () => {
     const packages = repo.listPackages()
 
     const packageNames = packages.map(pkg => pkg.name)
-    assertArrayEqualsInAnyOrder(packageNames, ['amazingYml', 'awesomeYaml'])
+    assertArrayEqualsInAnyOrder(packageNames, ['amazingYml', 'awesomeYaml', 'beatifulLevain'])
 })
 
 Deno.test('FileSystemRepository should ignore node_modules', async () => {

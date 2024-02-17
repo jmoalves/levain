@@ -204,7 +204,7 @@ export default class FileSystemRepository extends AbstractRepository {
     }
 
     private isPackageFile(yamlFile: string): boolean {
-        return yamlFile.match(/\.levain\.ya?ml$/) != null
+        return yamlFile.match(/\.levain(\.ya?ml)?$/) != null
     }
 
     private async readPackage(yamlFile: string): Promise<Package | undefined> {
@@ -223,7 +223,7 @@ export default class FileSystemRepository extends AbstractRepository {
             return undefined;
         }
 
-        const packageName = yamlFile.replace(/.*[\/|\\]/g, '').replace(/\.levain\.ya?ml/, '')
+        const packageName = yamlFile.replace(/.*[\/|\\]/g, '').replace(/\.levain(\.ya?ml)?/, '')
         log.debug(`readPackage ${packageName} ${yamlFile}`)
 
         const yamlStr: string = Deno.readTextFileSync(yamlFile)
