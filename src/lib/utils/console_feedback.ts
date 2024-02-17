@@ -1,8 +1,9 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 
 export default class ConsoleFeedback {
+    public static readonly MIN_INTERVAL_MS = 50
+
     private static readonly text = ["-", "\\", "|", "/"]
-    private static readonly MIN_INC_MS = 500
 
     private idx = 0
     private lastInc = new Date().getTime()
@@ -36,7 +37,7 @@ export default class ConsoleFeedback {
 
     private inc() {
         let now = new Date().getTime()
-        if (now < (this.lastInc + ConsoleFeedback.MIN_INC_MS)) {
+        if (now < (this.lastInc + ConsoleFeedback.MIN_INTERVAL_MS)) {
             return
         }
 

@@ -11,6 +11,7 @@ import FileWriter from '../io/file_writer.ts';
 import ProgressReader from '../io/progress_reader.ts';
 import ReaderFactory from "../io/reader_factory.ts";
 import StringUtils from "../utils/string_utils.ts";
+import ConsoleFeedback from "../utils/console_feedback.ts";
 
 export class FileUtils {
     static getModificationTimestamp(filePath: string): Date | undefined {
@@ -174,8 +175,8 @@ export class FileUtils {
                             total,
                             complete: "=",
                             incomplete: "-",
-                            display: ":title :percent :bar :eta (:time)",
-                            interval: Deno.stdout.isTerminal() ? 500 : 30*1000 // ms
+                            display: ":title :percent :bar ETA :eta (:time)",
+                            interval: Deno.stdout.isTerminal() ? ConsoleFeedback.MIN_INTERVAL_MS : 30*1000 // ms
                         })
 
                     dst.size = r.size;
