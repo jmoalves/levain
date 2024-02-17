@@ -169,13 +169,14 @@ export class FileUtils {
                 let total = r.size;
 
                 if (total) {
-                    let pb = Deno.stdout.isTerminal() 
-                        ? new ProgressBar({
+                    let pb = new ProgressBar({
                             title,
                             total,
                             complete: "=",
-                            incomplete: "-"})
-                        : undefined
+                            incomplete: "-",
+                            display: ":title :percent :bar :eta (:time)",
+                            interval: Deno.stdout.isTerminal() ? 500 : 30*1000 // ms
+                        })
 
                     dst.size = r.size;
                     dst.progressBar = pb;
