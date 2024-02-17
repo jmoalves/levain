@@ -4,24 +4,30 @@
 
 # Examples:
 # iwr https://github.com/jmoalves/levain/releases/latest/download/install.ps1 | iex
-# $v="0.80.7";iwr https://github.com/jmoalves/levain/releases/latest/download/install.ps1 | iex
+# $levainVersion="0.80.7";iwr https://github.com/jmoalves/levain/releases/latest/download/install.ps1 | iex
+# $levainHome="C:\dev-env";iwr https://github.com/jmoalves/levain/releases/latest/download/install.ps1 | iex
 
 $ErrorActionPreference = 'Stop'
 
-if ($v) {
-  Write-Output "=== Levain version - $v"
-  $Version = "${v}"
+### Parameters
+if ($levainVersion) {
+  Write-Output "=== Levain version - $levainVersion"
 } else {
   Write-Output "=== Levain version - LATEST"
 }
+
+if (! $levainHome) {
+  $levainHome = $HOME\levain
+}
+Write-Output "=== Levain HOME - $levainHome"
 
 # GitHub requires TLS 1.2
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 $TempLevain = "$env:TEMP\levain"
 
-$LevainUri = if ($Version) {
-  "https://github.com/jmoalves/levain/releases/download/v${Version}/levain-windows-x86_64.zip"
+$LevainUri = if ($levainVersion) {
+  "https://github.com/jmoalves/levain/releases/download/v${$levainVersion}/levain-windows-x86_64.zip"
 } else {
   "https://github.com/jmoalves/levain/releases/latest/download/levain-windows-x86_64.zip"
 }
@@ -56,7 +62,7 @@ if (Get-Command Expand-Archive -ErrorAction SilentlyContinue) {
 
 Write-Output ""
 Write-Output ""
-& $TempLevainDir\levain.cmd --addRepo https://github.com/jmoalves/levain-pkgs.git install levain
+& $TempLevainDir\levain.cmd --addRepo https://github.com/jmoalves/levain-pkgs.git --levainHome "$levainHome" install levain
 
 if (Test-Path $TempLevainDir) {
   Write-Output ""
