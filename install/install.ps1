@@ -10,30 +10,30 @@
 $ErrorActionPreference = 'Stop'
 
 ### Parameters
-if ($levainVersion) {
-  Write-Output "=== Levain version - $levainVersion"
-} else {
-  Write-Output "=== Levain version - LATEST"
-}
+# $levainHome - Optional
+# $levainVersion - Optional
+#
 
 if (! $levainHome) {
-  $levainHome = $HOME\levain
+  $levainHome = "$HOME\levain"
 }
-Write-Output "=== Levain HOME - $levainHome"
+
+#
+###
 
 # GitHub requires TLS 1.2
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-$TempLevain = "$env:TEMP\levain"
+$TempLevain = Join-Path $Env:Temp "levain-install-$(New-Guid)"
 
 $LevainUri = if ($levainVersion) {
-  "https://github.com/jmoalves/levain/releases/download/v${$levainVersion}/levain-windows-x86_64.zip"
+  "https://github.com/jmoalves/levain/releases/download/v${levainVersion}/levain-windows-x86_64.zip"
 } else {
   "https://github.com/jmoalves/levain/releases/latest/download/levain-windows-x86_64.zip"
 }
 
 $TempLevainZip = "$TempLevain\levain-windows-x86_64.zip"
-$TempLevainDir = "$TempLevain\levain-install"
+$TempLevainDir = "$TempLevain\levain"
 
 if (!(Test-Path $TempLevain)) {
   New-Item $TempLevain -ItemType Directory | Out-Null
@@ -43,6 +43,17 @@ if (Test-Path $TempLevainZip) {
   Remove-Item $TempLevainZip -Force
 }
 
+Clear-Host
+
+if ($levainVersion) {
+  Write-Output "=== Installing Levain $levainVersion at $levainHome"
+} else {
+  Write-Output "=== Installing latest Levain release at $levainHome"
+}
+
+Write-Output ""
+Write-Output ""
+Write-Output ""
 Write-Output ""
 Write-Output ""
 Write-Output "Downloading Levain from $LevainUri"
@@ -64,14 +75,9 @@ Write-Output ""
 Write-Output ""
 & $TempLevainDir\levain.cmd --addRepo https://github.com/jmoalves/levain-pkgs.git --levainHome "$levainHome" install levain
 
-if (Test-Path $TempLevainDir) {
+if (Test-Path $TempLevain) {
   Write-Output ""
   Write-Output ""
-  Write-Output "Removing $TempLevainDir"
+  Write-Output "Removing $TempLevain"
   Remove-Item $TempLevainDir -Recurse -Force
-}
-
-if (Test-Path $TempLevainZip) {
-  Write-Output "Removing $TempLevainZip"
-  Remove-Item $TempLevainZip -Force
 }

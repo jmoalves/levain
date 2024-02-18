@@ -16,7 +16,7 @@ jobs:
       - name: Install Levain
         run: |
           # Which levain version?
-          $v = "${{ github.event.inputs.levainVersion }}"
+          $levainVersion = "${{ github.event.inputs.levainVersion }}"
 
           # Install script
           $scriptUrl = "https://raw.githubusercontent.com/jmoalves/levain/master/install/install.ps1"

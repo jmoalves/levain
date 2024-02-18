@@ -185,7 +185,7 @@ export default class CleanCommand implements Command {
                     return false
                 }
 
-                if (dirEntry.name.match(`^levain-install$`)) {
+                if (dirEntry.name.match(`^levain-install-`)) {
                     // current version, using install.ps1
                     return false
                 }
