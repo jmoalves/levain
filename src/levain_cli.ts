@@ -95,7 +95,7 @@ export default class LevainCli {
                 log.info(t("levain_cli.bye"));
                 Deno.exit(0)
             } else {
-                if (cmd != "clean" && Math.random() > 0.75) {
+                if (cmd != "clean" && Math.random() > 0.10 /*0.75*/) {
                     await loader.command("clean", [])
                 }
 
