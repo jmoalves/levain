@@ -166,6 +166,11 @@ export default class CleanCommand implements Command {
         }
 
         let size = this.cleanDir(tempDir, (dirEntry:any) => {
+            if (dirEntry.name.match(`^levain-install-`)) {
+                // using install.ps1
+                return false
+            }
+
             if (dirEntry.name.match("^levain-temp-")) {
                 return true
             }
@@ -179,14 +184,11 @@ export default class CleanCommand implements Command {
 
         const levainReleasesDir = path.resolve(tempDir, 'levain')
         if (existsSync(levainReleasesDir)) {
+            // levainBootstrap.com
+
             size += this.cleanDir(levainReleasesDir, (dirEntry:any) => {
                 if (dirEntry.name.match(`^levain-${LevainVersion.levainVersion.versionNumber}$`)) {
                     // current version
-                    return false
-                }
-
-                if (dirEntry.name.match(`^levain-install-`)) {
-                    // current version, using install.ps1
                     return false
                 }
 
