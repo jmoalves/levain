@@ -23,7 +23,7 @@ jobs:
           # $scriptUrl = "https://github.com/jmoalves/levain/releases/latest/download/install.ps1"
 
           # Install
-          Invoke-WebRequest $scriptUrl | Invoke-Expression
+          iwr $scriptUrl | iex
           
           # Workaround - ADD Levain to GitHub PATH
           Add-Content $env:GITHUB_PATH "$HOME\levain\levain"
