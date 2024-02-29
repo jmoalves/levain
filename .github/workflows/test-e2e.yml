@@ -7,6 +7,9 @@ on:
         description: 'Levain version (optional - Default=latest)'
         required: false
 
+  release:
+    types: [published]        
+
   schedule:
     # * is a special character in YAML so you have to quote this string
     - cron:  '0 6 * * SUN'
@@ -17,6 +20,10 @@ jobs:
     timeout-minutes: 30
 
     steps:
+      - name: Echo
+        shell: cmd
+        run: echo REF=%GITHUB_REF%
+
       - name: Install Levain
         run: |
           # Which levain version?
