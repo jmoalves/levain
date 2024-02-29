@@ -12,6 +12,7 @@ $ErrorActionPreference = 'Stop'
 ### Parameters
 # $levainHome - Optional
 # $levainVersion - Optional
+# $levainHeadless - Optional
 #
 
 if (! $levainHome) {
@@ -43,7 +44,9 @@ if (Test-Path $TempLevainZip) {
   Remove-Item $TempLevainZip -Force
 }
 
-Clear-Host
+if (! $levainHeadless) {
+  Clear-Host
+}
 
 if ($levainVersion) {
   Write-Output "=== Installing Levain $levainVersion at $levainHome"

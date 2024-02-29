@@ -19,8 +19,14 @@ jobs:
           $levainVersion = "${{ github.event.inputs.levainVersion }}"
 
           # Install script
-          $scriptUrl = "https://raw.githubusercontent.com/jmoalves/levain/master/install/install.ps1"
-          # $scriptUrl = "https://github.com/jmoalves/levain/releases/latest/download/install.ps1"
+          $scriptUrl = if ($levainVersion) {
+            $scriptUrl = "https://github.com/jmoalves/levain/releases/download/v${levainVersion}/install.ps1"
+          } else {
+            $scriptUrl = "https://github.com/jmoalves/levain/releases/latest/download/install.ps1"
+          }
+
+          # Headless
+          $levainHeadless = "true"
 
           # Install
           iwr $scriptUrl | iex
