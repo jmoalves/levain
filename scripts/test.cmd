@@ -83,9 +83,11 @@ if "%checkSources%" == "true" (
 )
 
 :: Test!
-if exist coverage (
-    echo Removing previous coverage info
-    rmdir /q/s coverage
+if not "a%coverOps%" == "a" (
+    if exist coverage (
+        echo Removing previous coverage info
+        rmdir /q/s coverage
+    )
 )
 
 :: If we got a specific test to run, skip coverage
