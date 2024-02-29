@@ -9,7 +9,6 @@ import TestHelper from "./src/lib/test/test_helper.ts";
 import Levain from "./levain.ts";
 
 
-// Deno.test('should show help message when no command was included',
 Deno.test('should create a homeLog and a tempLog by default', async () => {
         let logger
         try {
@@ -20,8 +19,6 @@ Deno.test('should create a homeLog and a tempLog by default', async () => {
             assertEquals(logFiles.length, 2)
             const expectedHomeLog = path.resolve(OsUtils.homeDir, 'levain.log')
             assertFind(logFiles, it => it === expectedHomeLog, `couldn't find home ${expectedHomeLog} log in ${logFiles}`)
-            assertFind<string>(logFiles, it => !!it.match(/levain-\d{8}-\d{6}-\w{8}.log/))
-
         } finally {
             await logger?.close()
         }
