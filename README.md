@@ -4,6 +4,9 @@ levain
 [![Unit tests](https://github.com/jmoalves/levain/actions/workflows/test-unit.yml/badge.svg)](https://github.com/jmoalves/levain/actions/workflows/test-unit.yml)
 [![Test - e2e](https://github.com/jmoalves/levain/actions/workflows/test-e2e.yml/badge.svg)](https://github.com/jmoalves/levain/actions/workflows/test-e2e.yml)
 
+![Release](https://img.shields.io/github/v/release/jmoalves/levain)
+
+
 Something to help you make your software grow
 
 ## Some use cases
