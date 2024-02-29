@@ -25,6 +25,11 @@ jobs:
             $scriptUrl = "https://github.com/jmoalves/levain/releases/latest/download/install.ps1"
           }
 
+          ###
+          # Workaround until install maturity
+          $scriptUrl = https://raw.githubusercontent.com/jmoalves/levain/master/install/install.ps1
+          ###
+
           # Headless
           $levainHeadless = "true"
 
