@@ -39,6 +39,10 @@ jobs:
           # Workaround - ADD Levain to GitHub PATH
           Add-Content $env:GITHUB_PATH "$HOME\levain\levain"
 
+      - name: Run Microsoft Security DevOps
+        uses: microsoft/security-devops-action@v1
+        id: msdo
+
       - name: Levian list
         shell: cmd
         run: |
