@@ -7,6 +7,7 @@
 # $levainVersion="0.80.7";iwr https://github.com/jmoalves/levain/releases/latest/download/install.ps1 | iex
 # $levainHome="C:\dev-env";iwr https://github.com/jmoalves/levain/releases/latest/download/install.ps1 | iex
 # $levainUrlBase="http://nexus.local.net/nexus/repository/github-proxy/jmoalves/levain";iwr http://nexus.local.net/nexus/repository/github-proxy/jmoalves/levain/releases/latest/download/install.ps1 | iex
+# $levainRepo="https://gitlab.local.net/grp-dev/levain-pkgs.git";iwr https://github.com/jmoalves/levain/releases/latest/download/install.ps1 | iex
 
 $ErrorActionPreference = 'Stop'
 
@@ -15,6 +16,7 @@ $ErrorActionPreference = 'Stop'
 # $levainVersion - Optional
 # $levainHeadless - Optional
 # $levainUrlBase - Optional
+# $levainRepo - Optional
 #
 
 if (! $levainHome) {
@@ -23,6 +25,10 @@ if (! $levainHome) {
 
 if (! $levainUrlBase) {
   $levainUrlBase = "https://github.com/jmoalves/levain"
+}
+
+if (! $levainRepo) {
+  $levainRepo = "https://github.com/jmoalves/levain-pkgs.git"
 }
 
 #
@@ -82,7 +88,7 @@ if (Get-Command Expand-Archive -ErrorAction SilentlyContinue) {
 
 Write-Output ""
 Write-Output ""
-& $TempLevainDir\levain.cmd --addRepo https://github.com/jmoalves/levain-pkgs.git --levainHome "$levainHome" install levain
+& $TempLevainDir\levain.cmd --addRepo "$levainRepo" --levainHome "$levainHome" install levain
 
 if (Test-Path $TempLevain) {
   Write-Output ""
