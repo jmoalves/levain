@@ -78,6 +78,7 @@ if (Test-Path $TempLevainDir) {
   Remove-Item $TempLevainDir -Recurse -Force
 }
 
+Write-Output ""
 Write-Output "Extracting Levain from $TempLevainZip to $TempLevainDir"
 if (Get-Command Expand-Archive -ErrorAction SilentlyContinue) {
   Expand-Archive $TempLevainZip -Destination $TempLevainDir -Force
