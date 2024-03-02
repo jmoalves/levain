@@ -6,6 +6,7 @@
 # iwr https://github.com/jmoalves/levain/releases/latest/download/install.ps1 | iex
 # $levainVersion="0.80.7";iwr https://github.com/jmoalves/levain/releases/latest/download/install.ps1 | iex
 # $levainHome="C:\dev-env";iwr https://github.com/jmoalves/levain/releases/latest/download/install.ps1 | iex
+# $levainUrlBase="http://nexus.local.net/nexus/repository/github-proxy/jmoalves/levain";iwr http://nexus.local.net/nexus/repository/github-proxy/jmoalves/levain/releases/latest/download/install.ps1 | iex
 
 $ErrorActionPreference = 'Stop'
 
@@ -13,10 +14,15 @@ $ErrorActionPreference = 'Stop'
 # $levainHome - Optional
 # $levainVersion - Optional
 # $levainHeadless - Optional
+# $levainUrlBase - Optional
 #
 
 if (! $levainHome) {
   $levainHome = "$HOME\levain"
+}
+
+if (! $levainUrlBase) {
+  $levainUrlBase = "https://github.com/jmoalves/levain"
 }
 
 #
@@ -28,9 +34,9 @@ if (! $levainHome) {
 $TempLevain = Join-Path $Env:Temp "levain-install-$(New-Guid)"
 
 $LevainUri = if ($levainVersion) {
-  "https://github.com/jmoalves/levain/releases/download/v${levainVersion}/levain-windows-x86_64.zip"
+  "${levainUrlBase}/releases/download/v${levainVersion}/levain-windows-x86_64.zip"
 } else {
-  "https://github.com/jmoalves/levain/releases/latest/download/levain-windows-x86_64.zip"
+  "${levainUrlBase}/releases/latest/download/levain-windows-x86_64.zip"
 }
 
 $TempLevainZip = "$TempLevain\levain-windows-x86_64.zip"
