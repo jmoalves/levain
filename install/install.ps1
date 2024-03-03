@@ -80,12 +80,12 @@ Write-Output ""
 Write-Output ""
 Write-Output ""
 Write-Output ""
-Write-Output ""
-Write-Output "Downloading Levain from $LevainUri"
-Invoke-WebRequest $LevainUri -OutFile $TempLevainZip -UseBasicParsing
 
 Write-Output "Downloading Levain SHA256 from $LevainUriSHA256"
 Invoke-WebRequest $LevainUriSHA256 -OutFile $TempLevainSHA256 -UseBasicParsing
+
+Write-Output "Downloading Levain from $LevainUri"
+Invoke-WebRequest $LevainUri -OutFile $TempLevainZip -UseBasicParsing
 
 $expectedHash=(Get-Content $TempLevainSHA256 -Delimiter ' ' -TotalCount 1).ToUpper().Trim()
 $actualHash=(Get-FileHash $TempLevainZip).Hash.ToUpper().Trim()
@@ -103,6 +103,7 @@ if (Test-Path $TempLevainDir) {
   Remove-Item $TempLevainDir -Recurse -Force
 }
 
+Write-Output ""
 Write-Output "Extracting Levain from $TempLevainZip to $TempLevainDir"
 if (Get-Command Expand-Archive -ErrorAction SilentlyContinue) {
   Expand-Archive $TempLevainZip -Destination $TempLevainDir -Force
