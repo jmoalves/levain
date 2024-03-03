@@ -39,13 +39,19 @@ if (! $levainRepo) {
 
 $TempLevain = Join-Path $Env:Temp "levain-install-$(New-Guid)"
 
+#######################################################
+# Preparation
+#
+
 $LevainUri = if ($levainVersion) {
   "${levainUrlBase}/releases/download/v${levainVersion}/levain-windows-x86_64.zip"
 } else {
   "${levainUrlBase}/releases/latest/download/levain-windows-x86_64.zip"
 }
+$LevainUriSHA256 = "$LevainUri.sha256"
 
 $TempLevainZip = "$TempLevain\levain-windows-x86_64.zip"
+$TempLevainSHA256= "$TempLevain\levain-windows-x86_64.zip.sha256"
 $TempLevainDir = "$TempLevain\levain"
 
 if (!(Test-Path $TempLevain)) {
@@ -66,6 +72,10 @@ if ($levainVersion) {
   Write-Output "=== Installing latest Levain release at $levainHome"
 }
 
+#######################################################
+# Download
+#
+
 Write-Output ""
 Write-Output ""
 Write-Output ""
@@ -73,6 +83,21 @@ Write-Output ""
 Write-Output ""
 Write-Output "Downloading Levain from $LevainUri"
 Invoke-WebRequest $LevainUri -OutFile $TempLevainZip -UseBasicParsing
+
+Write-Output "Downloading Levain SHA256 from $LevainUriSHA256"
+Invoke-WebRequest $LevainUriSHA256 -OutFile $TempLevainSHA256 -UseBasicParsing
+
+$expectedHash=(Get-Content $TempLevainSHA256 -Delimiter ' ' -TotalCount 1).ToUpper().Trim()
+$actualHash=(Get-FileHash $TempLevainZip).Hash.ToUpper().Trim()
+
+if ($actualHash -ne $expectedHash) {
+  Write-Output ""
+  throw 'DOWNLOAD FAILED - Wrong checksum'
+}
+
+#######################################################
+# Extract
+#
 
 if (Test-Path $TempLevainDir) {
   Remove-Item $TempLevainDir -Recurse -Force
@@ -87,9 +112,17 @@ if (Get-Command Expand-Archive -ErrorAction SilentlyContinue) {
   [IO.Compression.ZipFile]::ExtractToDirectory($TempLevainZip, $TempLevainDir)
 }
 
+#######################################################
+# Levain install
+#
+
 Write-Output ""
 Write-Output ""
 & $TempLevainDir\levain.cmd --addRepo "$levainRepo" --levainHome "$levainHome" install levain
+
+#######################################################
+# Cleanup
+#
 
 if (Test-Path $TempLevain) {
   Write-Output ""
