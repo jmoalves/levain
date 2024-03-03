@@ -68,7 +68,6 @@ jobs:
           
           set pkgList=
           for /f "usebackq tokens=*" %%a in (`powershell "levain list | Select-String -Pattern '^   [a-zA-Z0-9]' | foreach{ $_.ToString().Trim() }"`) do (
-            echo "=%%a="
             set pkgList=!pkgList!%%a 
           )
           
