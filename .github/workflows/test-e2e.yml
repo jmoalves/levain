@@ -59,15 +59,21 @@ jobs:
         run: |
           levain list
 
-      - name: Levian install
+      - name: Levian install ALL
         shell: cmd
         run: |
-          levain install wlp-runtime-24.0.0.1 jdk-8-ibm jdk-11-ibm jdk-17-ibm jdk-21-ibm git maven-3.9 deno umlet
+          @echo off
 
-      - name: Levian context-menu
-        shell: cmd
-        run: |
-          levain install levain-context-menu
+          SETLOCAL EnableDelayedExpansion
+          
+          set pkgList=
+          for /f "usebackq tokens=*" %%a in (`powershell "levain list | Select-String -Pattern '^   [a-zA-Z0-9]' | foreach{ $_.ToString().Trim() }"`) do (
+            echo "=%%a="
+            set pkgList=!pkgList!%%a 
+          )
+          
+          echo levain install %pkgList%
+          set pkgList=
 
       - name: Levian update
         shell: cmd
