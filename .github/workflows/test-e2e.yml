@@ -62,18 +62,10 @@ jobs:
       - name: Levian install EVERYTHING
         shell: cmd
         run: |
-          @echo off
-
-          SETLOCAL EnableDelayedExpansion
-          
-          set pkgList=
-          for /f "usebackq tokens=*" %%a in (`powershell "levain list | Select-String -Pattern '^   [a-zA-Z0-9]' | foreach{ $_.ToString().Trim() }"`) do (
-            set pkgList=!pkgList!%%a 
-          )
-          
-          call levain install %pkgList%
-          set pkgList=
-
+          call %GITHUB_WORKSPACE%\scripts\installEverything.cmd
+        env:
+          GITHUB_WORKSPACE: ${{ github.workspace }}
+  
       - name: Run Microsoft Security DevOps
         uses: microsoft/security-devops-action@v1
         id: msdo-install
@@ -86,4 +78,3 @@ jobs:
       - name: Run Microsoft Security DevOps
         uses: microsoft/security-devops-action@v1
         id: msdo-update
-  
