@@ -42,15 +42,17 @@ $levainUrlBase="http://nexus.local.net/nexus/repository/github-proxy/jmoalves/le
 $levainRepo="https://gitlab.local.net/grp-dev/levain-pkgs.git";iwr https://github.com/jmoalves/levain/releases/latest/download/install.ps1 | iex`
 ```
 
+----
+
 ## Some use cases
 
 ### Listing available packages / recipes
-`levain list`
+`levain list`   
 `levain list jdk`
 
 ### Installing some packages
 `levain install jdk-21-ibm git wlp-runtime-24.0.0.1`
 
 ### Open a configured shell
-`levain shell`
+`levain shell`   
 `levain shell wlp-runtime-24.0.0.1 jdk-21-ibm`
