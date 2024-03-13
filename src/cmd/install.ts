@@ -14,12 +14,14 @@ import {parseArgs} from "../lib/parse_args.ts";
 import VersionNumber from "../lib/utils/version_number.ts";
 import LevainVersion from "../levain_version.ts";
 import DateUtils from "../lib/utils/date_utils.ts";
+import {retry} from "../lib/utils/utils.ts";
 
 import Command from "./command.ts";
 
 export default class Install implements Command {
     private registry: Registry;
     private readonly currentLevainVersion: VersionNumber;
+    private readonly maxRetries = 5;
 
     constructor(private config: Config) {
         this.registry = new Registry(config, config.levainRegistryDir)
@@ -179,7 +181,7 @@ export default class Install implements Command {
              * However, this "tempDir" change could EASILY BREAK all the recipes
              */
 
-            shouldInstall = this.savePreviousInstall(bkpTag, pkg);
+            shouldInstall = await this.savePreviousInstall(bkpTag, pkg);
         }
 
         // https://github.com/jmoalves/levain/issues/148
@@ -235,7 +237,7 @@ export default class Install implements Command {
         return;
     }
 
-    savePreviousInstall(bkpTag: string, pkg: Package): boolean {
+    private async savePreviousInstall(bkpTag: string, pkg: Package): Promise<boolean> {
         if (!existsSync(pkg.baseDir)) {
             log.debug(t("cmd.install.goodNotSave", { baseDir: pkg.baseDir }));
             return true;
@@ -267,12 +269,12 @@ export default class Install implements Command {
                 suffix: ".tmp"
             });
             log.debug(`- SAVE-REN   ${src} => ${renameDir}`);
-            Deno.removeSync(renameDir, {recursive: true});
-            Deno.renameSync(src, renameDir);
+            await retry(this.maxRetries, () => Deno.removeSync(renameDir, {recursive: true}))
+            await retry(this.maxRetries, () => Deno.renameSync(src, renameDir))
 
             try {
                 log.debug(`- SAVE-DEL   ${renameDir}`);
-                Deno.removeSync(renameDir, {recursive: true})
+                await retry(this.maxRetries, () => Deno.removeSync(renameDir, {recursive: true}))
             } catch (error) {
                 log.debug(t("cmd.install.ignoreError", { error: error }))
             }
