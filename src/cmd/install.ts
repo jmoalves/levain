@@ -268,8 +268,10 @@ export default class Install implements Command {
                 prefix: ".rename." + path.basename(src) + ".",
                 suffix: ".tmp"
             });
-            log.debug(`- SAVE-REN   ${src} => ${renameDir}`);
+            log.debug(`- SAVE-PRE   ${renameDir}`);
             await retry(this.maxRetries, () => Deno.removeSync(renameDir, {recursive: true}))
+
+            log.debug(`- SAVE-REN   ${src} => ${renameDir}`);
             await retry(this.maxRetries, () => Deno.renameSync(src, renameDir))
 
             try {
