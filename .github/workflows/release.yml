@@ -198,8 +198,8 @@ jobs:
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ runner.temp }}/levain-.exe.sha256
-          asset_name: levain-.exe.sha256
+          asset_path: ${{ runner.temp }}/levain.exe.sha256
+          asset_name: levain.exe.sha256
           asset_content_type: text/plain
 
       - name: Upload asset - levain-v${{ env.RELEASE_VERSION }}-windows-x86_64.zip
