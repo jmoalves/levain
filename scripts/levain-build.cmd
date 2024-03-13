@@ -81,9 +81,11 @@ if exist %levainRoot%\deno.lock del /q %levainRoot%\deno.lock
 if errorlevel 1 exit /b 1
 
 :: Copy auxiliary files
-xcopy /q/s %levainRoot%\levain.cmd %levainOutputDir%\
-xcopy /q/s %levainRoot%\LICENSE %levainOutputDir%\
-xcopy /q/s %levainRoot%\recipes\ %levainOutputDir%\build\recipes\
-xcopy /q/s %levainRoot%\extra-bin\ %levainOutputDir%\build\extra-bin\
+echo.
+echo Copying auxiliary files to %levainOutputDir%
+xcopy /q   %levainRoot%\levain.cmd %levainOutputDir%\ >nul
+xcopy /q   %levainRoot%\LICENSE %levainOutputDir%\ >nul
+xcopy /q/s %levainRoot%\recipes\ %levainOutputDir%\build\recipes\ >nul
+xcopy /q/s %levainRoot%\extra-bin\ %levainOutputDir%\build\extra-bin\ >nul
 
 ENDLOCAL
