@@ -5,6 +5,9 @@ levainDir=$1
 levainZipFile=$2
 strip=$3
 
+## Copy levain.exe SHA256
+cp -v ${levainDir}/build/levain.exe.sha256 $( dirname ${levainZipFile} )
+
 ## Create Levain zip
 if [ -z "$strip" ]; then
     cd $( dirname ${levainDir} )

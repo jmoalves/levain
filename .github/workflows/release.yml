@@ -191,6 +191,17 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
 
+      - name: Upload asset - levain.exe.sha256
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ runner.temp }}/levain-.exe.sha256
+          asset_name: levain-.exe.sha256
+          asset_content_type: text/plain
+
       - name: Upload asset - levain-v${{ env.RELEASE_VERSION }}-windows-x86_64.zip
         uses: actions/upload-release-asset@v1
         env:

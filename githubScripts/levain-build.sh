@@ -59,3 +59,10 @@ cp -rv ${levainSrcDir}/levain.cmd ${targetDir}/
 cp -rv ${levainSrcDir}/LICENSE ${targetDir}/
 cp -rv ${levainSrcDir}/recipes/ ${targetDir}/build/recipes/
 cp -rv ${levainSrcDir}/extra-bin/ ${targetDir}/build/extra-bin/
+
+# Binary SHA256
+cd ${targetDir}/build
+sha256sum levain.exe > levain.exe.sha256
+echo levain.exe.sha256
+cat levain.exe.sha256
+cd - >/dev/null
