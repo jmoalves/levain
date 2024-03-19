@@ -1,6 +1,6 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
-import { moveSync } from "https://deno.land/std/fs/mod.ts";
+import { moveSync, ensureDirSync } from "https://deno.land/std/fs/mod.ts";
 
 import Config from "../config.ts";
 import {Timer} from "../timer.ts";
@@ -18,7 +18,7 @@ export abstract class Extractor {
     }
 
     async extract(strip: boolean, src: string, dst: string) {
-        let extractedTempDir = await this.extractToTemp(src)
+        let extractedTempDir = await this.extractToTemp(src, dst)
         await this.move(strip, extractedTempDir, dst);
     }
 
@@ -55,23 +55,25 @@ export abstract class Extractor {
         await retry(this.maxRetries, () => Deno.removeSync(srcDir));
     }
 
-    async extractToTemp(file: string): Promise<string> {
-        const safeTempDir = this.config.levainSafeTempDir
+    async extractToTemp(src: string, dst:string): Promise<string> {
+        const safeTempDir = path.dirname(path.resolve(dst))
         log.debug(`safeTempDir ${safeTempDir}`)
+
+        ensureDirSync(safeTempDir)
         let tempDir = Deno.makeTempDirSync({
             dir: safeTempDir,
             prefix: 'extract-'
         });
 
         const timer = new Timer()
-        log.debug(`- EXTRACT ${file} => ${tempDir}`);
-        this.feedback.start(`# ${StringUtils.compressText(file, 80)}`)
+        log.debug(`- EXTRACT ${src} => ${tempDir}`);
+        this.feedback.start(`# ${StringUtils.compressText(src, 80)}`)
 
         let tick = setInterval(() => this.feedback.show(), 300)
-        await this.extractImpl(file, tempDir)
+        await this.extractImpl(src, tempDir)
         clearInterval(tick)
         
-        this.feedback.reset(`# ${StringUtils.compressText(file, 80)} in ${timer.humanize()}`)
+        this.feedback.reset(`# ${StringUtils.compressText(src, 80)} in ${timer.humanize()}`)
         log.debug(`- extracted in ${timer.humanize()}`);
         return tempDir
     }
