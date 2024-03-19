@@ -22,7 +22,7 @@ jobs:
     steps:
       - name: Echo
         shell: cmd
-        run: echo REF=%GITHUB_REF%
+        run: echo REF=${{ github.ref }}
 
       - name: Install Levain
         run: |
