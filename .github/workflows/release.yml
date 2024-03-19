@@ -177,6 +177,11 @@ jobs:
       ##############################################################
       ### Create release
       ##############################################################
+      - name: Echo REF name
+        run: |
+          echo GITHUB_REF_NAME=${{ env.GITHUB_REF_NAME }}
+          echo RELEASE_VERSION=${{ env.RELEASE_VERSION }}
+
       - name: Create release
         id: create_release
         uses: actions/create-release@v1
