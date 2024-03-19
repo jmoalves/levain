@@ -128,5 +128,5 @@ if (Test-Path $TempLevain) {
   Write-Output ""
   Write-Output ""
   Write-Output "Removing $TempLevain"
-  Remove-Item $TempLevainDir -Recurse -Force
+  Remove-Item $TempLevain -Recurse -Force
 }
