@@ -1,6 +1,6 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
-import {copySync, existsSync} from "https://deno.land/std/fs/mod.ts";
+import { copySync, existsSync, moveSync } from "https://deno.land/std/fs/mod.ts";
 
 import t from '../lib/i18n.ts'
 
@@ -262,20 +262,20 @@ export default class Install implements Command {
                 return true;
             }
 
-            let renameDir = Deno.makeTempDirSync({
+            let deletedDir = Deno.makeTempDirSync({
                 dir: path.dirname(src),
-                prefix: ".rename." + path.basename(src) + ".",
+                prefix: ".deleted." + path.basename(src) + ".",
                 suffix: ".tmp"
             });
-            log.debug(`- SAVE-PRE   ${renameDir}`);
-            await retry(this.maxRetries, () => Deno.removeSync(renameDir, {recursive: true}))
+            log.debug(`- SAVE-PRE   ${deletedDir}`);
+            await retry(this.maxRetries, () => Deno.removeSync(deletedDir, {recursive: true}))
 
-            log.debug(`- SAVE-REN   ${src} => ${renameDir}`);
-            await retry(this.maxRetries, () => Deno.renameSync(src, renameDir))
+            log.debug(`- SAVE-MOV   ${src} => ${deletedDir}`);
+            await retry(this.maxRetries, () => moveSync(src, deletedDir))
 
             try {
-                log.debug(`- SAVE-DEL   ${renameDir}`);
-                await retry(this.maxRetries, () => Deno.removeSync(renameDir, {recursive: true}))
+                log.debug(`- SAVE-DEL   ${deletedDir}`);
+                await retry(this.maxRetries, () => Deno.removeSync(deletedDir, {recursive: true}))
             } catch (error) {
                 log.debug(t("cmd.install.ignoreError", { error: error }))
             }

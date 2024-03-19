@@ -153,6 +153,11 @@ export default class CleanCommand implements Command {
                 return true
             }
 
+            if (dirEntry.name.match(/^\.deleted\./)) {
+                // log.debug(`RM ${dirEntry.name}`)
+                return true
+            }
+
             return false
         })
 
