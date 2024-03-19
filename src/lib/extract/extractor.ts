@@ -1,5 +1,6 @@
 import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
+import { moveSync } from "https://deno.land/std/fs/mod.ts";
 
 import Config from "../config.ts";
 import {Timer} from "../timer.ts";
@@ -47,7 +48,7 @@ export abstract class Extractor {
             } else {
                 let dst = path.resolve(dstDir, child.name);
                 log.debug(`- MOVE ${from} => ${dst}`);
-                await retry(this.maxRetries, () => Deno.renameSync(from, dst));
+                await retry(this.maxRetries, () => moveSync(from, dst));
             }
         }
 
