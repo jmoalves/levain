@@ -179,7 +179,7 @@ jobs:
       ##############################################################
       - name: Echo REF name
         run: |
-          echo GITHUB_REF_NAME=${{ env.GITHUB_REF_NAME }}
+          echo GITHUB_REF_NAME=${{ github.ref_name }}
           echo RELEASE_VERSION=${{ env.RELEASE_VERSION }}
 
       - name: Create release
@@ -188,7 +188,7 @@ jobs:
         with:
           tag_name: v${{ env.RELEASE_VERSION }}
           release_name: v${{ env.RELEASE_VERSION }}
-          commitish: ${{ env.GITHUB_REF_NAME }}
+          commitish: ${{ github.ref_name }}
           body_path: ${{ runner.temp }}/changelog.${{ env.RELEASE_VERSION }}.md
           draft: true
           prerelease: true
