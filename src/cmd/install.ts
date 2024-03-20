@@ -262,8 +262,6 @@ export default class Install implements Command {
                 return true;
             }
 
-            prompt(`Hit ENTER to continue saving ${src} => ${dst}`)
-
             let deletedDir = Deno.makeTempDirSync({
                 dir: path.dirname(src),
                 prefix: ".deleted." + path.basename(src) + ".",
