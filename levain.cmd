@@ -23,6 +23,7 @@ exit /b %ERRORLEVEL%
 
 set DENO_NO_UPDATE_CHECK=true
 set NO_COLOR=true
+set DENO_DIR=%myPath%\build
 %myPath%\build\levain.exe %*
 if errorlevel 1 exit /b %ERRORLEVEL%
 
