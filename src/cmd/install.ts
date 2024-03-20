@@ -257,6 +257,9 @@ export default class Install implements Command {
             log.debug(`- SAVE-COPY  ${src} => ${dst}`);
             copySync(src, dst);
 
+            const fileInfo = Deno.statSync(src);
+            log.info(`src info=${fileInfo}`)
+
             if (pkg.yamlItem("levain.preserveBaseDirOnUpdate")) {
                 log.info(t("cmd.install.keepingBaseDir", { pkg: pkg.name }));
                 return true;
