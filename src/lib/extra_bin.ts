@@ -19,11 +19,6 @@ export default class ExtraBin {
         return path.resolve(ExtraBin.extraBinDir, "git");
     }
 
-    static get curlDir(): string {
-        OsUtils.onlyInWindows()
-        return path.resolve(ExtraBin.extraBinDir, "curl");
-    }
-
     static get osUtilsDir(): string {
         OsUtils.onlyInWindows()
         return path.resolve(ExtraBin.extraBinDir, "os-utils");

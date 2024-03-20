@@ -189,8 +189,6 @@ export default class CleanCommand implements Command {
 
         const levainReleasesDir = path.resolve(tempDir, 'levain')
         if (existsSync(levainReleasesDir)) {
-            // levainBootstrap.com
-
             size += this.cleanDir(levainReleasesDir, (dirEntry:any) => {
                 if (dirEntry.name.match(`^levain-${LevainVersion.levainVersion.versionNumber}$`)) {
                     // current version

@@ -10,7 +10,6 @@ cannot_read_this_folder
 levain.bundle.js
 /coverage
 /extra-bin/windows/7-zip/
-/extra-bin/windows/curl/
 /extra-bin/windows/git/
 /node_modules/
 deno.lock

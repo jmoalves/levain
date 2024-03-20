@@ -129,14 +129,6 @@ jobs:
         env:
           LEVAIN_RELEASE_SRC_PATH: ${{ runner.temp }}/src/levain-${{ env.RELEASE_VERSION }}
 
-      - name: Levain bootstrap
-        run: |
-          bash $GITHUB_WORKSPACE/githubScripts/levain-bootstrap.sh $LEVAIN_RELEASE_SRC_PATH $LEVAIN_RELEASE_BIN_PATH $RUNNER_TEMP/levainBootstrap-windows-x86_64.zip
-        env:
-          LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
-          LEVAIN_RELEASE_SRC_PATH: ${{ runner.temp }}/src/levain-${{ env.RELEASE_VERSION }}
-          LEVAIN_RELEASE_BIN_PATH: ${{ runner.temp }}/bin/levain-${{ env.RELEASE_VERSION }}
-
       - name: Levain package
         run: |
           bash $GITHUB_WORKSPACE/githubScripts/levain-package.sh $LEVAIN_RELEASE_BIN_PATH $RUNNER_TEMP/levain-windows-x86_64.zip STRIP
@@ -271,28 +263,6 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ runner.temp }}/levain-extra-bin-windows-x86_64.zip.sha256
           asset_name: levain-extra-bin-windows-x86_64.zip.sha256
-          asset_content_type: text/plain
-
-      - name: Upload asset - levainBootstrap-windows-x86_64.zip
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ runner.temp }}/levainBootstrap-windows-x86_64.zip
-          asset_name: levainBootstrap-windows-x86_64.zip
-          asset_content_type: application/zip
-
-      - name: Upload asset - levainBootstrap-windows-x86_64.zip.sha256
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ runner.temp }}/levainBootstrap-windows-x86_64.zip.sha256
-          asset_name: levainBootstrap-windows-x86_64.zip.sha256
           asset_content_type: text/plain
 
       - name: Upload asset - install.ps1

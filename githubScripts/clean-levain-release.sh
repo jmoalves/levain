@@ -8,7 +8,6 @@ if [ ! -d "$levainDir"]; then
     exit 1
 fi
 
-rm -rvf ${levainDir}/bootstrap &&
 rm -rvf ${levainDir}/ci &&
 rm -rvf ${levainDir}/githubScripts &&
 rm -rvf ${levainDir}/install &&

@@ -80,14 +80,6 @@ tar xf ${zipDir}/7z.tar.xz --xz -C ${zipDir}
 zipTool=${zipDir}/7zzs
 
 
-# EXTRA-BIN: curl
-curlUrl=https://curl.se/windows/dl-8.6.0_2/curl-8.6.0_2-win64-mingw.zip
-curlDir=${levainDir}/extra-bin/windows/curl
-
-echo
-downloadBinary -i curl -u $curlUrl -d $curlDir -s
-
-
 # EXTRA-BIN: git
 gitUrl=https://github.com/git-for-windows/git/releases/download/v2.44.0.windows.1/MinGit-2.44.0-64-bit.zip
 gitDir=${levainDir}/extra-bin/windows/git
