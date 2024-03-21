@@ -17,7 +17,7 @@ on:
 jobs:
   e2e-win:
     runs-on: windows-latest
-    timeout-minutes: 60
+    timeout-minutes: 120
 
     steps:
       - name: Echo
@@ -86,8 +86,7 @@ jobs:
               if not "!ignore!" == "true" set pkgList=!pkgList!%%a 
           )
           
-          call levain install %pkgList%
-          set pkgList=
+          levain install %pkgList%
           
           ENDLOCAL
   
