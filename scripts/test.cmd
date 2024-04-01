@@ -95,19 +95,19 @@ if not "a%allParameters%" == "a" set coverOps=
 
 echo Running tests
 @echo on
-%myDenoExe% test --allow-all %coverOps% %allParameters%
+%myDenoExe% test --allow-all --parallel %coverOps% %allParameters%
 @echo off
 
 if not "a%coverOps%" == "a" (
-    echo.
-    echo Coverage report - TEXT
-    %myDenoExe% coverage
+    @REM echo.
+    @REM echo Coverage report - TEXT
+    @REM %myDenoExe% coverage
 
     echo Coverage report - LCOV
     %myDenoExe% coverage --lcov --output=coverage/levain.lcov
 
-    echo Coverage report - HTML
-    %myDenoExe% coverage --html
+    @REM echo Coverage report - HTML
+    @REM %myDenoExe% coverage --html
 )
 
 popd

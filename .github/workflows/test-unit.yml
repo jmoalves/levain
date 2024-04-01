@@ -27,7 +27,7 @@ jobs:
 
           call %GITHUB_WORKSPACE%\githubScripts\get-extraBin.cmd
 
-          call %GITHUB_WORKSPACE%\scripts\test.cmd --denoDir %DENO_ROOT_PATH% --coverage --checkSources -- --parallel
+          call %GITHUB_WORKSPACE%\scripts\test.cmd --denoDir %DENO_ROOT_PATH% --coverage --checkSources
         env:
           DENO_ROOT_PATH: ${{ runner.temp }}\deno
           GITHUB_WORKSPACE: ${{ github.workspace }}
@@ -37,6 +37,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: jmoalves/levain
+          files: coverage/levain.lcov
           
   # unit-nix:
   #   strategy:
