@@ -4,7 +4,7 @@
         "https://deno.land/x/i18next/": "https://deno.land/x/i18next/",
         "https://deno.land/x/fastest_levenshtein/": "https://deno.land/x/fastest_levenshtein/",
         "https://deno.land/x/cliffy/": "https://deno.land/x/cliffy/",
-        "https://deno.land/x/progress/": "https://deno.land/x/progress@v1.4.5/",
+        "https://deno.land/x/progress/": "https://deno.land/x/progress/",
         "https://deno.land/x/deno_validator/": "https://deno.land/x/deno_validator/",
         "https://deno.land/x/zip/": "https://deno.land/x/zip/",
         "https://deno.land/x/sleep/": "https://deno.land/x/sleep/"
