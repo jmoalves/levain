@@ -7,9 +7,7 @@ Levain
 [![codecov](https://codecov.io/gh/jmoalves/levain/graph/badge.svg?token=24E0G0XZNF)](https://codecov.io/gh/jmoalves/levain)
 [![Test - e2e](https://github.com/jmoalves/levain/actions/workflows/test-e2e.yml/badge.svg)](https://github.com/jmoalves/levain/actions/workflows/test-e2e.yml)
 
-
-
-Something to help you make your software grow
+_Something to help you make your software grow_
 
 ## Installing Levain
 
