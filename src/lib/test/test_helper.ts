@@ -15,7 +15,6 @@ import {envChain} from "../utils/utils.ts";
 import MockRepository from "../repository/mock_repository.ts";
 
 export default class TestHelper {
-
     static async setupTestLogger() {
         return await TestLogger.setup()
     }
@@ -55,6 +54,7 @@ export default class TestHelper {
     static readonly fileThatExists = path.resolve('testdata/file_utils/can_read_and_write_this_file.txt');
     static readonly anotherFileThatExists = path.resolve('testdata/file_utils/file.txt');
     static readonly validZipFile = path.resolve('testdata/extract/test.zip')
+    static readonly validZipFileWithoutExtension = path.resolve('testdata/extract/zip_file_without_extension')
 
     // FIXME Use OsUtils.homeDir
     static homeDir(): string {

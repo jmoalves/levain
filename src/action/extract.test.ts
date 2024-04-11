@@ -61,3 +61,26 @@ Deno.test({
     sanitizeResources: false,
     sanitizeOps: false,
 })
+
+Deno.test({
+    name: 'ExtractAction should extract src to dst with --type option',
+    fn: async () => {
+        const src = TestHelper.validZipFileWithoutExtension
+        const dst = TestHelper.getNewTempDir()
+        const config = TestHelper.getConfig()
+        config.levainCacheDir = TestHelper.getNewTempDir()
+        const action = new Extract(config)
+        const pkg = TestHelper.mockPackage()
+
+        await action.execute(pkg, ["--type", "zip", src, dst])
+
+        const expectedFiles = [
+            path.join(dst, 'test'),
+            path.join(dst, 'test', 'abc.txt'),
+            path.join(dst, 'test', 'hello.txt'),
+        ];
+        assertFolderIncludes(dst, expectedFiles);
+    },
+    sanitizeResources: false,
+    sanitizeOps: false,
+})
