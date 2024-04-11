@@ -22,7 +22,7 @@ export default class CheckUrl implements Action {
         log.debug(`CHECK-URL ${url}`)
 
         try {
-            const response = await fetch(url)
+            const response = await fetch(url, {redirect: "follow"})
             log.debug(`- ${response?.status} - ${response?.statusText} - ${url}`)
 
             if (response?.status == 200) {

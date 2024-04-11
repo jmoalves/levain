@@ -16,7 +16,7 @@ export default class HttpUtils {
             try {
                 const c = new AbortController();
                 const id = setTimeout(() => c.abort(), 5000);
-                let response = await fetch(url, {signal: c.signal});
+                let response = await fetch(url, {signal: c.signal, redirect: "follow"});
                 clearTimeout(id);
 
                 if (response) {
