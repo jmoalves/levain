@@ -94,6 +94,10 @@ export default class GitUtils {
         const tick = setInterval(() => this.feedback.show(), 300)
 
         let gitCommand: string | string[] = `${this.gitCmd} pull --force -q --progress --no-tags --depth=1 --update-shallow --allow-unrelated-histories --no-commit --rebase`;
+
+        // Config to ignore advices :-(
+        gitCommand = `${this.gitCmd} config advice.diverging false && ${gitCommand}`
+
         if (OsUtils.isWindows()) {
             gitCommand = `cmd /u /c pushd ${workingDir} && ${gitCommand} && popd`
         }
