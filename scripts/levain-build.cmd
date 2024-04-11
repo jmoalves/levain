@@ -88,4 +88,6 @@ xcopy /q   %levainRoot%\LICENSE %levainOutputDir%\ >nul
 xcopy /q/s %levainRoot%\recipes\ %levainOutputDir%\build\recipes\ >nul
 xcopy /q/s %levainRoot%\extra-bin\ %levainOutputDir%\build\extra-bin\ >nul
 
+call %myPath%/msDefender.cmd %levainOutputDir%
+
 ENDLOCAL
