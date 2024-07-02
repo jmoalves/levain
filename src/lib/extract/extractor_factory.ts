@@ -12,12 +12,42 @@ export enum ExtractType {
 }
 
 export class ExtractorFactory {
-    private typeFrom(strType?: string): ExtractType | undefined {
+    private typeFromFile(filename?: string): ExtractType | undefined {
+        if (!filename) {
+            return undefined
+        }
+
+        const normalizedFilename = filename.toLowerCase()
+        if (normalizedFilename.endsWith(".zip")) {
+            return ExtractType.Zip            
+        } 
+        
+        if (normalizedFilename.endsWith(".7z")) {
+            return ExtractType.SevenZip
+        }
+
+        if (normalizedFilename.endsWith(".7z.exe")) {
+            return ExtractType.SevenZip
+        }
+
+        if (normalizedFilename.endsWith(".tar.gz")) {
+            return ExtractType.TarGz
+        }
+
+        if (normalizedFilename.endsWith(".tgz")) {
+            return ExtractType.TarGz
+        }
+
+        return undefined
+    }
+
+    private typeFromString(strType?: string): ExtractType | undefined {
         switch (strType?.toLowerCase()) {
         case "zip":
             return ExtractType.Zip
 
         case "7z":
+        case "7z.exe":
             return ExtractType.SevenZip
 
         case "tar.gz":
@@ -30,37 +60,27 @@ export class ExtractorFactory {
     }
 
     isTypeSupported(type?: string): boolean {
-        return this.typeFrom(type)
+        return this.typeFromString(type) != undefined
     }
 
-    createExtractor(config: Config, src: string, type?: ExtractType): Extractor {
-        if (!this.isTypeSupported(type)) {
+    createExtractor(config: Config, src: string, type?: string): Extractor {
+        if (type && !this.isTypeSupported(type)) {
             throw `${src} - file not supported.`;
         }
 
-        let localType = type
-        if (!localType) {
-            if (src.endsWith(".zip")) {
-                localType = "zip"
-            } else if (src.endsWith(".7z.exe")) {
-                localType = "7z"
-            } else if (src.endsWith(".tar.gz")) {
-                localType = "tar.gz"
-            }
-        }
-
+        const localType = this.typeFromFile(src)
         switch (localType) {
-        case "zip":
+        case ExtractType.Zip:
             if (OsUtils.isWindows()) {
                 return new SevenZip(config);
             } else {
                 return new DenoZip(config)
             }
 
-        case "7z":
+        case ExtractType.SevenZip:
             return new SevenZip(config);
 
-        case "tar.gz":
+        case ExtractType.TarGz:
             return new UnTar(config);
 
         default:

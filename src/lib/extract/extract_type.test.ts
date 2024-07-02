@@ -1,8 +1,5 @@
-import * as path from "https://deno.land/std/path/mod.ts";
-
-import TestHelper from "../test/test_helper.ts";
-import { assertFolderIncludes } from "../test/more_asserts.ts";
-import { ExtractType } from "./extractor_factory.ts";
+import { ExtractorFactory } from "./extractor_factory.ts";
+import { assert } from 'https://deno.land/std/assert/mod.ts';
 
 // create a unit test for ExtractorFactory using extractorType
 Deno.test("ExtractorFactory - isTypeSupported", () => {
