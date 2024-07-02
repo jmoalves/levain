@@ -5,20 +5,35 @@ import {DenoZip} from "./denozip_extractor.ts";
 import {UnTar} from "./untar_extractor.ts";
 import {Extractor} from "./extractor.ts";
 
+export enum ExtractType {
+    Zip,
+    SevenZip,
+    TarGz
+}
+
 export class ExtractorFactory {
-    isTypeSupported(type?: string): boolean {
-        if (!type) {
-            return true
+    private typeFrom(strType?: string): ExtractType | undefined {
+        switch (strType?.toLowerCase()) {
+        case "zip":
+            return ExtractType.Zip
+
+        case "7z":
+            return ExtractType.SevenZip
+
+        case "tar.gz":
+        case "tgz":
+                return ExtractType.TarGz
+
+        default:
+            return undefined
         }
-
-        return this.supportedTypes().includes(type.toLowerCase())
     }
 
-    supportedTypes() {
-        return ["zip", "7z", "tar.gz"]
+    isTypeSupported(type?: string): boolean {
+        return this.typeFrom(type)
     }
-    
-    createExtractor(config: Config, src: string, type?: string): Extractor {
+
+    createExtractor(config: Config, src: string, type?: ExtractType): Extractor {
         if (!this.isTypeSupported(type)) {
             throw `${src} - file not supported.`;
         }
