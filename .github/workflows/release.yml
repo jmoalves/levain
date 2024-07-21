@@ -12,6 +12,8 @@ jobs:
   createRelease:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    concurrency:
+      group: release-${{ github.run_id }}
 
     steps:
       - name: Check denoVersion
@@ -289,6 +291,8 @@ jobs:
   e2e-win:
     runs-on: windows-latest
     timeout-minutes: 5
+    concurrency:
+      group: release-${{ github.run_id }}
 
     steps:
       - name: Install Levain
