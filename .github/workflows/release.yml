@@ -288,7 +288,7 @@ jobs:
         with:
           release_id: ${{ steps.create_release.outputs.id }}
 
-  e2e-win:
+  install-win:
     runs-on: windows-latest
     timeout-minutes: 5
     concurrency:
