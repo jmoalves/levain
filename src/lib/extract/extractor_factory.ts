@@ -68,7 +68,7 @@ export class ExtractorFactory {
             throw `${src} - file not supported.`;
         }
 
-        const localType = this.typeFromFile(src)
+        const localType = this.typeFromString(type) || this.typeFromFile(src)
         switch (localType) {
         case ExtractType.Zip:
             if (OsUtils.isWindows()) {

@@ -17,7 +17,7 @@ export default class Extract implements Action {
     }
 
     async execute(pkg: Package | undefined, parameters: string[]) {
-        let args = parseArgs(parameters, {
+        const args = parseArgs(parameters, {
             boolean: [
                 "strip"
             ],
@@ -31,7 +31,8 @@ export default class Extract implements Action {
             throw new Error("You must inform the file to extract and the destination directory");
         }
 
-        if (args.type && !["zip"].includes(args.type.toLowerCase())) {
+        const factory: ExtractorFactory = new ExtractorFactory();
+        if (args.type && !factory.isTypeSupported(args.type)) {
             throw new Error(`Unknown type '${args.type}'`)
         }
 
@@ -47,7 +48,6 @@ export default class Extract implements Action {
         log.debug(`EXTRACT ${src} => ${dst}`);
         const fileCache = new FileCache(this.config)
         const cachedSrc = await fileCache.get(src)
-        const factory: ExtractorFactory = new ExtractorFactory();
         const extractor: Extractor = factory.createExtractor(this.config, cachedSrc, args.type);
         await extractor.extract(args.strip, cachedSrc, dst);
     }
