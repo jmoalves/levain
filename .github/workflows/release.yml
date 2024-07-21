@@ -8,9 +8,6 @@ on:
         description: 'Deno version (optional)'     
         required: false
 
-env:
-  RELEASE_VERSION: ${{ github.event.inputs.releaseVersion }}
-
 jobs:
   createRelease:
     runs-on: ubuntu-latest
@@ -289,6 +286,9 @@ jobs:
         with:
           release_id: ${{ steps.create_release.outputs.id }}
 
+    outputs:
+      levainRelease: ${{ env.RELEASE_VERSION }}
+
   install-win:
     runs-on: windows-latest
     timeout-minutes: 5
@@ -298,7 +298,7 @@ jobs:
       - name: Install Levain
         run: |
           # Which levain version?
-          $levainVersion = "${{ env.RELEASE_VERSION }}"
+          $levainVersion = "${{ needs.createRelease.outputs.levainRelease }}"
 
           # Install script
           $scriptUrl = "https://github.com/jmoalves/levain/releases/download/v${levainVersion}/install.ps1"
