@@ -8,6 +8,9 @@ on:
         description: 'Deno version (optional)'     
         required: false
 
+env:
+  RELEASE_VERSION: ${{ github.event.inputs.releaseVersion }}
+
 jobs:
   createRelease:
     runs-on: ubuntu-latest
