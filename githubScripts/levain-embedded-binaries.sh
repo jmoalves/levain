@@ -71,11 +71,12 @@ if [ -z "$levainDir" ]; then
 fi
 
 # 7Zip - Linux
+# https://www.7-zip.org/download.html
 echo = 7Zip - Tool
 zipDir=$( mktemp -d )
 rm -rf $zipDir
 mkdir -p $zipDir
-curl -ks -o ${zipDir}/7z.tar.xz https://www.7-zip.org/a/7z2301-linux-x64.tar.xz
+curl -ks -o ${zipDir}/7z.tar.xz https://www.7-zip.org/a/7z2407-linux-x64.tar.xz
 tar xf ${zipDir}/7z.tar.xz --xz -C ${zipDir}
 zipTool=${zipDir}/7zzs
 
@@ -90,7 +91,8 @@ downloadBinary -i git -u $gitUrl -d $gitDir
 
 
 # EXTRA-BIN: 7-Zip
-sevenUrl=https://www.7-zip.org/a/7z2301-x64.exe
+# https://www.7-zip.org/download.html
+sevenUrl=https://www.7-zip.org/a/7z2407-x64.exe
 sevenDir=${levainDir}/extra-bin/windows/7-zip
 
 echo
