@@ -285,3 +285,34 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           release_id: ${{ steps.create_release.outputs.id }}
+
+  e2e-win:
+    runs-on: windows-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Install Levain
+        run: |
+          # Which levain version?
+          $levainVersion = "${{ env.RELEASE_VERSION }}"
+
+          # Install script
+          $scriptUrl = "https://github.com/jmoalves/levain/releases/download/v${levainVersion}/install.ps1"
+
+          # Headless
+          $levainHeadless = "true"
+
+          # Install
+          iwr $scriptUrl | iex
+          
+          # Workaround - ADD Levain to GitHub PATH
+          Add-Content $env:GITHUB_PATH "$HOME\levain\levain"
+
+      - name: Levian list
+        shell: cmd
+        run: |
+          levain list
+
+      - name: Run Microsoft Security DevOps
+        uses: microsoft/security-devops-action@v1
+        id: msdo-levain
