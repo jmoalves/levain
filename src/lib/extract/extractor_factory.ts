@@ -1,3 +1,5 @@
+import * as log from "https://deno.land/std/log/mod.ts";
+
 import Config from "../config.ts";
 import OsUtils from "../os/os_utils.ts";
 import {SevenZip} from "./sevenzip_extractor.ts";
@@ -6,9 +8,9 @@ import {UnTar} from "./untar_extractor.ts";
 import {Extractor} from "./extractor.ts";
 
 export enum ExtractType {
-    Zip,
-    SevenZip,
-    TarGz
+    Zip = 'zip',
+    SevenZip = '7z',
+    TarGz = 'tar.gz'
 }
 
 export class ExtractorFactory {
@@ -65,7 +67,7 @@ export class ExtractorFactory {
 
     createExtractor(config: Config, src: string, type?: string): Extractor {
         if (type && !this.isTypeSupported(type)) {
-            throw `${src} - file not supported.`;
+            throw `${src} - file not supported (1).`;
         }
 
         const localType = this.typeFromString(type) || this.typeFromFile(src)
@@ -84,7 +86,7 @@ export class ExtractorFactory {
             return new UnTar(config);
 
         default:
-            throw `${src} - file not supported.`;
+            throw `${src} - file not supported (2).`;
         }
     }
 }
