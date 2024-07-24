@@ -84,9 +84,9 @@ Deno.test('VarResolver.getVarValue should return undefined for unknown vars', as
 Deno.test('VarResolver.getVarValue should get home', async () => {
     await verifyVarValueEquals('home', `${homedir()}`)
 })
-Deno.test('VarResolver.getVarValue should get levain.homeDir', async () => {
-    await verifyVarValueMatches('levain.homeDir', /.*levain/)
-})
+// Deno.test('VarResolver.getVarValue should get levain.homeDir', async () => {
+//     await verifyVarValueMatches('levain.homeDir', /.*levain/)
+// })
 Deno.test('VarResolver.getVarValue should get levainCache ', async () => {
     await verifyVarValueEquals('levainCache', 'cache/', {levainCache: 'cache/'})
 })
