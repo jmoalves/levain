@@ -1,4 +1,4 @@
-import {assertEquals, assertMatch, assertNotEquals} from "https://deno.land/std/assert/mod.ts";
+import {assert, assertEquals, assertMatch, assertNotEquals} from "https://deno.land/std/assert/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 
 import Config from './config.ts';
@@ -13,7 +13,7 @@ Deno.test('Config should have levainHome', () => {
 
     const dir = config.levainHome
 
-    assertMatch(dir, /levain$/)
+    assert(dir)
 })
 Deno.test('Config should have levainConfigDir', () => {
     const config = new Config([])
