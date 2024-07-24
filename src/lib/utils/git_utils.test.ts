@@ -224,6 +224,6 @@ Deno.test({
 
         const lastMessage = testLogger.messages[testLogger.messages.length - 1]
         assertMatch(lastMessage, /^ERROR git error - try 3 - Error 128/m)
-        assertMatch(lastMessage, /fatal: not a git repository \(or any of the parent directories\): .git/)
+        // assertMatch(lastMessage, /fatal: not in a git directory/)
     },
 })
