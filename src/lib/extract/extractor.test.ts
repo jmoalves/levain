@@ -48,4 +48,4 @@ Deno.test('Extractor should handle type option', async () => {
 
     // Workaround - https://github.com/denoland/deno/issues/15425
     await new Promise((resolve) => setTimeout(resolve, 0));
-}
+})
