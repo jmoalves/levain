@@ -196,7 +196,7 @@ export class FileUtils {
 
                 // Preserve timestamps
                 if (r.motificationTime instanceof Date && dst.motificationTime instanceof Date) {
-                    Deno.utimeSync(dstFile, r.motificationTime, r.motificationTime)
+                    Deno.utimeSync(dstFile, new Date(), r.motificationTime)
                     log.debug(`Timestamps preserved - ${dstFile}`)
                 } else {
                     log.debug(`Could not preserve timestamps - ${dstFile}`)

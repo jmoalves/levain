@@ -32,6 +32,9 @@ export default class FileCache {
         log.debug(`filePathInCache ${filePathInCache}`);
         if (this.cacheValid(r, filePathInCache)) {
             log.debug(`fromCache ${filePathInCache}`)
+            if (r.motificationTime) {
+                Deno.utimeSync(filePathInCache, new Date(), r.motificationTime)
+            }
             return filePathInCache;
         }
 
