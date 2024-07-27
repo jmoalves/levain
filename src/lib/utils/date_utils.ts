@@ -1,3 +1,5 @@
+import subDays from "https://deno.land/x/date_fns/subDays/index.ts";
+
 export default class DateUtils {
     static dateTimeTag(dt: Date = new Date()): string {
         return `${DateUtils.dateTag(dt)}-${DateUtils.timeTag(dt)}`
@@ -28,5 +30,9 @@ export default class DateUtils {
         tag += separator;
         tag += (millis < 10 ? "00" : ( millis < 100 ? "0" : "")) + millis;
         return tag;
+    }
+
+    static daysAgo(days: number): Date {
+        return subDays(new Date(), days);
     }
 }

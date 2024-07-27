@@ -2,6 +2,8 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import {existsSync} from "https://deno.land/std/fs/mod.ts";
 
+import isBefore from "https://deno.land/x/date_fns/isBefore/index.ts";
+
 import t from '../lib/i18n.ts'
 
 import Config from "../lib/config.ts";
@@ -14,6 +16,8 @@ import LevainVersion from "../levain_version.ts";
 import ConsoleFeedback from "../lib/utils/console_feedback.ts";
 
 import Command from "./command.ts";
+
+const cacheExpiration = 30;
 
 export default class CleanCommand implements Command {
     readonly feedback = new ConsoleFeedback();
@@ -55,54 +59,58 @@ export default class CleanCommand implements Command {
 
         this.feedback.start(t("cmd.clean.startFeedback"))
 
-        if (myArgs.cache) {
-            const cacheDir = this.config.levainCacheDir
-
-            let size = this.cleanDir(cacheDir)
-            total += size
-        }
+        total += this.cleanCacheDir(myArgs.cache);
 
         if (myArgs.backup) {
-            const backupDir = this.config.levainBackupDir
-
-            let checkFile = undefined
-            if (shallow) {
-                checkFile = ((dirEntry:any) => {
-                    // Keep today's backup
-                    if (!dirEntry.name.match(`^bkp-${DateUtils.dateTag()}-`)) {
-                        return true
-                    }
-        
-                    return false
-                })
-            }
-
-            let size = this.cleanDir(backupDir, checkFile)
-            total += size
-
-            size = this.cleanFailedSaves()
-            total += size
+            total += this.cleanBackupDir(shallow);
+            total += this.cleanFailedSaves()
         }
 
         if (myArgs.temp) {
             const tempDir = this.config.levainSafeTempDir
-
-            let size = this.cleanDir(tempDir)
-            total += size
-
-            size = this.cleanOsTempDir(shallow)
-            total += size
+            total += this.cleanDir(tempDir)
+            total += this.cleanOsTempDir(shallow)
         }
 
         if (myArgs.logs) {
-            log.debug(t("cmd.clean.logs"))
-            let size = this.cleanLogs()
-            total += size
+            total += this.cleanLogs()
         }
 
         log.debug("=================")
         log.debug(t("cmd.clean.cleaned", { amount: StringUtils.humanizeBytes(total) }))
         this.feedback.reset(t("cmd.clean.endFeedback", { amount: StringUtils.humanizeBytes(total) }))
+    }
+
+    private cleanBackupDir(shallow: boolean) {
+        const backupDir = this.config.levainBackupDir;
+
+        let checkFile = undefined;
+        if (shallow) {
+            checkFile = ((dirEntry: any) => {
+                // Keep today's backup
+                if (!dirEntry.name.match(`^bkp-${DateUtils.dateTag()}-`)) {
+                    return true;
+                }
+
+                return false;
+            });
+        }
+
+        return this.cleanDir(backupDir, checkFile);
+    }
+
+    private cleanCacheDir(cleanCache: boolean) {
+        const cacheDir = this.config.levainCacheDir;
+        if (cleanCache) {
+            return this.cleanDir(cacheDir)
+        }
+
+        // clean files older than 30 days
+        return this.cleanDir(cacheDir, cleanCache ? undefined : (dirEntry:Deno.DirEntry) => {
+            const entry = path.resolve(cacheDir, dirEntry.name)
+            const stat = Deno.statSync(entry)
+            return (!stat.mtime ? false : isBefore(stat.mtime, DateUtils.daysAgo(cacheExpiration)))
+        });
     }
 
     private cleanDir(entry: string, includeResolver?:((dirEntry:Deno.DirEntry) => boolean)): number {
@@ -147,7 +155,7 @@ export default class CleanCommand implements Command {
             return 0;
         }
 
-        let size = this.cleanDir(saveDir, (dirEntry:any) => {
+        return this.cleanDir(saveDir, (dirEntry:any) => {
             if (dirEntry.name.match(/^\.rename\./)) {
                 // log.debug(`RM ${dirEntry.name}`)
                 return true
@@ -160,8 +168,6 @@ export default class CleanCommand implements Command {
 
             return false
         })
-
-        return size
     }
 
     private cleanOsTempDir(shallow: boolean): number {
@@ -207,12 +213,14 @@ export default class CleanCommand implements Command {
     }
 
     private cleanLogs(): number {
+        log.debug(t("cmd.clean.logs"))
+
         let tempDir = this.getOsTempDir();
         if (!tempDir) {
             return 0;
         }
 
-        let size = this.cleanDir(tempDir, (dirEntry) => {
+        return this.cleanDir(tempDir, (dirEntry) => {
             if (dirEntry.isFile && dirEntry.name.match("^levain-.*\.log")) {
                 let dateTag = ConsoleAndFileLogger.logDateTag();
                 if (!dirEntry.name.match(`^levain-${dateTag}-.*`)) { // Do not remove today's logs
@@ -222,8 +230,6 @@ export default class CleanCommand implements Command {
 
             return false
         })
-
-        return size
     }
 
     private getOsTempDir() {
