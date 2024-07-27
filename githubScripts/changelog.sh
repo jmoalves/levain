@@ -25,6 +25,8 @@ fi
 echo
 echo '* Deno version: ' $( ${denoDir}/deno -V | sed 's/deno //ig' )
 echo
+echo '**WARNING:** Some security software may block `levain.exe`. Ask advice from your Systems Administrator.'
+echo
 echo '# Changes from' $vStart to $vEnd
 git log v${vStart}..v${vEnd} --no-merges --dense --pretty="- %s" \
     | grep -v "^- vHEAD" \
