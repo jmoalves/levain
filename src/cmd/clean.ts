@@ -109,7 +109,7 @@ export default class CleanCommand implements Command {
         return this.cleanDir(cacheDir, cleanCache ? undefined : (dirEntry:Deno.DirEntry) => {
             const entry = path.resolve(cacheDir, dirEntry.name)
             const stat = Deno.statSync(entry)
-            return (!stat.mtime ? false : isBefore(stat.mtime, DateUtils.daysAgo(cacheExpiration)))
+            return (!stat.birthtime ? false : isBefore(stat.birthtime, DateUtils.daysAgo(cacheExpiration)))
         });
     }
 
