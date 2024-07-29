@@ -21,7 +21,7 @@ iwr https://github.com/jmoalves/levain/releases/latest/download/install.ps1 | ie
 
 ### Install a specific Levain version
 ```powershell
-$levainVersion="0.90.4";iwr https://github.com/jmoalves/levain/releases/latest/download/install.ps1 | iex
+$levainVersion="0.91.3";iwr https://github.com/jmoalves/levain/releases/latest/download/install.ps1 | iex
 ```
 
 ### Choose another destination directory
