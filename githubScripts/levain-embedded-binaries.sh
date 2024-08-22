@@ -81,9 +81,8 @@ tar xf ${zipDir}/7z.tar.xz --xz -C ${zipDir}
 zipTool=${zipDir}/7zzs
 
 
-# EXTRA-BIN: git
-# https://github.com/git-for-windows/git/releases/latest
-gitUrl=https://github.com/git-for-windows/git/releases/download/v2.45.2.windows.1/MinGit-2.45.2-64-bit.zip
+# EXTRA-BIN: git latest
+gitUrl=$( ${scriptPath}/github-get-release.sh -o git-for-windows -r git | jq -r '.assets[].browser_download_url' | grep 'MinGit-[0-9.]\+-64-bit.zip' )
 gitDir=${levainDir}/extra-bin/windows/git
 
 echo
