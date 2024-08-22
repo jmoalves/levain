@@ -11,6 +11,7 @@ echoDebug() { $debug && printf "DEBUG: %s\n" "$*" >&2; }
 vStart=$1
 vEnd=$2
 denoDir=$3
+levainDir=$4
 
 if [ "$vStart" == "LATEST" -o "$vStart" == "latest" ]; then
     # Levain latest

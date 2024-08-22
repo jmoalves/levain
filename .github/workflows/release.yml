@@ -117,7 +117,7 @@ jobs:
 
       - name: Changelog
         run: |
-          bash $GITHUB_WORKSPACE/githubScripts/changelog.sh latest $LEVAIN_VERSION $DENO_ROOT_PATH/linux > $RUNNER_TEMP/changelog.$LEVAIN_VERSION.md
+          bash $GITHUB_WORKSPACE/githubScripts/changelog.sh latest $LEVAIN_VERSION $DENO_ROOT_PATH/linux $LEVAIN_RELEASE_BIN_PATH/build > $RUNNER_TEMP/changelog.$LEVAIN_VERSION.md
         env:
           DENO_ROOT_PATH: ${{ runner.temp }}/deno
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
