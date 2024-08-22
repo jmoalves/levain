@@ -108,6 +108,9 @@ echo "* 7-Zip: $( echo ${sevenRelease} | jq -r '.tag_name' )" >> $inventoryFile
 echo
 downloadBinary -i "7-Zip" -u $sevenUrl -d $sevenDir
 
+echo
+echo Inventory: $inventoryFile
+cat $inventoryFile
 
 ## CLEANUP
 echo
