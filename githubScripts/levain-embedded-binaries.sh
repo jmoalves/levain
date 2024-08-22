@@ -72,7 +72,7 @@ fi
 
 
 # 7Zip - Linux - latest
-sevenToolUrl=$( ${scriptPath}/github-get-release.sh -o ip7z -r 7zip | jq -r '.assets[].browser_download_url' | grep 'linux-x64.tar.xz' )
+sevenToolUrl=$( bash ${scriptPath}/github-get-release.sh -o ip7z -r 7zip | jq -r '.assets[].browser_download_url' | grep 'linux-x64.tar.xz' )
 echo = 7Zip - Tool - ${sevenToolUrl}
 zipDir=$( mktemp -d )
 rm -rf $zipDir
@@ -90,7 +90,7 @@ touch $inventoryFile
 
 
 # EXTRA-BIN: git latest
-gitRelease=$( ${scriptPath}/github-get-release.sh -o git-for-windows -r git )
+gitRelease=$( bash ${scriptPath}/github-get-release.sh -o git-for-windows -r git )
 gitUrl=$( echo ${gitRelease} | jq -r '.assets[].browser_download_url' | grep 'MinGit-[0-9.]\+-64-bit.zip' )
 gitDir=${levainDir}/extra-bin/windows/git
 echo "* Git: $( echo ${gitRelease} | jq -r '.tag_name' )" >> $inventoryFile
@@ -100,7 +100,7 @@ downloadBinary -i git -u $gitUrl -d $gitDir
 
 
 # EXTRA-BIN: 7-Zip latest
-sevenRelease=$( ${scriptPath}/github-get-release.sh -o ip7z -r 7zip )
+sevenRelease=$( bash ${scriptPath}/github-get-release.sh -o ip7z -r 7zip )
 sevenUrl=$( echo ${sevenRelease} | jq -r '.assets[].browser_download_url' | grep '\-x64.exe' )
 sevenDir=${levainDir}/extra-bin/windows/7-zip
 echo "* 7-Zip: $( echo ${sevenRelease} | jq -r '.tag_name' )" >> $inventoryFile
