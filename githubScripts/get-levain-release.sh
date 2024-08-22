@@ -7,7 +7,7 @@ levainVersion=$1
 levainDir=$2
 
 ## levain
-levainRelease=$( bash $scriptPath/github-release.sh -o jmoalves -r levain $levainVersion )
+levainRelease=$( bash $scriptPath/github-get-release.sh -o jmoalves -r levain $levainVersion )
 if [ -z "$levainRelease" ]; then
   echo ERROR getting levain release ${levainVersion}
   exit 1

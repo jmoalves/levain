@@ -14,7 +14,7 @@ denoDir=$3
 
 if [ "$vStart" == "LATEST" -o "$vStart" == "latest" ]; then
     # Levain latest
-    levainRelease=$( bash $scriptPath/github-release.sh -o jmoalves -r levain latest )
+    levainRelease=$( bash $scriptPath/github-get-release.sh -o jmoalves -r levain latest )
     if [ -z "$levainRelease" ]; then
         echoErr ERROR getting levain release latest
         exit 1

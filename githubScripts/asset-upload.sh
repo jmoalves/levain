@@ -12,7 +12,7 @@ if [ ! -r ${assetFile} ]; then
   exit 1
 fi
 
-levainRelease=$( bash $scriptPath/github-release.sh -o jmoalves -r levain $levainVersion )
+levainRelease=$( bash $scriptPath/github-get-release.sh -o jmoalves -r levain $levainVersion )
 if [ -z "$levainRelease" ]; then
   echo ERROR getting levain release ${levainVersion}
   exit 1
