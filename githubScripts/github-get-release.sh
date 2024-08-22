@@ -1,5 +1,7 @@
 #!/bin/bash
 
+scriptPath="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd && cd - >/dev/null 2>&1 )"
+
 debug=false
 echoErr() { printf "ERR: %s\n" "$*" >&2; }
 echoDebug() { $debug && printf "DEBUG: %s\n" "$*" >&2; }
