@@ -70,13 +70,13 @@ if [ -z "$levainDir" ]; then
   exit 1
 fi
 
-# 7Zip - Linux
-# https://www.7-zip.org/download.html
-echo = 7Zip - Tool
+# 7Zip - Linux - latest
+sevenToolUrl=$( ${scriptPath}/github-get-release.sh -o ip7z -r 7zip | jq -r '.assets[].browser_download_url' | grep 'linux-x64.tar.xz' )
+echo = 7Zip - Tool - ${sevenToolUrl}
 zipDir=$( mktemp -d )
 rm -rf $zipDir
 mkdir -p $zipDir
-curl -ks -o ${zipDir}/7z.tar.xz https://www.7-zip.org/a/7z2407-linux-x64.tar.xz
+curl -ks -o ${zipDir}/7z.tar.xz ${sevenToolUrl}
 tar xf ${zipDir}/7z.tar.xz --xz -C ${zipDir}
 zipTool=${zipDir}/7zzs
 
@@ -89,9 +89,8 @@ echo
 downloadBinary -i git -u $gitUrl -d $gitDir
 
 
-# EXTRA-BIN: 7-Zip
-# https://www.7-zip.org/download.html
-sevenUrl=https://www.7-zip.org/a/7z2407-x64.exe
+# EXTRA-BIN: 7-Zip latest
+sevenUrl=$( ${scriptPath}/github-get-release.sh -o ip7z -r 7zip | jq -r '.assets[].browser_download_url' | grep '\-x64.exe' )
 sevenDir=${levainDir}/extra-bin/windows/7-zip
 
 echo
