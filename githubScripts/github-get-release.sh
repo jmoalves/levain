@@ -4,12 +4,6 @@ debug=false
 echoErr() { printf "ERR: %s\n" "$*" >&2; }
 echoDebug() { $debug && printf "DEBUG: %s\n" "$*" >&2; }
 
-local owner=
-local repo=
-local debug=false
-local timeout=
-
-local OPTIND OPTARG o
 while getopts "o:r:dt:" o; do
 case "${o}" in
 o)
@@ -36,7 +30,7 @@ esac
 done
 shift $((OPTIND - 1))
 
-local version=$1
+version=$1
 
 echoDebug getRelease - owner...: $owner
 echoDebug getRelease - repo....: $repo
@@ -57,7 +51,7 @@ fi
 echoDebug getRelease - URL: ${url}
 
 # Release
-local release=$(curl -ks -X GET ${url} )
+release=$(curl -ks -X GET ${url} )
 
 if echo $release | grep -qi "Not Found"; then
     echoErr Release $version NOT FOUND at $url
