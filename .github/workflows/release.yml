@@ -122,6 +122,7 @@ jobs:
           DENO_ROOT_PATH: ${{ runner.temp }}/deno
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
+          LEVAIN_RELEASE_BIN_PATH: ${{ runner.temp }}/bin/levain-${{ env.RELEASE_VERSION }}
 
       - name: Levain install - PowerShell
         run: |
