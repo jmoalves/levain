@@ -23,9 +23,18 @@ if [ "$vStart" == "LATEST" -o "$vStart" == "latest" ]; then
 fi
 
 echo
-echo '* Deno version: ' $( ${denoDir}/deno -V | sed 's/deno //ig' )
-echo
 echo '**WARNING:** Some security software may block `levain.exe`. Ask your Systems Administrator for advice.'
+
+
+echo
+echo '# Support binaries'
+echo '* Deno: ' $( ${denoDir}/deno -V | sed 's/deno //ig' )
+if [ -e ${levainDir}/extra-bin/windows/inventory.md ]; then
+    cat ${levainDir}/extra-bin/windows/inventory.md
+fi
+echo
+
+
 echo
 echo '# Changes from' $vStart to $vEnd
 git log v${vStart}..v${vEnd} --no-merges --dense --pretty="- %s" \
