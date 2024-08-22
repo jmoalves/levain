@@ -29,7 +29,9 @@ echo '**WARNING:** Some security software may block `levain.exe`. Ask your Syste
 
 echo
 echo '# Support binaries'
-echo '* Deno: ' $( ${denoDir}/deno -V | sed 's/deno //ig' )
+echo "| Software | version |"
+echo "| :----- | :------- |"
+echo "| Deno | $( ${denoDir}/deno -V | sed 's/deno //ig' ) |"
 if [ -e ${levainDir}/extra-bin/windows/inventory.md ]; then
     cat ${levainDir}/extra-bin/windows/inventory.md
 fi

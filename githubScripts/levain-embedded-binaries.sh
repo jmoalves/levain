@@ -93,7 +93,7 @@ touch $inventoryFile
 gitRelease=$( bash ${scriptPath}/github-get-release.sh -o git-for-windows -r git )
 gitUrl=$( echo ${gitRelease} | jq -r '.assets[].browser_download_url' | grep 'MinGit-[0-9.]\+-64-bit.zip' )
 gitDir=${levainDir}/extra-bin/windows/git
-echo "* Git: $( echo ${gitRelease} | jq -r '.tag_name' )" >> $inventoryFile
+echo "| Git | $( echo ${gitRelease} | jq -r '.tag_name' ) |" >> $inventoryFile
 
 echo
 downloadBinary -i git -u $gitUrl -d $gitDir
@@ -103,7 +103,7 @@ downloadBinary -i git -u $gitUrl -d $gitDir
 sevenRelease=$( bash ${scriptPath}/github-get-release.sh -o ip7z -r 7zip )
 sevenUrl=$( echo ${sevenRelease} | jq -r '.assets[].browser_download_url' | grep '\-x64.exe' )
 sevenDir=${levainDir}/extra-bin/windows/7-zip
-echo "* 7-Zip: $( echo ${sevenRelease} | jq -r '.tag_name' )" >> $inventoryFile
+echo "| 7-Zip | $( echo ${sevenRelease} | jq -r '.tag_name' ) |" >> $inventoryFile
 
 echo
 downloadBinary -i "7-Zip" -u $sevenUrl -d $sevenDir
