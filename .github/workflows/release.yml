@@ -92,14 +92,6 @@ jobs:
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }}
           NEXT_VERSION: ${{ env.NEXT_VERSION }}
   
-      - name: Changelog
-        run: |
-          bash $GITHUB_WORKSPACE/githubScripts/changelog.sh latest $LEVAIN_VERSION $DENO_ROOT_PATH/linux > $RUNNER_TEMP/changelog.$LEVAIN_VERSION.md
-        env:
-          DENO_ROOT_PATH: ${{ runner.temp }}/deno
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
-
       - name: Copy tagged version
         run: |
           bash $GITHUB_WORKSPACE/githubScripts/get-levain-tag.sh $LEVAIN_VERSION $LEVAIN_RELEASE_SRC_PATH
@@ -122,6 +114,14 @@ jobs:
         env:
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
           LEVAIN_RELEASE_BIN_PATH: ${{ runner.temp }}/bin/levain-${{ env.RELEASE_VERSION }}
+
+      - name: Changelog
+        run: |
+          bash $GITHUB_WORKSPACE/githubScripts/changelog.sh latest $LEVAIN_VERSION $DENO_ROOT_PATH/linux > $RUNNER_TEMP/changelog.$LEVAIN_VERSION.md
+        env:
+          DENO_ROOT_PATH: ${{ runner.temp }}/deno
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LEVAIN_VERSION: ${{ env.RELEASE_VERSION }} 
 
       - name: Levain install - PowerShell
         run: |
