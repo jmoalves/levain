@@ -3,7 +3,6 @@ Levain
 [![Release](https://img.shields.io/github/v/release/jmoalves/levain)![GitHub Release Date](https://img.shields.io/github/release-date/jmoalves/levain?display_date=published_at&label=%20)](https://github.com/jmoalves/levain/releases/latest)
 ======
 [![Check sources](https://github.com/jmoalves/levain/actions/workflows/checkSources.yml/badge.svg)](https://github.com/jmoalves/levain/actions/workflows/checkSources.yml)
-[![Unit tests](https://github.com/jmoalves/levain/actions/workflows/test-unit.yml/badge.svg)](https://github.com/jmoalves/levain/actions/workflows/test-unit.yml)
 [![codecov](https://codecov.io/gh/jmoalves/levain/graph/badge.svg?token=24E0G0XZNF)](https://codecov.io/gh/jmoalves/levain)
 [![Test - e2e](https://github.com/jmoalves/levain/actions/workflows/test-e2e.yml/badge.svg)](https://github.com/jmoalves/levain/actions/workflows/test-e2e.yml)
 
