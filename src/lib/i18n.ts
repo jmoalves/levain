@@ -1,9 +1,9 @@
 import i18next from "https://deno.land/x/i18next/index.js";
 
-import enTranslation from "../locales/en/translation.json" assert {
+import enTranslation from "../locales/en/translation.json" with {
   type: "json",
 };
-import ptTranslation from "../locales/pt/translation.json" assert {
+import ptTranslation from "../locales/pt/translation.json" with {
   type: "json",
 };
 
