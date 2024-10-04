@@ -23,7 +23,7 @@ export default class StringUtils {
         let minutes = Math.floor(seconds / 60);
         seconds = seconds % 60;
 
-        let hours = Math.floor(minutes / 60);
+        const hours = Math.floor(minutes / 60);
         minutes = minutes % 60;
 
         let str = "";
@@ -46,7 +46,7 @@ export default class StringUtils {
         return str.trim();
     }
 
-    static parseBoolean(value: any) {
+    static parseBoolean(value: string|boolean|number|undefined|null) {
         return ![null, undefined, false, 'false', 0, '0'].includes(value)
     }
 
@@ -70,8 +70,8 @@ export default class StringUtils {
         }
 
         size = Math.round(size * 1000)
-        let intPart = Math.round(size / 1000)
-        let decPart = size % 1000
+        const intPart = Math.round(size / 1000)
+        const decPart = size % 1000
 
         return `${StringUtils.padNum(intPart, 4)}.${(decPart + "").padStart(3, "0")} ${units[idx].padStart(2)}`
     }
@@ -91,11 +91,11 @@ export default class StringUtils {
     }
 
     static findSimilar(search: string, database: string[]) : Set<string> {
-        let names: Set<string> = new Set();
+        const names: Set<string> = new Set();
 
-        for (let name of database) {
-            let d = this.partialDistance(search.toLowerCase(), name.toLowerCase())
-            let perc = d / search.length
+        for (const name of database) {
+            const d = this.partialDistance(search.toLowerCase(), name.toLowerCase())
+            const perc = d / search.length
             // log.info(`|${search} - ${name}| = ${d} - ${perc}`)
             if ((d>=0) && (perc <= 0.40)) {
                 names.add(name)
@@ -107,15 +107,15 @@ export default class StringUtils {
 
     private static partialDistance(str1: string, str2: string): number {
         // http://www.augustobaffa.pro.br/wiki/Dist%C3%A2ncia_de_Levenshtein
-        let diff = str2.length - str1.length
+        const diff = str2.length - str1.length
         if (diff <= 0) {
             return distance(str1, str2)
         }
 
         let ret = Number.MAX_VALUE;
         for (let i = 0; i <= diff; i++) {
-            let partial = str2.substring(i, i + str1.length)
-            let v = distance(str1, partial)
+            const partial = str2.substring(i, i + str1.length)
+            const v = distance(str1, partial)
             ret = Math.min(ret, v)
         }
 
