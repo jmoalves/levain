@@ -175,8 +175,9 @@ export default class UserInfoUtil {
     }
 
     async askPassword(config: Config): Promise<string> {
+        // const allowedAndTestedPasswordChars = '#!@$'
         const forbiddenPasswordChars = '^&'
-        // const allowedAndTestedPasswordChars = '#!@'
+        const forbiddenPasswordSequences = ['$$'].concat(forbiddenPasswordChars.split(''))
 
         let tries = 0
         let alertPasswordSize = false
@@ -189,7 +190,7 @@ export default class UserInfoUtil {
             console.log(t("lib.user_info.userinfo_util.passwordWarning.1"))
             console.log(t("lib.user_info.userinfo_util.passwordWarning.2"))
             console.log(t("lib.user_info.userinfo_util.passwordWarning.3"))
-            console.log(` === ${forbiddenPasswordChars}`)
+            console.log(` === ${forbiddenPasswordSequences.join(' ')}`)
             console.log(' ========================================================================================')
             console.log('')
 
@@ -221,7 +222,7 @@ export default class UserInfoUtil {
             console.log("");
 
             if (password == pw2) {
-                if (StringUtils.textContainsAtLeastOneChar(password || '', forbiddenPasswordChars)) {
+                if (StringUtils.textContainsAtLeastOneSequence(password || '', forbiddenPasswordSequences)) {
                     throw t("lib.user_info.userinfo_util.invalidChar")
                 }
 

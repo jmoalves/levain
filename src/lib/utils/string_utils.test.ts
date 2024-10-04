@@ -2,9 +2,16 @@ import {assertEquals} from "https://deno.land/std/assert/mod.ts";
 
 import StringUtils from './string_utils.ts';
 
-Deno.test('StringUtils - should check if textContainsChars', () => {
+Deno.test('StringUtils - should check if textContainsAtLeastOneChar', () => {
     assertEquals(StringUtils.textContainsAtLeastOneChar('abc', 'xyz'), false)
     assertEquals(StringUtils.textContainsAtLeastOneChar('abc', 'cde'), true)
+})
+
+Deno.test('StringUtils - should check if textContainsAtLeastOneSequence', () => {
+    assertEquals(StringUtils.textContainsAtLeastOneSequence('abc', ['xyz']), false)
+    assertEquals(StringUtils.textContainsAtLeastOneSequence('abc', ['xyz', 'abc']), true)
+    assertEquals(StringUtils.textContainsAtLeastOneSequence('abc', []), false)
+    assertEquals(StringUtils.textContainsAtLeastOneSequence('', []), false)
 })
 
 Deno.test('StringUtils - humanizeMillis', () => {
@@ -52,9 +59,9 @@ Deno.test('StringUtils - padNum', () => {
     assertEquals(StringUtils.padNum(258, 5), '  258')
     assertEquals(StringUtils.padNum(258, 5, "0"), '00258')
 
-    let x;
-    assertEquals(StringUtils.padNum(x, 7, " "), '       ')
-    assertEquals(StringUtils.padNum(x, 7, "0"), '0000000')
+    const undef = undefined;
+    assertEquals(StringUtils.padNum(undef, 7, " "), '       ')
+    assertEquals(StringUtils.padNum(undef, 7, "0"), '0000000')
 })
 
 Deno.test('StringUtils - padEnd', () => {
@@ -62,8 +69,8 @@ Deno.test('StringUtils - padEnd', () => {
 
     assertEquals(StringUtils.padEnd('258', 5), '258  ')
 
-    let x;
-    assertEquals(StringUtils.padEnd(x, 7), '       ')
+    const undef = undefined;
+    assertEquals(StringUtils.padEnd(undef, 7), '       ')
 })
 
 Deno.test('StringUtils - humanizeBytes', () => {

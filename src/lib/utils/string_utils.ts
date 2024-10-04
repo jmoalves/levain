@@ -1,10 +1,13 @@
-import * as log from "https://deno.land/std/log/mod.ts";
 import {distance} from 'https://deno.land/x/fastest_levenshtein/mod.ts'
 
 export default class StringUtils {
 
-    static textContainsAtLeastOneChar(text: string, chars: string) {
+    static textContainsAtLeastOneChar(text: string, chars: string): boolean {
         return [...chars].some(char => text.includes(char));
+    }
+
+    static textContainsAtLeastOneSequence(text: string, sequences: string[]): boolean {
+        return sequences.some(sequence => text.includes(sequence));
     }
 
     static humanizeMillis(millis: number): string {
@@ -44,9 +47,7 @@ export default class StringUtils {
     }
 
     static parseBoolean(value: any) {
-        return [null, undefined, false, 'false', 0, '0'].includes(value)
-            ? false
-            : true
+        return ![null, undefined, false, 'false', 0, '0'].includes(value)
     }
 
     static padEnd(text: string | undefined, size: number): string {
