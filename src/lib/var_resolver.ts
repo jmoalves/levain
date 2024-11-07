@@ -102,6 +102,10 @@ export default class VarResolver {
                 return Deno.env.get(vName)
             }
 
+            if (config?.getVar(`levain.var.default.${vName}`)) {
+                return config.getVar(`levain.var.default.${vName}`)
+            }
+
             return undefined
         }
     }
