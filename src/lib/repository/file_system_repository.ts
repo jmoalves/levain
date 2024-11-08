@@ -152,8 +152,8 @@ export default class FileSystemRepository extends AbstractRepository {
             return []
         }
 
-        let promisesDir: Array<Promise<Array<Package>>> = []
-        let promisesFile: Array<Promise<Package | undefined>> = []
+        const promisesFile: Array<Promise<Package | undefined>> = []
+        const promisesDir: Array<Promise<Array<Package>>> = []
 
         for (const entry of entries) {
             // User feedback
@@ -182,25 +182,35 @@ export default class FileSystemRepository extends AbstractRepository {
             }
         }
 
-        let packages: Array<Package> = [];
+        return new Promise((resolve, reject) => {
+            const promises = this.mergePromises(promisesDir, promisesFile)
 
+            Promise.all(promises).then((packages) => {
+                resolve(packages.flat())
+            }).catch((error) => {
+                log.error(`Error crawling packages: ${error}`)
+                reject(error)
+            })
+        })
+    }
+
+    private mergePromises(promisesDir: Array<Promise<Array<Package>>>, promisesFile: Array<Promise<Package | undefined>>): Array<Promise<Array<Package>>> {
         if (promisesFile.length > 0) {
-            let pkgsFile = await Promise.all(promisesFile)
-            for (let pkg of pkgsFile) {
-                if (pkg) {
-                    packages.push(pkg)
+            const promiseFileArr = Promise.all(promisesFile).then((pkgsFile) => {
+                const packages: Array<Package> = [];
+                for (const pkg of pkgsFile) {
+                    if (pkg) {
+                        packages.push(pkg)
+                    }
                 }
-            }    
+
+                return packages
+            })
+
+            promisesDir.unshift(promiseFileArr)
         }
 
-        if (promisesDir.length > 0) {
-            let pkgsDir = await Promise.all(promisesDir)
-            for (let pkgArr of pkgsDir) {
-                Array.prototype.push.apply(packages, pkgArr)    
-            }
-        }
-
-        return packages;
+        return promisesDir
     }
 
     private isPackageFile(yamlFile: string): boolean {
