@@ -1,31 +1,31 @@
 import {assertEquals, assertRejects} from "jsr:@std/assert";
 
 //
-// inputAndValidate
+// askUser
 //
 import {InputLogin} from "./input_login.ts";
 import {CliffyTestHelper} from "./cliffy_test_helper.ts";
 
-Deno.test('InputLogin.inputAndValidate should get a login', async () => {
+Deno.test('InputLogin.askUser should get a login', async () => {
     CliffyTestHelper.inputResponse('rfwal')
 
-    const input = await InputLogin.inputAndValidate('afo')
+    const input = await InputLogin.askUser('afo')
 
     assertEquals(input, 'rfwal')
 })
-Deno.test('InputLogin.inputAndValidate should accept a default value', async () => {
+Deno.test('InputLogin.askUser should accept a default value', async () => {
     CliffyTestHelper.inputResponse('')
 
-    const input = await InputLogin.inputAndValidate('ppppp')
+    const input = await InputLogin.askUser('ppppp')
 
     assertEquals(input, 'ppppp')
 })
-Deno.test('InputEmail.inputAndValidate should reject an invalid value', async () => {
+Deno.test('InputEmail.askUser should reject an invalid value', async () => {
     CliffyTestHelper.inputResponse('--invalid-email--')
 
     assertRejects(
         async () => {
-            await InputLogin.inputAndValidate('defaultValue@server.com')
+            await InputLogin.askUser('defaultValue@server.com')
         },
         Error
     )
