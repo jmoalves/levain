@@ -1,5 +1,6 @@
 import * as log from "jsr:@std/log";
-import {LogRecord, LogLevels} from "jsr:@std/log"
+import {LogLevels} from "jsr:@std/log"
+import {LogRecord} from "jsr:@std/log/logger"
 import * as path from "jsr:@std/path"
 
 import {existsSync, copySync} from "jsr:@std/fs"
