@@ -1,6 +1,6 @@
-import {assert} from "https://deno.land/std/assert/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import {existsSync} from "https://deno.land/std/fs/mod.ts";
+import {assert} from "jsr:@std/assert";
+import * as path from "jsr:@std/path";
+import {existsSync} from "jsr:@std/fs";
 import TestHelper from '../../lib/test/test_helper.ts';
 import OsUtils from '../../lib/os/os_utils.ts';
 import ActionFactory from '../action_factory.ts';

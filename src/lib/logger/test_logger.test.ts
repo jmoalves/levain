@@ -1,5 +1,5 @@
-import {assertEquals,} from 'https://deno.land/std/assert/mod.ts';
-import * as log from 'https://deno.land/std/log/mod.ts';
+import {assertEquals,} from 'jsr:@std/assert';
+import * as log from 'jsr:@std/log';
 
 import TestLogger from "./test_logger.ts";
 import LogUtils from "./log_utils.ts";

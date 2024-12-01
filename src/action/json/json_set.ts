@@ -1,5 +1,5 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import {existsSync} from "https://deno.land/std/fs/mod.ts";
+import * as log from "jsr:@std/log";
+import {existsSync} from "jsr:@std/fs";
 
 import Action from "../action.ts";
 import Package from "../../lib/package/package.ts";

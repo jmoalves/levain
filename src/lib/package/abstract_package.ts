@@ -1,4 +1,4 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "jsr:@std/log";
 
 import StringUtils from '../utils/string_utils.ts';
 import Repository from '../repository/repository.ts';

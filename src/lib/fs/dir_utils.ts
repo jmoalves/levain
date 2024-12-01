@@ -1,4 +1,4 @@
-import {existsSync, WalkEntry, walkSync} from "https://deno.land/std/fs/mod.ts";
+import {existsSync, WalkEntry, walkSync} from "jsr:@std/fs";
 
 export default class DirUtils {
 

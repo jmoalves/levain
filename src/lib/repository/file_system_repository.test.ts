@@ -4,9 +4,9 @@ import {
     assertMatch,
     assertNotEquals,
     assertRejects
-} from "https://deno.land/std/assert/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import {ensureDirSync} from "https://deno.land/std/fs/mod.ts";
+} from "jsr:@std/assert";
+import * as path from "jsr:@std/path";
+import {ensureDirSync} from "jsr:@std/fs";
 
 import Config from "../config.ts";
 import FileSystemPackage from "../package/file_system_package.ts";

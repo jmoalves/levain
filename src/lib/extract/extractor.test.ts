@@ -1,4 +1,4 @@
-import * as path from "https://deno.land/std/path/mod.ts";
+import * as path from "jsr:@std/path";
 
 import TestHelper from "../test/test_helper.ts";
 import {assertFolderIncludes} from "../test/more_asserts.ts";

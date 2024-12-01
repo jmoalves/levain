@@ -1,5 +1,5 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
+import * as log from "jsr:@std/log";
+import * as path from "jsr:@std/path";
 
 import { sleepRandomAmountOfSeconds } from "https://deno.land/x/sleep/mod.ts";
 
@@ -26,7 +26,7 @@ export var homedir = function (): string {
     throw "No home for levain. Do you have a refrigerator?";
 }
 
-// https://github.com/caspervonb/deno-prompts/blob/master/mod.ts
+// https://github.com/caspervonb/deno-prompts/blob/master
 export function promptSecret(message: string): string | undefined {
     Deno.stdout.writeSync(new TextEncoder().encode(message));
 

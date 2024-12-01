@@ -1,9 +1,9 @@
 import TestHelper from "../../lib/test/test_helper.ts";
 import ActionFactory from "../action_factory.ts";
 import AddToStartMenuAction from "./add-to-start-menu.ts";
-import {assert} from "https://deno.land/std/assert/mod.ts";
+import {assert} from "jsr:@std/assert";
 import OsUtils from "../../lib/os/os_utils.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
+import * as path from "jsr:@std/path";
 import {assertPathDoesNotExist, assertPathExists} from "../../lib/test/more_asserts.ts";
 
 

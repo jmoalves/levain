@@ -1,4 +1,4 @@
-import {assertEquals} from "https://deno.land/std/assert/mod.ts";
+import {assertEquals} from "jsr:@std/assert";
 
 import {Powershell} from "./powershell.ts";
 import OsUtils from "./os_utils.ts";

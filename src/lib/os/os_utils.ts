@@ -1,6 +1,6 @@
-import * as path from "https://deno.land/std/path/mod.ts";
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as fs from "https://deno.land/std/fs/mod.ts";
+import * as path from "jsr:@std/path";
+import * as log from "jsr:@std/log";
+import * as fs from "jsr:@std/fs";
 import {ArrayUtils} from "../utils/array_utils.ts";
 import {envChain} from "../utils/utils.ts";
 import {Powershell} from "./powershell.ts";

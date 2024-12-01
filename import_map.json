@@ -1,6 +1,6 @@
 {
     "imports": {
-        "https://deno.land/std/": "https://deno.land/std/",
+        "jsr:@std/": "jsr:@std/",
         "https://deno.land/x/i18next/": "https://deno.land/x/i18next/",
         "https://deno.land/x/fastest_levenshtein/": "https://deno.land/x/fastest_levenshtein/",
         "https://deno.land/x/cliffy/": "https://deno.land/x/cliffy@v0.25.7/",

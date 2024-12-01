@@ -2,7 +2,7 @@ import MockRepository from "./mock_repository.ts";
 import {MockPackage} from "../package/mock_package.ts";
 import VersionNumber from "../utils/version_number.ts";
 
-import {assertEquals} from "https://deno.land/std/assert/mod.ts";
+import {assertEquals} from "jsr:@std/assert";
 import Repositories from "./repositories.ts";
 
 const repoMock1 = new MockRepository('mockRepo1', [

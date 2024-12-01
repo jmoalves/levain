@@ -1,5 +1,5 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import {parse} from "https://deno.land/std/flags/mod.ts";
+import * as log from "jsr:@std/log";
+import {parse} from "jsr:@std/flags";
 
 class Opts {
     stringOnce?: string[];

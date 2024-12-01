@@ -1,4 +1,4 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "jsr:@std/log";
 
 import t from './i18n.ts'
 

@@ -1,4 +1,4 @@
-import { assert, assertEquals } from "https://deno.land/std/assert/mod.ts";
+import { assert, assertEquals } from "jsr:@std/assert";
 
 import TestHelper from "./test_helper.ts";
 import { RegExpOptions } from "./test_helper.ts";

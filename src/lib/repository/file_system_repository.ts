@@ -1,6 +1,6 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import {existsSync, ExpandGlobOptions} from "https://deno.land/std/fs/mod.ts";
+import * as log from "jsr:@std/log";
+import * as path from "jsr:@std/path";
+import {existsSync, ExpandGlobOptions} from "jsr:@std/fs";
 
 import t from '../i18n.ts'
 

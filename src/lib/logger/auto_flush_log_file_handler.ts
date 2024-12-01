@@ -1,4 +1,4 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "jsr:@std/log";
 
 export class AutoFlushLogFileHandler extends log.FileHandler {
     constructor(

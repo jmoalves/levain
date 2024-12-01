@@ -1,9 +1,9 @@
 import TestHelper from "../../lib/test/test_helper.ts";
 import GitCloneAction from "./clone.ts";
-import {assert, assertEquals, assertRejects,} from "https://deno.land/std/assert/mod.ts";
+import {assert, assertEquals, assertRejects,} from "jsr:@std/assert";
 import {assertDirCount, assertFolderDoesNotInclude, assertFolderIncludes,} from "../../lib/test/more_asserts.ts";
-import {ensureFileSync,} from "https://deno.land/std/fs/mod.ts"
-import * as path from "https://deno.land/std/path/mod.ts"
+import {ensureFileSync,} from "jsr:@std/fs"
+import * as path from "jsr:@std/path"
 
 Deno.test('GitCloneAction should be obtainable from the actionsCommand factory', () => {
     const action = TestHelper.getActionFromFactory("clone");

@@ -1,5 +1,5 @@
 import Package from "../package/package.ts";
-import {assertEquals} from "https://deno.land/std/assert/mod.ts";
+import {assertEquals} from "jsr:@std/assert";
 import {assertArrayIncludesElements} from "./more_asserts.ts";
 
 export default class LevainAsserts {

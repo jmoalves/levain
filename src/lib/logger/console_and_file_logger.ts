@@ -1,6 +1,6 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import {ConsoleHandler, FileHandler} from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
+import * as log from "jsr:@std/log";
+import {ConsoleHandler, FileHandler} from "jsr:@std/log";
+import * as path from "jsr:@std/path";
 
 import Config from "../config.ts";
 import {AutoFlushLogFileHandler} from "./auto_flush_log_file_handler.ts";

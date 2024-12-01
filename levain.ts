@@ -1,5 +1,5 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
+import * as log from "jsr:@std/log";
+import * as path from "jsr:@std/path";
 
 import t from './src/lib/i18n.ts'
 

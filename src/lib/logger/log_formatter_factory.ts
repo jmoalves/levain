@@ -1,4 +1,4 @@
-import {LogRecord} from "https://deno.land/std/log/logger.ts"
+import {LogRecord} from "jsr:@std/log"
 
 import ConsoleAndFileLogger from "./console_and_file_logger.ts";
 
