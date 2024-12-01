@@ -31,7 +31,7 @@ export default class FileSystemRepository extends AbstractRepository {
         super(`FileSystemRepo`, path.resolve(rootDir))
     }
 
-    describe(): string {
+    override describe(): string {
         const description: string = super.describe()
         if (this.rootDir !== this.absoluteURI) {
             return description.replace(/\)/, t("lib.repository.file_system_repository.resolvedFrom", { dir: this.rootDir }))

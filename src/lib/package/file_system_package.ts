@@ -75,7 +75,7 @@ export default class FileSystemPackage extends AbstractPackage {
         return undefined;
     }
 
-    toString(): string {
+    override toString(): string {
         return "FSPackage["
             + this.name
             + ( this.version ? ` v${this.version}` : "")
