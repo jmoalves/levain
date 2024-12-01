@@ -39,7 +39,8 @@ function bouncing(file: string): boolean {
 
 async function runTest(file?: string): Promise<void> {
     await OsUtils.clearConsole()
-    let cmd = ['deno', 'test', '--allow-all'];
+    const cmd = 'deno'
+    const args = ['test', '--allow-all'];
     const testFile =
         file?.replace(/(?:.test)?.ts$/, '.test.ts')
         || 'all tests'
@@ -49,11 +50,12 @@ async function runTest(file?: string): Promise<void> {
             console.error`Cannot find ${file}`
             return
         }
-        cmd.push(testFile)
+        args.push(testFile)
     }
-    console.log('RUNTEST', testFile, cmd)
+    console.log('RUNTEST', testFile, args)
     console.time('runtest')
-    await Deno.run({cmd})
+    const command = new Deno.Command(cmd, { args })
+    command.outputSync()
     console.timeEnd('runtest')
 }
 

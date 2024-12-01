@@ -10,8 +10,7 @@ export class Powershell {
         params?: string[]
     ): Promise<string> {
 
-        let args = [
-            'powershell.exe',
+        const args = [
             '-ExecutionPolicy',
             'Bypass',
             '-NoLogo',
@@ -34,42 +33,32 @@ export class Powershell {
             })
         }
 
-        // const cmd = Deno.run({cmd:["extra-bin/windows/os-utils/addToDesktop.cmd", resolvedTargetFile]});
-        // %PWS% -File %currentFileDir%createShortcut.ps1 "%TARGET_FILE%" "%SHORTCUT_DIR%"
 
-        const process = Deno.run({
-            cmd: args,
+        const cmd = new Deno.Command('powershell.exe', {
+            args: args,
             stderr: 'piped',
             stdout: 'piped',
         })
 
-        const [
-            stderr,
-            stdout,
-            status
-        ] = await Promise.all([
-            process.stderrOutput(),
-            process.output(),
-            process.status()
-        ]);
+        return new Promise<string>((resolve, reject) => {
+            const p = cmd.outputSync()
 
-        process.close()
+            if (!ignoreErrors && !p?.success) {
+                const stderrOutput = this.decodeOutput(p.stderr)
+                reject(`Powershell.run(${script}) terminated with code ${p?.code}\n${stderrOutput}`)
+            }
 
-        if (!ignoreErrors && !status?.success) {
-            let stderrOutput = this.decodeOutput(stderr)
-            throw new Error(`Powershell.run(${script}) terminated with code ${status?.code}\n${stderrOutput}`);
-        }
+            let output = this.decodeOutput(p.stdout)
+            log.debug(`stdout ${output}`)
 
-        let output = this.decodeOutput(stdout)
-        log.debug(`stdout ${output}`)
+            if (stripCRLF) {
+                output = output
+                    .replace(/\r/g, '')
+                    .replace(/\n/g, '');
+            }
 
-        if (stripCRLF) {
-            output = output
-                .replace(/\r/g, '')
-                .replace(/\n/g, '');
-        }
-
-        return output
+            resolve(output)
+        })
     }
 
     private static decodeOutput(output: Uint8Array) {

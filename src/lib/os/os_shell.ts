@@ -111,18 +111,16 @@ export class OsShell {
     async openShell(args: string[]) {
         // TODO: Handle other os's
         OsUtils.onlyInWindows()
-        let opt = this.prepareShellOptions(args);
+        let cmd = this.prepareShellOptions(args);
 
-        log.debug(`Deno.run: ${JSON.stringify(opt)}`);
-        const p = Deno.run(opt);
-        let status = await p.status();
+        const p = cmd.outputSync();
 
-        if (!this.ignoreErrors && !status.success) {
-            throw new Error("CMD terminated with code " + status.code);
+        if (!this.ignoreErrors && !p.success) {
+            throw new Error("CMD terminated with code " + p.code);
         }
 
         if (this.saveVar) {
-            let rawOutput = await p.output();
+            const rawOutput = await p.stdout;
             let cmdOutput = new TextDecoder().decode(rawOutput);
             if (this.stripCRLF) {
                 cmdOutput = cmdOutput
@@ -134,29 +132,27 @@ export class OsShell {
         }
     }
 
-    prepareShellOptions(args: string[]) {
-        // const adjustedArgs = OsShell.adjustArgs(args)
-
-        let cmd: string[]
-        let cmdString: string
+    prepareShellOptions(args: string[]): Deno.Command {
+        let myArgs: string[]
         if (this.interactive) {
             if (this.config.shellPath) {
-                cmdString = `cmd /c start ${this.config.shellPath}`;
+                myArgs = StringUtils.splitSpaces(
+                    `/c start ${this.config.shellPath}`
+                )
             } else {
-                let myVersion = this.versionTag();
-                cmdString = `cmd /c start cmd /u /k prompt [levain${myVersion}]$P$G`;
+                myArgs = StringUtils.splitSpaces(
+                    `/c start cmd /u /k prompt [levain${this.versionTag()}]$P$G`
+                )
             }
-            cmd = StringUtils.splitSpaces(cmdString)
         } else {
-            cmdString = "cmd /u   /c "
-            cmd = StringUtils.splitSpaces(cmdString)
-            cmd = cmd.concat(args)
+            myArgs = StringUtils.splitSpaces(
+                'cmd /u   /c '
+            ).concat(args)
         }
 
-        log.debug(`- CMD - ${cmd}`);
-
-        let opt: any = {}
-        opt.cmd = cmd
+        const opt: Deno.CommandOptions = {
+            args: myArgs
+        }
         opt.env = {}
 
         this.setEnv(opt.env);
@@ -164,7 +160,7 @@ export class OsShell {
             opt.env["levainHome"] = this.config.levainHome;
         }
 
-        let myPath = this.getCmdPath();
+        const myPath = this.getCmdPath();
         if (myPath) {
             log.debug(`- PATH - ${myPath}`);
             opt.env["PATH"] = myPath;
@@ -180,14 +176,10 @@ export class OsShell {
             opt.stdout = 'piped';
         }
 
-        // if (detached) {
-        //     // FIXME: https://github.com/denoland/deno/issues/5501
-        //     opt.detached = true;
-        //     Deno.run(opt);
-        //     log.debug("shell initiated");
-        //     return;
-        // }
-        return opt;
+        const cmd = new Deno.Command('cmd',opt)
+        log.debug(`- CMD - cmd ${myArgs}`);
+
+        return cmd;
     }
 
     static adjustArgs(args: string[]) {
