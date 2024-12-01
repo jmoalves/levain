@@ -41,7 +41,7 @@ export class FileUtils {
                 // }
                 return true
             } catch (e) {
-                if (e.name != 'PermissionDenied') {
+                if (!(e instanceof Deno.errors.PermissionDenied)) {
                     log.debug(`Error reading ${filePath}`)
                 }
                 return false
