@@ -48,7 +48,7 @@ export default class Mkdir implements Action {
                 throw `Action - mkdir - ${dirname} already exists and it is not a directory`;
             }
         } catch (err) {
-            if (err.name != "NotFound") {
+            if (!(err instanceof Deno.errors.NotFound)) {
                 throw err;
             }
         }
