@@ -1,6 +1,7 @@
 import * as log from "jsr:@std/log";
 import * as path from "jsr:@std/path";
 import { readerFromStreamReader } from "jsr:@std/streams";
+import type { Reader } from "jsr:@std/io/types";
 
 import ProgressBar from "https://deno.land/x/progress/mod.ts";
 
@@ -8,7 +9,7 @@ import HttpUtils from '../utils/http_utils.ts';
 import ProgressReader from "../io/progress_reader.ts";
 
 export default class HttpReader implements ProgressReader {
-    private reader: Deno.Reader | null = null
+    private reader: Reader | null = null
 
     private contentLength: number|undefined
     private lastModified: Date|null = null
@@ -74,7 +75,6 @@ export default class HttpReader implements ProgressReader {
         }
     }
 
-    // Deno.Reader
     async read(p: Uint8Array): Promise<number | null> {
         if (!this.reader) {
             log.debug(`- reader null`)
