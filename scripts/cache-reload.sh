@@ -1,1 +1,1 @@
-deno cache --reload --unstable levain.ts
+deno install --entrypoint --reload --unstable levain.ts
