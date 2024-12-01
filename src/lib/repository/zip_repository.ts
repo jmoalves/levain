@@ -39,7 +39,7 @@ export default class ZipRepository extends AbstractRepository {
         this.localDir = path.resolve(this.config.levainCacheDir, "zipRepos", "dirs", path.basename(this.rootUrl, ".zip"))
     }
 
-    describe(): string {
+    override describe(): string {
         const description: string = super.describe()
         if (this.rootUrl !== this.absoluteURI) {
             return description.replace(/\)/, ` resolved from ${this.rootUrl})`)

@@ -8,7 +8,7 @@ export class AutoFlushLogFileHandler extends log.FileHandler {
         super(levelName, fullOptions)
     }
 
-    log(msg: string): void {
+    override log(msg: string): void {
         super.log(msg);
         super.flush();
     }
