@@ -79,20 +79,6 @@ export class FileUtils {
         return !!(mode & bitwisePermission)
     }
 
-    static waitForFilesToClose() {
-        while (this.getFileResources().length > 0) {
-            console.debug(`Waiting for Deno.resources to close ${JSON.stringify(Deno.resources())}`)
-        }
-    }
-
-    static getFileResources(): [string, any][] {
-        const resourceMap = Deno.resources()
-        const resourceArray = Object.entries(resourceMap)
-        return resourceArray.filter(
-            it => it[1].toString() === 'fsFile'
-        )
-    }
-
     static isDir(filePath: string) {
         const fileInfo = this.getFileInfoSync(filePath);
         return fileInfo.isDirectory
