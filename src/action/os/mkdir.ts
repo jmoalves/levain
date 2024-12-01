@@ -33,27 +33,8 @@ export default class Mkdir implements Action {
         Deno.mkdirSync(dirname, {recursive: true});
 
         if (args.compact) {
-            await this.compactSync(dirname);
+            log.debug(`MKDIR ${dirname} - ignoring --compact`);
         }
-    }
-
-    private async compactSync(dirname: string) {
-        if (!OsUtils.isWindows()) {
-            log.warn(`MKDIR - ignoring --compact - Windows only`);
-            return;
-        }
-
-        const windir = dirname.replace(/\//g, "\\");
-        log.debug(`COMPACT ${windir}`);
-        let args = `compact /q /c /s:${windir}`.split(" ");
-
-        const p = Deno.run({
-            cmd: args,
-            stdout: "null",
-            stderr: "null"
-        });
-
-        await p.status();
     }
 
     private dirExists(dirname: string): boolean {

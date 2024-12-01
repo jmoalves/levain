@@ -29,18 +29,3 @@ Deno.test('KillProcessAction should require process name', async () => {
         'You must inform the process name',
     )
 });
-//
-// if (OsUtils.isWindows()) {
-//     Deno.test('KillProcessAction should kill a process', () => {
-//         // Given
-//         const action = new KillProcessAction()
-//         const processName = 'testdata/killProcess/levainTestWaitForever.ts'
-//         Deno.run(processName)
-// TODO How do I give a name to a process?
-//         assertProcessRunning(processName)
-//         // When
-//         await action.execute(undefined, [])
-//         // Then
-//         assertProcessNotRunning(processName)
-//     })
-// }

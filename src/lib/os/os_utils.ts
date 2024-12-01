@@ -144,41 +144,33 @@ export default class OsUtils {
             throw `********** Unknown command type ${typeof command}`
         }
 
-        // https://github.com/denoland/deno/issues/4568
-        const runOptions: Deno.RunOptions = {
-            cmd: args,
+        const cmd = args.shift() // first element is the command
+        if (!cmd) {
+            throw `Empty command`
+        }
+
+        const runOptions: Deno.CommandOptions = {
+            args: args,
             cwd: workDir,
             stderr: 'piped',
             stdout: 'piped',
         }
-        const proc = Deno.run(runOptions);
+        const proc = new Deno.Command(cmd, runOptions);
+        return new Promise<string>((resolve, reject) => {
+            const p = proc.outputSync()
+            if (!p.success) {
+                const stderrOutput = OsUtils.decodeOutput(p.stderr)
+                reject(`Error ${p.code} running "${command}\n${stderrOutput}"`)
+            }
 
-        const [
-            stderr,
-            stdout,
-            status
-        ] = await Promise.all([
-            proc.stderrOutput(),
-            proc.output(),
-            proc.status()
-        ])
+            const output = OsUtils.decodeOutput(p.stdout)
 
-        proc.close()
+            // TODO it should not be necessary to remove \u0000 from stdout. Is it a bug in Deno 1.13.2?
+            const cleanOutput = output.replaceAll(/\u0000/gm, '')
 
-        log.debug(`status ${JSON.stringify(status)}`)
-
-        if (!status.success) {
-            let stderrOutput = OsUtils.decodeOutput(stderr)
-            throw `Error ${status.code} running "${command}\n${stderrOutput}"`;
-        }
-
-        const output = OsUtils.decodeOutput(stdout)
-
-        // TODO it should not be necessary to remove \u0000 from stdout. Is it a bug in Deno 1.13.2?
-        const cleanOutput = output.replaceAll(/\u0000/gm, '')
-
-        log.debug(`stdout ${cleanOutput}`)
-        return cleanOutput
+            log.debug(`stdout ${cleanOutput}`)
+            resolve(cleanOutput)
+        })
     }
 
     static decodeOutput(output: Uint8Array) {
