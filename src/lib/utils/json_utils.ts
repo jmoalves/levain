@@ -6,7 +6,7 @@ export default class JsonUtils {
         try {
             return JSON.parse(Deno.readTextFileSync(path.resolve(filename)));
         } catch (err) {
-            if (err.name == "NotFound") {
+            if (err instanceof Deno.errors.NotFound) {
                 throw Error(`File ${filename} not found`);
             }
         }
@@ -18,7 +18,7 @@ export default class JsonUtils {
             ensureDirSync(filePath)
             Deno.writeTextFileSync(fileName, JSON.stringify(json, null, 3))
         } catch (err) {
-            if (err.name == "NotFound") {
+            if (err instanceof Deno.errors.NotFound) {
                 throw Error(`File ${fileName} not found`);
             }
         }

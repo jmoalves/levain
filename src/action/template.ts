@@ -61,7 +61,7 @@ export default class Template implements Action {
                 dst = path.resolve(dst, path.basename(src));
             }
         } catch (err) {
-            if (err.name != "NotFound") {
+            if (!(err instanceof Deno.errors.NotFound)) {
                 throw err;
             }
         }
