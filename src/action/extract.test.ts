@@ -14,7 +14,7 @@ Deno.test('ExtractAction should check if source exists', async () => {
     const pkg = TestHelper.mockPackage()
     try {
         await action.execute(pkg, [src, dst])
-    } catch (err) {
+    } catch (err:any) {
         const expectedMsg = `File ${src} does not exist`
         assertEquals(err.message, expectedMsg)
     }
