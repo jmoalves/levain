@@ -1,6 +1,6 @@
 import * as log from "jsr:@std/log";
 import * as path from "jsr:@std/path";
-import {ensureDirSync, existsSync} from "jsr:@std/fs";
+import {copySync, ensureDirSync, existsSync} from "jsr:@std/fs";
 import { copy } from "jsr:@std/io";
 
 import ProgressBar from "https://deno.land/x/progress/mod.ts";
@@ -238,7 +238,7 @@ export class FileUtils {
             bkp = filename + "." + DateUtils.dateTag(now) + "." + DateUtils.timeTagWithMillis('', now) + ".bkp";
         while (existsSync(bkp))
 
-        Deno.copyFileSync(filename, bkp);
+        copySync(filename, bkp);
         return bkp;
     }
 

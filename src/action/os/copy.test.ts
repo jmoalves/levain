@@ -1,5 +1,6 @@
 import * as path from "jsr:@std/path";
 import {assert,} from "jsr:@std/assert";
+import { copySync } from 'jsr:@std/fs';
 
 import TestHelper from '../../lib/test/test_helper.ts';
 import {assertFileSizeAprox, assertPathDoesNotExist} from '../../lib/test/more_asserts.ts';
@@ -18,7 +19,7 @@ Deno.test('CopyAction should be obtainable with action factory', () => {
 Deno.test('CopyAction should replace file', async () => {
     const tempDir = TestHelper.getNewTempDir()
     const dstFile = path.resolve(tempDir, 'newFile.txt')
-    Deno.copyFileSync(emptyFile, dstFile)
+    copySync(emptyFile, dstFile)
     assertFileSizeAprox(dstFile, 0)
 
     const action = getCopyAction()
@@ -46,7 +47,7 @@ Deno.test('CopyAction --ifNotExists should copy a new file', async () => {
 Deno.test('CopyAction --ifNotExists should not copy file if it already exists', async () => {
     const tempDir = TestHelper.getNewTempDir()
     const dstFile = path.resolve(tempDir, 'newFile.txt')
-    Deno.copyFileSync(emptyFile, dstFile)
+    copySync(emptyFile, dstFile)
     assertFileSizeAprox(dstFile, 0)
 
     const action = getCopyAction()

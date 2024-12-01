@@ -1,5 +1,6 @@
 import {assertEquals, assertRejects} from "jsr:@std/assert";
 import * as path from "jsr:@std/path";
+import { copySync } from 'jsr:@std/fs';
 
 import TestHelper from "../../lib/test/test_helper.ts";
 
@@ -64,7 +65,7 @@ Deno.test('JsonSet - should throw exception for missing parameters', async () =>
 
 Deno.test('JsonSet - should set simple string property', async () => {
     let tempfile = Deno.makeTempFileSync();
-    Deno.copyFileSync(TestHelper.resolveTestFile('json/test.json'), tempfile);
+    copySync(TestHelper.resolveTestFile('json/test.json'), tempfile);
     const action = getJsonSetAction();
     const params = [tempfile, "property", "newValue"];
 
@@ -78,7 +79,7 @@ Deno.test('JsonSet - should set simple string property', async () => {
 
 Deno.test('JsonSet - should set simple number property', async () => {
     let tempfile = Deno.makeTempFileSync();
-    Deno.copyFileSync(TestHelper.resolveTestFile('json/test.json'), tempfile);
+    copySync(TestHelper.resolveTestFile('json/test.json'), tempfile);
 
     const config = TestHelper.getConfig();
     const action = new JsonSet(config);
@@ -94,7 +95,7 @@ Deno.test('JsonSet - should set simple number property', async () => {
 
 Deno.test('JsonSet - should set simple boolean property', async () => {
     let tempfile = Deno.makeTempFileSync();
-    Deno.copyFileSync(TestHelper.resolveTestFile('json/test.json'), tempfile);
+    copySync(TestHelper.resolveTestFile('json/test.json'), tempfile);
 
     const config = TestHelper.getConfig();
     const action = new JsonSet(config);
@@ -110,7 +111,7 @@ Deno.test('JsonSet - should set simple boolean property', async () => {
 
 Deno.test('JsonSet - should set an inner string property', async () => {
     let tempfile = Deno.makeTempFileSync();
-    Deno.copyFileSync(TestHelper.resolveTestFile('json/test.json'), tempfile);
+    copySync(TestHelper.resolveTestFile('json/test.json'), tempfile);
 
     const config = TestHelper.getConfig();
     const action = new JsonSet(config);
@@ -126,7 +127,7 @@ Deno.test('JsonSet - should set an inner string property', async () => {
 
 Deno.test('JsonSet - should set an string property with dots', async () => {
     let tempfile = Deno.makeTempFileSync();
-    Deno.copyFileSync(TestHelper.resolveTestFile('json/test.json'), tempfile);
+    copySync(TestHelper.resolveTestFile('json/test.json'), tempfile);
 
     const config = TestHelper.getConfig();
     const action = new JsonSet(config);
@@ -142,7 +143,7 @@ Deno.test('JsonSet - should set an string property with dots', async () => {
 
 Deno.test('JsonSet - should NOT set an inner string property that exists', async () => {
     let tempfile = Deno.makeTempFileSync();
-    Deno.copyFileSync(TestHelper.resolveTestFile('json/test.json'), tempfile);
+    copySync(TestHelper.resolveTestFile('json/test.json'), tempfile);
 
     const config = TestHelper.getConfig();
     const action = new JsonSet(config);
@@ -158,7 +159,7 @@ Deno.test('JsonSet - should NOT set an inner string property that exists', async
 
 Deno.test('JsonSet - should NOT set an inner string property that exists', async () => {
     let tempfile = Deno.makeTempFileSync();
-    Deno.copyFileSync(TestHelper.resolveTestFile('json/test.json'), tempfile);
+    copySync(TestHelper.resolveTestFile('json/test.json'), tempfile);
 
     const config = TestHelper.getConfig();
     const action = new JsonSet(config);
@@ -174,7 +175,7 @@ Deno.test('JsonSet - should NOT set an inner string property that exists', async
 
 Deno.test('JsonSet - should set an string property with dots', async () => {
     let tempfile = Deno.makeTempFileSync();
-    Deno.copyFileSync(TestHelper.resolveTestFile('json/test.json'), tempfile);
+    copySync(TestHelper.resolveTestFile('json/test.json'), tempfile);
 
     const config = TestHelper.getConfig();
     const action = new JsonSet(config);
@@ -190,7 +191,7 @@ Deno.test('JsonSet - should set an string property with dots', async () => {
 
 Deno.test('JsonSet - should set a new array element', async () => {
     let tempfile = Deno.makeTempFileSync();
-    Deno.copyFileSync(TestHelper.resolveTestFile('json/test.json'), tempfile);
+    copySync(TestHelper.resolveTestFile('json/test.json'), tempfile);
 
     const config = TestHelper.getConfig();
     const action = new JsonSet(config);
@@ -207,7 +208,7 @@ Deno.test('JsonSet - should set a new array element', async () => {
 
 Deno.test('JsonSet - should set the last array element', async () => {
     let tempfile = Deno.makeTempFileSync();
-    Deno.copyFileSync(TestHelper.resolveTestFile('json/test.json'), tempfile);
+    copySync(TestHelper.resolveTestFile('json/test.json'), tempfile);
 
     const config = TestHelper.getConfig();
     const action = new JsonSet(config);
@@ -224,7 +225,7 @@ Deno.test('JsonSet - should set the last array element', async () => {
 
 Deno.test('JsonSet - should set an string property with a windows path', async () => {
     let tempfile = Deno.makeTempFileSync();
-    Deno.copyFileSync(TestHelper.resolveTestFile('json/test.json'), tempfile);
+    copySync(TestHelper.resolveTestFile('json/test.json'), tempfile);
 
     const config = TestHelper.getConfig();
     const action = new JsonSet(config);
