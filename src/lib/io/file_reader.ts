@@ -64,7 +64,6 @@ export default class FileReader implements ProgressReader {
         this.bytesRead = 0
     }
 
-    // Deno.Reader
     async read(p: Uint8Array): Promise<number | null> {
         if (!this.file) {
             return Promise.resolve(null)
