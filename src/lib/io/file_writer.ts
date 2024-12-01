@@ -1,13 +1,14 @@
 import * as log from "jsr:@std/log";
 import * as path from "jsr:@std/path";
 import { existsSync, ensureDirSync } from "jsr:@std/fs";
+import type { Writer, Closer } from "jsr:@std/io/types";
 
 import ProgressBar from "https://deno.land/x/progress/mod.ts";
 
 import Progress from "./progress.ts";
 import Timestamps from "./timestamps.ts";
 
-export default class FileWriter implements Deno.Writer, Progress, Timestamps, Deno.Closer {
+export default class FileWriter implements Writer, Progress, Timestamps, Closer {
     private filePath: string
     private tempPath: string
     private file: Deno.FsFile
