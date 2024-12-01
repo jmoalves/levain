@@ -164,7 +164,7 @@ export default class UserInfoUtil {
         if (!defaultValue) {
             defaultValue = this.userInfo.login || OsUtils.login?.toLowerCase() || ""
         }
-        const newValue = await InputLogin.inputAndValidate(defaultValue)
+        const newValue = await InputLogin.askUser(defaultValue)
 
         if (this.userInfo.login != newValue) {
             this.userInfo.login = newValue
