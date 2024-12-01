@@ -1,6 +1,6 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import { readerFromStreamReader } from "https://deno.land/std/streams/mod.ts";
+import * as log from "jsr:@std/log";
+import * as path from "jsr:@std/path";
+import { readerFromStreamReader } from "jsr:@std/streams";
 
 import ProgressBar from "https://deno.land/x/progress/mod.ts";
 

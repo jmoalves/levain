@@ -1,4 +1,4 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "jsr:@std/log";
 
 import ProgressReader from "../io/progress_reader.ts";
 import FileReader from "./file_reader.ts";

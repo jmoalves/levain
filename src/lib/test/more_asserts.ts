@@ -1,6 +1,6 @@
-import {assert, assertArrayIncludes, assertEquals} from "https://deno.land/std/assert/mod.ts";
-import {existsSync} from "https://deno.land/std/fs/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
+import {assert, assertArrayIncludes, assertEquals} from "jsr:@std/assert";
+import {existsSync} from "jsr:@std/fs";
+import * as path from "jsr:@std/path";
 
 import DirUtils from "../fs/dir_utils.ts";
 import {FileUtils} from '../fs/file_utils.ts';

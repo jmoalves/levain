@@ -1,4 +1,4 @@
-import {exists} from "https://deno.land/std/fs/mod.ts"
+import {exists} from "jsr:@std/fs"
 import OsUtils from '../src/lib/os/os_utils.ts';
 
 const watcher = Deno.watchFs('src/')

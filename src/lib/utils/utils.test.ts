@@ -1,7 +1,7 @@
 import {
     assertEquals,
     assertNotEquals,
-} from "https://deno.land/std/assert/mod.ts";
+} from "jsr:@std/assert";
 
 import { homedir, retry } from "./utils.ts";
 

@@ -1,4 +1,4 @@
-import {BaseHandler, LevelName} from "https://deno.land/std/log/mod.ts";
+import {BaseHandler, LevelName} from "jsr:@std/log";
 
 export default class MemoryHandler extends BaseHandler {
 

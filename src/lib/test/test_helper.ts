@@ -1,8 +1,8 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import {LogRecord, LogLevels} from "https://deno.land/std/log/mod.ts"
-import * as path from "https://deno.land/std/path/mod.ts"
+import * as log from "jsr:@std/log";
+import {LogRecord, LogLevels} from "jsr:@std/log"
+import * as path from "jsr:@std/path"
 
-import {existsSync, copySync} from "https://deno.land/std/fs/mod.ts"
+import {existsSync, copySync} from "jsr:@std/fs"
 
 import Config from "../config.ts";
 import {MockPackage} from "../package/mock_package.ts";

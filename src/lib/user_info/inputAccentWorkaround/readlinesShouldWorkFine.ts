@@ -1,4 +1,4 @@
-import {readLines} from "https://deno.land/std/io/bufio.ts";
+import {readLines} from "jsr:@std/io/bufio.ts";
 
 async function prompt(
     message = "Prompt",

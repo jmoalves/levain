@@ -5,11 +5,11 @@ import {
     assertNotEquals,
     assertNotMatch,
     assertThrows
-} from "https://deno.land/std/assert/mod.ts";
-import {existsSync} from "https://deno.land/std/fs/exists.ts";
-import * as fs from "https://deno.land/std/fs/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import * as log from "https://deno.land/std/log/mod.ts";
+} from "jsr:@std/assert";
+import {existsSync} from "jsr:@std/fs";
+import * as fs from "jsr:@std/fs";
+import * as path from "jsr:@std/path";
+import * as log from "jsr:@std/log";
 
 import OsUtils from "./os_utils.ts";
 import {assertGreaterThan, assertPathExists} from "../test/more_asserts.ts";

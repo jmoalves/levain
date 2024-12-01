@@ -2,10 +2,10 @@
 // deno run --allow-all --unstable hello_world.ts
 
 // Import from local (Debugging and Development)
-// import { WebUI } from "../../mod.ts";
+// import { WebUI } from "../..";
 
 // Import from deno.land (Production)
-import { WebUI } from "https://deno.land/x/webui/mod.ts";
+import { WebUI } from "https://deno.land/x/webui";
 
 async function checkResult(e: WebUI.Event) {
   const a = e.arg.number(0); // First argument

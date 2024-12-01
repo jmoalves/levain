@@ -1,4 +1,4 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "jsr:@std/log";
 
 import LevainVersion from "../../levain_version.ts";
 import Config from "../config.ts";

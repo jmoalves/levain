@@ -1,5 +1,5 @@
-import {ensureDirSync} from "https://deno.land/std/fs/mod.ts";
-import {assertEquals, assertRejects,} from "https://deno.land/std/assert/mod.ts";
+import {ensureDirSync} from "jsr:@std/fs";
+import {assertEquals, assertRejects,} from "jsr:@std/assert";
 
 import TestHelper from '../test/test_helper.ts';
 import FileSystemPackage from '../package/file_system_package.ts';

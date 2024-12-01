@@ -1,4 +1,4 @@
-import {assertEquals, assertRejects,} from "https://deno.land/std/assert/mod.ts"
+import {assertEquals, assertRejects,} from "jsr:@std/assert"
 
 //
 // inputAndValidate

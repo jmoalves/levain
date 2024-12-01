@@ -1,5 +1,5 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as yaml from "https://deno.land/std/yaml/mod.ts";
+import * as log from "jsr:@std/log";
+import * as yaml from "jsr:@std/yaml";
 
 export default class YamlFileUtils {
 

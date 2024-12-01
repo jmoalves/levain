@@ -1,6 +1,6 @@
 import {LoginValidator} from "./validators/validators.ts"
 import {ValidateResult,Input} from 'https://deno.land/x/cliffy/prompt/mod.ts'
-import {readLines} from 'https://deno.land/std/io/mod.ts'
+import {readLines} from 'jsr:@std/io'
 import OsUtils from "../os/os_utils.ts";
 
 import t from '../i18n.ts'

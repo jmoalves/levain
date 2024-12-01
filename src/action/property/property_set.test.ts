@@ -1,5 +1,5 @@
-import {assert, assertEquals, assertNotEquals, assertRejects} from "https://deno.land/std/assert/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
+import {assert, assertEquals, assertNotEquals, assertRejects} from "jsr:@std/assert";
+import * as path from "jsr:@std/path";
 
 import TestHelper from "../../lib/test/test_helper.ts";
 import ActionFactory from "../action_factory.ts";

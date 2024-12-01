@@ -1,4 +1,4 @@
-import * as path from "https://deno.land/std/path/mod.ts";
+import * as path from "jsr:@std/path";
 
 import LevainVersion from "../levain_version.ts";
 

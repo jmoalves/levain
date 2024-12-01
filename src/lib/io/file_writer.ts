@@ -1,7 +1,6 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import { ensureDirSync } from "https://deno.land/std/fs/ensure_dir.ts";
-import { existsSync } from "https://deno.land/std/fs/exists.ts";
+import * as log from "jsr:@std/log";
+import * as path from "jsr:@std/path";
+import { existsSync, ensureDirSync } from "jsr:@std/fs";
 
 import ProgressBar from "https://deno.land/x/progress/mod.ts";
 

@@ -1,5 +1,5 @@
-import * as path from "https://deno.land/std/path/mod.ts";
-import {ensureDirSync} from "https://deno.land/std/fs/mod.ts"
+import * as path from "jsr:@std/path";
+import {ensureDirSync} from "jsr:@std/fs"
 
 export default class JsonUtils {
     static load(filename: string): any {
