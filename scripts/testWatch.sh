@@ -1,2 +1,2 @@
-#deno test --allow-all --unstable --watch
-deno run --unstable --allow-read --allow-hrtime --allow-run scripts/testWatch.ts
+#deno test --allow-all --watch
+deno run --allow-read --allow-hrtime --allow-run scripts/testWatch.ts

@@ -39,7 +39,7 @@ function bouncing(file: string): boolean {
 
 async function runTest(file?: string): Promise<void> {
     await OsUtils.clearConsole()
-    let cmd = ['deno', 'test', '--unstable', '--allow-all'];
+    let cmd = ['deno', 'test', '--allow-all'];
     const testFile =
         file?.replace(/(?:.test)?.ts$/, '.test.ts')
         || 'all tests'

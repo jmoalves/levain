@@ -1,1 +1,1 @@
-deno lint --unstable
+deno lint
