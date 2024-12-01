@@ -1,4 +1,4 @@
-import {readLines} from "jsr:@std/io/bufio.ts";
+import {readLines} from "jsr:@std/io";
 
 async function prompt(
     message = "Prompt",
