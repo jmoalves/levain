@@ -1,1 +1,1 @@
-call scripts\cache-clear.cmd && deno cache --reload --unstable levain.ts
+call scripts\cache-clear.cmd && deno install --entrypoint --reload --unstable levain.ts
