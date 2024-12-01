@@ -7,7 +7,7 @@ export class InputFullName {
 
     static readonly defaultMessage = t("lib.user_info.input_name.namePrompt");
 
-    static async inputAndValidate(defaultValue: string): Promise<string> {
+    static async askUser(defaultValue: string): Promise<string> {
         let fullName: string
         return await Input.prompt({
             message: this.defaultMessage,

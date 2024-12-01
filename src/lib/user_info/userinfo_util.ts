@@ -100,7 +100,7 @@ export default class UserInfoUtil {
             defaultValue = this?.userInfo?.fullName || envChain("user", "fullname") || ""
         }
 
-        const newValue = await InputFullName.inputAndValidate(defaultValue);
+        const newValue = await InputFullName.askUser(defaultValue);
 
         const validationResult: ValidateResult = NameValidator.validate(newValue)
 
