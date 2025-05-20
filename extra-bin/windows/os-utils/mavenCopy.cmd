@@ -9,4 +9,4 @@ if [%2] == [] (
 
 @echo on
 
-mvn dependency:copy -Dartifact=%1  -DremoteRepositories=http://nexus.bndes.net:8180/nexus/repository/releases -DoutputDirectory=%2
+mvn dependency:copy -Dartifact=%1 -DoutputDirectory=%2
