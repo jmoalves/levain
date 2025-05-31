@@ -6,8 +6,9 @@ class MavenCopyAction implements Action {
     async execute(packageManager: any, args: string[]): Promise<void> {
         if (args.length != 2) {
             throw new Error(
-                'Invalid arguments. Usage: mavenCopy [coordinates] [destination]\n' +
-                    'Example: mavenCopy mavenCopy.cmd br.gov.bndes.iew.iew-for-liberty:iew-userregistry-liberty-feature:1.7.1:esa c:\\temp',
+                'Invalid arguments.\n' +
+                    '  Usage: mavenCopy [coordinates] [destination]\n' +
+                    '  Example: mavenCopy mavenCopy.cmd br.gov.bndes.iew.iew-for-liberty:iew-userregistry-liberty-feature:1.7.1:esa c:\\temp',
             );
         }
 
