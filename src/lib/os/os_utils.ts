@@ -1,4 +1,5 @@
 import * as path from "https://deno.land/std/path/mod.ts";
+import {dirname, fromFileUrl} from "https://deno.land/std/path/mod.ts";
 import * as log from "https://deno.land/std/log/mod.ts";
 import * as fs from "https://deno.land/std/fs/mod.ts";
 import {ArrayUtils} from "../utils/array_utils.ts";
@@ -28,7 +29,8 @@ export default class OsUtils {
     }
 
     static get projectRootDir(): string {
-        return path.resolve('..', '..', '..');
+        const thisFileDir = dirname(fromFileUrl(import.meta.url));
+        return path.resolve(thisFileDir, '..', '..', '..');
     }
 
     static get desktopDir(): string {

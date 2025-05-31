@@ -1,19 +1,18 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import {LogLevels, LogRecord} from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts"
-import {dirname, fromFileUrl} from "https://deno.land/std/path/mod.ts"
+import * as log from 'https://deno.land/std/log/mod.ts';
+import {LogLevels, LogRecord} from 'https://deno.land/std/log/mod.ts';
+import * as path from 'https://deno.land/std/path/mod.ts';
 
-import {copySync, existsSync} from "https://deno.land/std/fs/mod.ts"
+import {copySync, existsSync} from 'https://deno.land/std/fs/mod.ts';
 
-import Config from "../config.ts";
-import {MockPackage} from "../package/mock_package.ts";
+import Config from '../config.ts';
+import {MockPackage} from '../package/mock_package.ts';
 import FileSystemPackage from '../package/file_system_package.ts';
 import Registry from '../repository/registry.ts';
-import TestLogger from "../logger/test_logger.ts";
-import ActionFactory from "../../action/action_factory.ts";
-import Action from "../../action/action.ts";
-import {envChain} from "../utils/utils.ts";
-import MockRepository from "../repository/mock_repository.ts";
+import TestLogger from '../logger/test_logger.ts';
+import ActionFactory from '../../action/action_factory.ts';
+import Action from '../../action/action.ts';
+import MockRepository from '../repository/mock_repository.ts';
+import OsUtils from '../os/os_utils.ts';
 
 export default class TestHelper {
     static async setupTestLogger() {
@@ -47,7 +46,7 @@ export default class TestHelper {
         return new MockPackage();
     }
 
-    static readonly folderThatAlwaysExists = TestHelper.homeDir();
+    static readonly folderThatAlwaysExists = OsUtils.homeDir;
     static readonly folderThatDoesNotExist = 'this-folder-does-not-exist';
     static readonly anotherFolderThatDoesNotExist =
         'another-folder-that-does-not-exist';
@@ -59,16 +58,8 @@ export default class TestHelper {
         TestHelper.folderThatAlwaysExists,
         'this-file-also-does-not-exist.txt',
     );
-
-    static readonly currentDir = dirname(fromFileUrl(import.meta.url));
-    static readonly projectRootDir = path.resolve(
-        this.currentDir,
-        '..',
-        '..',
-        '..',
-    );
     static readonly testdataDir = path.resolve(
-        `${this.projectRootDir}/testdata`,
+        `${OsUtils.projectRootDir}/testdata`,
     );
     static readonly fileThatExists = path.resolve(
         `${TestHelper.testdataDir}/file_utils/can_read_and_write_this_file.txt`,
@@ -82,16 +73,18 @@ export default class TestHelper {
     static readonly validZipFileWithoutExtension = path.resolve(
         `${TestHelper.testdataDir}/extract/zip_file_without_extension`,
     );
-
-    // FIXME Use OsUtils.homeDir
-    static homeDir(): string {
-        const homeEnvStrings = ['HOME', 'USERPROFILE'];
-        const folderFromEnv = envChain(...homeEnvStrings);
-        if (!folderFromEnv) {
-            throw `Home folder not found. Looked for env vars ${homeEnvStrings.join()}`;
-        }
-        return path.resolve(folderFromEnv);
-    }
+    static readonly emptyFile = path.resolve(
+        OsUtils.projectRootDir,
+        'testdata',
+        'copyAction',
+        'emptyFile.txt',
+    );
+    static readonly fileWithContent = path.resolve(
+        OsUtils.projectRootDir,
+        'testdata',
+        'copyAction',
+        'fileWithContent.txt',
+    );
 
     static getTestPkg(yamlStr: string) {
         return new FileSystemPackage(

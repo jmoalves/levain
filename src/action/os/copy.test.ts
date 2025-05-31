@@ -6,21 +6,6 @@ import {assertFileSizeAprox, assertPathDoesNotExist,} from '../../lib/test/more_
 
 import ActionFactory from '../action_factory.ts';
 import CopyAction from './copy.ts';
-import OsUtils from "../../lib/os/os_utils.ts";
-
-const projectRootDir = OsUtils.projectRootDir;
-const emptyFile = path.resolve(
-    projectRootDir,
-    'testdata',
-    'copyAction',
-    'emptyFile.txt',
-);
-const fileWithContent = path.resolve(
-    projectRootDir,
-    'testdata',
-    'copyAction',
-    'fileWithContent.txt',
-);
 
 Deno.test('CopyAction should be obtainable with action factory', () => {
     const action = getCopyAction();
@@ -30,12 +15,12 @@ Deno.test('CopyAction should be obtainable with action factory', () => {
 Deno.test('CopyAction should replace file', async () => {
     const tempDir = TestHelper.getNewTempDir();
     const dstFile = path.resolve(tempDir, 'newFile.txt');
-    Deno.copyFileSync(emptyFile, dstFile);
+    Deno.copyFileSync(TestHelper.emptyFile, dstFile);
     assertFileSizeAprox(dstFile, 0);
 
     const action = getCopyAction();
     await action.execute(TestHelper.mockPackage(), [
-        fileWithContent,
+        TestHelper.fileWithContent,
         dstFile,
     ]);
 
@@ -49,7 +34,7 @@ Deno.test('CopyAction --ifNotExists should copy a new file', async () => {
     const action = getCopyAction();
     await action.execute(TestHelper.mockPackage(), [
         '--ifNotExists',
-        fileWithContent,
+        TestHelper.fileWithContent,
         dstFile,
     ]);
 
@@ -58,13 +43,13 @@ Deno.test('CopyAction --ifNotExists should copy a new file', async () => {
 Deno.test('CopyAction --ifNotExists should not copy file if it already exists', async () => {
     const tempDir = TestHelper.getNewTempDir();
     const dstFile = path.resolve(tempDir, 'newFile.txt');
-    Deno.copyFileSync(emptyFile, dstFile);
+    Deno.copyFileSync(TestHelper.emptyFile, dstFile);
     assertFileSizeAprox(dstFile, 0);
 
     const action = getCopyAction();
     await action.execute(TestHelper.mockPackage(), [
         '--ifNotExists',
-        fileWithContent,
+        TestHelper.fileWithContent,
         dstFile,
     ]);
 
