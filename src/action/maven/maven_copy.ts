@@ -1,5 +1,6 @@
 import OsUtils from "../../lib/os/os_utils.ts";
 import Action from "../action.ts";
+import {checkMavenVersion, mvnCli} from "../../lib/utils/maven_utils.ts";
 
 class MavenCopyAction implements Action {
     // Executes the mavenCopy action
@@ -44,15 +45,16 @@ class MavenCopyAction implements Action {
         if (!groupId || !artifactId || !version) {
             throw new Error(`Invalid Maven coordinates: ${coordinates}`);
         }
-        const mvnCommand = [
-            'mvn',
+
+        const command = [
+            await mvnCli(),
             'dependency:copy',
             `-Dartifact=${coordinates}`,
             `-DoutputDirectory=${dstFile}`,
         ];
 
-        console.log(mvnCommand.join(' '));
-        await OsUtils.runAndLog(mvnCommand);
+        console.log(command.join(' '));
+        await OsUtils.runAndLog(command);
         return dstFile;
     }
 }
