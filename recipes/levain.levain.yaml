@@ -1,4 +1,4 @@
-version: 0.91.23-SNAPSHOT
+version: 0.91.23
 
 recipesDir: ${baseDir}/build/recipes
 
