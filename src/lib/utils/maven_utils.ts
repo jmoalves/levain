@@ -7,13 +7,13 @@ export var mvnCli = async function (): Promise<string> {
     if (!m2home) {
         throw "M2_HOME not found";
     }
-    await checkMavenVersion()
+    await checkMavenVersion(m2home)
     return path.resolve(m2home, 'bin', 'mvn')
 }
-export var checkMavenVersion = async function () {
-    console.log('Checking Maven');
+export var checkMavenVersion = async function (mavenDir: string) {
+    console.log(`Checking for Maven in ${mavenDir}`);
     const command = [
-        await mvnCli(),
+        mavenDir,
         '-version'
     ];
     console.log(command.join(' '))
