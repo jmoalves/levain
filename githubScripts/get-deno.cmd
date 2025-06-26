@@ -18,7 +18,7 @@ set tempPath=%TEMP%\deno
 if exist %tempPath% rmdir /q /s %tempPath%
 mkdir %tempPath%
 
-%PWS% Invoke-WebRequest %proxyCfg% https://github.com/denoland/deno/releases/latest/download/deno-x86_64-pc-windows-msvc.zip -OutFile %tempPath%\deno-x86_64-pc-windows-msvc.zip
+%PWS% Invoke-WebRequest %proxyCfg% "https://github.com/denoland/deno/releases/tags/v%2/download/deno-x86_64-pc-windows-msvc.zip" -OutFile %tempPath%\deno-x86_64-pc-windows-msvc.zip
 %PWS% Expand-Archive %tempPath%\deno-x86_64-pc-windows-msvc.zip -DestinationPath %denoDST% -Force
 rmdir /q /s %tempPath%
 
