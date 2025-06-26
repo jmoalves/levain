@@ -24,15 +24,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Run tests
+      - name: Get Deno
         shell: cmd
         run: |
           if exist %DENO_ROOT_PATH% rmdir /q/s %DENO_ROOT_PATH%
           if not exist %DENO_ROOT_PATH% mkdir %DENO_ROOT_PATH%
           call %GITHUB_WORKSPACE%\githubScripts\get-deno.cmd %DENO_ROOT_PATH% ${{ github.event.inputs.denoVersion }}
+        env:
+          DENO_ROOT_PATH: ${{ runner.temp }}\deno
+          GITHUB_WORKSPACE: ${{ github.workspace }}
 
+      - name: Get extraBin
+        shell: cmd
+        run: |
           call %GITHUB_WORKSPACE%\githubScripts\get-extraBin.cmd
+        env:
+          GITHUB_WORKSPACE: ${{ github.workspace }}
 
+
+      - name: Run tests
+        shell: cmd
+        run: |
+          call %GITHUB_WORKSPACE%\githubScripts\get-extraBin.cmd
           call %GITHUB_WORKSPACE%\scripts\test.cmd --denoDir %DENO_ROOT_PATH% --coverage --checkSources
         env:
           DENO_ROOT_PATH: ${{ runner.temp }}\deno
