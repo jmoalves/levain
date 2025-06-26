@@ -2,6 +2,12 @@ name: Unit tests
 
 on:
   workflow_dispatch:
+    inputs:
+      denoVersion:
+        description: 'Deno version (optional)'
+        required: false
+        default: '1.46.3'
+
   # push:
   pull_request:
 
@@ -23,7 +29,7 @@ jobs:
         run: |
           if exist %DENO_ROOT_PATH% rmdir /q/s %DENO_ROOT_PATH%
           if not exist %DENO_ROOT_PATH% mkdir %DENO_ROOT_PATH%
-          call %GITHUB_WORKSPACE%\githubScripts\get-deno.cmd %DENO_ROOT_PATH%
+          call %GITHUB_WORKSPACE%\githubScripts\get-deno.cmd %DENO_ROOT_PATH% ${{ github.event.inputs.denoVersion }}
 
           call %GITHUB_WORKSPACE%\githubScripts\get-extraBin.cmd
 
