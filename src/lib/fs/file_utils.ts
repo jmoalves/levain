@@ -254,4 +254,9 @@ export class FileUtils {
             throw err
         }
     }
+
+    static async createEmptyFile(filePath: string): Promise<void> {
+        await Deno.writeTextFile(filePath, "");
+    }
+
 }
