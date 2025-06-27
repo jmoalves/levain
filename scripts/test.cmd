@@ -99,7 +99,7 @@ echo Running tests
 @echo off
 set ERRORLEVEL_TESTES='%ERRORLEVEL%'
 if not "%ERRORLEVEL_TESTES%"=="0" (
-    exit %ERRORLEVEL_TESTES%
+    exit /b %ERRORLEVEL_TESTES%
 )
 
 if not "a%coverOps%" == "a" (
