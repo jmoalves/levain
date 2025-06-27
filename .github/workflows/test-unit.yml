@@ -45,8 +45,8 @@ jobs:
       - name: Run tests
         shell: cmd
         run: |
-          %GITHUB_WORKSPACE%\scripts\test.cmd --denoDir %DENO_ROOT_PATH% --coverage --checkSources
-          exit %ERRORLEVEL%
+          call "%GITHUB_WORKSPACE%\scripts\test.cmd" --denoDir "%DENO_ROOT_PATH%" --coverage --checkSources
+          if errorlevel 1 exit /b %ERRORLEVEL%
         env:
           DENO_ROOT_PATH: ${{ runner.temp }}\deno
           GITHUB_WORKSPACE: ${{ github.workspace }}
