@@ -9,6 +9,7 @@ on:
         default: '1.46.3'
 
   push:
+
   pull_request:
 
   schedule:
@@ -20,16 +21,25 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 10
 
+    env:
+      DEFAULT_DENO_VERSION: 1.46.3
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+
+      - name: Set Deno version
+        id: set-version
+        run: |
+            echo "DENO_VERSION=${{ github.event.inputs.denoVersion || env.DEFAULT_DENO_VERSION }}" >> $GITHUB_ENV
 
       - name: Get Deno
         shell: cmd
         run: |
           if exist %DENO_ROOT_PATH% rmdir /q/s %DENO_ROOT_PATH%
           if not exist %DENO_ROOT_PATH% mkdir %DENO_ROOT_PATH%
-          call %GITHUB_WORKSPACE%\githubScripts\get-deno.cmd %DENO_ROOT_PATH% ${{ github.event.inputs.denoVersion }}
+          call %GITHUB_WORKSPACE%\githubScripts\get-deno.cmd %DENO_ROOT_PATH% ${{ env.DENO_VERSION }}
         env:
           DENO_ROOT_PATH: ${{ runner.temp }}\deno
           GITHUB_WORKSPACE: ${{ github.workspace }}
