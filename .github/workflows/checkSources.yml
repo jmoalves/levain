@@ -4,6 +4,11 @@ on:
   #push:
 
   workflow_dispatch:
+    inputs:
+      denoVersion:
+        description: 'Deno version (optional)'
+        required: false
+        default: '1.46.3'
 
   schedule:
     # * is a special character in YAML so you have to quote this string
@@ -18,12 +23,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Check sources
+      - name: Get Deno
         shell: cmd
         run: |
           if exist %DENO_ROOT_PATH% rmdir /q/s %DENO_ROOT_PATH%
           if not exist %DENO_ROOT_PATH% mkdir %DENO_ROOT_PATH%
-          call %GITHUB_WORKSPACE%\githubScripts\get-deno.cmd %DENO_ROOT_PATH%
+          call %GITHUB_WORKSPACE%\githubScripts\get-deno.cmd %DENO_ROOT_PATH% ${{ github.event.inputs.denoVersion }}
+        env:
+          DENO_ROOT_PATH: ${{ runner.temp }}\deno
+          GITHUB_WORKSPACE: ${{ github.workspace }}
+
+      - name: Check sources
+        shell: cmd
+        run: |
           call %GITHUB_WORKSPACE%\scripts\check-sources.cmd %DENO_ROOT_PATH%
         env:
           DENO_ROOT_PATH: ${{ runner.temp }}\deno
