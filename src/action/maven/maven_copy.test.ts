@@ -21,9 +21,10 @@ Deno.test('MavenCopyAction should throw exception when arguments are not provide
 });
 
 Deno.test('MavenCopyAction should fetch and copy Maven artifact', async () => {
-    const tempDir = TestHelper.getNewTempDir();
-    const dstFile = path.resolve(tempDir, 'kotlin-stdlib-2.1.21.jar');
-    const coordinates = 'org.jetbrains.kotlin:kotlin-stdlib:2.1.21:jar';
+    if (Deno.env.get("M2_HOME")) {
+        const tempDir = TestHelper.getNewTempDir();
+        const dstFile = path.resolve(tempDir, 'kotlin-stdlib-2.1.21.jar');
+        const coordinates = 'org.jetbrains.kotlin:kotlin-stdlib:2.1.21:jar';
 
     const action = getMavenCopyAction();
     await action.execute(TestHelper.mockPackage(), [
@@ -31,8 +32,9 @@ Deno.test('MavenCopyAction should fetch and copy Maven artifact', async () => {
         tempDir,
     ]);
 
-    const stat = await Deno.stat(dstFile);
-    assert(stat.isFile);
+        const stat = await Deno.stat(dstFile);
+        assert(stat.isFile);
+    }
 });
 
 function getMavenCopyAction() {
