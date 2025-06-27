@@ -36,13 +36,15 @@ jobs:
 
       - name: Get Deno
         shell: cmd
+        env:
+          DENO_VERSION: ${{ github.event.inputs.denoVersion || env.DEFAULT_DENO_VERSION }}"
+          DENO_ROOT_PATH: ${{ runner.temp }}\deno
+          GITHUB_WORKSPACE: ${{ github.workspace }}
         run: |
           if exist %DENO_ROOT_PATH% rmdir /q/s %DENO_ROOT_PATH%
           if not exist %DENO_ROOT_PATH% mkdir %DENO_ROOT_PATH%
-          call %GITHUB_WORKSPACE%\githubScripts\get-deno.cmd %DENO_ROOT_PATH% ${{ env.DENO_VERSION }}
-        env:
-          DENO_ROOT_PATH: ${{ runner.temp }}\deno
-          GITHUB_WORKSPACE: ${{ github.workspace }}
+          call %GITHUB_WORKSPACE%\githubScripts\get-deno.cmd %DENO_ROOT_PATH% %DENO_VERSION%
+
 
       - name: Get extraBin
         shell: cmd
