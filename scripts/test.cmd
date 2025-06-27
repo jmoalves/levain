@@ -97,7 +97,7 @@ echo Running tests
 @echo on
 %myDenoExe% test --allow-all --parallel %coverOps% %allParameters%
 @echo off
-set ERRORLEVEL_TESTES='%ERRORLEVEL%'
+set ERRORLEVEL_TESTES=%ERRORLEVEL%
 if not "%ERRORLEVEL_TESTES%"=="0" (
     exit /b %ERRORLEVEL_TESTES%
 )
