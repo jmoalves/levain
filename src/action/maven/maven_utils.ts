@@ -1,6 +1,5 @@
 import * as path from "https://deno.land/std/path/mod.ts";
-import OsUtils from "../os/os_utils.ts";
-import {isWindows} from "https://deno.land/std@0.224.0/path/_os.ts";
+import OsUtils from "../../lib/os/os_utils.ts";
 
 export var mvnCli = async function (): Promise<string> {
     // Common option

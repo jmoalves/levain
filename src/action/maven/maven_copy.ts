@@ -1,6 +1,6 @@
 import OsUtils from "../../lib/os/os_utils.ts";
 import Action from "../action.ts";
-import {checkMavenVersion, mvnCli} from "../../lib/utils/maven_utils.ts";
+import {mvnCli} from "./maven_utils.ts";
 
 class MavenCopyAction implements Action {
     // Executes the mavenCopy action
@@ -51,6 +51,9 @@ class MavenCopyAction implements Action {
             'dependency:copy',
             `-Dartifact=${coordinates}`,
             `-DoutputDirectory=${dstFile}`,
+            `-Dmdep.overWriteReleases=true`,
+            `-Dmdep.overWriteSnapshots=true`,
+            `-Dmdep.overWriteIfNewer=true`,
         ];
 
         console.log(command.join(' '));
