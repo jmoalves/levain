@@ -1,5 +1,6 @@
 import * as log from "jsr:@std/log";
 import * as path from "jsr:@std/path";
+import { prompt } from "jsr:@std/prompt";
 
 import t from './src/lib/i18n.ts'
 
@@ -96,7 +97,7 @@ export default class Levain {
             if (Deno.stdout.isTerminal()) {
                 if (this.error || (this.myArgs && this.myArgs["wait-after-end"])) {
                     console.log("");
-                    prompt(t("enterFinish"));
+                    await prompt(t("enterFinish"));
                 }
             }
         }
