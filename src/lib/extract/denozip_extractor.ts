@@ -1,5 +1,5 @@
 import * as log from "jsr:@std/log";
-import {decompress} from 'https://deno.land/x/zip/mod.ts';
+import { decompress } from 'https://deno.land/x/zip/mod.ts';
 
 import Config from "../config.ts";
 import {Extractor} from "./extractor.ts";
