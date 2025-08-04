@@ -1,4 +1,4 @@
-import * as path from "https://deno.land/std/path/mod.ts";
+import * as path from "jsr:@std/path";
 import OsUtils from "../../lib/os/os_utils.ts";
 
 export var mvnCli = async function (): Promise<string> {
