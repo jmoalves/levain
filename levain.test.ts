@@ -1,4 +1,4 @@
-import {assertEquals,} from "jsr:@std/assert";
+import { assertEquals } from "jsr:@std/assert";
 import * as path from "jsr:@std/path";
 
 import {assertFind} from "./src/lib/test/more_asserts.ts";

@@ -1,8 +1,7 @@
-import {assert, assertEquals, assertRejects} from "jsr:@std/assert";
-import * as path from 'jsr:@std/path'
+import { assert, assertEquals, assertRejects } from "jsr:@std/assert";
+import * as path from "jsr:@std/path";
 
 import TestHelper from "../test/test_helper.ts";
-
 import JsonUtils from "./json_utils.ts";
 
 // TODO JsonUtils should save when folder does not exist
