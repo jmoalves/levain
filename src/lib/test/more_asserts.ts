@@ -4,7 +4,6 @@ import * as path from "jsr:@std/path";
 
 import DirUtils from "../fs/dir_utils.ts";
 import {FileUtils} from '../fs/file_utils.ts';
-import OsUtils from '../os/os_utils.ts';
 
 export function assertArrayIncludesElements<T>(array: T[], elements: T[]) {
     let notFound: T[] = []
@@ -80,13 +79,10 @@ export function assertArrayEqualsInAnyOrder<T>(
 }
 
 export function assertFolderIncludes(folder: string, expectedFiles: string[]) {
-    let separator = path.SEPARATOR
     const dstRelativeFiles = DirUtils.listFileNames(folder)
         .map(it => path.resolve(it))
-    // .map(it => it.toString().replace(dstWithSlash, ''))
     const expectedRelativeFiles = expectedFiles
         .map(it => path.resolve(folder, it))
-    // .map(it => it.toString().replace(dstWithSlash, ''))
 
     assertArrayIncludes(
         dstRelativeFiles,
@@ -95,13 +91,10 @@ export function assertFolderIncludes(folder: string, expectedFiles: string[]) {
 }
 
 export function assertFolderDoesNotInclude(folder: string, expectedFiles: string[]) {
-    let separator = path.SEPARATOR
     const dstRelativeFiles = DirUtils.listFileNames(folder)
         .map(it => path.resolve(it))
-    // .map(it => it.toString().replace(dstWithSlash, ''))
     const expectedRelativeFiles = expectedFiles
         .map(it => path.resolve(folder, it))
-    // .map(it => it.toString().replace(dstWithSlash, ''))
 
     assertArrayDoesNotInclude(
         dstRelativeFiles,
@@ -117,9 +110,25 @@ export function assertDirCountGreaterOrEqualTo(dir: string, minCount: number, ms
     assertGreaterOrEqualTo(DirUtils.count(dir), minCount, msg)
 }
 
+export async function assertFileEmpty(filePath: string): Promise<void> {
+    await assertFileSize(filePath, 0);
+}
+
 export function assertFileSizeAprox(path: string, expectedSize: number) {
     const size = FileUtils.getSize(path)
     assertNumberEquals(size, expectedSize, 0.10)
+}
+
+export async function assertFileSize(filePath: string, expectedSize: number): Promise<void> {
+    const fileInfo = await Deno.stat(filePath);
+    assert(fileInfo.isFile, `Path is not a file: ${filePath}`);
+    assertEquals(fileInfo.size, expectedSize, `Expected file size to be ${expectedSize} bytes, but got ${fileInfo.size}`);
+}
+
+export async function assertFileNotEmpty(filePath: string): Promise<void> {
+    const fileInfo = await Deno.stat(filePath);
+    assert(fileInfo.isFile, `Path is not a file: ${filePath}`);
+    assert(fileInfo.size > 0, `Expected file to be non-empty, but size is ${fileInfo.size}`);
 }
 
 export function assertPathEndsWith(path: string, expectedEnd: string) {

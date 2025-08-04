@@ -53,3 +53,11 @@ $levainRepo="https://gitlab.local.net/grp-dev/levain-pkgs.git";iwr https://githu
 ### Open a configured shell
 `levain shell`   
 `levain shell wlp-runtime-24.0.0.1 jdk-21-ibm`
+
+## Releasing a new version of Levain
+- Change the SNAPSHOT version in https://github.com/jmoalves/levain/blob/master/recipes/levain.levain.yaml
+- Run the "Create a new release" GitHub action https://github.com/jmoalves/levain/actions/workflows/release.yml
+- Be sure that the new version is not blocked by Windows Defender when executed. This usually is the case.
+- Test in at least 2 computers
+- Edit the release in GitHub, marking it as the "latest release", and not a "pre-release" any more -  https://github.com/jmoalves/levain/releases
+- Test again

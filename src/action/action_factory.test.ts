@@ -7,9 +7,9 @@ import ActionFactory from "./action_factory.ts";
 import AssertContainsAction from "./assert_contains_action.ts";
 
 Deno.test('ActionFactory should list actions', () => {
-    const factory = getActionFactory()
+    const factory = getActionFactory();
 
-    const actions: string[] = factory.list()
+    const actions: string[] = factory.list();
 
     assertArrayEqualsInAnyOrder(actions, [
         'addPath',
@@ -34,6 +34,7 @@ Deno.test('ActionFactory should list actions', () => {
         'jsonRemove',
         'killProcess',
         'levainShell',
+        'mavenCopy',
         'mkdir',
         'propertyGet',
         'propertySet',
@@ -43,29 +44,29 @@ Deno.test('ActionFactory should list actions', () => {
         'setVar',
         'shellPath',
         'template',
-    ])
-})
+    ]);
+});
 Deno.test('ActionFactory should know the assertContains action', () => {
-    const factory = getActionFactory()
-    const config = TestHelper.getConfig()
+    const factory = getActionFactory();
+    const config = TestHelper.getConfig();
 
-    const action = factory.get('assertContains', config)
+    const action = factory.get('assertContains', config);
 
-    assert(action instanceof AssertContainsAction)
-})
+    assert(action instanceof AssertContainsAction);
+});
 Deno.test('ActionFactory should throw exception when Action does not exist', () => {
-    const factory = getActionFactory()
-    const config = TestHelper.getConfig()
+    const factory = getActionFactory();
+    const config = TestHelper.getConfig();
 
     assertThrows(
         () => {
-            factory.get('thisActionDoesNotExist', config)
+            factory.get('thisActionDoesNotExist', config);
         },
         Error,
-        'Action thisActionDoesNotExist not found - Aborting...'
-    )
-})
+        'Action thisActionDoesNotExist not found - Aborting...',
+    );
+});
 
 function getActionFactory(): ActionFactory {
-    return new ActionFactory()
+    return new ActionFactory();
 }
