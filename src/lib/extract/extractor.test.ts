@@ -1,10 +1,5 @@
 import * as path from "jsr:@std/path";
 
-import TestHelper from "../test/test_helper.ts";
-import {assertFolderIncludes} from "../test/more_asserts.ts";
-import {DenoZip} from "./denozip_extractor.ts";
-import { ExtractorFactory } from './extractor_factory.ts';
-
 // Workaround - https://github.com/denoland/deno/issues/15425
 Deno.test('Extractor should copy srcFile to dstFile', async () => {
     // Given

@@ -1,6 +1,6 @@
 import * as path from "jsr:@std/path";
-import {assert, assertEquals, assertNotEquals, assertThrows,} from "jsr:@std/assert";
-import {ensureDirSync, ensureFileSync, existsSync} from "jsr:@std/fs";
+import { assert, assertEquals, assertNotEquals, assertThrows } from "jsr:@std/assert";
+import { ensureDirSync, ensureFileSync, existsSync } from "jsr:@std/fs";
 
 import OsUtils from '../os/os_utils.ts';
 import TestHelper from '../test/test_helper.ts';
