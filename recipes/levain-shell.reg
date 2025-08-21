@@ -2,10 +2,16 @@ Windows Registry Editor Version 5.00
 
 [HKEY_CURRENT_USER\Software\Classes\Directory\Background\shell\@@shellID@@]
 @="@@shellName@@"
+"Icon"="@@shellIcon@@"
 
 [HKEY_CURRENT_USER\Software\Classes\Directory\Background\shell\@@shellID@@\command]
 @="cmd /u /c @@shellCmd@@"
 
-[-HKEY_CURRENT_USER\Software\Classes\Directory\shell\@@shellID@@\command]
 
-[-HKEY_CURRENT_USER\Software\Classes\Directory\shell\@@shellID@@]
+
+[HKEY_CURRENT_USER\Software\Classes\Directory\shell\@@shellID@@]
+@="@@shellName@@"
+"Icon"="@@shellIcon@@"
+
+[HKEY_CURRENT_USER\Software\Classes\Directory\shell\@@shellID@@\command]
+@="cmd /u /c @@shellCmd@@"

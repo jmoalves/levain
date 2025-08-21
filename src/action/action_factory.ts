@@ -2,7 +2,7 @@ import Action from './action.ts';
 import AddPathAction from './os/add_path.ts';
 import CheckFileExists from './check/check_file_exists.ts';
 import CopyAction from './os/copy.ts';
-import ContextMenu from './os/context_menu.ts';
+import ContextMenuAction from './os/context_menu.ts';
 import DefaultPackage from './defaultPackage.ts';
 import Extract from './extract.ts';
 import Inspect from './inspect.ts';
@@ -32,6 +32,7 @@ import AddToDesktopAction from './os/add-to-desktop.ts';
 import KillProcessAction from './os/killProcess.ts';
 import GitCloneAction from './git/clone.ts';
 import MavenCopyAction from './maven/maven_copy.ts';
+import ContextMenuRemoveAction from "./os/context_menu_remove.ts";
 
 const actionMap = new Map<string, (config: Config) => Action>([
     ['addPath', (config: Config) => new AddPathAction(config)],
@@ -49,7 +50,8 @@ const actionMap = new Map<string, (config: Config) => Action>([
     ['checkUrl', (config: Config) => new CheckUrl(config)],
     ['copy', (config: Config) => new CopyAction(config)],
     ['clone', () => new GitCloneAction()],
-    ['contextMenu', (config: Config) => new ContextMenu(config)],
+    ['contextMenu', (config: Config) => new ContextMenuAction(config)],
+    ['contextMenuRemove', (config: Config) => new ContextMenuRemoveAction(config)],
     ['defaultPackage', (config: Config) => new DefaultPackage(config)],
     ['echo', (config: Config) => new Echo(config)],
     ['extract', (config: Config) => new Extract(config)],

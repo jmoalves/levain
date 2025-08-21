@@ -7,7 +7,7 @@ import Loader from '../../lib/loader.ts';
 
 import Action from "../action.ts";
 
-export default class ContextMenuAction implements Action {
+export default class ContextMenuRemoveAction implements Action {
     constructor(private config: Config) {
     }
 
@@ -33,18 +33,6 @@ export default class ContextMenuAction implements Action {
             throw "contextMenu - You must inform the 'id' option";
         }
 
-        if (!args.name || args.name.length == 0) {
-            throw "contextMenu - You must inform the 'name' option";
-        }
-
-        if (!args.cmd || args.cmd.length == 0) {
-            throw "contextMenu - You must inform the 'cmd' option";
-        }
-
-        if (!args.icon || args.cmd.length == 0) {
-            throw "contextMenu - You must inform the 'icon' option";
-        }
-
         if (args.id.includes(" ")) {
             throw "contextMenu - The 'id' option must NOT contain spaces";
         }
@@ -60,9 +48,7 @@ export default class ContextMenuAction implements Action {
     private async templateRegistry(pkg: Package, args: any) {
         const tempFilename = Deno.makeTempFileSync({prefix: 'levain-temp-'});
         log.debug(`- tempReg - ${tempFilename}`);
-        const backgroundCmd = args.cmd
-        const dirCmd = backgroundCmd.replace("%V", "%1")
-        let action = `template --replace=/@@shellID@@/g --with="${args.id}" --replace=/@@shellName@@/g --with="${args.name}" --replace=/@@shellCmd@@/g --with="${args.cmd}" --replace=/@@shellIcon@@/g --with="${args.icon}" --doubleBackslash \${pkg.levain.recipesDir}/levain-shell.reg ${tempFilename}`;
+        let action = `template --replace=/@@shellID@@/g --with="${args.id}" --doubleBackslash \${pkg.levain.recipesDir}/levain-shell-remove.reg ${tempFilename}`;
         let loader = new Loader(this.config);
         await loader.action(pkg, action);
 

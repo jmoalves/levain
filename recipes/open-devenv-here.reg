@@ -1,0 +1,43 @@
+Windows Registry Editor Version 5.00
+
+;
+; Cmd.exe
+;
+
+; CMD no fundo da pasta
+[HKEY_CURRENT_USER\Software\Classes\Directory\Background\shell\OpenCmdHere]
+@="dev-env cmd test"
+"Icon"="cmd.exe"
+
+[HKEY_CURRENT_USER\Software\Classes\Directory\Background\shell\OpenCmdHere\command]
+@="cmd.exe /k \"levain install\""
+
+; CMD ao clicar diretamente na pasta
+[HKEY_CURRENT_USER\Software\Classes\Directory\shell\OpenCmdHere]
+@="dev-env cmd test"
+"Icon"="cmd.exe"
+
+[HKEY_CURRENT_USER\Software\Classes\Directory\shell\OpenCmdHere\command]
+@="cmd.exe /k \"cd /d \"%1\" && levain install\""
+
+
+;
+; Cmder
+;
+
+; Cmder no fundo da pasta
+[HKEY_CURRENT_USER\Software\Classes\Directory\Background\shell\OpenCmderHere]
+@="dev-env cmder test"
+"Icon"="C:\\dev-env\\cmder\\Cmder.exe"
+
+[HKEY_CURRENT_USER\Software\Classes\Directory\Background\shell\OpenCmderHere\command]
+@="\"C:\\dev-env\\cmder\\Cmder.exe\" /START \"%V\" /TASK \"{cmd::Cmder}\" /CMD \"levain install\""
+
+
+; Cmder ao clicar diretamente na pasta
+[HKEY_CURRENT_USER\Software\Classes\Directory\shell\OpenCmderHere]
+@="dev-env cmder test"
+"Icon"="C:\\dev-env\\cmder\\Cmder.exe"
+
+[HKEY_CURRENT_USER\Software\Classes\Directory\shell\OpenCmderHere\command]
+@="\"C:\\dev-env\\cmder\\Cmder.exe\" /START \"%1\" /TASK \"{cmd::Cmder}\" /CMD \"cd /d \"%1\" && levain install\""
