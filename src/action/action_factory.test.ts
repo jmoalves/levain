@@ -24,6 +24,7 @@ Deno.test('ActionFactory should list actions', () => {
         'checkUrl',
         'clone',
         'contextMenu',
+        'contextMenuRemove',
         'copy',
         'defaultPackage',
         'echo',
