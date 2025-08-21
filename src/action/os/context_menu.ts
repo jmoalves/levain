@@ -23,7 +23,8 @@ export default class ContextMenuAction implements Action {
             stringOnce: [
                 "id",
                 "name",
-                "cmd"
+                "cmd",
+                "icon"
             ]
         });
 
