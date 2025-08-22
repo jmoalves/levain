@@ -1,5 +1,6 @@
 Windows Registry Editor Version 5.00
 
+; Clique no background da pasta
 [HKEY_CURRENT_USER\Software\Classes\Directory\Background\shell\@@shellID@@]
 @="@@shellName@@"
 "Icon"="@@shellIcon@@"
@@ -9,9 +10,18 @@ Windows Registry Editor Version 5.00
 
 
 
+
+; Clique na pasta
 [HKEY_CURRENT_USER\Software\Classes\Directory\shell\@@shellID@@]
 @="@@shellName@@"
 "Icon"="@@shellIcon@@"
 
 [HKEY_CURRENT_USER\Software\Classes\Directory\shell\@@shellID@@\command]
 @="cmd /u /c @@shellCmd@@"
+
+
+
+
+; Desliga menu "Mostrar mais opções" do Windows 11, que oculta o dev-env
+[HKEY_CURRENT_USER\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32]
+@=""
