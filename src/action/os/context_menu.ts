@@ -24,7 +24,7 @@ export default class ContextMenuAction implements Action {
                 "id",
                 "name",
                 "cmd",
-                "icon"
+                "icon",
             ]
         });
 
@@ -40,10 +40,6 @@ export default class ContextMenuAction implements Action {
 
         if (!args.cmd || args.cmd.length == 0) {
             throw "contextMenu - You must inform the 'cmd' option";
-        }
-
-        if (!args.icon || args.cmd.length == 0) {
-            throw "contextMenu - You must inform the 'icon' option";
         }
 
         if (args.id.includes(" ")) {
