@@ -53,7 +53,7 @@ export default class Mkdir implements Action {
             stderr: "null"
         });
 
-        await p.status();
+        await p.output();
     }
 
     private dirExists(dirname: string): boolean {

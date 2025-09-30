@@ -24,7 +24,7 @@ export class UnTar extends Extractor {
             cmd: args
         });
 
-        let status = await p.status();
+        let status = await p.output();
         if (!status.success) {
             throw "CMD terminated with code " + status.code;
         }

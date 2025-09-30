@@ -115,7 +115,7 @@ export class OsShell {
 
         log.debug(`Deno.run: ${JSON.stringify(opt)}`);
         const p = Deno.run(opt);
-        let status = await p.status();
+        let status = await p.output();
 
         if (!this.ignoreErrors && !status.success) {
             throw new Error("CMD terminated with code " + status.code);

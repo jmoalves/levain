@@ -174,7 +174,7 @@ export default class OsUtils {
             proc.status(),
         ]);
 
-        proc.close();
+        // close() not needed with Deno.Command
 
         log.debug(`status ${JSON.stringify(status)}`);
 

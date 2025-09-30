@@ -34,7 +34,11 @@ export class Powershell {
             })
         }
 
-        // const cmd = Deno.run({cmd:["extra-bin/windows/os-utils/addToDesktop.cmd", resolvedTargetFile]});
+        // const cmd = new Deno.Command("extra-bin/windows/os-utils/addToDesktop.cmd", {
+  args: [resolvedTargetFile],
+  stdout: "inherit",
+  stderr: "inherit"
+});
         // %PWS% -File %currentFileDir%createShortcut.ps1 "%TARGET_FILE%" "%SHORTCUT_DIR%"
 
         const process = Deno.run({
@@ -53,7 +57,7 @@ export class Powershell {
             process.status()
         ]);
 
-        process.close()
+        // close() not needed with Deno.Command
 
         if (!ignoreErrors && !status?.success) {
             let stderrOutput = this.decodeOutput(stderr)
