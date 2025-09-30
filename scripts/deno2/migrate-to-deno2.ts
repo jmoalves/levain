@@ -2,12 +2,12 @@
 
 /**
  * Script de Migração Automática do Levain para Deno 2
- * 
+ *
  * Como usar:
  * 1. Clone o repositório: git clone -b deno2_opus https://github.com/jmoalves/levain.git
  * 2. Entre no diretório: cd levain
  * 3. Execute este script: deno run --allow-all migrate-to-deno2.ts
- * 
+ *
  * O script irá:
  * - Fazer backup dos arquivos originais
  * - Atualizar todos os imports para JSR
@@ -58,22 +58,22 @@ const IMPORT_MAPPINGS: Array<[RegExp | string, string]> = [
   [/https:\/\/deno\.land\/std@[\d.]+\/fs\/move\.ts/g, "jsr:@std/fs@1.0.0/move"],
   [/https:\/\/deno\.land\/std@[\d.]+\/fs\/empty_dir\.ts/g, "jsr:@std/fs@1.0.0/empty-dir"],
   [/https:\/\/deno\.land\/std@[\d.]+\/fs\/expand_glob\.ts/g, "jsr:@std/fs@1.0.0/expand-glob"],
-  
+
   [/https:\/\/deno\.land\/std@[\d.]+\/path\/mod\.ts/g, "jsr:@std/path@1.0.0"],
   [/https:\/\/deno\.land\/std@[\d.]+\/path\/posix\.ts/g, "jsr:@std/path@1.0.0/posix"],
   [/https:\/\/deno\.land\/std@[\d.]+\/path\/win32\.ts/g, "jsr:@std/path@1.0.0/windows"],
-  
+
   [/https:\/\/deno\.land\/std@[\d.]+\/fmt\/colors\.ts/g, "jsr:@std/fmt@1.0.0/colors"],
   [/https:\/\/deno\.land\/std@[\d.]+\/fmt\/printf\.ts/g, "jsr:@std/fmt@1.0.0/printf"],
-  
+
   [/https:\/\/deno\.land\/std@[\d.]+\/testing\/asserts\.ts/g, "jsr:@std/assert@1.0.0"],
   [/https:\/\/deno\.land\/std@[\d.]+\/testing\/bdd\.ts/g, "jsr:@std/testing@1.0.0/bdd"],
-  
+
   [/https:\/\/deno\.land\/std@[\d.]+\/encoding\/yaml\.ts/g, "jsr:@std/yaml@1.0.0"],
   [/https:\/\/deno\.land\/std@[\d.]+\/encoding\/toml\.ts/g, "jsr:@std/toml@1.0.0"],
   [/https:\/\/deno\.land\/std@[\d.]+\/encoding\/base64\.ts/g, "jsr:@std/encoding@1.0.0/base64"],
   [/https:\/\/deno\.land\/std@[\d.]+\/encoding\/hex\.ts/g, "jsr:@std/encoding@1.0.0/hex"],
-  
+
   [/https:\/\/deno\.land\/std@[\d.]+\/collections\/mod\.ts/g, "jsr:@std/collections@1.0.0"],
   [/https:\/\/deno\.land\/std@[\d.]+\/datetime\/mod\.ts/g, "jsr:@std/datetime@1.0.0"],
   [/https:\/\/deno\.land\/std@[\d.]+\/log\/mod\.ts/g, "jsr:@std/log@0.224.0"],
@@ -84,10 +84,13 @@ const IMPORT_MAPPINGS: Array<[RegExp | string, string]> = [
   [/https:\/\/deno\.land\/std@[\d.]+\/uuid\/mod\.ts/g, "jsr:@std/uuid@1.0.0"],
   [/https:\/\/deno\.land\/std@[\d.]+\/async\/mod\.ts/g, "jsr:@std/async@1.0.0"],
   [/https:\/\/deno\.land\/std@[\d.]+\/signal\/mod\.ts/g, "jsr:@std/signal@1.0.0"],
-  
+
   // Módulos x
   [/https:\/\/deno\.land\/x\/oak@[\d.v]+\/mod\.ts/g, "jsr:@oak/oak@17.0.0"],
-  [/https:\/\/deno\.land\/x\/cliffy@[\d.v]+\/command\/mod\.ts/g, "https://deno.land/x/cliffy@v1.0.0-rc.3/command/mod.ts"],
+  [
+    /https:\/\/deno\.land\/x\/cliffy@[\d.v]+\/command\/mod\.ts/g,
+    "https://deno.land/x/cliffy@v1.0.0-rc.3/command/mod.ts",
+  ],
   [/https:\/\/deno\.land\/x\/cliffy@[\d.v]+\/prompt\/mod\.ts/g, "https://deno.land/x/cliffy@v1.0.0-rc.3/prompt/mod.ts"],
   [/https:\/\/deno\.land\/x\/cliffy@[\d.v]+\/table\/mod\.ts/g, "https://deno.land/x/cliffy@v1.0.0-rc.3/table/mod.ts"],
 ];
@@ -109,122 +112,119 @@ const CODE_PATTERNS: CodePattern[] = [
       // Extrair cmd
       const cmdMatch = args.match(/cmd:\s*\[([^\]]+)\]/);
       if (!cmdMatch) return match;
-      
-      const cmdParts = cmdMatch[1].split(',').map(s => s.trim());
-      const command = cmdParts[0].replace(/['"]/g, '');
-      const cmdArgs = cmdParts.slice(1).map(arg => arg.trim());
-      
+
+      const cmdParts = cmdMatch[1].split(",").map((s) => s.trim());
+      const command = cmdParts[0].replace(/['"]/g, "");
+      const cmdArgs = cmdParts.slice(1).map((arg) => arg.trim());
+
       // Extrair outras opções
-      const stdout = args.includes('stdout:') ? 
-        args.match(/stdout:\s*["']([^"']+)["']/)?.[1] || "piped" : "inherit";
-      const stderr = args.includes('stderr:') ? 
-        args.match(/stderr:\s*["']([^"']+)["']/)?.[1] || "piped" : "inherit";
-      const stdin = args.includes('stdin:') ? 
-        args.match(/stdin:\s*["']([^"']+)["']/)?.[1] || undefined : undefined;
+      const stdout = args.includes("stdout:") ? args.match(/stdout:\s*["']([^"']+)["']/)?.[1] || "piped" : "inherit";
+      const stderr = args.includes("stderr:") ? args.match(/stderr:\s*["']([^"']+)["']/)?.[1] || "piped" : "inherit";
+      const stdin = args.includes("stdin:") ? args.match(/stdin:\s*["']([^"']+)["']/)?.[1] || undefined : undefined;
       const cwd = args.match(/cwd:\s*["']([^"']+)["']/)?.[1];
-      
+
       let newCode = `const ${varName} = new Deno.Command("${command}", {\n`;
       if (cmdArgs.length > 0) {
-        newCode += `  args: [${cmdArgs.join(', ')}],\n`;
+        newCode += `  args: [${cmdArgs.join(", ")}],\n`;
       }
       newCode += `  stdout: "${stdout}",\n`;
       newCode += `  stderr: "${stderr}",\n`;
       if (stdin) newCode += `  stdin: "${stdin}",\n`;
       if (cwd) newCode += `  cwd: "${cwd}",\n`;
-      newCode = newCode.replace(/,\n$/, '\n');
+      newCode = newCode.replace(/,\n$/, "\n");
       newCode += `});`;
-      
+
       return newCode;
     },
-    multiline: true
+    multiline: true,
   },
-  
+
   // process.output() → command.output()
   {
     name: "process.output() to command.output()",
     pattern: /await\s+(\w+)\.status\(\)/g,
-    replacement: "await $1.output()"
+    replacement: "await $1.output()",
   },
-  
+
   // process.output() → já incluído em command.output()
   {
     name: "Remove separate process.output() calls",
     pattern: /const\s+\w+\s*=\s*await\s+\w+\.output\(\);?\s*\/\/\s*process output/gi,
-    replacement: "// output already retrieved with command.output()"
+    replacement: "// output already retrieved with command.output()",
   },
-  
+
   // process.close() → não necessário
   {
     name: "Remove process.close()",
     pattern: /(\w+)\.close\(\);?/g,
     replacement: (match: string, varName: string) => {
       // Apenas remove se parece ser um process
-      if (match.includes('process') || match.includes('proc') || match.includes('cmd')) {
+      if (match.includes("process") || match.includes("proc") || match.includes("cmd")) {
         return "// close() not needed with Deno.Command";
       }
       return match;
-    }
+    },
   },
-  
+
   // Deno.copy → readableStream.pipeTo
   {
     name: "Deno.copy to pipeTo",
     pattern: /await\s+Deno\.copy\(([^,]+),\s*([^)]+)\)/g,
-    replacement: "await $1.readable.pipeTo($2.writable)"
+    replacement: "await $1.readable.pipeTo($2.writable)",
   },
-  
+
   // window global
   {
     name: "window global removal",
     pattern: /typeof\s+window\s*!==?\s*["']undefined["']/g,
-    replacement: "typeof globalThis.window !== 'undefined'"
+    replacement: "typeof globalThis.window !== 'undefined'",
   },
-  
+
   // undefined /* Deno.metrics() removed in Deno 2 */ removal
   {
     name: "undefined /* Deno.metrics() removed in Deno 2 */ removal",
     pattern: /Deno\.metrics\(\)[^;]*/g,
-    replacement: "undefined // undefined /* Deno.metrics() removed in Deno 2 */ was removed in Deno 2"
+    replacement: "undefined // undefined /* Deno.metrics() removed in Deno 2 */ was removed in Deno 2",
   },
-  
+
   // Deno.serveHttp → soft deprecated
   {
     name: "Deno.serveHttp deprecation warning",
     pattern: /Deno\.serveHttp/g,
-    replacement: "/* @ts-ignore - Deno.serveHttp is soft-removed in Deno 2 */\nDeno.serveHttp"
+    replacement: "/* @ts-ignore - Deno.serveHttp is soft-removed in Deno 2 */\nDeno.serveHttp",
   },
-  
+
   // Deno.Buffer → Buffer
   {
     name: "Deno.Buffer to Buffer",
     pattern: /new\s+Deno\.Buffer\(/g,
-    replacement: "new Buffer("
+    replacement: "new Buffer(",
   },
-  
+
   // Permissões no comentário/docs
   {
     name: "Update permission flags in comments",
     pattern: /--allow-run(?!\=)/g,
-    replacement: "--allow-run=<BINARY_NAME>"
-  }
+    replacement: "--allow-run=<BINARY_NAME>",
+  },
 ];
 
 // Função para fazer backup
 async function createBackup() {
   header("Creating Backup");
-  
+
   try {
     await Deno.mkdir(BACKUP_DIR, { recursive: true });
-    
+
     // Copiar arquivos importantes
     const filesToBackup = [
       "levain.ts",
       "deno.json",
       "deno.jsonc",
       "import_map.json",
-      ".vscode/settings.json"
+      ".vscode/settings.json",
     ];
-    
+
     for (const file of filesToBackup) {
       try {
         await Deno.copyFile(file, `${BACKUP_DIR}/${file}`);
@@ -233,7 +233,7 @@ async function createBackup() {
         // Arquivo não existe, ok
       }
     }
-    
+
     log(`Backup created in ${BACKUP_DIR}/`, "success");
   } catch (error) {
     log(`Failed to create backup: ${error}`, "error");
@@ -244,11 +244,11 @@ async function createBackup() {
 async function processTypeScriptFile(filePath: string): Promise<{ updated: boolean; changes: string[] }> {
   const changes: string[] = [];
   let updated = false;
-  
+
   try {
     let content = await Deno.readTextFile(filePath);
     const originalContent = content;
-    
+
     // Aplicar mudanças de imports
     for (const [pattern, replacement] of IMPORT_MAPPINGS) {
       if (pattern instanceof RegExp) {
@@ -260,16 +260,16 @@ async function processTypeScriptFile(filePath: string): Promise<{ updated: boole
         }
       }
     }
-    
+
     // Aplicar padrões de código
     for (const pattern of CODE_PATTERNS) {
-      const regex = pattern.multiline 
-        ? new RegExp(pattern.pattern.source, pattern.pattern.flags + 's')
+      const regex = pattern.multiline
+        ? new RegExp(pattern.pattern.source, pattern.pattern.flags + "s")
         : pattern.pattern;
-      
+
       const matches = content.match(regex);
       if (matches && matches.length > 0) {
-        if (typeof pattern.replacement === 'string') {
+        if (typeof pattern.replacement === "string") {
           content = content.replace(regex, pattern.replacement);
         } else {
           content = content.replace(regex, pattern.replacement as any);
@@ -278,23 +278,22 @@ async function processTypeScriptFile(filePath: string): Promise<{ updated: boole
         updated = true;
       }
     }
-    
+
     // Salvar arquivo se houve mudanças
     if (updated && content !== originalContent) {
       await Deno.writeTextFile(filePath, content);
     }
-    
   } catch (error) {
     log(`Error processing ${filePath}: ${error}`, "error");
   }
-  
+
   return { updated, changes };
 }
 
 // Criar/atualizar deno.json
 async function createDenoConfig() {
   header("Creating/Updating deno.json");
-  
+
   const denoConfig = {
     "tasks": {
       "dev": "deno run --allow-all --watch levain.ts",
@@ -306,23 +305,23 @@ async function createDenoConfig() {
       "fmt": "deno fmt",
       "lint": "deno lint",
       "cache": "deno cache levain.ts",
-      "install-deps": "deno install"
+      "install-deps": "deno install",
     },
     "imports": {
       "@std/": "jsr:@std/",
       "@cliffy/": "https://deno.land/x/cliffy@v1.0.0-rc.3/",
-      "std/": "jsr:/mod.ts"
+      "std/": "jsr:/mod.ts",
     },
     "compilerOptions": {
       "lib": ["deno.window", "dom"],
       "strict": true,
       "noImplicitAny": true,
-      "strictNullChecks": true
+      "strictNullChecks": true,
     },
     "fmt": {
       "files": {
         "include": ["src/", "*.ts", "*.js"],
-        "exclude": ["src/testdata/", "data/"]
+        "exclude": ["src/testdata/", "data/"],
       },
       "options": {
         "useTabs": false,
@@ -330,30 +329,30 @@ async function createDenoConfig() {
         "indentWidth": 2,
         "semiColons": true,
         "singleQuote": false,
-        "proseWrap": "preserve"
-      }
+        "proseWrap": "preserve",
+      },
     },
     "lint": {
       "files": {
         "include": ["src/", "*.ts"],
-        "exclude": ["src/testdata/", "data/"]
+        "exclude": ["src/testdata/", "data/"],
       },
       "rules": {
         "tags": ["recommended"],
         "exclude": ["no-explicit-any"],
-        "include": ["no-process-globals"]
-      }
+        "include": ["no-process-globals"],
+      },
     },
     "nodeModulesDir": "auto",
     "lock": false,
     "test": {
       "files": {
         "include": ["src/**/*_test.ts", "test/**/*.ts"],
-        "exclude": ["data/"]
-      }
-    }
+        "exclude": ["data/"],
+      },
+    },
   };
-  
+
   try {
     // Verificar se já existe
     let existingConfig: any = {};
@@ -364,15 +363,15 @@ async function createDenoConfig() {
     } catch {
       // Não existe, criar novo
     }
-    
+
     // Merge com configuração existente
     const finalConfig = { ...existingConfig, ...denoConfig };
-    
+
     // Preservar imports personalizados se existirem
     if (existingConfig.imports) {
       finalConfig.imports = { ...denoConfig.imports, ...existingConfig.imports };
     }
-    
+
     await Deno.writeTextFile("deno.json", JSON.stringify(finalConfig, null, 2));
     log("Created/updated deno.json", "success");
   } catch (error) {
@@ -479,30 +478,32 @@ ${colors.reset}`);
 
   // Criar backup
   await createBackup();
-  
+
   // Processar arquivos TypeScript
   header("Processing TypeScript Files");
-  
+
   let totalFiles = 0;
   let updatedFiles = 0;
   const allChanges: Map<string, string[]> = new Map();
-  
+
   // Buscar todos os arquivos .ts e .js
   async function* walkFiles(dir: string): AsyncGenerator<string> {
     try {
       for await (const entry of Deno.readDir(dir)) {
         const path = `${dir}/${entry.name}`;
-        
+
         // Pular diretórios especiais
-        if (entry.name.startsWith(".") || 
-            entry.name === "node_modules" || 
-            entry.name === "dist" ||
-            entry.name === "build" ||
-            path.includes("/.git/") ||
-            path.includes("/.backup")) {
+        if (
+          entry.name.startsWith(".") ||
+          entry.name === "node_modules" ||
+          entry.name === "dist" ||
+          entry.name === "build" ||
+          path.includes("/.git/") ||
+          path.includes("/.backup")
+        ) {
           continue;
         }
-        
+
         if (entry.isFile && (entry.name.endsWith(".ts") || entry.name.endsWith(".js"))) {
           yield path;
         } else if (entry.isDirectory) {
@@ -513,14 +514,14 @@ ${colors.reset}`);
       log(`Warning: Could not access directory ${dir}: ${error}`, "warning");
     }
   }
-  
+
   // Processar arquivos em diretórios
   for await (const entry of Deno.readDir(".")) {
     if (entry.isDirectory && !entry.name.startsWith(".") && entry.name !== "node_modules") {
       for await (const filePath of walkFiles(entry.name)) {
         totalFiles++;
         const { updated, changes } = await processTypeScriptFile(filePath);
-        
+
         if (updated) {
           updatedFiles++;
           allChanges.set(filePath, changes);
@@ -529,13 +530,13 @@ ${colors.reset}`);
       }
     }
   }
-  
+
   // Processar arquivos na raiz
   for await (const entry of Deno.readDir(".")) {
     if (entry.isFile && (entry.name.endsWith(".ts") || entry.name.endsWith(".js"))) {
       totalFiles++;
       const { updated, changes } = await processTypeScriptFile(entry.name);
-      
+
       if (updated) {
         updatedFiles++;
         allChanges.set(entry.name, changes);
@@ -543,19 +544,19 @@ ${colors.reset}`);
       }
     }
   }
-  
+
   // Criar deno.json
   await createDenoConfig();
-  
+
   // Criar exemplos
   await createMigrationExamples();
-  
+
   // Relatório final
   header("Migration Report");
-  
+
   console.log(`${colors.bright}Files processed:${colors.reset} ${totalFiles}`);
   console.log(`${colors.bright}Files updated:${colors.reset} ${updatedFiles}`);
-  
+
   if (allChanges.size > 0) {
     console.log(`\n${colors.bright}Changes made:${colors.reset}`);
     for (const [file, changes] of allChanges) {
@@ -565,10 +566,10 @@ ${colors.reset}`);
       }
     }
   }
-  
+
   // Instruções finais
   header("Next Steps");
-  
+
   console.log(`${colors.green}✅ Migration completed!${colors.reset}\n`);
   console.log("1. Review the changes made by this script");
   console.log("2. Install Deno 2: ${colors.cyan}deno upgrade${colors.reset}");
@@ -578,8 +579,10 @@ ${colors.reset}`);
   console.log("\nIf you encounter issues:");
   console.log(`• Check ${colors.yellow}MIGRATION_EXAMPLES.md${colors.reset} for migration patterns`);
   console.log(`• Restore from backup: ${colors.yellow}${BACKUP_DIR}/${colors.reset}`);
-  console.log(`• See Deno 2 migration guide: ${colors.blue}https://docs.deno.com/runtime/reference/migration_guide/${colors.reset}`);
-  
+  console.log(
+    `• See Deno 2 migration guide: ${colors.blue}https://docs.deno.com/runtime/reference/migration_guide/${colors.reset}`,
+  );
+
   // Verificar versão do Deno
   console.log(`\n${colors.bright}Current Deno version:${colors.reset} ${Deno.version.deno}`);
   if (!Deno.version.deno.startsWith("2.")) {

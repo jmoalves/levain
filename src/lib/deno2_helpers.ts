@@ -16,7 +16,7 @@ export class ProcessUtils {
       env?: Record<string, string>;
       stdout?: "inherit" | "piped" | "null";
       stderr?: "inherit" | "piped" | "null";
-    }
+    },
   ): Promise<{
     success: boolean;
     code: number;
@@ -32,7 +32,7 @@ export class ProcessUtils {
     });
 
     const output = await cmd.output();
-    
+
     return {
       success: output.success,
       code: output.code,
@@ -50,7 +50,7 @@ export class ProcessUtils {
     options?: {
       cwd?: string;
       env?: Record<string, string>;
-    }
+    },
   ): Promise<boolean> {
     const cmd = new Deno.Command(command, {
       args,
@@ -69,7 +69,7 @@ export class ProcessUtils {
    */
   static async getCommandOutput(
     command: string,
-    args: string[] = []
+    args: string[] = [],
   ): Promise<string> {
     const result = await ProcessUtils.runCommand(command, args);
     if (!result.success) {
@@ -88,7 +88,7 @@ export class FileUtils {
     destination: string,
     options?: {
       onProgress?: (percent: number) => void;
-    }
+    },
   ): Promise<void> {
     const response = await fetch(url);
     if (!response.ok) {
@@ -97,7 +97,7 @@ export class FileUtils {
 
     const contentLength = response.headers.get("content-length");
     const totalSize = contentLength ? parseInt(contentLength, 10) : 0;
-    
+
     // Garantir que o diretório existe
     const dir = destination.substring(0, destination.lastIndexOf("/"));
     if (dir) {
@@ -114,14 +114,14 @@ export class FileUtils {
       if (totalSize && options?.onProgress && response.body) {
         let downloadedSize = 0;
         const reader = response.body.getReader();
-        
+
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-          
+
           await file.write(value);
           downloadedSize += value.byteLength;
-          
+
           const percent = Math.round((downloadedSize / totalSize) * 100);
           options.onProgress(percent);
         }
@@ -142,12 +142,12 @@ export class FileUtils {
     destinationDir: string,
     options?: {
       onProgress?: (file: string) => void;
-    }
+    },
   ): Promise<void> {
     await ensureDir(destinationDir);
-    
+
     const extension = archivePath.toLowerCase();
-    
+
     if (extension.endsWith(".zip")) {
       // Para ZIP, usar comando unzip
       const result = await ProcessUtils.runCommand("unzip", [
@@ -157,7 +157,7 @@ export class FileUtils {
         "-d",
         destinationDir,
       ]);
-      
+
       if (!result.success) {
         throw new Error(`Failed to extract ZIP: ${result.stderr}`);
       }
@@ -167,9 +167,9 @@ export class FileUtils {
       if (extension.endsWith(".gz") || extension.endsWith(".tgz")) {
         args.unshift("z");
       }
-      
+
       const result = await ProcessUtils.runCommand("tar", args);
-      
+
       if (!result.success) {
         throw new Error(`Failed to extract TAR: ${result.stderr}`);
       }
@@ -183,11 +183,11 @@ export class FileUtils {
    */
   static async copyDirectory(src: string, dest: string): Promise<void> {
     await ensureDir(dest);
-    
+
     for await (const entry of Deno.readDir(src)) {
       const srcPath = `${src}/${entry.name}`;
       const destPath = `${dest}/${entry.name}`;
-      
+
       if (entry.isDirectory) {
         await FileUtils.copyDirectory(srcPath, destPath);
       } else {
@@ -207,24 +207,24 @@ export class GitUtils {
     options?: {
       branch?: string;
       depth?: number;
-    }
+    },
   ): Promise<boolean> {
     const args = ["clone"];
-    
+
     if (options?.branch) {
       args.push("-b", options.branch);
     }
-    
+
     if (options?.depth) {
       args.push("--depth", options.depth.toString());
     }
-    
+
     args.push(repoUrl);
-    
+
     if (destination) {
       args.push(destination);
     }
-    
+
     const result = await ProcessUtils.runCommand("git", args);
     return result.success;
   }
@@ -246,36 +246,36 @@ export class NetworkUtils {
    */
   static async fetchWithRetry(
     url: string,
-    options?: RequestInit & { maxRetries?: number; retryDelay?: number }
+    options?: RequestInit & { maxRetries?: number; retryDelay?: number },
   ): Promise<Response> {
     const maxRetries = options?.maxRetries || 3;
     const retryDelay = options?.retryDelay || 1000;
-    
+
     let lastError: Error | null = null;
-    
+
     for (let i = 0; i < maxRetries; i++) {
       try {
         const response = await fetch(url, options);
         if (response.ok) {
           return response;
         }
-        
+
         // Se não for erro de rede, não fazer retry
         if (response.status < 500) {
           return response;
         }
-        
+
         lastError = new Error(`HTTP ${response.status}: ${response.statusText}`);
       } catch (error) {
         lastError = error as Error;
       }
-      
+
       // Aguardar antes do próximo retry
       if (i < maxRetries - 1) {
-        await new Promise(resolve => setTimeout(resolve, retryDelay * (i + 1)));
+        await new Promise((resolve) => setTimeout(resolve, retryDelay * (i + 1)));
       }
     }
-    
+
     throw lastError || new Error("Failed to fetch after retries");
   }
 }
@@ -284,6 +284,6 @@ export class NetworkUtils {
 export { ensureDir } from "jsr:@std/fs@1.0.0/ensure-dir";
 export { exists } from "jsr:@std/fs@1.0.0/exists";
 export { walk } from "jsr:@std/fs@1.0.0/walk";
-export { join, resolve, dirname, basename } from "jsr:@std/path@1.0.0";
+export { basename, dirname, join, resolve } from "jsr:@std/path@1.0.0";
 export { parse as parseYaml } from "jsr:@std/yaml@1.0.0";
-export { encode as base64Encode, decode as base64Decode } from "jsr:@std/encoding@1.0.0/base64";
+export { decode as base64Decode, encode as base64Encode } from "jsr:@std/encoding@1.0.0/base64";

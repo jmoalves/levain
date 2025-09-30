@@ -4,16 +4,16 @@ on:
   workflow_dispatch:
     inputs:
       levainVersion:
-        description: 'Levain version (optional - Default=latest)'
+        description: "Levain version (optional - Default=latest)"
         required: false
 
   release:
-    types: [published]        
+    types: [published]
 
   schedule:
     # * is a special character in YAML so you have to quote this string
-    - cron:  '0 6 * * SUN'
-      
+    - cron: "0 6 * * SUN"
+
 jobs:
   e2e-win:
     runs-on: windows-latest
@@ -46,7 +46,7 @@ jobs:
 
           # Install
           iwr $scriptUrl | iex
-          
+
           # Workaround - ADD Levain to GitHub PATH
           Add-Content $env:GITHUB_PATH "$HOME\levain\levain"
 
@@ -58,14 +58,14 @@ jobs:
       - name: Run Microsoft Security DevOps
         uses: microsoft/security-devops-action@v1
         id: msdo-levain
-  
+
       - name: Levian install EVERYTHING
         shell: cmd
         run: |
           @echo off
 
           SETLOCAL EnableDelayedExpansion
-          
+
           set pkgList=
           for /f "usebackq tokens=*" %%a in (`powershell "levain list | Select-String -Pattern '^   [a-zA-Z0-9]' | foreach{ $_.ToString().Trim() }"`) do (
               REM Remove packages known to be problematic in headless installation
@@ -82,14 +82,14 @@ jobs:
               if "%%a" == "postman" set ignore=true
               :: corrupted file
               if "%%a" == "tomcat-9" set ignore=true
-          
-              if not "!ignore!" == "true" set pkgList=!pkgList!%%a 
+
+              if not "!ignore!" == "true" set pkgList=!pkgList!%%a
           )
-          
+
           levain install %pkgList%
-          
+
           ENDLOCAL
-  
+
       - name: Run Microsoft Security DevOps
         uses: microsoft/security-devops-action@v1
         id: msdo-install

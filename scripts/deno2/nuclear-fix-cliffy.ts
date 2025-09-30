@@ -23,7 +23,7 @@ ${colors.reset}`);
 // Criar versões alternativas dos arquivos sem Cliffy
 async function createAlternativeFiles() {
   console.log(`\n${colors.blue}Creating alternative implementations without Cliffy...${colors.reset}`);
-  
+
   // 1. Criar alternativa para validateWithCliffy.ts
   const validateAlternative = `/**
  * Alternative implementation without Cliffy
@@ -105,11 +105,11 @@ export class CliffyTestHelper {
   try {
     // Backup dos originais
     const files = [
-      'src/lib/user_info/inputAccentWorkaround/validateWithCliffy.ts',
-      'src/lib/user_info/inputAccentWorkaround/inputNomeComAcentos.ts',
-      'src/lib/user_info/cliffy_test_helper.ts'
+      "src/lib/user_info/inputAccentWorkaround/validateWithCliffy.ts",
+      "src/lib/user_info/inputAccentWorkaround/inputNomeComAcentos.ts",
+      "src/lib/user_info/cliffy_test_helper.ts",
     ];
-    
+
     for (const file of files) {
       try {
         const exists = await Deno.stat(file).then(() => true).catch(() => false);
@@ -121,26 +121,25 @@ export class CliffyTestHelper {
         // File doesn't exist
       }
     }
-    
+
     // Escrever novos arquivos
     await Deno.writeTextFile(
-      'src/lib/user_info/inputAccentWorkaround/validateWithCliffy.ts',
-      validateAlternative
+      "src/lib/user_info/inputAccentWorkaround/validateWithCliffy.ts",
+      validateAlternative,
     );
     console.log(`${colors.green}✓ Created alternative validateWithCliffy.ts${colors.reset}`);
-    
+
     await Deno.writeTextFile(
-      'src/lib/user_info/inputAccentWorkaround/inputNomeComAcentos.ts',
-      inputAlternative
+      "src/lib/user_info/inputAccentWorkaround/inputNomeComAcentos.ts",
+      inputAlternative,
     );
     console.log(`${colors.green}✓ Created alternative inputNomeComAcentos.ts${colors.reset}`);
-    
+
     await Deno.writeTextFile(
-      'src/lib/user_info/cliffy_test_helper.ts',
-      testHelperStub
+      "src/lib/user_info/cliffy_test_helper.ts",
+      testHelperStub,
     );
     console.log(`${colors.green}✓ Created stub cliffy_test_helper.ts${colors.reset}`);
-    
   } catch (error) {
     console.log(`${colors.red}Error creating alternatives: ${error}${colors.reset}`);
   }
@@ -148,10 +147,10 @@ export class CliffyTestHelper {
 
 async function cleanAllCaches() {
   console.log(`\n${colors.blue}Cleaning ALL caches...${colors.reset}`);
-  
+
   // Local caches
-  const localDirs = ['bin', '.deno', 'dist', 'build', 'node_modules'];
-  
+  const localDirs = ["bin", ".deno", "dist", "build", "node_modules"];
+
   for (const dir of localDirs) {
     try {
       await Deno.remove(dir, { recursive: true });
@@ -160,18 +159,18 @@ async function cleanAllCaches() {
       // Doesn't exist
     }
   }
-  
+
   // Global Deno cache
   const home = Deno.env.get("HOME");
   if (home) {
     const globalCache = `${home}/.cache/deno`;
-    
+
     console.log(`\n${colors.yellow}About to remove global Deno cache: ${globalCache}${colors.reset}`);
     console.log(`${colors.yellow}This will affect ALL Deno projects on this machine!${colors.reset}`);
-    
+
     const response = prompt("Remove global cache? (y/N)");
-    
-    if (response?.toLowerCase() === 'y') {
+
+    if (response?.toLowerCase() === "y") {
       try {
         await Deno.remove(globalCache, { recursive: true });
         console.log(`${colors.green}✓ Removed global cache${colors.reset}`);
@@ -186,15 +185,15 @@ async function cleanAllCaches() {
 
 async function restoreOriginals() {
   console.log(`\n${colors.cyan}To restore original Cliffy files later:${colors.reset}`);
-  
+
   const script = `#!/bin/bash
 # Restore original Cliffy files
 mv src/lib/user_info/inputAccentWorkaround/validateWithCliffy.ts.cliffy-backup src/lib/user_info/inputAccentWorkaround/validateWithCliffy.ts
 mv src/lib/user_info/inputAccentWorkaround/inputNomeComAcentos.ts.cliffy-backup src/lib/user_info/inputAccentWorkaround/inputNomeComAcentos.ts
 mv src/lib/user_info/cliffy_test_helper.ts.cliffy-backup src/lib/user_info/cliffy_test_helper.ts
 `;
-  
-  await Deno.writeTextFile('restore-cliffy.sh', script);
+
+  await Deno.writeTextFile("restore-cliffy.sh", script);
   console.log(`Created restore-cliffy.sh script`);
   console.log(`Run: bash restore-cliffy.sh to restore original files`);
 }
@@ -204,33 +203,33 @@ async function main() {
 ⚠️  WARNING: This will replace Cliffy with native alternatives
 ⚠️  Original files will be backed up with .cliffy-backup extension
 ${colors.reset}`);
-  
+
   const response = prompt("\nProceed with nuclear option? (y/N)");
-  
-  if (response?.toLowerCase() !== 'y') {
+
+  if (response?.toLowerCase() !== "y") {
     console.log("Aborted");
     Deno.exit(0);
   }
-  
+
   // 1. Create alternative implementations
   await createAlternativeFiles();
-  
+
   // 2. Clean all caches
   await cleanAllCaches();
-  
+
   // 3. Create restore script
   await restoreOriginals();
-  
+
   console.log(`\n${colors.green}✅ Nuclear option completed!${colors.reset}`);
   console.log(`\n${colors.cyan}Next steps:${colors.reset}`);
-  console.log('1. Try: deno cache levain.ts');
-  console.log('2. Run: deno run --allow-all levain.ts --help');
-  console.log('3. If everything works, continue with migration');
-  console.log('4. To restore Cliffy later: bash restore-cliffy.sh');
-  
+  console.log("1. Try: deno cache levain.ts");
+  console.log("2. Run: deno run --allow-all levain.ts --help");
+  console.log("3. If everything works, continue with migration");
+  console.log("4. To restore Cliffy later: bash restore-cliffy.sh");
+
   console.log(`\n${colors.yellow}Note:${colors.reset}`);
-  console.log('The input functionality may be slightly different without Cliffy');
-  console.log('But it should work for basic testing and migration purposes');
+  console.log("The input functionality may be slightly different without Cliffy");
+  console.log("But it should work for basic testing and migration purposes");
 }
 
 if (import.meta.main) {

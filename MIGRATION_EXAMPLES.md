@@ -1,7 +1,8 @@
 /**
- * Exemplos de Migração Deno 1 → Deno 2
- * Referência rápida para padrões comuns
- */
+
+- Exemplos de Migração Deno 1 → Deno 2
+- Referência rápida para padrões comuns
+  */
 
 // ============================================
 // 1. Deno.run → Deno.Command
@@ -9,9 +10,9 @@
 
 // ANTES (Deno 1.x):
 const p = Deno.run({
-  cmd: ["git", "clone", repoUrl],
-  stdout: "piped",
-  stderr: "piped"
+cmd: ["git", "clone", repoUrl],
+stdout: "piped",
+stderr: "piped"
 });
 const { success } = await p.status();
 const output = await p.output();
@@ -19,9 +20,9 @@ p.close();
 
 // DEPOIS (Deno 2.x):
 const command = new Deno.Command("git", {
-  args: ["clone", repoUrl],
-  stdout: "piped",
-  stderr: "piped"
+args: ["clone", repoUrl],
+stdout: "piped",
+stderr: "piped"
 });
 const { success, stdout, stderr } = await command.output();
 
@@ -52,7 +53,7 @@ import { ensureDir } from "jsr:@std/fs@1.0.0";
 // ============================================
 
 // Deno.metrics() - REMOVIDO
-// Deno.resources() - REMOVIDO  
+// Deno.resources() - REMOVIDO\
 // Deno.serveHttp() - SOFT-DEPRECATED (ainda funciona mas sem suporte)
 
 // ============================================

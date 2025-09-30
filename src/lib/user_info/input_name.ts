@@ -1,66 +1,65 @@
 // CLIFFY STUB - Remove after fixing
-const Input = { prompt: async (opts: any) => opts.default || '' };
-const Select = { prompt: async (opts: any) => opts.options?.[0] || '' };
+const Input = { prompt: async (opts: any) => opts.default || "" };
+const Select = { prompt: async (opts: any) => opts.options?.[0] || "" };
 const Confirm = { prompt: async (opts: any) => false };
-const Command = class Command { parse() {} };
+const Command = class Command {
+  parse() {}
+};
 
-import {NameValidator} from "./validators/validators.ts"
+import { NameValidator } from "./validators/validators.ts";
 // TEMP DISABLED: import {ValidateResult,Input} from 'https://deno.land/x/cliffy@v1.0.0-rc.3/prompt/mod.ts'
-import {readLines} from 'https://deno.land/std/io/mod.ts'
+import { readLines } from "https://deno.land/std/io/mod.ts";
 import OsUtils from "../os/os_utils.ts";
 
-import t from '../i18n.ts'
+import t from "../i18n.ts";
 
 export class InputFullName {
+  static readonly defaultMessage = t("lib.user_info.input_name.namePrompt");
 
-    static readonly defaultMessage = t("lib.user_info.input_name.namePrompt");
+  static async inputAndValidate(defaultValue: string): Promise<string> {
+    return await Input.prompt({
+      message: this.defaultMessage,
+      default: defaultValue,
+      validate: NameValidator.validate,
+    });
+  }
 
-    static async inputAndValidate(defaultValue: string): Promise<string> {
+  static async inputAndValidateWithEncoding(defaultValue: string): Promise<string> {
+    let fullName: string;
+    let validateResult: ValidateResult = false;
 
-        return await Input.prompt({
-                message: this.defaultMessage,
-                default: defaultValue,
-                validate: NameValidator.validate,
-            }
-        )
+    do {
+      if (validateResult) {
+        console.log(validateResult);
+      }
+      fullName = await InputFullName.promptWithEncoding(this.defaultMessage, defaultValue);
+
+      validateResult = NameValidator.validate(fullName);
+    } while (validateResult !== true);
+
+    return fullName;
+  }
+
+  static async promptWithEncoding(
+    message: string,
+    defaultValue: string = "",
+    encoding: string = "utf8",
+  ): Promise<string> {
+    if (defaultValue) {
+      message += t("lib.user_info.input_name.enterDefault", { defaultValue: defaultValue });
     }
 
-    static async inputAndValidateWithEncoding(defaultValue: string): Promise<string> {
-        let fullName: string
-        let validateResult: ValidateResult = false
-
-        do {
-            if (validateResult) {
-                console.log(validateResult)
-            }
-            fullName = await InputFullName.promptWithEncoding(this.defaultMessage, defaultValue)
-
-            validateResult = NameValidator.validate(fullName)
-        } while (validateResult !== true)
-
-        return fullName;
+    if (!encoding) {
+      if (OsUtils.isWindows()) {
+        encoding = "latin1";
+      } else {
+        encoding = "utf8";
+      }
     }
 
-    static async promptWithEncoding(
-        message: string,
-        defaultValue: string = '',
-        encoding: string = 'utf8',
-    ): Promise<string> {
-        if (defaultValue) {
-            message += t("lib.user_info.input_name.enterDefault", { defaultValue: defaultValue })
-        }
+    console.log(message);
 
-        if (!encoding) {
-            if (OsUtils.isWindows()) {
-                encoding = 'latin1'
-            } else {
-                encoding = 'utf8'
-            }
-        }
-
-        console.log(message)
-
-        const {value} = await readLines(Deno.stdin, {encoding}).next()
-        return <string>value || defaultValue
-    }
+    const { value } = await readLines(Deno.stdin, { encoding }).next();
+    return <string> value || defaultValue;
+  }
 }

@@ -2,17 +2,16 @@ name: Check sources
 
 on:
   #push:
-
   workflow_dispatch:
     inputs:
       denoVersion:
-        description: 'Deno version (optional)'
+        description: "Deno version (optional)"
         required: false
-        default: '1.46.3'
+        default: "1.46.3"
 
   schedule:
     # * is a special character in YAML so you have to quote this string
-    - cron:  '30 4 * * SUN'
+    - cron: "30 4 * * SUN"
 
 jobs:
   checkSources:

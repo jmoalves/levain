@@ -1,43 +1,45 @@
 // CLIFFY STUB - Remove after fixing
-const Input = { prompt: async (opts: any) => opts.default || '' };
-const Select = { prompt: async (opts: any) => opts.options?.[0] || '' };
+const Input = { prompt: async (opts: any) => opts.default || "" };
+const Select = { prompt: async (opts: any) => opts.options?.[0] || "" };
 const Confirm = { prompt: async (opts: any) => false };
-const Command = class Command { parse() {} };
+const Command = class Command {
+  parse() {}
+};
 
-import {assertEquals, assertRejects,} from "https://deno.land/std/assert/mod.ts"
+import { assertEquals, assertRejects } from "https://deno.land/std/assert/mod.ts";
 
 //
 // inputAndValidate
 //
 // TEMP DISABLED: import {CliffyTestHelper} from "./cliffy_test_helper.ts";
-import {InputEmail} from "./input_email.ts";
+import { InputEmail } from "./input_email.ts";
 
-Deno.test('InputEmail.inputAndValidate should get a login', async () => {
-    const myInput = 'john@doe.com'
-    const defaultValue = 'default@server.com'
-    const expectedValue = myInput
-    await verifyInput(myInput, defaultValue, expectedValue)
-})
+Deno.test("InputEmail.inputAndValidate should get a login", async () => {
+  const myInput = "john@doe.com";
+  const defaultValue = "default@server.com";
+  const expectedValue = myInput;
+  await verifyInput(myInput, defaultValue, expectedValue);
+});
 
-Deno.test('InputEmail.inputAndValidate should accept a default value', async () => {
-    const myInput = ''
-    const defaultValue = 'xyzDefault@server.com'
-    const expectedValue = defaultValue
-    await verifyInput(myInput, defaultValue, expectedValue)
-})
+Deno.test("InputEmail.inputAndValidate should accept a default value", async () => {
+  const myInput = "";
+  const defaultValue = "xyzDefault@server.com";
+  const expectedValue = defaultValue;
+  await verifyInput(myInput, defaultValue, expectedValue);
+});
 
-Deno.test('InputEmail.inputAndValidate should reject an invalid value', () => {
-    assertRejects(
-        async () => {
-            await verifyInput('--invalid-email--', 'defaultValue@server.com', 'doesntMatter')
-        },
-        Error
-    )
-})
+Deno.test("InputEmail.inputAndValidate should reject an invalid value", () => {
+  assertRejects(
+    async () => {
+      await verifyInput("--invalid-email--", "defaultValue@server.com", "doesntMatter");
+    },
+    Error,
+  );
+});
 
 async function verifyInput(myInput: string, defaultValue: string, expectedValue: string): Promise<void> {
-    CliffyTestHelper.inputResponse(myInput)
+  CliffyTestHelper.inputResponse(myInput);
 
-    const input = await InputEmail.inputAndValidate(defaultValue)
-    assertEquals(input, expectedValue)
+  const input = await InputEmail.inputAndValidate(defaultValue);
+  assertEquals(input, expectedValue);
 }

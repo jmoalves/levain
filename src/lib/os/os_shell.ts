@@ -3,278 +3,279 @@ import * as log from "https://deno.land/std/log/mod.ts";
 import LevainVersion from "../../levain_version.ts";
 import Config from "../config.ts";
 import Package from "../package/package.ts";
-import Loader from '../loader.ts';
+import Loader from "../loader.ts";
 
 import OsUtils from "./os_utils.ts";
 import StringUtils from "../utils/string_utils.ts";
 
 export class OsShell {
-    private readonly dependencies: Package[];
-    private _interactive: boolean = false;
-    private _varName: string | undefined = undefined;
-    private _ignoreErrors: boolean = false;
-    private _stripCRLF: boolean = false;
+  private readonly dependencies: Package[];
+  private _interactive: boolean = false;
+  private _varName: string | undefined = undefined;
+  private _ignoreErrors: boolean = false;
+  private _stripCRLF: boolean = false;
 
-    constructor(
-        private config: Config,
-        private pkgNames: string[],
-        installedOnly = false
-    ) {
-        // if (!pkgNames || pkgNames.length == 0) {
-        //     throw new Error("No package");
-        // }
+  constructor(
+    private config: Config,
+    private pkgNames: string[],
+    installedOnly = false,
+  ) {
+    // if (!pkgNames || pkgNames.length == 0) {
+    //     throw new Error("No package");
+    // }
 
-        let pkgs: Package[] | null = this.config?.packageManager?.resolvePackages(pkgNames, installedOnly, false);
-        if (!pkgs) {
-            throw new Error("Unable to load dependencies for a Levain shell. Aborting...");
-        }
-
-        this.dependencies = pkgs;
+    let pkgs: Package[] | null = this.config?.packageManager?.resolvePackages(pkgNames, installedOnly, false);
+    if (!pkgs) {
+      throw new Error("Unable to load dependencies for a Levain shell. Aborting...");
     }
 
-    set interactive(b: boolean) {
-        this._interactive = b;
+    this.dependencies = pkgs;
+  }
+
+  set interactive(b: boolean) {
+    this._interactive = b;
+  }
+
+  get interactive(): boolean {
+    return this._interactive;
+  }
+
+  set saveVar(varName: string | undefined) {
+    this._varName = varName;
+  }
+
+  get saveVar(): string | undefined {
+    return this._varName;
+  }
+
+  set ignoreErrors(b: boolean) {
+    this._ignoreErrors = b;
+  }
+
+  get ignoreErrors(): boolean {
+    return this._ignoreErrors;
+  }
+
+  set stripCRLF(b: boolean) {
+    this._stripCRLF = b;
+  }
+
+  get stripCRLF(): boolean {
+    return this._stripCRLF;
+  }
+
+  async execute(args: string[]) {
+    for (let pkg of this.dependencies) {
+      await this.shellActions(pkg);
     }
 
-    get interactive(): boolean {
-        return this._interactive;
+    await this.openShell(args);
+  }
+
+  private async shellActions(pkg: Package) {
+    if (!this.config) {
+      return;
     }
 
-    set saveVar(varName: string | undefined) {
-        this._varName = varName;
+    let actions = pkg.yamlItem("cmd.shell");
+    let envActions = pkg.yamlItem("cmd.env");
+
+    log.debug(`${pkg.name} SHELL actions: ${JSON.stringify(actions)}`);
+    log.debug(`${pkg.name} ENV   actions: ${JSON.stringify(envActions)}`);
+
+    if (envActions) {
+      if (actions) {
+        Array.prototype.push.apply(actions, envActions);
+      } else {
+        actions = envActions;
+      }
     }
 
-    get saveVar(): string | undefined {
-        return this._varName;
+    log.debug(`${pkg.name} ALL   actions: ${JSON.stringify(actions)}`);
+    if (!actions) {
+      return;
     }
 
-    set ignoreErrors(b: boolean) {
-        this._ignoreErrors = b;
+    log.debug(`=== ENV ${pkg.name} - ${pkg.version}`);
+    const loader = new Loader(this.config);
+    for (let action of actions) {
+      // Infinite loop protection - https://github.com/jmoalves/levain/issues/111
+      if (action.startsWith("levainShell ")) {
+        throw new Error(
+          `levainShell action is not allowed here. Check your recipe - pkg: ${pkg.name} action: ${action}`,
+        );
+      }
+
+      await loader.action(pkg, action);
+    }
+  }
+
+  async openShell(args: string[]) {
+    // TODO: Handle other os's
+    OsUtils.onlyInWindows();
+    let opt = this.prepareShellOptions(args);
+
+    log.debug(`Deno.run: ${JSON.stringify(opt)}`);
+    const p = Deno.run(opt);
+    let status = await p.output();
+
+    if (!this.ignoreErrors && !status.success) {
+      throw new Error("CMD terminated with code " + status.code);
     }
 
-    get ignoreErrors(): boolean {
-        return this._ignoreErrors;
+    if (this.saveVar) {
+      let rawOutput = await p.output();
+      let cmdOutput = new TextDecoder().decode(rawOutput);
+      if (this.stripCRLF) {
+        cmdOutput = cmdOutput
+          .replace(/\r\n$/, "")
+          .replace(/\r$/, "")
+          .replace(/\n$/, "");
+      }
+      this.config.setVar(this.saveVar, cmdOutput);
+    }
+  }
+
+  prepareShellOptions(args: string[]) {
+    // const adjustedArgs = OsShell.adjustArgs(args)
+
+    let cmd: string[];
+    let cmdString: string;
+    if (this.interactive) {
+      if (this.config.shellPath) {
+        cmdString = `cmd /c start ${this.config.shellPath}`;
+      } else {
+        let myVersion = this.versionTag();
+        cmdString = `cmd /c start cmd /u /k prompt [levain${myVersion}]$P$G`;
+      }
+      cmd = StringUtils.splitSpaces(cmdString);
+    } else {
+      cmdString = "cmd /u   /c ";
+      cmd = StringUtils.splitSpaces(cmdString);
+      cmd = cmd.concat(args);
     }
 
-    set stripCRLF(b: boolean) {
-        this._stripCRLF = b;
+    log.debug(`- CMD - ${cmd}`);
+
+    let opt: any = {};
+    opt.cmd = cmd;
+    opt.env = {};
+
+    this.setEnv(opt.env);
+    if (this.config.levainHome) {
+      opt.env["levainHome"] = this.config.levainHome;
     }
 
-    get stripCRLF(): boolean {
-        return this._stripCRLF;
+    let myPath = this.getCmdPath();
+    if (myPath) {
+      log.debug(`- PATH - ${myPath}`);
+      opt.env["PATH"] = myPath;
     }
 
-    async execute(args: string[]) {
-        for (let pkg of this.dependencies) {
-            await this.shellActions(pkg);
-        }
-
-        await this.openShell(args);
+    if (this.dependencies) {
+      let pkgNamesVar = this.dependencies.map((pkg) => pkg.name).join(";");
+      log.debug(`- LEVAIN_PKG_NAMES=${pkgNamesVar}`);
+      opt.env["LEVAIN_PKG_NAMES"] = pkgNamesVar;
     }
 
-    private async shellActions(pkg: Package) {
-        if (!this.config) {
-            return;
-        }
-
-        let actions = pkg.yamlItem("cmd.shell");
-        let envActions = pkg.yamlItem("cmd.env");
-
-        log.debug(`${pkg.name} SHELL actions: ${JSON.stringify(actions)}`);
-        log.debug(`${pkg.name} ENV   actions: ${JSON.stringify(envActions)}`);
-
-        if (envActions) {
-            if (actions) {
-                Array.prototype.push.apply(actions, envActions);
-            } else {
-                actions = envActions;
-            }
-        }
-
-        log.debug(`${pkg.name} ALL   actions: ${JSON.stringify(actions)}`);
-        if (!actions) {
-            return;
-        }
-
-        log.debug(`=== ENV ${pkg.name} - ${pkg.version}`);
-        const loader = new Loader(this.config);
-        for (let action of actions) {
-            // Infinite loop protection - https://github.com/jmoalves/levain/issues/111
-            if (action.startsWith('levainShell ')) {
-                throw new Error(`levainShell action is not allowed here. Check your recipe - pkg: ${pkg.name} action: ${action}`)
-            }
-
-            await loader.action(pkg, action);
-        }
+    if (this.saveVar) {
+      opt.stdout = "piped";
     }
 
-    async openShell(args: string[]) {
-        // TODO: Handle other os's
-        OsUtils.onlyInWindows()
-        let opt = this.prepareShellOptions(args);
+    // if (detached) {
+    //     // FIXME: https://github.com/denoland/deno/issues/5501
+    //     opt.detached = true;
+    //     Deno.run(opt);
+    //     log.debug("shell initiated");
+    //     return;
+    // }
+    return opt;
+  }
 
-        log.debug(`Deno.run: ${JSON.stringify(opt)}`);
-        const p = Deno.run(opt);
-        let status = await p.output();
+  static adjustArgs(args: string[]) {
+    const QUOTATION_MARK = '"';
 
-        if (!this.ignoreErrors && !status.success) {
-            throw new Error("CMD terminated with code " + status.code);
-        }
+    return args.map((arg) => {
+      let adjusted = arg;
+      if (arg.includes(" ")) {
+        adjusted = StringUtils.surround(arg, QUOTATION_MARK);
+      }
+      return adjusted;
+    });
+  }
 
-        if (this.saveVar) {
-            let rawOutput = await p.output();
-            let cmdOutput = new TextDecoder().decode(rawOutput);
-            if (this.stripCRLF) {
-                cmdOutput = cmdOutput
-                    .replace(/\r\n$/, '')
-                    .replace(/\r$/, '')
-                    .replace(/\n$/, '');
-            }
-            this.config.setVar(this.saveVar, cmdOutput);
-        }
+  private versionTag(): string {
+    let myVersion = LevainVersion.levainVersion;
+    if (!myVersion) {
+      return "";
     }
 
-    prepareShellOptions(args: string[]) {
-        // const adjustedArgs = OsShell.adjustArgs(args)
+    return "-" + myVersion;
+  }
 
-        let cmd: string[]
-        let cmdString: string
-        if (this.interactive) {
-            if (this.config.shellPath) {
-                cmdString = `cmd /c start ${this.config.shellPath}`;
-            } else {
-                let myVersion = this.versionTag();
-                cmdString = `cmd /c start cmd /u /k prompt [levain${myVersion}]$P$G`;
-            }
-            cmd = StringUtils.splitSpaces(cmdString)
+  private concatCmd(...parts: (string | undefined)[]): string {
+    return this.concatCmdArr(parts);
+  }
+
+  private concatCmdArr(parts: (string | undefined)[]): string {
+    if (!parts) {
+      return "";
+    }
+
+    // first
+    // first second
+    // first second && third
+    // first secont && third && fourth (and so on)
+    // undefine does not count
+    let sep = "";
+    let idx = 1;
+    let result: string = "";
+    for (let part of parts) {
+      if (part) {
+        if (idx == 1) {
+          sep = "";
+        } else if (idx < 3) {
+          sep = " ";
         } else {
-            cmdString = "cmd /u   /c "
-            cmd = StringUtils.splitSpaces(cmdString)
-            cmd = cmd.concat(args)
+          sep = " && ";
         }
-
-        log.debug(`- CMD - ${cmd}`);
-
-        let opt: any = {}
-        opt.cmd = cmd
-        opt.env = {}
-
-        this.setEnv(opt.env);
-        if (this.config.levainHome) {
-            opt.env["levainHome"] = this.config.levainHome;
-        }
-
-        let myPath = this.getCmdPath();
-        if (myPath) {
-            log.debug(`- PATH - ${myPath}`);
-            opt.env["PATH"] = myPath;
-        }
-
-        if (this.dependencies) {
-            let pkgNamesVar = this.dependencies.map(pkg => pkg.name).join(";");
-            log.debug(`- LEVAIN_PKG_NAMES=${pkgNamesVar}`);
-            opt.env["LEVAIN_PKG_NAMES"] = pkgNamesVar;
-        }
-
-        if (this.saveVar) {
-            opt.stdout = 'piped';
-        }
-
-        // if (detached) {
-        //     // FIXME: https://github.com/denoland/deno/issues/5501
-        //     opt.detached = true;
-        //     Deno.run(opt);
-        //     log.debug("shell initiated");
-        //     return;
-        // }
-        return opt;
+        result += sep + part;
+        idx++;
+      }
     }
 
-    static adjustArgs(args: string[]) {
-        const QUOTATION_MARK = '"'
+    return result;
+  }
 
-        return args.map(arg => {
-            let adjusted = arg
-            if (arg.includes(' ')) {
-                adjusted = StringUtils.surround(arg, QUOTATION_MARK)
-            }
-            return adjusted
-        })
+  private getCmdPath(): string | undefined {
+    let myPath = this.config.context.action?.addpath?.path;
+    if (!myPath) {
+      return undefined;
     }
 
-    private versionTag(): string {
-        let myVersion = LevainVersion.levainVersion;
-        if (!myVersion) {
-            return '';
-        }
+    myPath.reverse(); // Issue https://github.com/jmoalves/levain/issues/115
+    myPath.unshift(this.config.levainBaseDir);
+    myPath = [...new Set(myPath)]; // Remove duplicates
 
-        return '-' + myVersion;
+    let pathStr = myPath.join(";");
+    let envPath = Deno.env.get("PATH");
+    if (!envPath) {
+      return pathStr;
     }
 
-    private concatCmd(...parts: (string | undefined)[]): string {
-        return this.concatCmdArr(parts);
+    return pathStr + ";" + envPath;
+  }
+
+  private setEnv(env: any): void {
+    if (!this.config.context.action?.setEnv?.env) {
+      return undefined;
     }
 
-    private concatCmdArr(parts: (string | undefined)[]): string {
-        if (!parts) {
-            return "";
-        }
-
-        // first
-        // first second
-        // first second && third
-        // first secont && third && fourth (and so on)
-        // undefine does not count
-        let sep = "";
-        let idx = 1;
-        let result: string = "";
-        for (let part of parts) {
-            if (part) {
-                if (idx == 1) {
-                    sep = "";
-                } else if (idx < 3) {
-                    sep = " ";
-                } else {
-                    sep = " && ";
-                }
-                result += sep + part;
-                idx++;
-            }
-        }
-
-        return result;
+    for (let key of Object.keys(this.config.context.action.setEnv.env)) {
+      let value = this.config.context.action.setEnv.env[key];
+      if (value) {
+        env[key] = value;
+      }
     }
-
-    private getCmdPath(): string | undefined {
-        let myPath = this.config.context.action?.addpath?.path;
-        if (!myPath) {
-            return undefined;
-        }
-
-        myPath.reverse(); // Issue https://github.com/jmoalves/levain/issues/115
-        myPath.unshift(this.config.levainBaseDir);
-        myPath = [...new Set(myPath)]; // Remove duplicates
-
-        let pathStr = myPath.join(";");
-        let envPath = Deno.env.get("PATH");
-        if (!envPath) {
-            return pathStr;
-        }
-
-        return pathStr + ";" + envPath;
-    }
-
-    private setEnv(env: any): void {
-        if (!this.config.context.action?.setEnv?.env) {
-            return undefined;
-        }
-
-        for (let key of Object.keys(this.config.context.action.setEnv.env)) {
-            let value = this.config.context.action.setEnv.env[key];
-            if (value) {
-                env[key] = value;
-            }
-        }
-    }
-
+  }
 }

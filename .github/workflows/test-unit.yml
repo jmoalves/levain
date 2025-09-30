@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       denoVersion:
-        description: 'Deno version (optional)'
+        description: "Deno version (optional)"
         required: false
-        default: '1.46.3'
+        default: "1.46.3"
 
   push:
 
@@ -14,8 +14,8 @@ on:
 
   schedule:
     # * is a special character in YAML so you have to quote this string
-    - cron:  '0 5 * * SUN'
-  
+    - cron: "0 5 * * SUN"
+
 jobs:
   unit-win:
     runs-on: windows-latest
@@ -28,11 +28,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-
       - name: Set Deno version
         id: set-version
         run: |
-            echo "DENO_VERSION=${{ github.event.inputs.denoVersion || env.DEFAULT_DENO_VERSION }}" >> $GITHUB_ENV
+          echo "DENO_VERSION=${{ github.event.inputs.denoVersion || env.DEFAULT_DENO_VERSION }}" >> $GITHUB_ENV
 
       - name: Get Deno
         shell: cmd
@@ -45,14 +44,12 @@ jobs:
           if not exist %DENO_ROOT_PATH% mkdir %DENO_ROOT_PATH%
           call %GITHUB_WORKSPACE%\githubScripts\get-deno.cmd %DENO_ROOT_PATH% %DENO_VERSION%
 
-
       - name: Get extraBin
         shell: cmd
         run: |
           call %GITHUB_WORKSPACE%\githubScripts\get-extraBin.cmd
         env:
           GITHUB_WORKSPACE: ${{ github.workspace }}
-
 
       - name: Run tests
         shell: cmd
@@ -69,7 +66,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: jmoalves/levain
           files: coverage/levain.lcov
-          
+
   # unit-nix:
   #   strategy:
   #     matrix:
@@ -88,7 +85,7 @@ jobs:
 
   #         bash $GITHUB_WORKSPACE/githubScripts/get-deno.sh $denoTemp Linux
   #         export PATH=${denoTemp}:$PATH
-          
+
   #         cd $GITHUB_WORKSPACE
   #         echo bash ./scripts/test.sh
   #         rm -rf ${denoTemp}

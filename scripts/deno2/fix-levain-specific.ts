@@ -2,7 +2,7 @@
 
 /**
  * Correções Específicas para o Projeto Levain
- * 
+ *
  * Este script aplica correções específicas para padrões
  * encontrados no projeto Levain que podem precisar de
  * atenção especial na migração para Deno 2.
@@ -888,7 +888,7 @@ export { Levain, Logger, CONFIG };
       await Deno.copyFile("levain.ts", "levain.ts.backup");
       console.log(`${colors.yellow}⚠${colors.reset}  Backed up original levain.ts to levain.ts.backup`);
     }
-    
+
     await Deno.writeTextFile("levain_deno2.ts", updatedMain);
     console.log(`${colors.green}✓${colors.reset} Created levain_deno2.ts with Deno 2 structure`);
     console.log(`  ${colors.blue}ℹ${colors.reset}  Review and merge with your existing levain.ts`);
@@ -906,20 +906,20 @@ async function main() {
 ${colors.reset}`);
 
   console.log("Creating Levain-specific helpers and examples...\n");
-  
+
   await createLevainHelpers();
   await createHelperTests();
   await createMigrationExamples();
   await updateMainFile();
-  
+
   console.log(`\n${colors.green}${colors.bright}✅ Levain-specific files created!${colors.reset}\n`);
-  
+
   console.log("Files created:");
   console.log("  • src/lib/deno2_helpers.ts - Utility functions for Deno 2");
   console.log("  • src/lib/deno2_helpers_test.ts - Tests for utilities");
   console.log("  • MIGRATION_EXAMPLES_LEVAIN.md - Levain-specific examples");
   console.log("  • levain_deno2.ts - Example main file structure");
-  
+
   console.log(`\n${colors.bright}Next steps:${colors.reset}`);
   console.log("1. Review the generated files");
   console.log("2. Integrate deno2_helpers.ts into your codebase");

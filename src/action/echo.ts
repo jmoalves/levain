@@ -6,10 +6,10 @@ import Config from "../lib/config.ts";
 import Action from "./action.ts";
 
 export default class Echo implements Action {
-    constructor(config: Config) {
-    }
+  constructor(config: Config) {
+  }
 
-    async execute(pkg: Package | undefined, parameters: string[]) {
-        log.debug(`ECHO ${parameters.join(' ')}`);
-    }
+  async execute(pkg: Package | undefined, parameters: string[]) {
+    log.debug(`ECHO ${parameters.join(" ")}`);
+  }
 }

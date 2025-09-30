@@ -1,5 +1,5 @@
 export default interface Command {
-    readonly oneLineExample: string
+  readonly oneLineExample: string;
 
-    execute(args: string[]): void
+  execute(args: string[]): void;
 }

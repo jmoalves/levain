@@ -1,16 +1,25 @@
-import {assert, assertEquals, assertRejects,} from "https://deno.land/std/assert/mod.ts";
+import { assert, assertEquals, assertRejects } from "https://deno.land/std/assert/mod.ts";
 
-import TestHelper from '../lib/test/test_helper.ts';
+import TestHelper from "../lib/test/test_helper.ts";
 
-import ActionFactory from './action_factory.ts';
-import Template from './template.ts';
+import ActionFactory from "./action_factory.ts";
+import Template from "./template.ts";
 
-Deno.test('Template should replace one var', async () => {
-    const config = TestHelper.getConfig()
-    const factory = new ActionFactory()
-    const action = factory.get("template", config)
+Deno.test("Template should replace one var", async () => {
+  const config = TestHelper.getConfig();
+  const factory = new ActionFactory();
+  const action = factory.get("template", config);
 
-    assert(action instanceof Template)
+  assert(action instanceof Template);
 
-    await action.execute(TestHelper.mockPackage(), ['--replace=/@@USERNAME@@/g', '--with=jmaur', '--replace=/@@CREDENTIALS@@/g', '--with=Password:\ndasjdhakjdhaskjdhakjh\nshdkjahsdkjsahdkaj\nasjhdkasjhdaksjh', '--replace=/Password:.*/g', '--with=', '../testdata/template/source.txt', '../testdata/template/result.txt'])
-})
+  await action.execute(TestHelper.mockPackage(), [
+    "--replace=/@@USERNAME@@/g",
+    "--with=jmaur",
+    "--replace=/@@CREDENTIALS@@/g",
+    "--with=Password:\ndasjdhakjdhaskjdhakjh\nshdkjahsdkjsahdkaj\nasjhdkasjhdaksjh",
+    "--replace=/Password:.*/g",
+    "--with=",
+    "../testdata/template/source.txt",
+    "../testdata/template/result.txt",
+  ]);
+});

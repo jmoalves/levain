@@ -10,7 +10,7 @@ import ptTranslation from "../locales/pt/translation.json" with {
 const systemLocale = Intl.DateTimeFormat().resolvedOptions().locale;
 
 i18next
-//   .use(Backend)
+  //   .use(Backend)
   .init({
     // debug: true,
     fallbackLng: "en",

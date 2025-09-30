@@ -1,5 +1,5 @@
 import * as path from "https://deno.land/std/path/mod.ts";
-import {assert, assertEquals, assertNotEquals} from "https://deno.land/std/assert/mod.ts";
+import { assert, assertEquals, assertNotEquals } from "https://deno.land/std/assert/mod.ts";
 
 import TestHelper from "../../lib/test/test_helper.ts";
 
@@ -8,167 +8,171 @@ import PropertiesUtils from "./properties_utils.ts";
 //
 // load
 //
-Deno.test('PropertiesUtils should load from a file', () => {
+Deno.test("PropertiesUtils should load from a file", () => {
+  const propertiesFile = PropertiesUtils.load(personFilePath);
+  const value = propertiesFile.get("name");
 
-    const propertiesFile = PropertiesUtils.load(personFilePath)
-    const value = propertiesFile.get('name')
+  assert(propertiesFile instanceof Map);
+  assertEquals(value, "John Doe");
+});
+Deno.test("PropertiesUtils should trim spaces", () => {
+  const filePath = path.join("testdata", "properties", "space-around.properties");
 
-    assert(propertiesFile instanceof Map)
-    assertEquals(value, 'John Doe')
-})
-Deno.test('PropertiesUtils should trim spaces', () => {
-    const filePath = path.join('testdata', 'properties', 'space-around.properties')
+  const propertiesFile = PropertiesUtils.load(filePath);
+  const value = propertiesFile.get("should trim spaces from attr");
 
-    const propertiesFile = PropertiesUtils.load(filePath)
-    const value = propertiesFile.get('should trim spaces from attr')
+  assertEquals(value, "should trim spaces from value");
+});
+Deno.test("PropertiesUtils should ignore empty lines", () => {
+  const filePath = path.join("testdata", "properties", "empty-lines.properties");
 
-    assertEquals(value, 'should trim spaces from value')
-})
-Deno.test('PropertiesUtils should ignore empty lines', () => {
-    const filePath = path.join('testdata', 'properties', 'empty-lines.properties')
+  const propertiesFile = PropertiesUtils.load(filePath);
 
-    const propertiesFile = PropertiesUtils.load(filePath)
+  assertEquals(PropertiesUtils.stringify(propertiesFile), "key_1=value_1\r\nkey_2=value_2");
+});
+Deno.test("PropertiesUtils should work with empty values", () => {
+  const filePath = path.join("testdata", "properties", "empty-values.properties");
 
-    assertEquals(PropertiesUtils.stringify(propertiesFile), 'key_1=value_1\r\nkey_2=value_2')
-})
-Deno.test('PropertiesUtils should work with empty values', () => {
-    const filePath = path.join('testdata', 'properties', 'empty-values.properties')
+  const propertiesFile = PropertiesUtils.load(filePath);
 
-    const propertiesFile = PropertiesUtils.load(filePath)
-
-    assertEquals(PropertiesUtils.stringify(propertiesFile), 'key_1=\r\nkey_2=')
-})
+  assertEquals(PropertiesUtils.stringify(propertiesFile), "key_1=\r\nkey_2=");
+});
 //
 // get
 //
-Deno.test('PropertiesUtils.get should get value', () => {
-    const value = PropertiesUtils.get(personFilePath, 'name')
+Deno.test("PropertiesUtils.get should get value", () => {
+  const value = PropertiesUtils.get(personFilePath, "name");
 
-    assertEquals(value, 'John Doe')
-})
-Deno.test('PropertiesUtils.get should get undefined value', () => {
-    const value = PropertiesUtils.get(personFilePath, '--unknown-attributes--')
+  assertEquals(value, "John Doe");
+});
+Deno.test("PropertiesUtils.get should get undefined value", () => {
+  const value = PropertiesUtils.get(personFilePath, "--unknown-attributes--");
 
-    assertEquals(value, undefined)
-})
-Deno.test('PropertiesUtils.get should get default value when value is undefined and default is defined', () => {
-    const value = PropertiesUtils.get(personFilePath, '--unknown-attributes--', 'default value')
+  assertEquals(value, undefined);
+});
+Deno.test("PropertiesUtils.get should get default value when value is undefined and default is defined", () => {
+  const value = PropertiesUtils.get(personFilePath, "--unknown-attributes--", "default value");
 
-    assertEquals(value, 'default value')
-})
+  assertEquals(value, "default value");
+});
 //
 // save
 //
-Deno.test('PropertiesUtils.save should save content', () => {
-    const newFilePath = TestHelper.getNewTempFile()
-    const content = new Map<string, string>()
-    const key = TestHelper.randomString()
-    const value = TestHelper.randomString()
-    content.set(key, value)
+Deno.test("PropertiesUtils.save should save content", () => {
+  const newFilePath = TestHelper.getNewTempFile();
+  const content = new Map<string, string>();
+  const key = TestHelper.randomString();
+  const value = TestHelper.randomString();
+  content.set(key, value);
 
-    PropertiesUtils.save(newFilePath, content)
+  PropertiesUtils.save(newFilePath, content);
 
-    const savedPropertiesMap = PropertiesUtils.load(newFilePath)
-    const stringSavedProps = PropertiesUtils.stringify(savedPropertiesMap)
-    assertEquals(stringSavedProps, `${key}=${value}`)
-})
+  const savedPropertiesMap = PropertiesUtils.load(newFilePath);
+  const stringSavedProps = PropertiesUtils.stringify(savedPropertiesMap);
+  assertEquals(stringSavedProps, `${key}=${value}`);
+});
 //
 // set
 //
 Deno.test({
-    name: 'PropertiesUtils.set should change a value',
-    async fn() {
-        const originalFile = path.join('testdata', 'properties', 'person.properties')
-        const newTempFile = TestHelper.getNewTempFile(originalFile)
-        try {
-            const expectedValue = '321 The Other st, Nova Scotia, Canada'
-            const key = 'address';
-            const oldValue = PropertiesUtils.get(newTempFile, key)
-            assertNotEquals(oldValue, expectedValue)
+  name: "PropertiesUtils.set should change a value",
+  async fn() {
+    const originalFile = path.join("testdata", "properties", "person.properties");
+    const newTempFile = TestHelper.getNewTempFile(originalFile);
+    try {
+      const expectedValue = "321 The Other st, Nova Scotia, Canada";
+      const key = "address";
+      const oldValue = PropertiesUtils.get(newTempFile, key);
+      assertNotEquals(oldValue, expectedValue);
 
-            PropertiesUtils.set(newTempFile, key, expectedValue)
+      PropertiesUtils.set(newTempFile, key, expectedValue);
 
-            const newAddress = PropertiesUtils.get(newTempFile, key)
-            assertEquals(newAddress, expectedValue)
-        } finally {
-            TestHelper.remove(newTempFile)
-        }
-    }, sanitizeOps: false
-})
+      const newAddress = PropertiesUtils.get(newTempFile, key);
+      assertEquals(newAddress, expectedValue);
+    } finally {
+      TestHelper.remove(newTempFile);
+    }
+  },
+  sanitizeOps: false,
+});
 Deno.test({
-    name: 'PropertiesUtils.set should create the file if it does not exist',
-    async fn() {
-        const newTempFile = TestHelper.getNewTempFile()
-        try {
-            TestHelper.remove(newTempFile)
+  name: "PropertiesUtils.set should create the file if it does not exist",
+  async fn() {
+    const newTempFile = TestHelper.getNewTempFile();
+    try {
+      TestHelper.remove(newTempFile);
 
-            const key = 'email';
-            const expectedValue = 'john@doe.com';
+      const key = "email";
+      const expectedValue = "john@doe.com";
 
-            PropertiesUtils.set(newTempFile, key, expectedValue)
+      PropertiesUtils.set(newTempFile, key, expectedValue);
 
-            const currentValue = PropertiesUtils.get(newTempFile, key)
-            assertEquals(currentValue, expectedValue)
-        } finally {
-            TestHelper.remove(newTempFile)
-        }
-    }, sanitizeOps: false
-})
+      const currentValue = PropertiesUtils.get(newTempFile, key);
+      assertEquals(currentValue, expectedValue);
+    } finally {
+      TestHelper.remove(newTempFile);
+    }
+  },
+  sanitizeOps: false,
+});
 Deno.test({
-    name: 'PropertiesUtils.set should work with a empty file',
-    async fn() {
-        const newTempFile = TestHelper.getNewTempFile()
-        try {
-            const key = 'email';
-            const expectedValue = 'john@doe.com';
+  name: "PropertiesUtils.set should work with a empty file",
+  async fn() {
+    const newTempFile = TestHelper.getNewTempFile();
+    try {
+      const key = "email";
+      const expectedValue = "john@doe.com";
 
-            PropertiesUtils.set(newTempFile, key, expectedValue)
+      PropertiesUtils.set(newTempFile, key, expectedValue);
 
-            const currentValue = PropertiesUtils.get(newTempFile, key)
-            assertEquals(currentValue, expectedValue)
-        } finally {
-            TestHelper.remove(newTempFile)
-        }
-    }, sanitizeOps: false
-})
+      const currentValue = PropertiesUtils.get(newTempFile, key);
+      assertEquals(currentValue, expectedValue);
+    } finally {
+      TestHelper.remove(newTempFile);
+    }
+  },
+  sanitizeOps: false,
+});
 Deno.test({
-    name: 'PropertiesUtils.set should work with a new attribute',
-    async fn() {
-        const newTempFile = TestHelper.getNewTempFile()
-        try {
-            const key = '--new-attribute--';
-            const expectedValue = 'sbrubles';
+  name: "PropertiesUtils.set should work with a new attribute",
+  async fn() {
+    const newTempFile = TestHelper.getNewTempFile();
+    try {
+      const key = "--new-attribute--";
+      const expectedValue = "sbrubles";
 
-            PropertiesUtils.set(newTempFile, key, expectedValue)
+      PropertiesUtils.set(newTempFile, key, expectedValue);
 
-            const currentValue = PropertiesUtils.get(newTempFile, key)
-            assertEquals(currentValue, expectedValue)
-        } finally {
-            TestHelper.remove(newTempFile)
-        }
-    }, sanitizeOps: false
-})
+      const currentValue = PropertiesUtils.get(newTempFile, key);
+      assertEquals(currentValue, expectedValue);
+    } finally {
+      TestHelper.remove(newTempFile);
+    }
+  },
+  sanitizeOps: false,
+});
 Deno.test({
-    name: 'PropertiesUtils.set should not replace value when ifNotExists',
-    async fn() {
-        const originalFile = path.join('testdata', 'properties', 'person.properties')
-        const newTempFile = TestHelper.getNewTempFile(originalFile)
-        try {
-            const newValue = '321 The Other st, Nova Scotia, Canada'
-            const key = 'address';
-            const oldValue = PropertiesUtils.get(newTempFile, key)
-            assertNotEquals(oldValue, newValue)
+  name: "PropertiesUtils.set should not replace value when ifNotExists",
+  async fn() {
+    const originalFile = path.join("testdata", "properties", "person.properties");
+    const newTempFile = TestHelper.getNewTempFile(originalFile);
+    try {
+      const newValue = "321 The Other st, Nova Scotia, Canada";
+      const key = "address";
+      const oldValue = PropertiesUtils.get(newTempFile, key);
+      assertNotEquals(oldValue, newValue);
 
-            PropertiesUtils.set(newTempFile, key, newValue, true)
+      PropertiesUtils.set(newTempFile, key, newValue, true);
 
-            const fileValue = PropertiesUtils.get(newTempFile, key)
-            assertEquals(fileValue, oldValue)
-        } finally {
-            TestHelper.remove(newTempFile)
-        }
-    }, sanitizeOps: false
-})
+      const fileValue = PropertiesUtils.get(newTempFile, key);
+      assertEquals(fileValue, oldValue);
+    } finally {
+      TestHelper.remove(newTempFile);
+    }
+  },
+  sanitizeOps: false,
+});
 //
 // fixtures
 //
-const personFilePath = path.join('testdata', 'properties', 'person.properties')
+const personFilePath = path.join("testdata", "properties", "person.properties");

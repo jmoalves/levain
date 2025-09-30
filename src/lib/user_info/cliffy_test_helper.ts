@@ -8,7 +8,7 @@ export class CliffyTestHelper {
     // Mock implementation
     console.log(`Mocked input: ${value}`);
   }
-  
+
   static restore(): void {
     // Mock implementation
     console.log("Input restored");

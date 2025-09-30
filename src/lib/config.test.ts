@@ -1,90 +1,90 @@
-import {assert, assertEquals, assertMatch, assertNotEquals} from "https://deno.land/std/assert/mod.ts";
+import { assert, assertEquals, assertMatch, assertNotEquals } from "https://deno.land/std/assert/mod.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 
-import Config from './config.ts';
-import {assertStringEndsWith} from './test/more_asserts.ts';
+import Config from "./config.ts";
+import { assertStringEndsWith } from "./test/more_asserts.ts";
 import TestHelper from "./test/test_helper.ts";
 
 //
 // dirs
 //
-Deno.test('Config should have levainHome', () => {
-    const config = new Config([])
+Deno.test("Config should have levainHome", () => {
+  const config = new Config([]);
 
-    const dir = config.levainHome
+  const dir = config.levainHome;
 
-    assert(dir)
-})
-Deno.test('Config should have levainConfigDir', () => {
-    const config = new Config([])
+  assert(dir);
+});
+Deno.test("Config should have levainConfigDir", () => {
+  const config = new Config([]);
 
-    const dir = config.levainConfigDir
+  const dir = config.levainConfigDir;
 
-    assertStringEndsWith(dir, '.levain')
-})
-Deno.test('Config should have levainSafeTempDir', () => {
-    const config = new Config([])
+  assertStringEndsWith(dir, ".levain");
+});
+Deno.test("Config should have levainSafeTempDir", () => {
+  const config = new Config([]);
 
-    const dir = config.levainSafeTempDir
+  const dir = config.levainSafeTempDir;
 
-    assertStringEndsWith(dir, path.join('.levain', 'temp'))
-})
+  assertStringEndsWith(dir, path.join(".levain", "temp"));
+});
 
-Deno.test('Config should have levainBackupDir', () => {
-    const config = new Config([])
+Deno.test("Config should have levainBackupDir", () => {
+  const config = new Config([]);
 
-    const dir = config.levainBackupDir
+  const dir = config.levainBackupDir;
 
-    assertStringEndsWith(dir, path.join('.levain', 'backup'))
-})
-Deno.test('Config should set levainBackupDir', () => {
-    const config = new Config([])
+  assertStringEndsWith(dir, path.join(".levain", "backup"));
+});
+Deno.test("Config should set levainBackupDir", () => {
+  const config = new Config([]);
 
-    const newDir = TestHelper.getNewTempDir();
-    config.levainBackupDir = newDir
+  const newDir = TestHelper.getNewTempDir();
+  config.levainBackupDir = newDir;
 
-    assertEquals(config.levainBackupDir, newDir)
-})
+  assertEquals(config.levainBackupDir, newDir);
+});
 
-Deno.test('Config should have levainRegistryDir', () => {
-    const config = new Config([])
+Deno.test("Config should have levainRegistryDir", () => {
+  const config = new Config([]);
 
-    const dir = config.levainRegistryDir
+  const dir = config.levainRegistryDir;
 
-    assertStringEndsWith(dir, path.join('.levain', 'registry'))
-})
-Deno.test('Config should have a registry', () => {
-    const config = new Config([])
+  assertStringEndsWith(dir, path.join(".levain", "registry"));
+});
+Deno.test("Config should have a registry", () => {
+  const config = new Config([]);
 
-    const registry = config.levainRegistry
+  const registry = config.levainRegistry;
 
-    assertNotEquals(registry, undefined)
-})
+  assertNotEquals(registry, undefined);
+});
 
-Deno.test('Config should have assertNotEquals default levainCache', () => {
-    const config = new Config([])
+Deno.test("Config should have assertNotEquals default levainCache", () => {
+  const config = new Config([]);
 
-    const dir = config.levainCacheDir
+  const dir = config.levainCacheDir;
 
-    assertEquals(dir, path.join(config.levainHome, '.levainCache'))
-})
-Deno.test('Config should set levainCache', () => {
-    const config = new Config([])
+  assertEquals(dir, path.join(config.levainHome, ".levainCache"));
+});
+Deno.test("Config should set levainCache", () => {
+  const config = new Config([]);
 
-    const newDir = TestHelper.getNewTempDir();
-    config.levainCacheDir = newDir
+  const newDir = TestHelper.getNewTempDir();
+  config.levainCacheDir = newDir;
 
-    assertEquals(config.levainCacheDir, newDir)
-})
-Deno.test('Config should config levainCache with cli args', () => {
-    const config = new Config({levainCache: 'cache/'})
+  assertEquals(config.levainCacheDir, newDir);
+});
+Deno.test("Config should config levainCache with cli args", () => {
+  const config = new Config({ levainCache: "cache/" });
 
-    assertEquals(config.levainCacheDir, 'cache/')
-})
-Deno.test('Config should replaceVars', async () => {
-    const config = new Config({myVar: 'myValue'})
+  assertEquals(config.levainCacheDir, "cache/");
+});
+Deno.test("Config should replaceVars", async () => {
+  const config = new Config({ myVar: "myValue" });
 
-    const replacedVars = await config.replaceVars('home: ${myVar}')
+  const replacedVars = await config.replaceVars("home: ${myVar}");
 
-    assertMatch(replacedVars, /home: myValue/)
-})
+  assertMatch(replacedVars, /home: myValue/);
+});

@@ -3,11 +3,12 @@
 ## 1. Executar Comandos (Substituir Deno.run)
 
 ### Antes (Deno 1):
+
 ```typescript
 const p = Deno.run({
   cmd: ["git", "clone", repoUrl, destPath],
   stdout: "piped",
-  stderr: "piped"
+  stderr: "piped",
 });
 
 const { success } = await p.status();
@@ -17,6 +18,7 @@ p.close();
 ```
 
 ### Depois (Deno 2):
+
 ```typescript
 import { ProcessUtils } from "./src/lib/deno2_helpers.ts";
 
@@ -31,6 +33,7 @@ if (result.success) {
 ## 2. Download de Arquivos com Progresso
 
 ### Antes (Deno 1):
+
 ```typescript
 const response = await fetch(downloadUrl);
 const file = await Deno.open(destPath, { write: true, create: true });
@@ -39,6 +42,7 @@ file.close();
 ```
 
 ### Depois (Deno 2):
+
 ```typescript
 import { FileUtils } from "./src/lib/deno2_helpers.ts";
 
@@ -48,25 +52,27 @@ await FileUtils.downloadFile(
   {
     onProgress: (percent) => {
       console.log(`Download progress: ${percent}%`);
-    }
-  }
+    },
+  },
 );
 ```
 
 ## 3. Extrair Arquivos
 
 ### Antes (Deno 1):
+
 ```typescript
 const p = Deno.run({
   cmd: ["unzip", "-o", zipFile, "-d", destDir],
   stdout: "piped",
-  stderr: "piped"
+  stderr: "piped",
 });
 await p.status();
 p.close();
 ```
 
 ### Depois (Deno 2):
+
 ```typescript
 import { FileUtils } from "./src/lib/deno2_helpers.ts";
 
@@ -76,6 +82,7 @@ await FileUtils.extractArchive(zipFile, destDir);
 ## 4. Operações Git
 
 ### Antes (Deno 1):
+
 ```typescript
 const p = Deno.run({
   cmd: ["git", "clone", "-b", branch, "--depth", "1", repoUrl, destPath],
@@ -85,18 +92,20 @@ p.close();
 ```
 
 ### Depois (Deno 2):
+
 ```typescript
 import { GitUtils } from "./src/lib/deno2_helpers.ts";
 
 const success = await GitUtils.clone(repoUrl, destPath, {
   branch: branch,
-  depth: 1
+  depth: 1,
 });
 ```
 
 ## 5. Imports do Standard Library
 
 ### Antes (Deno 1):
+
 ```typescript
 import { ensureDir } from "https://deno.land/std@0.200.0/fs/ensure_dir.ts";
 import { exists } from "https://deno.land/std@0.200.0/fs/exists.ts";
@@ -105,6 +114,7 @@ import { parse } from "https://deno.land/std@0.200.0/encoding/yaml.ts";
 ```
 
 ### Depois (Deno 2):
+
 ```typescript
 import { ensureDir } from "jsr:@std/fs@1.0.0/ensure-dir";
 import { exists } from "jsr:@std/fs@1.0.0/exists";
@@ -115,11 +125,13 @@ import { parse } from "jsr:@std/yaml@1.0.0";
 ## 6. Variáveis de Ambiente e Permissões
 
 ### Antes (Deno 1):
+
 ```bash
 deno run --allow-all levain.ts
 ```
 
 ### Depois (Deno 2 - mais seguro):
+
 ```bash
 deno run \
   --allow-read=. \
@@ -133,6 +145,7 @@ deno run \
 ## 7. Configuração do VSCode
 
 Crie/atualize `.vscode/settings.json`:
+
 ```json
 {
   "deno.enable": true,
@@ -152,69 +165,71 @@ Crie/atualize `.vscode/settings.json`:
 ## 8. GitHub Actions para CI/CD
 
 Atualize `.github/workflows/deno.yml`:
+
 ```yaml
 name: Deno CI
 
 on:
   push:
-    branches: [ main, deno2_opus ]
+    branches: [main, deno2_opus]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v3
-    
-    - uses: denoland/setup-deno@v1
-      with:
-        deno-version: v2.x
-    
-    - name: Verify formatting
-      run: deno fmt --check
-    
-    - name: Run linter
-      run: deno lint
-    
-    - name: Run tests
-      run: deno test --allow-all --coverage
-    
-    - name: Generate coverage
-      run: deno coverage --lcov > coverage.lcov
-    
-    - name: Upload coverage
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage.lcov
+      - uses: actions/checkout@v3
+
+      - uses: denoland/setup-deno@v1
+        with:
+          deno-version: v2.x
+
+      - name: Verify formatting
+        run: deno fmt --check
+
+      - name: Run linter
+        run: deno lint
+
+      - name: Run tests
+        run: deno test --allow-all --coverage
+
+      - name: Generate coverage
+        run: deno coverage --lcov > coverage.lcov
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.lcov
 
   build:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-    
+
     steps:
-    - uses: actions/checkout@v3
-    
-    - uses: denoland/setup-deno@v1
-      with:
-        deno-version: v2.x
-    
-    - name: Build executable
-      run: deno compile --allow-all --output=levain${{ matrix.os == 'windows-latest' && '.exe' || '' }} levain.ts
-    
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: levain-${{ matrix.os }}
-        path: levain${{ matrix.os == 'windows-latest' && '.exe' || '' }}
+      - uses: actions/checkout@v3
+
+      - uses: denoland/setup-deno@v1
+        with:
+          deno-version: v2.x
+
+      - name: Build executable
+        run: deno compile --allow-all --output=levain${{ matrix.os == 'windows-latest' && '.exe' || '' }} levain.ts
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: levain-${{ matrix.os }}
+          path: levain${{ matrix.os == 'windows-latest' && '.exe' || '' }}
 ```
 
 ## 9. Package.json para Compatibilidade NPM (opcional)
 
 Se quiser manter compatibilidade com NPM:
+
 ```json
 {
   "name": "levain",

@@ -12,7 +12,7 @@ import { join, resolve } from "jsr:@std/path@1.0.0";
 import { parse as parseYaml } from "jsr:@std/yaml@1.0.0";
 
 // Import dos helpers
-import { ProcessUtils, FileUtils } from "./src/lib/deno2_helpers.ts";
+import { FileUtils, ProcessUtils } from "./src/lib/deno2_helpers.ts";
 
 // Verificar versão do Deno
 const REQUIRED_DENO_VERSION = "2.0.0";
@@ -37,19 +37,19 @@ class Logger {
       console.log(`[DEBUG] ${message}`);
     }
   }
-  
+
   static info(message: string) {
     console.log(`[INFO] ${message}`);
   }
-  
+
   static warn(message: string) {
     console.warn(`⚠️  ${message}`);
   }
-  
+
   static error(message: string) {
     console.error(`❌ ${message}`);
   }
-  
+
   static success(message: string) {
     console.log(`✅ ${message}`);
   }
@@ -58,7 +58,7 @@ class Logger {
 // Classe principal do Levain
 class Levain {
   constructor(private config = CONFIG) {}
-  
+
   async init() {
     Logger.info("Initializing Levain...");
     await ensureDir(this.config.levainHome);
@@ -66,53 +66,53 @@ class Levain {
     await ensureDir(join(this.config.levainHome, "temp"));
     Logger.success("Levain initialized");
   }
-  
+
   async install(packageName: string) {
     Logger.info(`Installing ${packageName}...`);
-    
+
     try {
       // Implementar lógica de instalação
       // Este é um exemplo simplificado
       const packagePath = join(this.config.levainHome, "packages", packageName);
-      
+
       if (await exists(packagePath)) {
         Logger.warn(`Package ${packageName} already installed`);
         return;
       }
-      
+
       // Download e instalação do pacote
       // ...
-      
+
       Logger.success(`Package ${packageName} installed successfully`);
     } catch (error) {
       Logger.error(`Failed to install ${packageName}: ${error.message}`);
       throw error;
     }
   }
-  
+
   async list() {
     Logger.info("Listing installed packages...");
-    
+
     const packagesDir = join(this.config.levainHome, "packages");
-    
+
     if (!await exists(packagesDir)) {
       Logger.warn("No packages installed");
       return;
     }
-    
+
     for await (const entry of Deno.readDir(packagesDir)) {
       if (entry.isDirectory) {
         console.log(`  - ${entry.name}`);
       }
     }
   }
-  
+
   async shell(packages: string[]) {
     Logger.info(`Starting shell with packages: ${packages.join(", ")}`);
-    
+
     // Configurar ambiente
     const env = { ...Deno.env.toObject() };
-    
+
     // Adicionar paths dos pacotes
     for (const pkg of packages) {
       const pkgPath = join(this.config.levainHome, "packages", pkg);
@@ -120,12 +120,12 @@ class Levain {
         env.PATH = `${pkgPath}/bin:${env.PATH}`;
       }
     }
-    
+
     // Iniciar shell
     const shell = Deno.build.os === "windows" ? "cmd.exe" : "/bin/bash";
-    
+
     const result = await ProcessUtils.runCommandWithOutput(shell, [], { env });
-    
+
     if (!result) {
       Logger.error("Shell exited with error");
     }
@@ -144,18 +144,18 @@ async function parseArgs(args: string[]) {
       c: "config",
     },
   });
-  
+
   if (flags.debug) {
     CONFIG.debug = true;
   }
-  
+
   return flags;
 }
 
 // Função principal
 async function main() {
   const args = await parseArgs(Deno.args);
-  
+
   if (args.help) {
     console.log(`
 Levain - Something to help you make your software grow
@@ -183,21 +183,21 @@ Examples:
 `);
     return;
   }
-  
+
   if (args.version) {
     console.log("Levain 2.0.0 (Deno 2)");
     return;
   }
-  
+
   const levain = new Levain();
   const command = args._[0]?.toString();
-  
+
   try {
     switch (command) {
       case "init":
         await levain.init();
         break;
-        
+
       case "install":
         const packageName = args._[1]?.toString();
         if (!packageName) {
@@ -206,16 +206,16 @@ Examples:
         }
         await levain.install(packageName);
         break;
-        
+
       case "list":
         await levain.list();
         break;
-        
+
       case "shell":
-        const packages = args._.slice(1).map(p => p.toString());
+        const packages = args._.slice(1).map((p) => p.toString());
         await levain.shell(packages);
         break;
-        
+
       default:
         Logger.error(`Unknown command: ${command}`);
         console.log("Run 'levain --help' for usage");
@@ -235,4 +235,4 @@ if (import.meta.main) {
   await main();
 }
 
-export { Levain, Logger, CONFIG };
+export { CONFIG, Levain, Logger };
