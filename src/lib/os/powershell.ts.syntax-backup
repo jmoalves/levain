@@ -35,16 +35,16 @@ export class Powershell {
         }
 
 new Deno.Command("extra-bin/windows/os-utils/addToDesktop.cmd", {
-args: [resolvedTargetFile],
-    stdout: "inherit",
+    args: [resolvedTargetFile],,
+    stdout: "inherit",,
     stderr: "inherit"
-})
+  })
         // %PWS% -File %currentFileDir%createShortcut.ps1 "%TARGET_FILE%" "%SHORTCUT_DIR%"
 
         const process = Deno.run({
             cmd: args,
             stderr: 'piped',
-            stdout: 'piped'
+            stdout: 'piped',
         })
 
         const [

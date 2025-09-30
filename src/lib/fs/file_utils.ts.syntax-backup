@@ -184,9 +184,8 @@ export class FileUtils {
 
                 await copy(r, dst);
 
-                // await // r.close() - not needed with Deno.Command
-                // await // dst.close() - not needed with Deno.Command
-
+                await // r.close() - not needed with Deno.Command
+                await // dst.close() - not needed with Deno.Command
                 if (r.size && dst.size && r.size != dst.size) {
                     throw Error(`Copy size does not match ${r.size} => ${dst.size}`)
                 }

@@ -42,7 +42,7 @@ export default class OsUtils {
         OsUtils.onlyInWindows();
         return path.resolve(
             OsUtils.homeDir,
-            'AppData/Roaming/Microsoft/Windows/Start Menu/Programs'
+            'AppData/Roaming/Microsoft/Windows/Start Menu/Programs',
         );
     }
 
@@ -65,7 +65,7 @@ export default class OsUtils {
         const hostFromEnv = envChain(...hostEnvStrings);
         if (!hostFromEnv) {
             log.debug(
-                `Hostname not found. Looked for env vars ${hostEnvStrings.join()}`
+                `Hostname not found. Looked for env vars ${hostEnvStrings.join()}`,
             );
             return undefined;
         }
@@ -140,7 +140,7 @@ export default class OsUtils {
 
     static async runAndLog(
         command: string | string[],
-        workDir = '.'
+        workDir = '.',
     ): Promise<string> {
         log.debug(`runAndLog\n${command}`);
 
@@ -257,7 +257,7 @@ export default class OsUtils {
 
     static async createShortcut(
         oldPath: string | string[],
-        newPath: string | string[]
+        newPath: string | string[],
     ) {
         const oldPathResolved = OsUtils.resolvePath(oldPath);
         const newPathResolved = OsUtils.resolvePath(newPath);
@@ -267,14 +267,14 @@ export default class OsUtils {
 
         if (OsUtils.isWindows()) {
             const createShortcutScript = OsUtils.getScriptUri(
-                'createShortcut.ps1'
+                'createShortcut.ps1',
             );
 
             return await Powershell.run(
                 createShortcutScript,
                 false,
                 false,
-                [oldPathResolved, newPathResolved]
+                [oldPathResolved, newPathResolved],
             );
         }
         return Deno.symlinkSync(oldPathResolved, newPathResolved);
@@ -317,7 +317,7 @@ export default class OsUtils {
 
     static async addToStartMenu(
         targetFile: string,
-        folderName: string | undefined = undefined
+        folderName: string | undefined = undefined,
     ) {
         OsUtils.onlyInWindows();
         const startMenuDir = OsUtils.startMenuDir;
