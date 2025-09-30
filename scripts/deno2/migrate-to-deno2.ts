@@ -490,19 +490,43 @@ ${colors.reset}`);
   const allChanges: Map<string, string[]> = new Map();
   
   // Buscar todos os arquivos .ts e .js
+  async function* walkFiles(dir: string): AsyncGenerator<string> {
+    try {
+      for await (const entry of Deno.readDir(dir)) {
+        const path = `${dir}/${entry.name}`;
+        
+        // Pular diretórios especiais
+        if (entry.name.startsWith(".") || 
+            entry.name === "node_modules" || 
+            entry.name === "dist" ||
+            entry.name === "build" ||
+            path.includes("/.git/") ||
+            path.includes("/.backup")) {
+          continue;
+        }
+        
+        if (entry.isFile && (entry.name.endsWith(".ts") || entry.name.endsWith(".js"))) {
+          yield path;
+        } else if (entry.isDirectory) {
+          yield* walkFiles(path);
+        }
+      }
+    } catch (error) {
+      log(`Warning: Could not access directory ${dir}: ${error}`, "warning");
+    }
+  }
+  
+  // Processar arquivos em diretórios
   for await (const entry of Deno.readDir(".")) {
     if (entry.isDirectory && !entry.name.startsWith(".") && entry.name !== "node_modules") {
-      for await (const walkEntry of walk(entry.name, {
-        exts: [".ts", ".js"],
-        skip: [/node_modules/, /\.git/, /\.backup/]
-      })) {
+      for await (const filePath of walkFiles(entry.name)) {
         totalFiles++;
-        const { updated, changes } = await processTypeScriptFile(walkEntry.path);
+        const { updated, changes } = await processTypeScriptFile(filePath);
         
         if (updated) {
           updatedFiles++;
-          allChanges.set(walkEntry.path, changes);
-          log(`Updated: ${walkEntry.path}`, "success");
+          allChanges.set(filePath, changes);
+          log(`Updated: ${filePath}`, "success");
         }
       }
     }
@@ -563,34 +587,6 @@ ${colors.reset}`);
   if (!Deno.version.deno.startsWith("2.")) {
     console.log(`${colors.yellow}⚠ You're still on Deno 1.x. Run 'deno upgrade' to get Deno 2${colors.reset}`);
   }
-}
-
-// Importar dependências necessárias para o script
-async function walk(dir: string, options?: { exts?: string[], skip?: RegExp[] }) {
-  const results: { path: string }[] = [];
-  
-  async function walkDir(currentDir: string) {
-    for await (const entry of Deno.readDir(currentDir)) {
-      const path = `${currentDir}/${entry.name}`;
-      
-      // Verificar se deve pular
-      if (options?.skip?.some(pattern => pattern.test(path))) {
-        continue;
-      }
-      
-      if (entry.isFile) {
-        // Verificar extensão
-        if (!options?.exts || options.exts.some(ext => path.endsWith(ext))) {
-          results.push({ path });
-        }
-      } else if (entry.isDirectory) {
-        await walkDir(path);
-      }
-    }
-  }
-  
-  await walkDir(dir);
-  return results;
 }
 
 // Executar
