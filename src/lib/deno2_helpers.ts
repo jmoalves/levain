@@ -130,7 +130,7 @@ export class FileUtils {
         await response.body?.pipeTo(file.writable);
       }
     } finally {
-      file.close();
+      // file.close() - not needed with Deno.Command
     }
   }
 

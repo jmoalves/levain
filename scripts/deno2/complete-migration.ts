@@ -90,7 +90,7 @@ const REPLACEMENTS = [
     }
   },
   
-  // .status() → .output()
+  // .output() → .output()
   {
     name: "status to output",
     pattern: /\.status\(\)/g,
@@ -104,18 +104,18 @@ const REPLACEMENTS = [
     replacement: '// $1.close() - not needed with Deno.Command'
   },
   
-  // Deno.resources() → {}
+  // {} /* Deno.resources() removed in Deno 2 */ → {}
   {
     name: "Deno.resources",
     pattern: /Deno\.resources\(\)/g,
-    replacement: '{} /* Deno.resources() removed in Deno 2 */'
+    replacement: '{} /* {} /* Deno.resources() removed in Deno 2 */ removed in Deno 2 */'
   },
   
-  // Deno.metrics() → undefined
+  // undefined /* Deno.metrics() removed in Deno 2 */ → undefined
   {
     name: "Deno.metrics", 
     pattern: /Deno\.metrics\(\)/g,
-    replacement: 'undefined /* Deno.metrics() removed in Deno 2 */'
+    replacement: 'undefined /* undefined /* Deno.metrics() removed in Deno 2 */ removed in Deno 2 */'
   },
   
   // Deno.Buffer → Buffer
@@ -125,7 +125,7 @@ const REPLACEMENTS = [
     replacement: 'new Uint8Array /* Deno.Buffer removed, use Uint8Array */'
   },
   
-  // window. → globalThis.window.
+  // globalThis.window. → globalThis.window.
   {
     name: "window global",
     pattern: /(?<!globalThis\.)window\./g,
@@ -194,7 +194,7 @@ async function processFile(filePath: string): Promise<boolean> {
     
     // Aplicar correções específicas para alguns padrões problemáticos
     
-    // Corrigir pattern: const p = Deno.run(...); const {success} = await p.status();
+    // Corrigir pattern: const p = Deno.run(...); const {success} = await p.output();
     const runPattern = /const\s+(\w+)\s*=\s*Deno\.run/g;
     const matches = content.matchAll(runPattern);
     for (const match of matches) {

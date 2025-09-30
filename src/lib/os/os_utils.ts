@@ -171,7 +171,7 @@ export default class OsUtils {
         ] = await Promise.all([
             proc.stderrOutput(),
             proc.output(),
-            proc.status(),
+            proc.output(),
         ]);
 
         // close() not needed with Deno.Command

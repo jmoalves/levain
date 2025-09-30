@@ -8,8 +8,8 @@
  * atenção especial na migração para Deno 2.
  */
 
-import { ensureDir } from "https://deno.land/std@0.200.0/fs/ensure_dir.ts";
-import { exists } from "https://deno.land/std@0.200.0/fs/exists.ts";
+import { ensureDir } from "jsr:@std/fs@1.0.0/ensure-dir";
+import { exists } from "jsr:@std/fs@1.0.0/exists";
 
 const colors = {
   reset: "\x1b[0m",
@@ -154,7 +154,7 @@ export class FileUtils {
         await response.body?.pipeTo(file.writable);
       }
     } finally {
-      file.close();
+      // file.close() - not needed with Deno.Command
     }
   }
 
@@ -401,16 +401,16 @@ async function createMigrationExamples() {
 
 ### Antes (Deno 1):
 \`\`\`typescript
-const p = Deno.run({
-  cmd: ["git", "clone", repoUrl, destPath],
+const p = new Deno.Command("git", {
+  args: ["clone", repoUrl, destPath],
   stdout: "piped",
   stderr: "piped"
 });
 
-const { success } = await p.status();
+const { success } = await p.output();
 const rawOutput = await p.output();
 const output = new TextDecoder().decode(rawOutput);
-p.close();
+// p.close() - not needed with Deno.Command
 \`\`\`
 
 ### Depois (Deno 2):
@@ -432,7 +432,7 @@ if (result.success) {
 const response = await fetch(downloadUrl);
 const file = await Deno.open(destPath, { write: true, create: true });
 await Deno.copy(response.body!, file);
-file.close();
+// file.close() - not needed with Deno.Command
 \`\`\`
 
 ### Depois (Deno 2):
@@ -454,13 +454,13 @@ await FileUtils.downloadFile(
 
 ### Antes (Deno 1):
 \`\`\`typescript
-const p = Deno.run({
-  cmd: ["unzip", "-o", zipFile, "-d", destDir],
+const p = new Deno.Command("unzip", {
+  args: ["-o", zipFile, "-d", destDir],
   stdout: "piped",
   stderr: "piped"
 });
-await p.status();
-p.close();
+await p.output();
+// p.close() - not needed with Deno.Command
 \`\`\`
 
 ### Depois (Deno 2):
@@ -474,11 +474,13 @@ await FileUtils.extractArchive(zipFile, destDir);
 
 ### Antes (Deno 1):
 \`\`\`typescript
-const p = Deno.run({
-  cmd: ["git", "clone", "-b", branch, "--depth", "1", repoUrl, destPath],
+const p = new Deno.Command("git", {
+  args: ["clone", "-b", branch, "--depth", "1", repoUrl, destPath],
+  stdout: "inherit",
+  stderr: "inherit"
 });
-const { success } = await p.status();
-p.close();
+const { success } = await p.output();
+// p.close() - not needed with Deno.Command
 \`\`\`
 
 ### Depois (Deno 2):
@@ -495,10 +497,10 @@ const success = await GitUtils.clone(repoUrl, destPath, {
 
 ### Antes (Deno 1):
 \`\`\`typescript
-import { ensureDir } from "https://deno.land/std@0.200.0/fs/ensure_dir.ts";
-import { exists } from "https://deno.land/std@0.200.0/fs/exists.ts";
-import { join } from "https://deno.land/std@0.200.0/path/mod.ts";
-import { parse } from "https://deno.land/std@0.200.0/encoding/yaml.ts";
+import { ensureDir } from "jsr:@std/fs@1.0.0/ensure-dir";
+import { exists } from "jsr:@std/fs@1.0.0/exists";
+import { join } from "jsr:@std/path@1.0.0";
+import { parse } from "jsr:@std/yaml@1.0.0";
 \`\`\`
 
 ### Depois (Deno 2):

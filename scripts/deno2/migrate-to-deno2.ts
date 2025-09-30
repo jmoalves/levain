@@ -139,9 +139,9 @@ const CODE_PATTERNS: CodePattern[] = [
     multiline: true
   },
   
-  // process.status() → command.output()
+  // process.output() → command.output()
   {
-    name: "process.status() to command.output()",
+    name: "process.output() to command.output()",
     pattern: /await\s+(\w+)\.status\(\)/g,
     replacement: "await $1.output()"
   },
@@ -180,11 +180,11 @@ const CODE_PATTERNS: CodePattern[] = [
     replacement: "typeof globalThis.window !== 'undefined'"
   },
   
-  // Deno.metrics() removal
+  // undefined /* Deno.metrics() removed in Deno 2 */ removal
   {
-    name: "Deno.metrics() removal",
+    name: "undefined /* Deno.metrics() removed in Deno 2 */ removal",
     pattern: /Deno\.metrics\(\)[^;]*/g,
-    replacement: "undefined // Deno.metrics() was removed in Deno 2"
+    replacement: "undefined // undefined /* Deno.metrics() removed in Deno 2 */ was removed in Deno 2"
   },
   
   // Deno.serveHttp → soft deprecated
@@ -392,16 +392,14 @@ async function createMigrationExamples() {
 // ============================================
 
 // ANTES (Deno 1.x):
-const p = Deno.run({
-  cmd: ["git", "clone", repoUrl],
+const p = new Deno.Command("git", {
+  args: ["clone", repoUrl],
   stdout: "piped",
   stderr: "piped"
 });
-const { success } = await p.status();
+const { success } = await p.output();
 const output = await p.output();
-p.close();
-
-// DEPOIS (Deno 2.x):
+// p.close() - not needed with Deno.Command
 const command = new Deno.Command("git", {
   args: ["clone", repoUrl],
   stdout: "piped",
@@ -414,8 +412,8 @@ const { success, stdout, stderr } = await command.output();
 // ============================================
 
 // ANTES:
-import { parse } from "https://deno.land/std@0.200.0/flags/mod.ts";
-import { ensureDir } from "https://deno.land/std@0.200.0/fs/mod.ts";
+import { parse } from "jsr:@std/flags@1.0.0";
+import { ensureDir } from "jsr:@std/fs@1.0.0";
 
 // DEPOIS:
 import { parse } from "jsr:@std/flags@1.0.0";
@@ -435,8 +433,8 @@ import { ensureDir } from "jsr:@std/fs@1.0.0";
 // 4. APIs Removidas/Modificadas
 // ============================================
 
-// Deno.metrics() - REMOVIDO
-// Deno.resources() - REMOVIDO  
+// undefined /* Deno.metrics() removed in Deno 2 */ - REMOVIDO
+// {} /* Deno.resources() removed in Deno 2 */ - REMOVIDO  
 // Deno.serveHttp() - SOFT-DEPRECATED (ainda funciona mas sem suporte)
 
 // ============================================

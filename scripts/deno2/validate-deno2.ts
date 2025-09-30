@@ -122,12 +122,12 @@ async function checkDeprecatedAPIs() {
     },
     {
       pattern: /Deno\.metrics\(\)/g,
-      message: "Deno.metrics() found - this API was removed in Deno 2",
+      message: "undefined /* Deno.metrics() removed in Deno 2 */ found - this API was removed in Deno 2",
       severity: "error" as const
     },
     {
       pattern: /Deno\.resources\(\)/g,
-      message: "Deno.resources() found - this API was removed in Deno 2",
+      message: "{} /* Deno.resources() removed in Deno 2 */ found - this API was removed in Deno 2",
       severity: "error" as const
     },
     {

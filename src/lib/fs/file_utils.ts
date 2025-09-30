@@ -35,8 +35,7 @@ export class FileUtils {
                 // const fileInfo = this.getFileInfoSync(filePath)
                 // if (fileInfo.isFile) {
                 //     const file = Deno.openSync(filePath)
-                //     file.close()
-                // } else {
+                //     // file.close() - not needed with Deno.Command
                 //     Deno.readDirSync(filePath)
                 // }
                 return true
@@ -81,12 +80,12 @@ export class FileUtils {
 
     static waitForFilesToClose() {
         while (this.getFileResources().length > 0) {
-            console.debug(`Waiting for Deno.resources to close ${JSON.stringify(Deno.resources())}`)
+            console.debug(`Waiting for Deno.resources to close ${JSON.stringify({} /* {} /* Deno.resources() removed in Deno 2 */ removed in Deno 2 */)}`)
         }
     }
 
     static getFileResources(): [string, any][] {
-        const resourceMap = Deno.resources()
+        const resourceMap = {} /* {} /* Deno.resources() removed in Deno 2 */ removed in Deno 2 */
         const resourceArray = Object.entries(resourceMap)
         return resourceArray.filter(
             it => it[1].toString() === 'fsFile'
@@ -185,10 +184,8 @@ export class FileUtils {
 
                 await copy(r, dst);
 
-                await r.close();
-                await dst.close();
-
-                // Check size
+                await // r.close() - not needed with Deno.Command
+                await // dst.close() - not needed with Deno.Command
                 if (r.size && dst.size && r.size != dst.size) {
                     throw Error(`Copy size does not match ${r.size} => ${dst.size}`)
                 }

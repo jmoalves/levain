@@ -50,8 +50,7 @@ export default class HttpReader implements ProgressReader {
 
     // RewindReader
     async rewind() {
-        this.close()
-
+        // this.close() - not needed with Deno.Command
         log.debug(`Reading ${this.url}`)
         this.bytesRead = 0
 

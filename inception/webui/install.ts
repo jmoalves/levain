@@ -21,11 +21,11 @@ async function checkResult(e: WebUI.Event) {
 
 async function calculate(e: WebUI.Event) {
   // Run JavaScript and wait for response
-  const getA = await e.window.script("return get_A()").catch((error) => {
+  const getA = await e.globalThis.window.script("return get_A()").catch((error) => {
     console.error(`Error in the JavaScript: ${error}`);
     return "";
   });
-  const getB = await e.window.script("return get_B()").catch((error) => {
+  const getB = await e.globalThis.window.script("return get_B()").catch((error) => {
     console.error(`Error in the JavaScript: ${error}`);
     return "";
   });
@@ -34,7 +34,7 @@ async function calculate(e: WebUI.Event) {
   const result = parseInt(getA) + parseInt(getB);
 
   // Run JavaScript without waiting for response (Quick)
-  e.window.run(`set_result(${result});`);
+  e.globalThis.window.run(`set_result(${result});`);
 }
 
 // Create new window

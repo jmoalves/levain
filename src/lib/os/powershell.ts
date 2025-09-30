@@ -54,7 +54,7 @@ export class Powershell {
         ] = await Promise.all([
             process.stderrOutput(),
             process.output(),
-            process.status()
+            process.output()
         ]);
 
         // close() not needed with Deno.Command

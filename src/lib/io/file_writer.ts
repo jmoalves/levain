@@ -76,8 +76,7 @@ export default class FileWriter implements Deno.Writer, Progress, Timestamps, De
 
     async close() {
         log.debug(`Closing ${this.tempPath}`)
-        this.file.close()
-
+        this.// file.close() - not needed with Deno.Command
         if (existsSync(this.filePath)) {
             log.debug(`Removing ${this.filePath}`)
             Deno.removeSync(this.filePath)
