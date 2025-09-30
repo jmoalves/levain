@@ -414,7 +414,7 @@ p.close();
 \`\`\`
 
 ### Depois (Deno 2):
-```typescript
+\`\`\`typescript
 import { ProcessUtils } from "./src/lib/deno2_helpers.ts";
 
 const result = await ProcessUtils.runCommand("git", ["clone", repoUrl, destPath]);
@@ -423,20 +423,20 @@ if (result.success) {
 } else {
   console.error("Clone failed:", result.stderr);
 }
-```
+\`\`\`
 
 ## 2. Download de Arquivos com Progresso
 
 ### Antes (Deno 1):
-```typescript
+\`\`\`typescript
 const response = await fetch(downloadUrl);
 const file = await Deno.open(destPath, { write: true, create: true });
 await Deno.copy(response.body!, file);
 file.close();
-```
+\`\`\`
 
 ### Depois (Deno 2):
-```typescript
+\`\`\`typescript
 import { FileUtils } from "./src/lib/deno2_helpers.ts";
 
 await FileUtils.downloadFile(
@@ -444,16 +444,16 @@ await FileUtils.downloadFile(
   destPath,
   {
     onProgress: (percent) => {
-      console.log(`Download progress: ${percent}%`);
+      console.log(\`Download progress: \${percent}%\`);
     }
   }
 );
-```
+\`\`\`
 
 ## 3. Extrair Arquivos
 
 ### Antes (Deno 1):
-```typescript
+\`\`\`typescript
 const p = Deno.run({
   cmd: ["unzip", "-o", zipFile, "-d", destDir],
   stdout: "piped",
@@ -461,76 +461,76 @@ const p = Deno.run({
 });
 await p.status();
 p.close();
-```
+\`\`\`
 
 ### Depois (Deno 2):
-```typescript
+\`\`\`typescript
 import { FileUtils } from "./src/lib/deno2_helpers.ts";
 
 await FileUtils.extractArchive(zipFile, destDir);
-```
+\`\`\`
 
 ## 4. Operações Git
 
 ### Antes (Deno 1):
-```typescript
+\`\`\`typescript
 const p = Deno.run({
   cmd: ["git", "clone", "-b", branch, "--depth", "1", repoUrl, destPath],
 });
 const { success } = await p.status();
 p.close();
-```
+\`\`\`
 
 ### Depois (Deno 2):
-```typescript
+\`\`\`typescript
 import { GitUtils } from "./src/lib/deno2_helpers.ts";
 
 const success = await GitUtils.clone(repoUrl, destPath, {
   branch: branch,
   depth: 1
 });
-```
+\`\`\`
 
 ## 5. Imports do Standard Library
 
 ### Antes (Deno 1):
-```typescript
+\`\`\`typescript
 import { ensureDir } from "https://deno.land/std@0.200.0/fs/ensure_dir.ts";
 import { exists } from "https://deno.land/std@0.200.0/fs/exists.ts";
 import { join } from "https://deno.land/std@0.200.0/path/mod.ts";
 import { parse } from "https://deno.land/std@0.200.0/encoding/yaml.ts";
-```
+\`\`\`
 
 ### Depois (Deno 2):
-```typescript
+\`\`\`typescript
 import { ensureDir } from "jsr:@std/fs@1.0.0/ensure-dir";
 import { exists } from "jsr:@std/fs@1.0.0/exists";
 import { join } from "jsr:@std/path@1.0.0";
 import { parse } from "jsr:@std/yaml@1.0.0";
-```
+\`\`\`
 
 ## 6. Variáveis de Ambiente e Permissões
 
 ### Antes (Deno 1):
-```bash
+\`\`\`bash
 deno run --allow-all levain.ts
-```
+\`\`\`
 
 ### Depois (Deno 2 - mais seguro):
-```bash
-deno run \
-  --allow-read=. \
-  --allow-write=./temp,./downloads \
-  --allow-net=github.com,api.github.com \
-  --allow-run=git,unzip,tar \
-  --allow-env=LEVAIN_HOME,PATH \
+\`\`\`bash
+deno run \\
+  --allow-read=. \\
+  --allow-write=./temp,./downloads \\
+  --allow-net=github.com,api.github.com \\
+  --allow-run=git,unzip,tar \\
+  --allow-env=LEVAIN_HOME,PATH \\
   levain.ts
-```
+\`\`\`
 
 ## 7. Configuração do VSCode
 
-Crie/atualize `.vscode/settings.json`:
-```json
+Crie/atualize \`.vscode/settings.json\`:
+\`\`\`json
 {
   "deno.enable": true,
   "deno.lint": true,
@@ -544,12 +544,12 @@ Crie/atualize `.vscode/settings.json`:
     "editor.defaultFormatter": "denoland.vscode-deno"
   }
 }
-```
+\`\`\`
 
 ## 8. GitHub Actions para CI/CD
 
-Atualize `.github/workflows/deno.yml`:
-```yaml
+Atualize \`.github/workflows/deno.yml\`:
+\`\`\`yaml
 name: Deno CI
 
 on:
@@ -587,7 +587,7 @@ jobs:
         file: ./coverage.lcov
 
   build:
-    runs-on: ${{ matrix.os }}
+    runs-on: \${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
@@ -600,19 +600,19 @@ jobs:
         deno-version: v2.x
     
     - name: Build executable
-      run: deno compile --allow-all --output=levain${{ matrix.os == 'windows-latest' && '.exe' || '' }} levain.ts
+      run: deno compile --allow-all --output=levain\${{ matrix.os == 'windows-latest' && '.exe' || '' }} levain.ts
     
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: levain-${{ matrix.os }}
-        path: levain${{ matrix.os == 'windows-latest' && '.exe' || '' }}
-```
+        name: levain-\${{ matrix.os }}
+        path: levain\${{ matrix.os == 'windows-latest' && '.exe' || '' }}
+\`\`\`
 
 ## 9. Package.json para Compatibilidade NPM (opcional)
 
 Se quiser manter compatibilidade com NPM:
-```json
+\`\`\`json
 {
   "name": "levain",
   "version": "2.0.0",
@@ -627,7 +627,7 @@ Se quiser manter compatibilidade com NPM:
   "devDependencies": {},
   "dependencies": {}
 }
-```
+\`\`\`
 `;
 
   try {
