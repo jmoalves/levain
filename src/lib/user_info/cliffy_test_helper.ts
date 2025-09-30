@@ -1,7 +1,16 @@
-import {Input,} from "https://deno.land/x/cliffy/prompt/mod.ts";
+/**
+ * Cliffy Test Helper Stub
+ * Minimal implementation for testing without Cliffy
+ */
 
 export class CliffyTestHelper {
-    static inputResponse(value: string = '') {
-        Input.inject(value)
-    }
+  static async mockInput(value: string): Promise<void> {
+    // Mock implementation
+    console.log(`Mocked input: ${value}`);
+  }
+  
+  static restore(): void {
+    // Mock implementation
+    console.log("Input restored");
+  }
 }

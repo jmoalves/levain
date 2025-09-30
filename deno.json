@@ -77,7 +77,6 @@
   },
   "imports": {
     "@std/": "jsr:@std/",
-    "@cliffy/": "jsr:@cliffy/",
     "std/": "jsr:@std/"
   },
   "nodeModulesDir": "auto",

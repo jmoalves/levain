@@ -160,7 +160,7 @@ export default class OsUtils {
             cmd: args,
             cwd: workDir,
             stderr: 'piped',
-            stdout: 'piped'
+            stdout: 'piped',
         };
         const proc = Deno.run(runOptions);
 

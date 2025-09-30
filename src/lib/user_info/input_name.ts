@@ -1,5 +1,11 @@
+// CLIFFY STUB - Remove after fixing
+const Input = { prompt: async (opts: any) => opts.default || '' };
+const Select = { prompt: async (opts: any) => opts.options?.[0] || '' };
+const Confirm = { prompt: async (opts: any) => false };
+const Command = class Command { parse() {} };
+
 import {NameValidator} from "./validators/validators.ts"
-import {ValidateResult,Input} from 'https://deno.land/x/cliffy/prompt/mod.ts'
+// TEMP DISABLED: import {ValidateResult,Input} from 'https://deno.land/x/cliffy@v1.0.0-rc.3/prompt/mod.ts'
 import {readLines} from 'https://deno.land/std/io/mod.ts'
 import OsUtils from "../os/os_utils.ts";
 

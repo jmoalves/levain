@@ -34,11 +34,11 @@ export class Powershell {
             })
         }
 
-new Deno.Command("extra-bin/windows/os-utils/addToDesktop.cmd", {
-    args: [resolvedTargetFile],,
-    stdout: "inherit",,
-    stderr: "inherit"
-  })
+        // const cmd = new Deno.Command("extra-bin/windows/os-utils/addToDesktop.cmd", {
+  args: [resolvedTargetFile],
+  stdout: "inherit",
+  stderr: "inherit"
+});
         // %PWS% -File %currentFileDir%createShortcut.ps1 "%TARGET_FILE%" "%SHORTCUT_DIR%"
 
         const process = Deno.run({

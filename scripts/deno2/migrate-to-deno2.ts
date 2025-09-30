@@ -87,9 +87,9 @@ const IMPORT_MAPPINGS: Array<[RegExp | string, string]> = [
   
   // Módulos x
   [/https:\/\/deno\.land\/x\/oak@[\d.v]+\/mod\.ts/g, "jsr:@oak/oak@17.0.0"],
-  [/https:\/\/deno\.land\/x\/cliffy@[\d.v]+\/command\/mod\.ts/g, "jsr:@cliffy/command@1.0.0"],
-  [/https:\/\/deno\.land\/x\/cliffy@[\d.v]+\/prompt\/mod\.ts/g, "jsr:@cliffy/prompt@1.0.0"],
-  [/https:\/\/deno\.land\/x\/cliffy@[\d.v]+\/table\/mod\.ts/g, "jsr:@cliffy/table@1.0.0"],
+  [/https:\/\/deno\.land\/x\/cliffy@[\d.v]+\/command\/mod\.ts/g, "https://deno.land/x/cliffy@v1.0.0-rc.3/command/mod.ts"],
+  [/https:\/\/deno\.land\/x\/cliffy@[\d.v]+\/prompt\/mod\.ts/g, "https://deno.land/x/cliffy@v1.0.0-rc.3/prompt/mod.ts"],
+  [/https:\/\/deno\.land\/x\/cliffy@[\d.v]+\/table\/mod\.ts/g, "https://deno.land/x/cliffy@v1.0.0-rc.3/table/mod.ts"],
 ];
 
 // Padrões de código que precisam ser migrados
@@ -310,8 +310,8 @@ async function createDenoConfig() {
     },
     "imports": {
       "@std/": "jsr:@std/",
-      "@cliffy/": "jsr:@cliffy/",
-      "std/": "jsr:@std/"
+      "@cliffy/": "https://deno.land/x/cliffy@v1.0.0-rc.3/",
+      "std/": "jsr:/mod.ts"
     },
     "compilerOptions": {
       "lib": ["deno.window", "dom"],
