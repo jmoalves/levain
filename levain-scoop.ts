@@ -316,6 +316,34 @@ class Levain {
       console.log(yellow("  No recipes found"));
     }
   }
+  
+  private async scanDirectoryForRecipes(dir: string, recipes: string[], pattern?: string, prefix: string = "", maxDepth: number = 10, currentDepth: number = 0): Promise<void> {
+    if (currentDepth > maxDepth) return;
+    
+    try {
+      for await (const entry of Deno.readDir(dir)) {
+        const fullPath = join(dir, entry.name);
+        
+        if (entry.isFile && entry.name.endsWith(".levain.yaml")) {
+          // Remove a extensão .levain.yaml para obter o nome da receita
+          const recipeName = entry.name.replace(/\.levain\.yaml$/, "");
+          const displayName = prefix ? `${prefix}/${recipeName}` : recipeName;
+          
+          if (!pattern || displayName.toLowerCase().includes(pattern) || recipeName.toLowerCase().includes(pattern)) {
+            recipes.push(displayName);
+          }
+        } else if (entry.isDirectory && !entry.name.startsWith(".") && entry.name !== "node_modules") {
+          // Continua buscando recursivamente
+          const newPrefix = prefix ? `${prefix}/${entry.name}` : entry.name;
+          await this.scanDirectoryForRecipes(fullPath, recipes, pattern, newPrefix, maxDepth, currentDepth + 1);
+        }
+      }
+    } catch (error) {
+      if (Deno.env.get("LEVAIN_DEBUG") === "true") {
+        console.log(yellow(`Error scanning ${dir}: ${error}`));
+      }
+    }
+  }
 
   async searchRecipe(packageName: string): Promise<void> {
     console.log(blue(`Searching for ${packageName} in all repositories...`));
