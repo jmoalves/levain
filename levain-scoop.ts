@@ -35,6 +35,17 @@ interface RecipeRepository {
   updated?: Date;
 }
 
+// Configuração do Levain
+interface LevainConfig {
+  levainHome: string;
+  pkgDir: string;
+  cacheDir: string;
+  tempDir: string;
+  repoDir: string;
+  useScoop: boolean;
+  scoopHome: string;
+}
+
 // Classe principal do Levain
 class Levain {
   private config: LevainConfig;
@@ -59,6 +70,19 @@ class Levain {
       useScoop: Deno.env.get("LEVAIN_USE_SCOOP") === "true",
       scoopHome: Deno.env.get("SCOOP") || join(homeDir, "scoop"),
     };
+  }
+
+  private initializeEnvironment() {
+    // Inicializa variáveis de ambiente do Levain
+    this.env.set("LEVAIN_HOME", this.config.levainHome);
+    this.env.set("LEVAIN_PKG_DIR", this.config.pkgDir);
+    this.env.set("LEVAIN_CACHE_DIR", this.config.cacheDir);
+    this.env.set("LEVAIN_TEMP_DIR", this.config.tempDir);
+    
+    // Copia ambiente atual
+    for (const [key, value] of Object.entries(Deno.env.toObject())) {
+      this.env.set(key, value);
+    }
   }
 
   private async loadRepositories() {
@@ -337,18 +361,8 @@ class Levain {
         }
       }
     }
-
-  private initializeEnvironment() {
-    // Inicializa variáveis de ambiente do Levain
-    this.env.set("LEVAIN_HOME", this.config.levainHome);
-    this.env.set("LEVAIN_PKG_DIR", this.config.pkgDir);
-    this.env.set("LEVAIN_CACHE_DIR", this.config.cacheDir);
-    this.env.set("LEVAIN_TEMP_DIR", this.config.tempDir);
     
-    // Copia ambiente atual
-    for (const [key, value] of Object.entries(Deno.env.toObject())) {
-      this.env.set(key, value);
-    }
+    return recipes;
   }
 
   async install(packageName: string, recipeUrl?: string): Promise<void> {
@@ -389,12 +403,8 @@ class Levain {
     console.log(green(`✓ ${packageName} installed successfully`));
   }
 
-    
-    return recipes;
-  }
-
   private async loadRecipe(packageName: string, recipeUrl?: string): Promise<LevainRecipe | null> {
-    let recipeContent: string;
+    let recipeContent: string | undefined;
     
     if (recipeUrl) {
       // Carrega de URL
@@ -426,12 +436,12 @@ class Levain {
           }
         }
         
-        if (recipeContent!) {
+        if (recipeContent) {
           break;
         }
       }
       
-      if (!recipeContent!) {
+      if (!recipeContent) {
         return null;
       }
     }
@@ -753,21 +763,10 @@ class Levain {
   }
 }
 
-// Configuração do Levain
-interface LevainConfig {
-  levainHome: string;
-  pkgDir: string;
-  cacheDir: string;
-  tempDir: string;
-  repoDir: string;
-  useScoop: boolean;
-  scoopHome: string;
-}
-
 // CLI principal
 async function main() {
   const args = parseArgs(Deno.args, {
-    string: ["recipe", "url"],
+    string: ["recipe", "url", "repo"],
     boolean: ["help", "version", "use-scoop"],
     alias: {
       h: "help",
@@ -784,7 +783,7 @@ async function main() {
   }
 
   if (args.version) {
-    console.log("Levain-Deno v0.1.0 - Levain reimplementation in Deno 2");
+    console.log("Levain-Deno v0.2.0 - Levain reimplementation in Deno 2");
     return;
   }
 
@@ -820,6 +819,17 @@ async function main() {
         await levain.shell();
         break;
       
+      case "repo":
+        await handleRepoCommand(levain, args);
+        break;
+      
+      case "search":
+        const searchTerms = args._.slice(1) as string[];
+        for (const term of searchTerms) {
+          await levain.searchRecipe(term);
+        }
+        break;
+      
       default:
         console.log(red(`Unknown command: ${command}`));
         printHelp();
@@ -828,6 +838,44 @@ async function main() {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error(red(`Error: ${errorMessage}`));
     Deno.exit(1);
+  }
+}
+
+async function handleRepoCommand(levain: Levain, args: any) {
+  const subCommand = args._[1] as string;
+  
+  switch (subCommand) {
+    case "add":
+      const name = args._[2] as string;
+      const url = args._[3] as string;
+      if (!name || !url) {
+        console.log(red("Usage: levain repo add <name> <url>"));
+        return;
+      }
+      await levain.addRepository(name, url);
+      break;
+    
+    case "remove":
+      const removeName = args._[2] as string;
+      if (!removeName) {
+        console.log(red("Usage: levain repo remove <name>"));
+        return;
+      }
+      await levain.removeRepository(removeName);
+      break;
+    
+    case "update":
+      const updateName = args._[2] as string;
+      await levain.updateRepository(updateName);
+      break;
+    
+    case "list":
+      await levain.listRepositories();
+      break;
+    
+    default:
+      console.log(red(`Unknown repo command: ${subCommand}`));
+      console.log("Available commands: add, remove, update, list");
   }
 }
 
@@ -843,6 +891,12 @@ ${yellow("Commands:")}
   uninstall <package>... Uninstall one or more packages
   list                   List installed packages
   shell                  Start a shell with Levain environment
+  search <term>...       Search for recipes in all repositories
+  repo <subcommand>      Manage recipe repositories
+    add <name> <url>     Add a new repository from Git URL
+    remove <name>        Remove a repository
+    update [name]        Update repository (all if no name specified)
+    list                 List all repositories
 
 ${yellow("Options:")}
   -h, --help            Show this help message
@@ -852,16 +906,30 @@ ${yellow("Options:")}
   -u, --url <url>       URL to download recipe from
 
 ${yellow("Examples:")}
+  # Add official Levain packages repository
+  levain repo add official https://github.com/jmoalves/levain-pkgs
+
+  # Search and install from repositories
+  levain search nodejs
   levain install nodejs
+
+  # Install with Scoop integration
   levain install git --use-scoop
+
+  # Install from specific recipe
   levain install myapp --recipe ./recipes/myapp.levain.yaml
-  levain install custom --url https://example.com/custom.levain.yaml
+
+  # Update all repositories
+  levain repo update
+
+  # Start shell with configured environment
   levain shell
 
 ${yellow("Environment Variables:")}
   LEVAIN_HOME          Levain home directory (default: ~/.levain)
   LEVAIN_PKG_DIR       Package installation directory
   LEVAIN_CACHE_DIR     Cache directory for downloads
+  LEVAIN_REPO_DIR      Repository storage directory
   LEVAIN_USE_SCOOP     Enable Scoop integration (true/false)
   `);
 }
