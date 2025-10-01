@@ -56,7 +56,10 @@ class Levain {
   constructor(config?: LevainConfig) {
     this.config = config || this.loadConfig();
     this.initializeEnvironment();
-    this.loadRepositories();
+  }
+  
+  async init(): Promise<void> {
+    await this.loadRepositories();
   }
 
   private loadConfig(): LevainConfig {
@@ -88,6 +91,9 @@ class Levain {
   private async loadRepositories() {
     const repoConfigFile = join(this.config.levainHome, "repositories.json");
     
+    // Garante que o diretório existe
+    await ensureDir(this.config.levainHome);
+    
     // Carrega repositórios salvos
     if (await exists(repoConfigFile)) {
       try {
@@ -96,8 +102,10 @@ class Levain {
         for (const repo of repos) {
           this.repositories.set(repo.name, repo);
         }
+        console.log(blue(`Loaded ${repos.length} repositories from config`));
       } catch (error) {
         console.log(yellow("Warning: Could not load repositories config"));
+        console.log(red(`Error: ${error}`));
       }
     }
     
@@ -107,8 +115,10 @@ class Levain {
         name: "local",
         url: "local",
         path: this.config.pkgDir,
+        updated: undefined,
       };
       this.repositories.set("local", defaultRepo);
+      await this.saveRepositories();
     }
   }
 
@@ -237,16 +247,29 @@ class Levain {
   async listRepositories(): Promise<void> {
     console.log(blue("Configured repositories:"));
     
+    if (this.repositories.size === 0) {
+      console.log(yellow("  No repositories configured"));
+      console.log("\nAdd a repository with:");
+      console.log("  levain repo add <name> <url>");
+      return;
+    }
+    
     for (const repo of this.repositories.values()) {
       const updatedStr = repo.updated ? new Date(repo.updated).toLocaleString() : "never";
-      console.log(`  ${green(repo.name)}`);
+      console.log(`\n  ${green(repo.name)}`);
       console.log(`    URL: ${repo.url}`);
       console.log(`    Path: ${repo.path}`);
       console.log(`    Last updated: ${updatedStr}`);
       
+      // Verifica se o diretório existe
+      if (!await exists(repo.path)) {
+        console.log(yellow(`    Status: Directory not found`));
+        continue;
+      }
+      
       // Conta receitas disponíveis
       const recipeCount = await this.countRecipesInRepo(repo);
-      console.log(`    Recipes: ${recipeCount}`);
+      console.log(`    Recipes available: ${recipeCount}`);
     }
   }
 
@@ -419,18 +442,40 @@ class Levain {
         recipeContent = await Deno.readTextFile(recipeUrl);
       }
     } else {
+      // Debug: mostra repositórios disponíveis
+      if (Deno.env.get("LEVAIN_DEBUG") === "true") {
+        console.log(blue(`Searching for ${packageName} in ${this.repositories.size} repositories`));
+      }
+      
       // Procura em todos os repositórios
       for (const repo of this.repositories.values()) {
+        if (Deno.env.get("LEVAIN_DEBUG") === "true") {
+          console.log(blue(`  Checking repository: ${repo.name} at ${repo.path}`));
+        }
+        
+        // Verifica se o diretório do repositório existe
+        if (!await exists(repo.path)) {
+          console.log(yellow(`  Warning: Repository path does not exist: ${repo.path}`));
+          continue;
+        }
+        
         const possiblePaths = [
           join(repo.path, `${packageName}.levain.yaml`),
           join(repo.path, `${packageName}.levain.yml`),
+          join(repo.path, `${packageName}`, `${packageName}.levain.yaml`),
+          join(repo.path, `${packageName}`, `${packageName}.levain.yml`),
           join(repo.path, packageName, "levain.yaml"),
           join(repo.path, packageName, "levain.yml"),
         ];
 
         for (const path of possiblePaths) {
+          if (Deno.env.get("LEVAIN_DEBUG") === "true") {
+            console.log(blue(`    Trying: ${path}`));
+          }
+          
           if (await exists(path)) {
-            console.log(blue(`  Found recipe in repository: ${repo.name}`));
+            console.log(green(`  ✓ Found recipe in repository: ${repo.name}`));
+            console.log(blue(`    Path: ${path}`));
             recipeContent = await Deno.readTextFile(path);
             break;
           }
@@ -442,6 +487,11 @@ class Levain {
       }
       
       if (!recipeContent) {
+        // Lista repositórios verificados para ajudar no debug
+        console.log(yellow("\nRecipe not found. Searched in:"));
+        for (const repo of this.repositories.values()) {
+          console.log(`  - ${repo.name}: ${repo.path}`);
+        }
         return null;
       }
     }
@@ -936,13 +986,14 @@ class Levain {
 async function main() {
   const args = parseArgs(Deno.args, {
     string: ["recipe", "url", "repo"],
-    boolean: ["help", "version", "use-scoop"],
+    boolean: ["help", "version", "use-scoop", "debug"],
     alias: {
       h: "help",
       v: "version",
       r: "recipe",
       u: "url",
       s: "use-scoop",
+      d: "debug",
     },
   });
 
@@ -952,7 +1003,7 @@ async function main() {
   }
 
   if (args.version) {
-    console.log("Levain-Deno v0.2.0 - Levain reimplementation in Deno 2");
+    console.log("Levain-Deno v0.2.1 - Levain reimplementation in Deno 2");
     return;
   }
 
@@ -960,14 +1011,26 @@ async function main() {
   if (args["use-scoop"]) {
     Deno.env.set("LEVAIN_USE_SCOOP", "true");
   }
+  
+  // Ativa debug
+  if (args.debug) {
+    Deno.env.set("LEVAIN_DEBUG", "true");
+  }
 
   const levain = new Levain();
+  await levain.init(); // Inicializa assincronamente
+  
   const command = args._[0] as string;
 
   try {
     switch (command) {
       case "install":
         const packages = args._.slice(1) as string[];
+        if (packages.length === 0) {
+          console.log(red("Please specify at least one package to install"));
+          console.log("Usage: levain install <package>...");
+          return;
+        }
         for (const pkg of packages) {
           await levain.install(pkg, args.url || args.recipe);
         }
@@ -975,6 +1038,11 @@ async function main() {
       
       case "uninstall":
         const uninstallPkgs = args._.slice(1) as string[];
+        if (uninstallPkgs.length === 0) {
+          console.log(red("Please specify at least one package to uninstall"));
+          console.log("Usage: levain uninstall <package>...");
+          return;
+        }
         for (const pkg of uninstallPkgs) {
           await levain.uninstall(pkg);
         }
@@ -994,18 +1062,30 @@ async function main() {
       
       case "search":
         const searchTerms = args._.slice(1) as string[];
+        if (searchTerms.length === 0) {
+          console.log(red("Please specify at least one search term"));
+          console.log("Usage: levain search <term>...");
+          return;
+        }
         for (const term of searchTerms) {
           await levain.searchRecipe(term);
         }
         break;
       
       default:
-        console.log(red(`Unknown command: ${command}`));
+        if (!command) {
+          console.log(red("No command specified"));
+        } else {
+          console.log(red(`Unknown command: ${command}`));
+        }
         printHelp();
     }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error(red(`Error: ${errorMessage}`));
+    if (args.debug) {
+      console.error(error);
+    }
     Deno.exit(1);
   }
 }
