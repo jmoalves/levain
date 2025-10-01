@@ -305,23 +305,15 @@ class Levain {
     console.log(blue(`\nAvailable recipes in ${repoName}:`));
     
     const recipes: string[] = [];
-    
-    for await (const entry of Deno.readDir(repo.path)) {
-      if (entry.name.endsWith(".levain.yaml") || entry.name.endsWith(".levain.yml")) {
-        const name = entry.name.replace(/\.levain\.(yaml|yml)$/, "");
-        recipes.push(name);
-      }
-      if (entry.isDirectory) {
-        const subPath = join(repo.path, entry.name);
-        if (await exists(join(subPath, "levain.yaml")) || await exists(join(subPath, "levain.yml"))) {
-          recipes.push(entry.name);
-        }
-      }
-    }
+    await this.scanDirectoryForRecipes(repo.path, recipes);
     
     recipes.sort();
     for (const recipe of recipes) {
       console.log(`  - ${recipe}`);
+    }
+    
+    if (recipes.length === 0) {
+      console.log(yellow("  No recipes found"));
     }
   }
 
@@ -444,7 +436,7 @@ class Levain {
     } else {
       // Debug: mostra repositórios disponíveis
       if (Deno.env.get("LEVAIN_DEBUG") === "true") {
-        console.log(blue(`Searching for ${packageName} in ${this.repositories.size} repositories`));
+        console.log(blue(`Searching for ${packageName}.levain.yaml in ${this.repositories.size} repositories`));
       }
       
       // Procura em todos os repositórios
@@ -459,44 +451,103 @@ class Levain {
           continue;
         }
         
-        const possiblePaths = [
-          join(repo.path, `${packageName}.levain.yaml`),
-          join(repo.path, `${packageName}.levain.yml`),
-          join(repo.path, `${packageName}`, `${packageName}.levain.yaml`),
-          join(repo.path, `${packageName}`, `${packageName}.levain.yml`),
-          join(repo.path, packageName, "levain.yaml"),
-          join(repo.path, packageName, "levain.yml"),
-        ];
-
-        for (const path of possiblePaths) {
-          if (Deno.env.get("LEVAIN_DEBUG") === "true") {
-            console.log(blue(`    Trying: ${path}`));
-          }
-          
-          if (await exists(path)) {
-            console.log(green(`  ✓ Found recipe in repository: ${repo.name}`));
-            console.log(blue(`    Path: ${path}`));
-            recipeContent = await Deno.readTextFile(path);
-            break;
-          }
-        }
-        
-        if (recipeContent) {
+        // Busca a receita em qualquer lugar do repositório
+        const recipe = await this.findRecipeFile(repo.path, `${packageName}.levain.yaml`);
+        if (recipe) {
+          console.log(green(`  ✓ Found recipe in repository: ${repo.name}`));
+          console.log(blue(`    Path: ${recipe.path}`));
+          recipeContent = recipe.content;
           break;
         }
       }
       
       if (!recipeContent) {
         // Lista repositórios verificados para ajudar no debug
-        console.log(yellow("\nRecipe not found. Searched in:"));
+        console.log(yellow(`\nRecipe "${packageName}.levain.yaml" not found.`));
+        console.log("\nSearched in repositories:");
         for (const repo of this.repositories.values()) {
           console.log(`  - ${repo.name}: ${repo.path}`);
         }
+        console.log("\nTips:");
+        console.log(`  - Use 'levain search ${packageName}' to search for similar recipes`);
+        console.log(`  - Use 'levain repo list --show-recipes' to see all available recipes`);
+        console.log(`  - Use '--debug' flag for detailed search information`);
         return null;
       }
     }
 
     return parseYaml(recipeContent) as LevainRecipe;
+  }
+  
+  private async findRecipeFile(dir: string, fileName: string, depth: number = 0, maxDepth: number = 10): Promise<{path: string, content: string} | null> {
+    if (depth > maxDepth) return null;
+    
+    try {
+      // Primeiro verifica no diretório atual
+      const filePath = join(dir, fileName);
+      if (await exists(filePath)) {
+        try {
+          const content = await Deno.readTextFile(filePath);
+          return { path: filePath, content };
+        } catch (error) {
+          if (Deno.env.get("LEVAIN_DEBUG") === "true") {
+            console.log(yellow(`    Could not read ${filePath}: ${error}`));
+          }
+        }
+      }
+      
+      // Depois busca recursivamente em subdiretórios
+      for await (const entry of Deno.readDir(dir)) {
+        if (entry.isDirectory && !entry.name.startsWith(".") && entry.name !== "node_modules") {
+          const result = await this.findRecipeFile(
+            join(dir, entry.name), 
+            fileName, 
+            depth + 1, 
+            maxDepth
+          );
+          if (result) return result;
+        }
+      }
+    } catch (error) {
+      if (Deno.env.get("LEVAIN_DEBUG") === "true") {
+        console.log(yellow(`    Error reading directory ${dir}: ${error}`));
+      }
+    }
+    
+    return null;
+  }
+  
+  private async buildRecipeCache(dir: string, cache: Map<string, string> = new Map(), depth: number = 0, maxDepth: number = 10): Promise<Map<string, string>> {
+    if (depth > maxDepth) return cache;
+    
+    try {
+      for await (const entry of Deno.readDir(dir)) {
+        const fullPath = join(dir, entry.name);
+        
+        if (entry.isFile && entry.name.endsWith(".levain.yaml")) {
+          // O nome da receita é o nome do arquivo sem a extensão .levain.yaml
+          const recipeName = entry.name.replace(/\.levain\.yaml$/, "");
+          cache.set(fullPath, recipeName);
+          
+          if (Deno.env.get("LEVAIN_DEBUG") === "true" && depth === 0 && cache.size <= 5) {
+            console.log(blue(`      Found: ${recipeName} at ${fullPath.replace(dir + "/", "")}`));
+          }
+        } else if (entry.isDirectory && !entry.name.startsWith(".") && entry.name !== "node_modules") {
+          // Busca recursivamente no diretório
+          await this.buildRecipeCache(fullPath, cache, depth + 1, maxDepth);
+        }
+      }
+    } catch (error) {
+      if (Deno.env.get("LEVAIN_DEBUG") === "true") {
+        console.log(yellow(`    Error scanning ${dir}: ${error}`));
+      }
+    }
+    
+    if (depth === 0 && Deno.env.get("LEVAIN_DEBUG") === "true") {
+      console.log(blue(`      Total recipes found: ${cache.size}`));
+    }
+    
+    return cache;
   }
 
   private async executeRecipe(packageName: string, recipe: LevainRecipe): Promise<void> {
@@ -986,7 +1037,7 @@ class Levain {
 async function main() {
   const args = parseArgs(Deno.args, {
     string: ["recipe", "url", "repo"],
-    boolean: ["help", "version", "use-scoop", "debug"],
+    boolean: ["help", "version", "use-scoop", "debug", "show-recipes", "recipes"],
     alias: {
       h: "help",
       v: "version",
