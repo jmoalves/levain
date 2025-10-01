@@ -539,6 +539,41 @@ class Levain {
       await this.executeAddPath(expandedCommand);
       return;
     }
+    
+    if (expandedCommand.startsWith("download") || expandedCommand.startsWith("fetch")) {
+      await this.executeDownload(expandedCommand, workDir);
+      return;
+    }
+    
+    if (expandedCommand.startsWith("mkDir") || expandedCommand.startsWith("mkdir")) {
+      await this.executeMkDir(expandedCommand, workDir);
+      return;
+    }
+    
+    if (expandedCommand.startsWith("setEnv")) {
+      await this.executeSetEnv(expandedCommand);
+      return;
+    }
+    
+    if (expandedCommand.startsWith("removeFile") || expandedCommand.startsWith("rm")) {
+      await this.executeRemove(expandedCommand, workDir);
+      return;
+    }
+    
+    if (expandedCommand.startsWith("removeDir") || expandedCommand.startsWith("rmdir")) {
+      await this.executeRemoveDir(expandedCommand, workDir);
+      return;
+    }
+    
+    if (expandedCommand.startsWith("checkCmd")) {
+      await this.executeCheckCmd(expandedCommand);
+      return;
+    }
+    
+    if (expandedCommand.startsWith("template")) {
+      await this.executeTemplate(expandedCommand, workDir);
+      return;
+    }
 
     // Executa comando shell normal
     const cmd = Deno.build.os === "windows" 
@@ -613,6 +648,140 @@ class Levain {
     
     const pathToAdd = this.expandVariables(match[1]);
     this.addToPath(pathToAdd);
+  }
+  
+  private async executeDownload(command: string, workDir: string): Promise<void> {
+    const parts = command.match(/(?:download|fetch)\s+"?([^"\s]+)"?\s+"?([^"]+)"?/);
+    if (!parts) {
+      throw new Error("Invalid download command");
+    }
+    
+    const url = this.expandVariables(parts[1]);
+    const dest = parts[2] ? this.expandVariables(parts[2]) : join(workDir, basename(url));
+    
+    console.log(blue(`  Downloading ${url} to ${dest}`));
+    
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Failed to download from ${url}: ${response.statusText}`);
+    }
+    
+    const data = new Uint8Array(await response.arrayBuffer());
+    await ensureDir(dirname(dest));
+    await Deno.writeFile(dest, data);
+    
+    console.log(green(`  ✓ Downloaded ${basename(dest)}`));
+  }
+  
+  private async executeMkDir(command: string, workDir: string): Promise<void> {
+    const match = command.match(/(?:mkDir|mkdir)\s+"?([^"]+)"?/);
+    if (!match) return;
+    
+    const dirPath = this.expandVariables(match[1]);
+    const fullPath = dirPath.startsWith("/") || dirPath.includes(":") 
+      ? dirPath 
+      : join(workDir, dirPath);
+    
+    console.log(blue(`  Creating directory ${fullPath}`));
+    await ensureDir(fullPath);
+  }
+  
+  private async executeSetEnv(command: string): Promise<void> {
+    const match = command.match(/setEnv\s+"?([^"=]+)"?\s*=?\s*"?([^"]+)"?/);
+    if (!match) return;
+    
+    const varName = match[1];
+    const varValue = this.expandVariables(match[2]);
+    
+    console.log(blue(`  Setting ${varName}=${varValue}`));
+    this.env.set(varName, varValue);
+    Deno.env.set(varName, varValue);
+  }
+  
+  private async executeRemove(command: string, workDir: string): Promise<void> {
+    const match = command.match(/(?:removeFile|rm)\s+"?([^"]+)"?/);
+    if (!match) return;
+    
+    const filePath = this.expandVariables(match[1]);
+    const fullPath = filePath.startsWith("/") || filePath.includes(":") 
+      ? filePath 
+      : join(workDir, filePath);
+    
+    if (await exists(fullPath)) {
+      console.log(blue(`  Removing file ${fullPath}`));
+      await Deno.remove(fullPath);
+    }
+  }
+  
+  private async executeRemoveDir(command: string, workDir: string): Promise<void> {
+    const match = command.match(/(?:removeDir|rmdir)\s+"?([^"]+)"?/);
+    if (!match) return;
+    
+    const dirPath = this.expandVariables(match[1]);
+    const fullPath = dirPath.startsWith("/") || dirPath.includes(":") 
+      ? dirPath 
+      : join(workDir, dirPath);
+    
+    if (await exists(fullPath)) {
+      console.log(blue(`  Removing directory ${fullPath}`));
+      await Deno.remove(fullPath, { recursive: true });
+    }
+  }
+  
+  private async executeCheckCmd(command: string): Promise<void> {
+    const match = command.match(/checkCmd\s+"?([^"]+)"?/);
+    if (!match) return;
+    
+    const cmdToCheck = match[1];
+    console.log(blue(`  Checking for command: ${cmdToCheck}`));
+    
+    try {
+      const checkCmd = new Deno.Command(Deno.build.os === "windows" ? "where" : "which", {
+        args: [cmdToCheck],
+        stdout: "piped",
+      });
+      const { code, stdout } = await checkCmd.output();
+      
+      if (code === 0) {
+        const location = new TextDecoder().decode(stdout).trim();
+        console.log(green(`  ✓ Found: ${location}`));
+      } else {
+        console.log(yellow(`  ⚠ Command '${cmdToCheck}' not found in PATH`));
+      }
+    } catch {
+      console.log(yellow(`  ⚠ Could not check for '${cmdToCheck}'`));
+    }
+  }
+  
+  private async executeTemplate(command: string, workDir: string): Promise<void> {
+    const parts = command.match(/template\s+"?([^"]+)"?\s+"?([^"]+)"?/);
+    if (!parts) {
+      throw new Error("Invalid template command");
+    }
+    
+    const source = this.expandVariables(parts[1]);
+    const dest = this.expandVariables(parts[2]);
+    
+    const sourcePath = source.startsWith("/") || source.includes(":") 
+      ? source 
+      : join(workDir, source);
+    const destPath = dest.startsWith("/") || dest.includes(":") 
+      ? dest 
+      : join(workDir, dest);
+    
+    console.log(blue(`  Processing template ${sourcePath} to ${destPath}`));
+    
+    // Lê o template
+    let content = await Deno.readTextFile(sourcePath);
+    
+    // Substitui variáveis no template
+    content = this.expandVariables(content);
+    
+    // Escreve o arquivo processado
+    await ensureDir(dirname(destPath));
+    await Deno.writeTextFile(destPath, content);
+    
+    console.log(green(`  ✓ Template processed`));
   }
 
   private addToPath(pathEntry: string) {
