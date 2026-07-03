@@ -15,6 +15,8 @@ import MockRepository from "../repository/mock_repository.ts";
 import OsUtils from "../os/os_utils.ts";
 
 export default class TestHelper {
+  private static originalPrompt = globalThis.prompt;
+
   static async setupTestLogger() {
     return await TestLogger.setup();
   }
@@ -40,6 +42,28 @@ export default class TestHelper {
       level,
       loggerName: "anyLogger",
     });
+  }
+
+  
+  static mockInput(value: string): void {
+    globalThis.prompt = () => value;
+  }
+
+  static restoreInput(): void {
+    globalThis.prompt = TestHelper.originalPrompt;
+  }
+  
+  static async mockInputWrap<T>(
+    value: string,
+    fn: () => T | Promise<T>,
+  ): Promise<T> {
+    TestHelper.mockInput(value);
+
+    try {
+      return await fn();
+    } finally {
+      TestHelper.restoreInput();
+    }
   }
 
   static mockPackage() {

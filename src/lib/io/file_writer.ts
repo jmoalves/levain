@@ -4,11 +4,13 @@ import { ensureDirSync } from "https://deno.land/std/fs/ensure_dir.ts";
 import { existsSync } from "https://deno.land/std/fs/exists.ts";
 
 import ProgressBar from "https://deno.land/x/progress/mod.ts";
+import type { Closer, Writer } from "https://deno.land/x/std/io/types.ts";
+
 
 import Progress from "./progress.ts";
 import Timestamps from "./timestamps.ts";
 
-export default class FileWriter implements Deno.Writer, Progress, Timestamps, Deno.Closer {
+export default class FileWriter implements Writer, Progress, Timestamps, Closer {
   private filePath: string;
   private tempPath: string;
   private file: Deno.FsFile;
@@ -76,7 +78,7 @@ export default class FileWriter implements Deno.Writer, Progress, Timestamps, De
 
   async close() {
     log.debug(`Closing ${this.tempPath}`);
-    // this.// file.close() - not needed with Deno.Command
+    this.file.close()
     if (existsSync(this.filePath)) {
       log.debug(`Removing ${this.filePath}`);
       Deno.removeSync(this.filePath);

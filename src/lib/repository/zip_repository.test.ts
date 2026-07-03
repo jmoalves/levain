@@ -58,6 +58,7 @@ Deno.test("ZipRepository should list packages from files system zip", async () =
 });
 Deno.test("ZipRepository should list packages from a zip url", async () => {
   // FIXME is this test really working?
+  // ToDo: Maybe delete zipRepo from temp dir since Repository does not extract it twice or use some kind of hash on the zip during extract
   const repo = await getInitedRepo(
     "https://github.com/jmoalves/levain/tree/master/testdata/zip_repository/zipRepo.zip",
   );

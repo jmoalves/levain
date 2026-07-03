@@ -1,17 +1,9 @@
-// CLIFFY STUB - Remove after fixing
-const Input = { prompt: async (opts: any) => opts.default || "" };
-const Select = { prompt: async (opts: any) => opts.options?.[0] || "" };
-const Confirm = { prompt: async (opts: any) => false };
-const Command = class Command {
-  parse() {}
-};
-
 import { assertEquals, assertRejects } from "https://deno.land/std/assert/mod.ts";
 
 //
 // inputAndValidate
 //
-// TEMP DISABLED: import {CliffyTestHelper} from "./cliffy_test_helper.ts";
+import { CliffyTestHelper } from "./cliffy_test_helper.ts";
 import { InputEmail } from "./input_email.ts";
 
 Deno.test("InputEmail.inputAndValidate should get a login", async () => {

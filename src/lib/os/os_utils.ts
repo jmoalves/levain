@@ -154,33 +154,20 @@ export default class OsUtils {
       log.error(command);
       throw `********** Unknown command type ${typeof command}`;
     }
-
-    // https://github.com/denoland/deno/issues/4568
-    const runOptions: Deno.RunOptions = {
-      cmd: args,
+  
+    const dcommand = new Deno.Command(args[0], {
+      args: args.splice(1),
       cwd: workDir,
       stderr: "piped",
       stdout: "piped",
-    };
-    const proc = Deno.run(runOptions);
+    });
+    const { success, stdout, stderr, code } = await dcommand.output();
 
-    const [
-      stderr,
-      stdout,
-      status,
-    ] = await Promise.all([
-      proc.stderrOutput(),
-      proc.output(),
-      proc.output(),
-    ]);
+    log.debug(`status ${JSON.stringify({ success, code })}`);
 
-    // close() not needed with Deno.Command
-
-    log.debug(`status ${JSON.stringify(status)}`);
-
-    if (!status.success) {
-      let stderrOutput = OsUtils.decodeOutput(stderr);
-      throw `Error ${status.code} running "${command}\n${stderrOutput}"`;
+    if (!success) {
+      const stderrOutput = OsUtils.decodeOutput(stderr);
+      throw `Error ${code} running "${command}\n${stderrOutput}"`;
     }
 
     const output = OsUtils.decodeOutput(stdout);

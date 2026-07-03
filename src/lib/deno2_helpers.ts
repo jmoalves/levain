@@ -3,6 +3,8 @@
  * Funções utilitárias atualizadas para Deno 2
  */
 
+import { ensureDir } from "jsr:@std/fs@1.0.0/ensure-dir";
+
 export class ProcessUtils {
   /**
    * Executa um comando e retorna o resultado
@@ -130,7 +132,14 @@ export class FileUtils {
         await response.body?.pipeTo(file.writable);
       }
     } finally {
-      // file.close() - not needed with Deno.Command
+      try {
+        await file.close();
+      } catch (err) {
+        // pipeTo may close the file before, so it is expected to have bad resource ID
+        if (!String(err).includes('BadResource: Bad resource ID')) {
+          throw err;
+        }
+      }
     }
   }
 
@@ -286,4 +295,3 @@ export { exists } from "jsr:@std/fs@1.0.0/exists";
 export { walk } from "jsr:@std/fs@1.0.0/walk";
 export { basename, dirname, join, resolve } from "jsr:@std/path@1.0.0";
 export { parse as parseYaml } from "jsr:@std/yaml@1.0.0";
-export { decode as base64Decode, encode as base64Encode } from "jsr:@std/encoding@1.0.0/base64";

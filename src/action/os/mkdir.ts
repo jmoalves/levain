@@ -47,13 +47,14 @@ export default class Mkdir implements Action {
     log.debug(`COMPACT ${windir}`);
     let args = `compact /q /c /s:${windir}`.split(" ");
 
-    const p = Deno.run({
-      cmd: args,
+    
+    const command = new Deno.Command(args[0], {
+      args: args.splice(1),
       stdout: "null",
       stderr: "null",
     });
 
-    await p.output();
+    await command.output();
   }
 
   private dirExists(dirname: string): boolean {
@@ -67,7 +68,7 @@ export default class Mkdir implements Action {
         throw `Action - mkdir - ${dirname} already exists and it is not a directory`;
       }
     } catch (err) {
-      if (err.name != "NotFound") {
+      if ((err instanceof Error) && (err.name != "NotFound")) {
         throw err;
       }
     }

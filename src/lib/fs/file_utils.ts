@@ -26,38 +26,11 @@ export class FileUtils {
   }
 
   static canReadSync(filePath: string) {
-    // FIXME Will not need the following code block when Deno.statSync.mode is fully implemented for Windows
-    if (OsUtils.isWindows()) {
-      try {
-        if (!existsSync(filePath)) {
-          return false;
-        }
-        // const fileInfo = this.getFileInfoSync(filePath)
-        // if (fileInfo.isFile) {
-        //     const file = Deno.openSync(filePath)
-        //     // file.close() - not needed with Deno.Command
-        //     Deno.readDirSync(filePath)
-        // }
-        return true;
-      } catch (e) {
-        if (e.name != "PermissionDenied") {
-          log.debug(`Error reading ${filePath}`);
-        }
-        return false;
-      }
-    }
-
     const bitwisePermission = 0b100_000_000;
     return this.checkBitwisePermission(filePath, bitwisePermission);
   }
 
   static canWriteSync(filePath: string) {
-    if (OsUtils.isWindows()) {
-      if (FileUtils.isDir(filePath)) {
-        return FileUtils.canCreateTempFileInDir(filePath);
-      }
-      throw "How do I check if a file is writable in Windows?";
-    }
     const bitwisePermission = 0b010_000_000;
     return this.checkBitwisePermission(filePath, bitwisePermission);
   }
@@ -67,31 +40,8 @@ export class FileUtils {
       return false;
     }
     const fileInfo = this.getFileInfoSync(filePath);
-    if (OsUtils.isWindows()) {
-      if (fileInfo !== undefined) {
-        throw "Please check https://doc.deno.land/builtin/stable#Deno.FileInfo . Is Deno.statSync.mode is implemented for Windows?\n";
-      }
-      throw "How do I check file/folder permissions in Windows? https://doc.deno.land/builtin/stable#Deno.FileInfo";
-    }
-
     const mode = fileInfo.mode || 0;
     return !!(mode & bitwisePermission);
-  }
-
-  static waitForFilesToClose() {
-    while (this.getFileResources().length > 0) {
-      console.debug(
-        `Waiting for Deno.resources to close ${JSON.stringify({} /* Deno.resources() removed in Deno 2 */)}`,
-      );
-    }
-  }
-
-  static getFileResources(): [string, any][] {
-    const resourceMap = {}; /* removed in Deno 2 */
-    const resourceArray = Object.entries(resourceMap);
-    return resourceArray.filter(
-      (it) => it[1].toString() === "fsFile",
-    );
   }
 
   static isDir(filePath: string) {
@@ -186,8 +136,8 @@ export class FileUtils {
 
         await copy(r, dst);
 
-        // await // r.close() - not needed with Deno.Command
-        // await // dst.close() - not needed with Deno.Command
+        await r.close()
+        await dst.close()
 
         if (r.size && dst.size && r.size != dst.size) {
           throw Error(`Copy size does not match ${r.size} => ${dst.size}`);

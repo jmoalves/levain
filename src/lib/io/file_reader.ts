@@ -56,7 +56,7 @@ export default class FileReader implements ProgressReader {
 
   // RewindReader
   rewind() {
-    // this.close() - not needed with Deno.Command
+    this.close();
     log.debug(`Reading ${this.filePath}`);
     this.file = Deno.openSync(this.filePath, { read: true });
     this.fileInfo = Deno.statSync(this.filePath);
@@ -89,9 +89,7 @@ export default class FileReader implements ProgressReader {
     }
 
     log.debug(`Closing ${this.filePath}`);
-    this
-      // file.close() - not needed with Deno.Command
-      .this.file = undefined;
+    this.file.close();
 
     this.fileInfo = Deno.statSync(this.filePath);
   }

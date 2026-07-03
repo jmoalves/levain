@@ -43,7 +43,7 @@ export default class Config {
   constructor(args: any = {}) {
     this.packageManager = new PackageManager(this);
     this._repoManager = new RepositoryManager(this);
-
+    
     let loaded = this.load(this.levainConfigFile);
 
     this.configEnv(args);
@@ -256,7 +256,7 @@ export default class Config {
       Deno.removeSync(this.oldLevainConfigFile);
       log.debug(`DEL ${this.oldLevainConfigFile}`);
     } catch (err) {
-      if (err.name != "NotFound") {
+      if ((err instanceof Error) && (err.name != "NotFound")) {
         log.error(t("lib.config.errorReading", { filename: this.oldLevainConfigFile }));
         throw err;
       }
@@ -340,7 +340,7 @@ export default class Config {
       log.debug(`- DATA ${data}`);
       return data;
     } catch (err) {
-      if (err.name != "NotFound") {
+      if ((err instanceof Error) && (err.name != "NotFound")) {
         log.error(t("lib.config.errorReading", { filename: filename }));
         throw err;
       }

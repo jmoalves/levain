@@ -60,6 +60,34 @@ $levainRepo="https://gitlab.local.net/grp-dev/levain-pkgs.git";iwr https://githu
 `levain shell`\
 `levain shell wlp-runtime-24.0.0.1 jdk-21-ibm`
 
+## Development Installation
+
+To set up Levain for development, use the provided helper scripts.
+
+### Install dependencies
+
+Run the following script to install all required packages and configure the development environment:
+
+```bat
+scripts\devLevain.cmd
+```
+
+### Run tests in watch mode
+
+To continuously run the test suite while developing:
+
+```bat
+scripts\testWatch.cmd
+```
+
+### Run the application
+
+To start Levain in development mode:
+
+```bat
+scripts\levain-deno.cmd
+```
+
 ## Releasing a new version of Levain
 
 - Change the SNAPSHOT version in https://github.com/jmoalves/levain/blob/master/recipes/levain.levain.yaml

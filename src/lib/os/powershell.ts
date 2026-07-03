@@ -8,7 +8,7 @@ export class Powershell {
     ignoreErrors = false,
     params?: string[],
   ): Promise<string> {
-    let args = [
+    const args = [
       "powershell.exe",
       "-ExecutionPolicy",
       "Bypass",
@@ -31,34 +31,23 @@ export class Powershell {
       });
     }
 
-    new Deno.Command("extra-bin/windows/os-utils/addToDesktop.cmd", {
+    /*new Deno.Command("extra-bin/windows/os-utils/addToDesktop.cmd", {
       args: [resolvedTargetFile],
       stdout: "inherit",
       stderr: "inherit",
-    });
+    });*/
     // %PWS% -File %currentFileDir%createShortcut.ps1 "%TARGET_FILE%" "%SHORTCUT_DIR%"
-
-    const process = Deno.run({
-      cmd: args,
+    const command = new Deno.Command(args[0], {
+      args: args.splice(1),
       stderr: "piped",
       stdout: "piped",
     });
+    const { success, stdout, stderr, code } = await command.output();
 
-    const [
-      stderr,
-      stdout,
-      status,
-    ] = await Promise.all([
-      process.stderrOutput(),
-      process.output(),
-      process.output(),
-    ]);
 
-    // close() not needed with Deno.Command
-
-    if (!ignoreErrors && !status?.success) {
-      let stderrOutput = this.decodeOutput(stderr);
-      throw new Error(`Powershell.run(${script}) terminated with code ${status?.code}\n${stderrOutput}`);
+    if (!ignoreErrors && !success) {
+      const stderrOutput = this.decodeOutput(stderr);
+      throw new Error(`Powershell.run(${script}) terminated with code ${code}\n${stderrOutput}`);
     }
 
     let output = this.decodeOutput(stdout);

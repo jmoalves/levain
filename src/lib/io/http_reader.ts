@@ -3,12 +3,13 @@ import * as path from "https://deno.land/std/path/mod.ts";
 import { readerFromStreamReader } from "https://deno.land/std/streams/mod.ts";
 
 import ProgressBar from "https://deno.land/x/progress/mod.ts";
+import type { Reader } from "https://deno.land/x/std/io/types.ts";
 
 import HttpUtils from "../utils/http_utils.ts";
 import ProgressReader from "../io/progress_reader.ts";
 
 export default class HttpReader implements ProgressReader {
-  private reader: Deno.Reader | null = null;
+  private reader: Reader | null = null;
 
   private contentLength: number | undefined;
   private lastModified: Date | null = null;
@@ -50,7 +51,7 @@ export default class HttpReader implements ProgressReader {
 
   // RewindReader
   async rewind() {
-    // this.close() - not needed with Deno.Command
+    this.close();
     log.debug(`Reading ${this.url}`);
     this.bytesRead = 0;
 

@@ -21,12 +21,13 @@ export class UnTar extends Extractor {
       `cmd /u /c path ${ExtraBin.sevenZipDir};%PATH% && ( ${ExtraBin.sevenZipDir}\\7z.exe x ${src} -bsp2 -so | ${ExtraBin.sevenZipDir}\\7z.exe x -si -bd -ttar -o${dst} )`
         .split(" ");
 
-    const p = Deno.run({
+    const pcommand = await new Deno.Command(args[0], {
+      args: args.splice(1),
       stdout: "null",
-      cmd: args,
     });
 
-    let status = await p.output();
+    const status = await pcommand.output();
+
     if (!status.success) {
       throw "CMD terminated with code " + status.code;
     }

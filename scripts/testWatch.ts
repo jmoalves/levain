@@ -39,7 +39,7 @@ function bouncing(file: string): boolean {
 
 async function runTest(file?: string): Promise<void> {
   await OsUtils.clearConsole();
-  let cmd = ["deno", "test", "--unstable", "--allow-all"];
+  const cmd = ["deno", "test", "--allow-all"];
   const testFile = file?.replace(/(?:.test)?.ts$/, ".test.ts") ||
     "all tests";
 
@@ -52,6 +52,12 @@ async function runTest(file?: string): Promise<void> {
   }
   console.log("RUNTEST", testFile, cmd);
   console.time("runtest");
-  await Deno.run({ cmd });
+  const command = new Deno.Command(cmd[0], {
+    args: cmd.splice(1),
+    stdout: "inherit",
+    stderr: "inherit",
+    stdin: "inherit"
+  })
+  await await command.output();
   console.timeEnd("runtest");
 }

@@ -8,7 +8,7 @@ export default class MemoryHandler extends BaseHandler {
 
   public messages: string[] = [];
 
-  public log(str: string): void {
+  public override log(str: string): void {
     this.messages.push(str);
   }
 }

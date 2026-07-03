@@ -1,16 +1,7 @@
-/**
- * Cliffy Test Helper Stub
- * Minimal implementation for testing without Cliffy
- */
+import { Input } from '@cliffy/prompt';
 
 export class CliffyTestHelper {
-  static async mockInput(value: string): Promise<void> {
-    // Mock implementation
-    console.log(`Mocked input: ${value}`);
-  }
-
-  static restore(): void {
-    // Mock implementation
-    console.log("Input restored");
+  static inputResponse(value: string = '') {
+    Input.inject(value)
   }
 }

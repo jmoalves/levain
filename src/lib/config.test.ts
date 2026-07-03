@@ -65,7 +65,7 @@ Deno.test("Config should have assertNotEquals default levainCache", () => {
   const config = new Config([]);
 
   const dir = config.levainCacheDir;
-
+  
   assertEquals(dir, path.join(config.levainHome, ".levainCache"));
 });
 Deno.test("Config should set levainCache", () => {

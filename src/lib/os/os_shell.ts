@@ -113,19 +113,20 @@ export class OsShell {
   async openShell(args: string[]) {
     // TODO: Handle other os's
     OsUtils.onlyInWindows();
-    let opt = this.prepareShellOptions(args);
+    const opt = this.prepareShellOptions(args);
 
-    log.debug(`Deno.run: ${JSON.stringify(opt)}`);
-    const p = Deno.run(opt);
-    let status = await p.output();
+    log.debug(`Deno.command: ${JSON.stringify(opt)}`);
 
-    if (!this.ignoreErrors && !status.success) {
-      throw new Error("CMD terminated with code " + status.code);
+    const pcommand = new Deno.Command(opt[0], opt.splice(1));
+    const { success, stdout, code } = await pcommand.output();
+
+    if (!this.ignoreErrors && !success) {
+      throw new Error("CMD terminated with code " + code);
     }
 
     if (this.saveVar) {
-      let rawOutput = await p.output();
-      let cmdOutput = new TextDecoder().decode(rawOutput);
+      //let rawOutput = await pcommand.output();
+      let cmdOutput = new TextDecoder().decode(stdout);
       if (this.stripCRLF) {
         cmdOutput = cmdOutput
           .replace(/\r\n$/, "")
