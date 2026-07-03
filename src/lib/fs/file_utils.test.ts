@@ -1,6 +1,6 @@
-import * as path from "https://deno.land/std/path/mod.ts";
-import { assert, assertEquals, assertNotEquals, assertThrows } from "https://deno.land/std/assert/mod.ts";
-import { ensureDirSync, ensureFileSync, existsSync } from "https://deno.land/std/fs/mod.ts";
+import * as path from "@std/path";
+import { assert, assertEquals, assertNotEquals, assertThrows } from "@std/assert";
+import { ensureDirSync, ensureFileSync, existsSync } from "@std/fs";
 
 import OsUtils from "../os/os_utils.ts";
 import TestHelper from "../test/test_helper.ts";
@@ -15,13 +15,13 @@ const readWriteFolder = TestHelper.getTestDataPath("file_utils/");
 const readWriteFile = TestHelper.getTestDataPath("file_utils/can_read_and_write_this_file.txt");
 
 Deno.test("FileUtils - should create a backup for a given file in the same dir", () => {
-  let src = Deno.makeTempFileSync();
-  let myData = "some string data";
+  const src = Deno.makeTempFileSync();
+  const myData = "some string data";
   Deno.writeTextFileSync(src, myData);
   assert(existsSync(src));
 
-  let bkp1 = FileUtils.createBackup(src);
-  let bkp2 = FileUtils.createBackup(src);
+  const bkp1 = FileUtils.createBackup(src);
+  const bkp2 = FileUtils.createBackup(src);
 
   assert(bkp1);
   assert(existsSync(bkp1));
@@ -41,10 +41,10 @@ Deno.test("FileUtils - should create a backup for a given file in the same dir",
 });
 
 Deno.test("FileUtils - should NOT create a backup for a given file that does NOT exist", () => {
-  let src = "/tmp/doesNotExist";
+  const src = "/tmp/doesNotExist";
   assert(!existsSync(src));
 
-  let bkp = FileUtils.createBackup(src);
+  const bkp = FileUtils.createBackup(src);
 
   assert(bkp == undefined);
 });

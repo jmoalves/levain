@@ -1,11 +1,11 @@
 // levain.ts - Reimplementação do Levain em Deno 2
 // Compatível com receitas Levain existentes e integração com Scoop
 
-import { parse as parseYaml } from "https://deno.land/std@0.210.0/yaml/mod.ts";
-import { ensureDir, exists } from "https://deno.land/std@0.210.0/fs/mod.ts";
-import { join, dirname, basename } from "https://deno.land/std@0.210.0/path/mod.ts";
-import { parse as parseArgs } from "https://deno.land/std@0.210.0/flags/mod.ts";
-import { green, red, yellow, blue } from "https://deno.land/std@0.210.0/fmt/colors.ts";
+import { parse as parseYaml } from "@std/yaml";
+import { ensureDir, exists } from "@std/fs";
+import { join, dirname, basename } from "@std/path";
+import { parse as parseArgs } from "@std/flags";
+import { green, red, yellow, blue } from "@std/fmt";
 
 // Interfaces para as receitas Levain
 interface LevainRecipe {

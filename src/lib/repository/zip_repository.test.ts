@@ -1,5 +1,5 @@
-import { assertEquals, assertRejects } from "https://deno.land/std/assert/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
+import { assertEquals, assertRejects } from "@std/assert";
+import * as path from "@std/path";
 
 import Config from "../config.ts";
 import ZipRepository from "./zip_repository.ts";

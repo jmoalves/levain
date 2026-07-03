@@ -1,5 +1,3 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-
 export default class VersionNumber {
   public static readonly VER_REGEXP = /^[0-9A-Za-z\._\-]+$/;
   public static readonly COMPONENT_SEPARATOR = "-";
@@ -8,7 +6,7 @@ export default class VersionNumber {
   public static isValid(strVersion: string): boolean {
     try {
       new VersionNumber(strVersion);
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
 
@@ -114,14 +112,14 @@ export default class VersionNumber {
 
   private chainCompareElements(mine: string[], other: string[]): number {
     // log.debug(`Elements = mine: ${mine} - other: ${other}`)
+    function isNumeric(s: string): boolean {
+      return s.match(/^\d+$/) != null;
+    }
+
     for (let i = 0; i < mine.length; i++) {
       if (i >= other.length) {
         // 11.4.4. A larger set of pre-release fields has a higher precedence than a smaller set, if all of the preceding identifiers are equal.
         return VersionNumber.NEWER;
-      }
-
-      function isNumeric(s: string): boolean {
-        return s.match(/^\d+$/) != null;
       }
 
       const myComp = mine[i];

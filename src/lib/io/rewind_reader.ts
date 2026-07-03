@@ -1,4 +1,4 @@
-import type { Reader } from "https://deno.land/x/std/io/types.ts";
+import type { Reader } from "@std/io";
 
 export default interface RewindReader extends Reader {
   rewind(): void;

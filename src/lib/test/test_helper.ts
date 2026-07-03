@@ -1,8 +1,9 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import { LogLevels, LogRecord } from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
+import * as log from "@std/log";
+import { LogLevels } from "@std/log";
+import { LogRecord } from "@std/log/logger";
+import * as path from "@std/path";
 
-import { copySync, existsSync } from "https://deno.land/std/fs/mod.ts";
+import { copySync, existsSync } from "@std/fs";
 
 import Config from "../config.ts";
 import { MockPackage } from "../package/mock_package.ts";
@@ -187,7 +188,7 @@ export default class TestHelper {
 
   static randomString(size = 32) {
     let outString = "";
-    let inOptions = "abcdefghijklmnopqrstuvwxyz0123456789";
+    const inOptions = "abcdefghijklmnopqrstuvwxyz0123456789";
 
     for (let i = 0; i < size; i++) {
       outString += inOptions.charAt(
@@ -246,7 +247,7 @@ export default class TestHelper {
       flags = "i";
     }
 
-    let regExpStr = `${strPath}`
+    const regExpStr = `${strPath}`
       .replaceAll("\\", "\\\\")
       .replaceAll("/", "\\/");
 

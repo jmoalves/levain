@@ -1,19 +1,11 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import { copySync } from "https://deno.land/std/fs/copy.ts";
-import { existsSync } from "https://deno.land/std/fs/mod.ts";
+import * as log from "@std/log";
+import * as path from "@std/path";
 
 import t from "../lib/i18n.ts";
 
 import Config from "../lib/config.ts";
-import Package from "../lib/package/package.ts";
 import Loader from "../lib/loader.ts";
-import { Timer } from "../lib/timer.ts";
-import Registry from "../lib/repository/registry.ts";
 import { parseArgs } from "../lib/parse_args.ts";
-import VersionNumber from "../lib/utils/version_number.ts";
-import LevainVersion from "../levain_version.ts";
-import DateUtils from "../lib/utils/date_utils.ts";
 import GitUtils from "../lib/utils/git_utils.ts";
 
 import Command from "./command.ts";

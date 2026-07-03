@@ -1,4 +1,4 @@
-import { assert, assertEquals } from "https://deno.land/std/assert/mod.ts";
+import { assert, assertEquals } from "@std/assert";
 
 import MathUtil from "./math_util.ts";
 

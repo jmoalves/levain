@@ -1,23 +1,23 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
+import * as log from "@std/log";
+import * as path from "@std/path";
 
-import { sleepRandomAmountOfSeconds } from "https://deno.land/x/sleep/mod.ts";
+import { delay } from "@std/async/delay";
 
-export var homedir = function (): string {
+export function homedir(): string {
   // Common option
-  let home = Deno.env.get("HOME");
+  const home = Deno.env.get("HOME");
   if (home) {
     return home;
   }
 
   // Not found - Windows?
-  let userprofile = Deno.env.get("userprofile");
+  const userprofile = Deno.env.get("userprofile");
   if (userprofile) {
     return userprofile;
   }
 
-  let homedrive = Deno.env.get("homedrive");
-  let homepath = Deno.env.get("homepath");
+  const homedrive = Deno.env.get("homedrive");
+  const homepath = Deno.env.get("homepath");
   if (homedrive && homepath) {
     return path.resolve(homedrive, homepath);
   }
@@ -69,8 +69,8 @@ export function promptSecret(message: string): string | undefined {
 }
 
 export function envChain(...names: string[]): string | undefined {
-  for (let name of names) {
-    let value = Deno.env.get(name);
+  for (const name of names) {
+    const value = Deno.env.get(name);
     if (value) {
       return value;
     }
@@ -94,4 +94,14 @@ export async function retry(maxAttempts: number, codeToRun: () => void, sleepAmo
   }
 
   throw lastError;
+}
+
+export async function sleepRandomAmountOfSeconds(
+  minSeconds: number,
+  maxSeconds: number,
+): Promise<void> {
+  const milliseconds =
+    (Math.random() * (maxSeconds - minSeconds) + minSeconds) * 1000;
+
+  await delay(milliseconds);
 }

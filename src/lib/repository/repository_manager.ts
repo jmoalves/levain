@@ -1,4 +1,4 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "@std/log";
 
 import t from "../i18n.ts";
 
@@ -121,10 +121,10 @@ export default class RepositoryManager {
       throw Error(t("lib.repository.repository_manager.notFound"));
     }
 
-    let repos: any = this.repositories;
-    for (let key in repos) {
+    const repos: any = this.repositories;
+    for (const key in repos) {
       if (repos[key]) {
-        let repo: Repository = repos[key];
+        const repo: Repository = repos[key];
         log.debug(`INVALIDATE-PACKAGES Repo[${key}] - ${repo.name}`);
         repo.reload();
       }
@@ -148,14 +148,14 @@ export default class RepositoryManager {
       throw Error(t("lib.repository.repository_manager.notFound"));
     }
 
-    let repos: any = this.repositories;
+    const repos: any = this.repositories;
     log.debug(`## repos: ${this.repositories?.describe()}`);
 
-    let initializedRepositories: Repository[] = [];
+    const initializedRepositories: Repository[] = [];
 
-    for (let key in repos) {
+    for (const key in repos) {
       if (repos[key]) {
-        let repo: Repository = repos[key];
+        const repo: Repository = repos[key];
         if (!repo.initialized()) {
           log.debug(`INIT Repo[${key}] - ${repo.describe()} initialized? ${repo.initialized()}`);
           await repo.init();
@@ -171,7 +171,7 @@ export default class RepositoryManager {
 
   private logRepos(repos: any) {
     log.debug(`=== REPOS`);
-    for (let key in repos) {
+    for (const key in repos) {
       if (repos[key]) {
         log.debug(`Repo[${key}] - ${repos[key].name}`);
       }
@@ -180,7 +180,7 @@ export default class RepositoryManager {
 
   public async createCurrentDirRepo(): Promise<Repository> {
     const currentDir = Deno.cwd();
-    let dirs = [currentDir];
+    const dirs = [currentDir];
 
     const gitDir = GitUtils.gitRoot(currentDir);
     if (gitDir) {
@@ -195,18 +195,19 @@ export default class RepositoryManager {
 
   public async createInstalledRepo(): Promise<Repository> {
     log.debug("createInstalledRepo");
-    let repos = await this.repoList(true);
+    const repos = await this.repoList(true);
     return this.repositories.installed = await this.createRepos(repos);
   }
 
   public async createRegularRepositories(): Promise<Repository> {
     log.debug("createRegularRepository");
-    let repos = await this.repoList(false);
+    const repos = await this.repoList(false);
     return this.repositories.regular = await this.createRepos(repos);
   }
 
+  // deno-lint-ignore require-await
   public async repoList(installedOnly: boolean): Promise<string[]> {
-    let repos: string[] = [];
+    const repos: string[] = [];
 
     if (installedOnly) {
       this.addLevainRegistryRepo(repos);
@@ -240,8 +241,8 @@ export default class RepositoryManager {
   }
 
   private async createRepos(repoDirs: string[], rootOnly: boolean = false): Promise<Repository> {
-    let repoArr: Repository[] = [];
-    for (let repoPath of RepositoryFactory.normalizeList(repoDirs)) {
+    const repoArr: Repository[] = [];
+    for (const repoPath of RepositoryFactory.normalizeList(repoDirs)) {
       repoArr.push(await this.repoFactory.getOrCreate(repoPath, rootOnly));
     }
 

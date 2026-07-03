@@ -1,4 +1,4 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "@std/log";
 import Config from "../config.ts";
 import OsUtils from "../os/os_utils.ts";
 import GitUtils from "../utils/git_utils.ts";
@@ -23,7 +23,7 @@ export default class RepositoryFactory {
   }
 
   static normalizeList(repoPaths: string[]): string[] {
-    let repos = new Set<string>();
+    const repos = new Set<string>();
     repoPaths.map((repo) => RepositoryFactory.normalize(repo))
       .forEach((repo) => repos.add(repo));
     return [...repos];
@@ -50,9 +50,9 @@ export default class RepositoryFactory {
       throw "RepoFactory with no repoURI";
     }
 
-    let repoPath = RepositoryFactory.normalize(repoURI);
+    const repoPath = RepositoryFactory.normalize(repoURI);
     if (RepositoryFactory.knownRepos.has(repoPath)) {
-      let repo = RepositoryFactory.knownRepos.get(repoPath)!;
+      const repo = RepositoryFactory.knownRepos.get(repoPath)!;
       log.debug(`Reusing repo ${repo.describe()}`);
       return repo;
     }

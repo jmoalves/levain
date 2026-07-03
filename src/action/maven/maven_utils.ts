@@ -1,7 +1,7 @@
-import * as path from "https://deno.land/std/path/mod.ts";
+import * as path from "@std/path";
 import OsUtils from "../../lib/os/os_utils.ts";
 
-export var mvnCli = async function (): Promise<string> {
+export async function mvnCli(): Promise<string> {
   // Common option
   const m2home = Deno.env.get("M2_HOME");
   if (!m2home) {
@@ -14,7 +14,7 @@ export var mvnCli = async function (): Promise<string> {
   await checkMavenVersion(mavenCli);
   return mavenCli;
 };
-export var checkMavenVersion = async function (mavenCli: string) {
+export async function checkMavenVersion(mavenCli: string) {
   console.log(`Checking for Maven in ${mavenCli}`);
   const command = [
     mavenCli,

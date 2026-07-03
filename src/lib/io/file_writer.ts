@@ -1,10 +1,10 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import { ensureDirSync } from "https://deno.land/std/fs/ensure_dir.ts";
-import { existsSync } from "https://deno.land/std/fs/exists.ts";
+import * as log from "@std/log";
+import * as path from "@std/path";
+import { ensureDirSync } from "@std/fs";
+import { existsSync } from "@std/fs";
 
-import ProgressBar from "https://deno.land/x/progress/mod.ts";
-import type { Closer, Writer } from "https://deno.land/x/std/io/types.ts";
+import ProgressBar from "@deno-library/progress";
+import type { Closer, Writer } from "@std/io";
 
 
 import Progress from "./progress.ts";
@@ -63,8 +63,9 @@ export default class FileWriter implements Writer, Progress, Timestamps, Closer 
   }
 
   // Deno.Writer
+  // deno-lint-ignore require-await
   async write(p: Uint8Array): Promise<number> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _reject) => {
       this.file.write(p).then((size: number) => {
         this.written += size;
         if (this.progressBar) {
@@ -76,6 +77,7 @@ export default class FileWriter implements Writer, Progress, Timestamps, Closer 
     });
   }
 
+  // deno-lint-ignore require-await
   async close() {
     log.debug(`Closing ${this.tempPath}`);
     this.file.close()

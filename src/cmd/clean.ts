@@ -1,8 +1,8 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import { existsSync } from "https://deno.land/std/fs/mod.ts";
+import * as log from "@std/log";
+import * as path from "@std/path";
+import { existsSync } from "@std/fs";
 
-import isBefore from "https://deno.land/x/date_fns/isBefore/index.ts";
+import { isBefore } from "date-fns";
 
 import t from "../lib/i18n.ts";
 
@@ -52,7 +52,7 @@ export default class CleanCommand implements Command {
       myArgs.logs = true;
     }
 
-    let shallow = !myArgs.deep;
+    const shallow = !myArgs.deep;
 
     //////////////////////////////////////////////////////////////////
     let total = 0;
@@ -117,12 +117,12 @@ export default class CleanCommand implements Command {
   }
 
   private cleanDir(entry: string, includeResolver?: (dirEntry: Deno.DirEntry) => boolean): number {
-    let entryPath = path.resolve(entry);
+    const entryPath = path.resolve(entry);
     // log.debug(`WALK ${entryPath}`)
 
     this.feedback.show();
 
-    let entryInfo = Deno.statSync(entryPath);
+    const entryInfo = Deno.statSync(entryPath);
     if (!entryInfo.isDirectory) {
       try {
         Deno.removeSync(entryPath);
@@ -134,7 +134,7 @@ export default class CleanCommand implements Command {
       }
     }
 
-    let size = Array.from(Deno.readDirSync(entryPath))
+    const size = Array.from(Deno.readDirSync(entryPath))
       .filter((entry) => !includeResolver || includeResolver(entry))
       .map((entry) => this.cleanDir(path.resolve(entryPath, entry.name)))
       .reduce(
@@ -153,7 +153,7 @@ export default class CleanCommand implements Command {
   }
 
   private cleanFailedSaves(): number {
-    let saveDir = this.config.levainHome;
+    const saveDir = this.config.levainHome;
     if (!saveDir) {
       return 0;
     }
@@ -174,7 +174,7 @@ export default class CleanCommand implements Command {
   }
 
   private cleanOsTempDir(shallow: boolean): number {
-    let tempDir = this.getOsTempDir();
+    const tempDir = this.getOsTempDir();
     if (!tempDir) {
       return 0;
     }
@@ -218,14 +218,14 @@ export default class CleanCommand implements Command {
   private cleanLogs(): number {
     log.debug(t("cmd.clean.logs"));
 
-    let tempDir = this.getOsTempDir();
+    const tempDir = this.getOsTempDir();
     if (!tempDir) {
       return 0;
     }
 
     return this.cleanDir(tempDir, (dirEntry) => {
       if (dirEntry.isFile && dirEntry.name.match("^levain-.*\.log")) {
-        let dateTag = ConsoleAndFileLogger.logDateTag();
+        const dateTag = ConsoleAndFileLogger.logDateTag();
         if (!dirEntry.name.match(`^levain-${dateTag}-.*`)) { // Do not remove today's logs
           return true;
         }

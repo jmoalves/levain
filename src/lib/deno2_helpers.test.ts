@@ -2,9 +2,9 @@
  * Testes para as funções helper do Deno 2
  */
 
-import { assert, assertEquals, assertExists } from "jsr:@std/assert@1.0.0";
+import { assert, assertEquals } from "@std/assert";
 
-import { FileUtils, GitUtils, NetworkUtils, ProcessUtils } from "./deno2_helpers.ts";
+import { FileUtils, NetworkUtils, ProcessUtils } from "./deno2_helpers.ts";
 
 Deno.test("ProcessUtils.runCommand - echo test", async () => {
   const result = await ProcessUtils.runCommand("echo", ["hello", "world"]);

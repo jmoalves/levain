@@ -81,8 +81,8 @@ export default class VarResolver {
     } else if (vName == "home") {
       return homedir();
     } else if (vName.search(/^pkg\.(.+)\.([^.]*)/) != -1) {
-      let pkgVarPkg = vName.replace(/^pkg\.(.+)\.([^.]*)/, "$1");
-      let pkgVarName = vName.replace(/^pkg\.(.+)\.([^.]*)/, "$2");
+      const pkgVarPkg = vName.replace(/^pkg\.(.+)\.([^.]*)/, "$1");
+      const pkgVarName = vName.replace(/^pkg\.(.+)\.([^.]*)/, "$2");
       return await config.packageManager.getVar(pkgVarPkg, pkgVarName) ?? "";
     } else {
       // General items

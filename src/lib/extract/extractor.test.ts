@@ -1,8 +1,7 @@
-import * as path from "https://deno.land/std/path/mod.ts";
+import * as path from "@std/path";
 
 import TestHelper from "../test/test_helper.ts";
 import { assertFolderIncludes } from "../test/more_asserts.ts";
-import { DenoZip } from "./denozip_extractor.ts";
 import { ExtractorFactory } from "./extractor_factory.ts";
 
 // Workaround - https://github.com/denoland/deno/issues/15425

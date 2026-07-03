@@ -1,5 +1,3 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-
 import Config from "../config.ts";
 import OsUtils from "../os/os_utils.ts";
 import { SevenZip } from "./sevenzip_extractor.ts";

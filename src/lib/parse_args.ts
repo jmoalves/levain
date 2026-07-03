@@ -1,14 +1,13 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import { parse } from "https://deno.land/std/flags/mod.ts";
+import { parse } from "@std/flags";
 
-class Opts {
+interface Opts {
   stringOnce?: string[];
   stringMany?: string[];
   boolean?: string[];
 }
 
 export function parseArgs(pArgs: string[], optsDef?: Opts): any {
-  let opts: any = {
+  const opts: any = {
     stopEarly: true,
     unknown: (v: string) => {
       if (v.startsWith("-")) {
@@ -42,11 +41,11 @@ export function parseArgs(pArgs: string[], optsDef?: Opts): any {
     opts.boolean = optsDef?.boolean;
   }
 
-  let args = normalizeArgs(pArgs);
+  const args = normalizeArgs(pArgs);
 
   checkStringOnce(args, optsDef?.stringOnce);
 
-  let myArgs = parse(args, opts);
+  const myArgs = parse(args, opts);
 
   if (optsDef?.stringMany) {
     optsDef.stringMany.forEach((key) => {
@@ -68,10 +67,10 @@ export function handleQuotes(args: string[]): string[] {
     return args;
   }
 
-  let newArgs: string[] = [];
+  const newArgs: string[] = [];
   let previous: string[] | undefined = undefined;
-  for (let element of args) {
-    let count = countQuotes(element);
+  for (const element of args) {
+    const count = countQuotes(element);
     if (count > 2) {
       throw `Too many quotes - ${args}`;
     }
@@ -143,8 +142,8 @@ function checkStringOnce(args: string[], stringOnce: string[] | undefined) {
     return;
   }
 
-  let knownKeys = new Set();
-  let stringOnceSet = new Set(stringOnce);
+  const knownKeys = new Set();
+  const stringOnceSet = new Set(stringOnce);
 
   args
     .filter((element) => element?.startsWith("-"))

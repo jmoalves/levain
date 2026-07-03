@@ -1,7 +1,7 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import { copySync } from "https://deno.land/std/fs/copy.ts";
-import { existsSync } from "https://deno.land/std/fs/mod.ts";
+import * as log from "@std/log";
+import * as path from "@std/path";
+import { copySync } from "@std/fs";
+import { existsSync } from "@std/fs";
 
 import t from "../lib/i18n.ts";
 
@@ -36,7 +36,7 @@ export default class Update implements Command {
     let pkgNames: string[] = myArgs._;
 
     if (pkgNames.length == 0) {
-      let installedPkgs = await this.config.repositoryManager.repositoryInstalled.listPackages();
+      const installedPkgs = await this.config.repositoryManager.repositoryInstalled.listPackages();
       if (installedPkgs?.length > 0) {
         pkgNames = installedPkgs.map((pkg) => pkg.name);
       }
@@ -46,7 +46,7 @@ export default class Update implements Command {
       throw new Error(t("cmd.install.noPackages"));
     }
 
-    let pkgs: Package[] | null = this.config.packageManager.resolvePackages(pkgNames);
+    const pkgs: Package[] | null = this.config.packageManager.resolvePackages(pkgNames);
     if (!pkgs) {
       return; // Won't happen
     }
@@ -54,10 +54,10 @@ export default class Update implements Command {
     log.info("");
     log.info("-----------------");
 
-    let pkgNameSet = new Set(pkgNames);
-    let bkpTag = this.bkpTag();
-    for (let pkg of pkgs) {
-      let forcePkg = myArgs.force && pkgNameSet.has(pkg.name);
+    const pkgNameSet = new Set(pkgNames);
+    const bkpTag = this.bkpTag();
+    for (const pkg of pkgs) {
+      const forcePkg = myArgs.force && pkgNameSet.has(pkg.name);
       await this.installPackage(bkpTag, pkg, forcePkg);
     }
 
@@ -126,7 +126,7 @@ export default class Update implements Command {
 
     // https://github.com/jmoalves/levain/issues/148
     if (shouldInstall) {
-      let registryEntry = path.resolve(this.config.levainRegistryDir, path.basename(pkg.filePath));
+      const registryEntry = path.resolve(this.config.levainRegistryDir, path.basename(pkg.filePath));
       if (existsSync(registryEntry)) {
         try {
           log.debug(`REMOVE ${registryEntry}`);
@@ -138,10 +138,10 @@ export default class Update implements Command {
       }
     }
 
-    let actions = [];
+    const actions = [];
 
     if (shouldInstall) {
-      let installActions = pkg.yamlItem("cmd.install") || [];
+      const installActions = pkg.yamlItem("cmd.install") || [];
       if (!pkg.skipInstallDir()) {
         installActions.unshift("mkdir ${baseDir}");
       }
@@ -155,7 +155,7 @@ export default class Update implements Command {
     }
 
     // Standard actions - Env - At the rear (push), they are in normal order (like a QUEUE)
-    let envActions = pkg.yamlItem("cmd.env");
+    const envActions = pkg.yamlItem("cmd.env");
     if (envActions) {
       Array.prototype.push.apply(actions, envActions);
     }
@@ -169,7 +169,7 @@ export default class Update implements Command {
     }
 
     const loader = new Loader(this.config);
-    for (let action of actions) {
+    for (const action of actions) {
       await loader.action(pkg, action);
     }
 
@@ -184,9 +184,9 @@ export default class Update implements Command {
     }
 
     try {
-      let bkpDir = path.resolve(this.config.levainBackupDir, bkpTag);
-      let src = pkg.baseDir;
-      let dst = path.resolve(bkpDir, path.basename(src));
+      const bkpDir = path.resolve(this.config.levainBackupDir, bkpTag);
+      const src = pkg.baseDir;
+      const dst = path.resolve(bkpDir, path.basename(src));
 
       log.info(`SAVING ${src} => ${dst}`);
 
@@ -203,7 +203,7 @@ export default class Update implements Command {
         return true;
       }
 
-      let renameDir = Deno.makeTempDirSync({
+      const renameDir = Deno.makeTempDirSync({
         dir: path.dirname(src),
         prefix: ".rename." + path.basename(src) + ".",
         suffix: ".tmp",

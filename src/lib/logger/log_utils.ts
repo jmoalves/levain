@@ -1,6 +1,7 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "@std/log";
 
 export default class LogUtils {
+  // deno-lint-ignore require-await
   static async closeLogFiles() {
     return this.setupDefaultLogConfig();
   }

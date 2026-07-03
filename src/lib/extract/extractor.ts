@@ -1,6 +1,6 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import { ensureDirSync, moveSync } from "https://deno.land/std/fs/mod.ts";
+import * as log from "@std/log";
+import * as path from "@std/path";
+import { ensureDirSync, moveSync } from "@std/fs";
 
 import Config from "../config.ts";
 import { Timer } from "../timer.ts";
@@ -18,7 +18,7 @@ export abstract class Extractor {
   }
 
   async extract(strip: boolean, src: string, dst: string) {
-    let extractedTempDir = await this.extractToTemp(src, dst);
+    const extractedTempDir = await this.extractToTemp(src, dst);
     await this.move(strip, extractedTempDir, dst);
   }
 
@@ -33,10 +33,10 @@ export abstract class Extractor {
 
   async move(strip: boolean, srcDir: string, dstDir: string): Promise<void> {
     let count = 0;
-    for (let child of Deno.readDirSync(srcDir)) {
+    for (const child of Deno.readDirSync(srcDir)) {
       count++;
 
-      let from = path.resolve(srcDir, child.name);
+      const from = path.resolve(srcDir, child.name);
       if (strip) {
         if (count > 1) { // There can be only one!
           throw `You should not ask for --strip if there are more than one directory`;
@@ -45,7 +45,7 @@ export abstract class Extractor {
         log.debug(`- STRIP ${from}`);
         await this.move(false, from, dstDir);
       } else {
-        let dst = path.resolve(dstDir, child.name);
+        const dst = path.resolve(dstDir, child.name);
         log.debug(`- MOVE ${from} => ${dst}`);
         await retry(this.maxRetries, () => moveSync(from, dst));
       }
@@ -59,7 +59,7 @@ export abstract class Extractor {
     log.debug(`safeTempDir ${safeTempDir}`);
 
     ensureDirSync(safeTempDir);
-    let tempDir = Deno.makeTempDirSync({
+    const tempDir = Deno.makeTempDirSync({
       dir: safeTempDir,
       prefix: "extract-",
     });
@@ -68,7 +68,7 @@ export abstract class Extractor {
     log.debug(`- EXTRACT ${src} => ${tempDir}`);
     this.feedback.start(`# ${StringUtils.compressText(src, 80)}`);
 
-    let tick = setInterval(() => this.feedback.show(), 300);
+    const tick = setInterval(() => this.feedback.show(), 300);
     await this.extractImpl(src, tempDir);
     clearInterval(tick);
 

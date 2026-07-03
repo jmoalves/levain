@@ -1,5 +1,5 @@
+import { assert } from "@std/assert";
 import { ExtractorFactory } from "./extractor_factory.ts";
-import { assert } from "https://deno.land/std/assert/mod.ts";
 
 // create a unit test for ExtractorFactory using extractorType
 Deno.test("ExtractorFactory - isTypeSupported", () => {

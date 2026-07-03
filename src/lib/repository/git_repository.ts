@@ -1,6 +1,6 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import { existsSync } from "https://deno.land/std/fs/exists.ts";
+import * as log from "@std/log";
+import * as path from "@std/path";
+import { existsSync } from "@std/fs";
 
 import Package from "../package/package.ts";
 import Config from "../config.ts";
@@ -59,6 +59,7 @@ export default class GitRepository extends AbstractRepository {
     return this.localRepo.resolvePackage(packageName);
   }
 
+  // deno-lint-ignore require-await
   async reload(): Promise<void> {
     return this.localRepo?.reload();
   }

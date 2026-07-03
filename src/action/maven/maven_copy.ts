@@ -4,7 +4,7 @@ import { mvnCli } from "./maven_utils.ts";
 
 class MavenCopyAction implements Action {
   // Executes the mavenCopy action
-  async execute(packageManager: any, args: string[]): Promise<void> {
+  async execute(_packageManager: any, args: string[]): Promise<void> {
     if (args.length != 2) {
       throw new Error(
         "Invalid arguments.\n" +

@@ -1,4 +1,4 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "@std/log";
 
 import Config from "../../lib/config.ts";
 import Package from "../../lib/package/package.ts";
@@ -19,7 +19,7 @@ export default class ContextMenuAction implements Action {
     }
 
     parameters.shift(); // remove the folders sub action
-    let args = parseArgs(parameters, {
+    const args = parseArgs(parameters, {
       stringOnce: [
         "id",
         "name",
@@ -50,26 +50,26 @@ export default class ContextMenuAction implements Action {
       throw Error("No package for action contextMenu");
     }
 
-    let tempFilename = await this.templateRegistry(pkg, args);
+    const tempFilename = await this.templateRegistry(pkg, args);
     await this.regImport(pkg, args, tempFilename);
   }
 
   private async templateRegistry(pkg: Package, args: any) {
     const tempFilename = Deno.makeTempFileSync({ prefix: "levain-temp-" });
     log.debug(`- tempReg - ${tempFilename}`);
-    const backgroundCmd = args.cmd;
-    const dirCmd = backgroundCmd.replace("%V", "%1");
-    let action =
+    // const backgroundCmd = args.cmd;
+    // const dirCmd = backgroundCmd.replace("%V", "%1");
+    const action =
       `template --replace=/@@shellID@@/g --with="${args.id}" --replace=/@@shellName@@/g --with="${args.name}" --replace=/@@shellCmd@@/g --with="${args.cmd}" --replace=/@@shellIcon@@/g --with="${args.icon}" --doubleBackslash \${pkg.levain.recipesDir}/levain-shell.reg ${tempFilename}`;
-    let loader = new Loader(this.config);
+    const loader = new Loader(this.config);
     await loader.action(pkg, action);
 
     return tempFilename;
   }
 
-  private async regImport(pkg: Package, args: any, tempFilename: string) {
-    let action = `levainShell reg import ${tempFilename}`;
-    let loader = new Loader(this.config);
+  private async regImport(pkg: Package, _args: any, tempFilename: string) {
+    const action = `levainShell reg import ${tempFilename}`;
+    const loader = new Loader(this.config);
     await loader.action(pkg, action);
 
     //Deno.removeSync(tempFilename);

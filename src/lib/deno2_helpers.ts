@@ -3,7 +3,7 @@
  * Funções utilitárias atualizadas para Deno 2
  */
 
-import { ensureDir } from "jsr:@std/fs@1.0.0/ensure-dir";
+import { ensureDir } from "@std/fs";
 
 export class ProcessUtils {
   /**
@@ -112,6 +112,7 @@ export class FileUtils {
       truncate: true,
     });
 
+    let downloadError: unknown;
     try {
       if (totalSize && options?.onProgress && response.body) {
         let downloadedSize = 0;
@@ -131,15 +132,25 @@ export class FileUtils {
         // Download simples sem progresso
         await response.body?.pipeTo(file.writable);
       }
-    } finally {
-      try {
-        await file.close();
-      } catch (err) {
-        // pipeTo may close the file before, so it is expected to have bad resource ID
-        if (!String(err).includes('BadResource: Bad resource ID')) {
+    } catch (err) {
+      downloadError = err;
+    }
+
+    try {
+      await file.close();
+    } catch (err) {
+      if (!(String(err).includes("BadResource: Bad resource ID"))) {
+        if (downloadError === undefined) {
           throw err;
         }
+        // Otherwise preserve the original download error.
       }
+    }
+
+    if (downloadError !== undefined) {
+      throw downloadError instanceof Error
+        ? downloadError
+        : new Error(String(downloadError));
     }
   }
 
@@ -149,7 +160,7 @@ export class FileUtils {
   static async extractArchive(
     archivePath: string,
     destinationDir: string,
-    options?: {
+    _options?: {
       onProgress?: (file: string) => void;
     },
   ): Promise<void> {

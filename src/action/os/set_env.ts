@@ -1,4 +1,4 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "@std/log";
 
 import Config from "../../lib/config.ts";
 import Package from "../../lib/package/package.ts";
@@ -11,7 +11,7 @@ export default class SetEnv implements Action {
   constructor(private config: Config) {
   }
 
-  async execute(pkg: Package | undefined, parameters: string[]): Promise<void> {
+  async execute(_pkg: Package | undefined, parameters: string[]): Promise<void> {
     const myArgs = parseArgs(parameters, {
       boolean: [
         "permanent",
@@ -34,8 +34,8 @@ export default class SetEnv implements Action {
       this.config.context.action.setEnv.env = {};
     }
 
-    let key = myArgs?._[0];
-    let value = myArgs?._[1];
+    const key = myArgs?._[0];
+    const value = myArgs?._[1];
     log.debug(`ENV ${key} = ${value}`);
     this.config.setVar(key, value);
     this.config.context.action.setEnv.env[key] = value;

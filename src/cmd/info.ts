@@ -1,4 +1,4 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "@std/log";
 
 import t from "../lib/i18n.ts";
 
@@ -12,6 +12,7 @@ export default class InfoCommand implements Command {
   constructor(private config: Config) {
   }
 
+  // deno-lint-ignore require-await
   async execute(args: string[]) {
     const myArgs = parseArgs(args, {
       boolean: [
@@ -21,7 +22,7 @@ export default class InfoCommand implements Command {
 
     let pkgs: Package[] | null = null;
     if (myArgs._ && myArgs._.length > 0) {
-      let pkgNames: string[] = myArgs._;
+      const pkgNames: string[] = myArgs._;
 
       pkgs = this.config.packageManager.resolvePackages(pkgNames, false, false);
 
@@ -49,7 +50,7 @@ export default class InfoCommand implements Command {
     }
 
     const ident = "  ".repeat(level);
-    let pkg: Package | undefined = this.config.packageManager.package(pkgName);
+    const pkg: Package | undefined = this.config.packageManager.package(pkgName);
 
     if (!pkg) {
       log.info("");

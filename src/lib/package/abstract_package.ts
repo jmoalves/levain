@@ -1,5 +1,3 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-
 import StringUtils from "../utils/string_utils.ts";
 import Repository from "../repository/repository.ts";
 
@@ -28,9 +26,9 @@ export default abstract class AbstractPackage implements Package {
     }
 
     // Load all "levain." elements in the levainTag
-    for (let property in this.yamlStruct) {
+    for (const property in this.yamlStruct) {
       if (property.startsWith("levain.")) {
-        let item = property.replace("levain.", "");
+        const item = property.replace("levain.", "");
         levainTag[item] = this.yamlStruct[property];
       }
     }

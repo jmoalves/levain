@@ -75,13 +75,23 @@
   },
   "imports": {
     "@cliffy/prompt": "jsr:@cliffy/prompt@^1.2.1",
+    "@deno-library/progress": "jsr:@deno-library/progress@^1.5.1",
+    "@i18next/i18next": "jsr:@i18next/i18next@^26.3.4",
     "@std/": "jsr:@std/",
     "@std/assert": "jsr:@std/assert@^1.0.19",
+    "@std/async": "jsr:@std/async@^1.5.0",
+    "@std/flags": "jsr:@std/flags@^0.224.0",
+    "@std/fmt": "jsr:@std/fmt@^1.0.10",
     "@std/fs": "jsr:@std/fs@^1.0.24",
+    "@std/io": "jsr:@std/io@^0.225.3",
     "@std/log": "jsr:@std/log@^0.224.14",
     "@std/path": "jsr:@std/path@^1.1.6",
+    "@std/yaml": "jsr:@std/yaml@^1.1.2",
+    "@zip.js/zip.js": "npm:@zip.js/zip.js@^2.8.26",
     "date-fns": "npm:date-fns@^4.4.0",
-    "std/": "jsr:@std/"
+    "fastest-levenshtein": "npm:fastest-levenshtein@^1.0.16",
+    "std/": "jsr:@std/",
+    "validator": "npm:validator@^13.15.35"
   },
   "nodeModulesDir": "auto",
   "lock": false

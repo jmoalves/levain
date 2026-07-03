@@ -1,5 +1,5 @@
-import { assert, assertRejects } from "https://deno.land/std/assert/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
+import { assert, assertRejects } from "@std/assert";
+import * as path from "@std/path";
 import TestHelper from "../../lib/test/test_helper.ts";
 import MavenCopyAction from "./maven_copy.ts";
 import ActionFactory from "../action_factory.ts";

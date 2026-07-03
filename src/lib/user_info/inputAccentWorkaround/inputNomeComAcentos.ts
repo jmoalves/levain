@@ -26,6 +26,7 @@ export async function inputNomeComAcentos(message: string = "Digite o nome:"): P
 
 // Simple Input replacement
 export class Input {
+  // deno-lint-ignore require-await
   static async prompt(config: { message: string; default?: string }): Promise<string> {
     const message = config.default ? `${config.message} [${config.default}]` : config.message;
 

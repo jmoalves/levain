@@ -1,5 +1,5 @@
 import * as log from "@std/log";
-import * as path from "https://deno.land/std/path/mod.ts";
+import * as path from "@std/path";
 
 export class Powershell {
   static async run(

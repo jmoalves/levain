@@ -1,6 +1,6 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import { existsSync } from "https://deno.land/std/fs/mod.ts";
+import * as log from "@std/log";
+import * as path from "@std/path";
+import { existsSync } from "@std/fs";
 
 import Config from "../config.ts";
 import ProgressReader from "../io/progress_reader.ts";
@@ -58,7 +58,7 @@ export default class FileCache {
         return false;
       }
 
-      let cacheInfo = Deno.statSync(cachePath);
+      const cacheInfo = Deno.statSync(cachePath);
       return this.fileMatch(src, cacheInfo);
     } catch (error) {
       log.debug(`Error: ${error}`);

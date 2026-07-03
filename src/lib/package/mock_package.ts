@@ -19,7 +19,7 @@ export class MockPackage implements Package {
   readonly yamlStruct: any;
   readonly levainTag: any | undefined;
 
-  yamlItem(key: string): any | undefined {
+  yamlItem(_key: string): any | undefined {
   }
 
   skipRegistry(): boolean {

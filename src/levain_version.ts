@@ -1,6 +1,5 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import * as yaml from "https://deno.land/std/yaml/mod.ts";
+import * as path from "@std/path";
+import * as yaml from "@std/yaml";
 
 import VersionNumber from "./lib/utils/version_number.ts";
 
@@ -23,7 +22,7 @@ export default class LevainVersion {
   }
 
   static isHeadVersion(version?: VersionNumber): boolean {
-    let myVersion = version || LevainVersion.levainVersion;
+    const myVersion = version || LevainVersion.levainVersion;
     return myVersion.isHEAD;
   }
 }

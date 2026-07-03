@@ -1,5 +1,5 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import { existsSync } from "https://deno.land/std/fs/mod.ts";
+import * as log from "@std/log";
+import { existsSync } from "@std/fs";
 import { ValidateResult } from "@cliffy/prompt";
 
 import t from "../i18n.ts";
@@ -170,6 +170,7 @@ export default class UserInfoUtil {
     return newValue;
   }
 
+  // deno-lint-ignore require-await
   async askPassword(config: Config): Promise<string> {
     // const allowedAndTestedPasswordChars = '#!@$'
     const forbiddenPasswordChars = "^&";

@@ -1,4 +1,4 @@
-import ProgressBar from "https://deno.land/x/progress/mod.ts";
+import ProgressBar from "@deno-library/progress";
 
 export default interface Progress {
   readonly title: string | undefined;

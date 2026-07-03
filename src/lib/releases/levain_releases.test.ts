@@ -1,8 +1,8 @@
-import { assert } from "https://deno.land/std/assert/mod.ts";
+import { assert } from "@std/assert";
 
 import LevainReleases from "./levain_releases.ts";
 
-Deno.test("LevainReleases - check release tag ", async () => {
+Deno.test("LevainReleases - check release tag ", () => {
   assert(LevainReleases.isValidReleaseTag("v0.30.0"), "Check failed");
   assert(!LevainReleases.isValidReleaseTag(), "Check failed");
   assert(!LevainReleases.isValidReleaseTag("vHEAD"), "Check failed");

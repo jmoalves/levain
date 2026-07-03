@@ -1,4 +1,4 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "@std/log";
 
 import t from "./lib/i18n.ts";
 
@@ -50,7 +50,7 @@ export default class LevainCli {
     }
 
     // First parameter is the command
-    let cmd: string = getCmdFromArgs();
+    const cmd: string = getCmdFromArgs();
 
     // Ask for user_info
     if (cmd === "install") {
@@ -64,7 +64,7 @@ export default class LevainCli {
     }
 
     if (!myArgs["skip-levain-updates"]) {
-      let levainReleases = new LevainReleases(config);
+      const levainReleases = new LevainReleases(config);
       await levainReleases.checkLevainUpdate();
     }
 

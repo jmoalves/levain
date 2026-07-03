@@ -1,12 +1,12 @@
-import { assert, assertArrayIncludes, assertEquals } from "https://deno.land/std/assert/mod.ts";
-import { existsSync } from "https://deno.land/std/fs/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
+import { assert, assertArrayIncludes, assertEquals } from "@std/assert";
+import { existsSync } from "@std/fs";
+import * as path from "@std/path";
 
 import DirUtils from "../fs/dir_utils.ts";
 import { FileUtils } from "../fs/file_utils.ts";
 
 export function assertArrayIncludesElements<T>(array: T[], elements: T[]) {
-  let notFound: T[] = [];
+  const notFound: T[] = [];
   elements.forEach((element) => {
     if (!array.includes(element)) {
       notFound.push(element);
@@ -16,7 +16,7 @@ export function assertArrayIncludesElements<T>(array: T[], elements: T[]) {
 }
 
 export function assertArrayDoesNotInclude<T>(array: T[], elements: T[]) {
-  let found: T[] = [];
+  const found: T[] = [];
   elements.forEach((element) => {
     if (array.includes(element)) {
       found.push(element);

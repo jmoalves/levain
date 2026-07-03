@@ -1,4 +1,4 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "@std/log";
 
 import Config from "../config.ts";
 import Package from "./package.ts";
@@ -27,17 +27,17 @@ export default class PackageManager {
       this.feedback.start(`# Resolve ${pkgNames}...`);
     }
 
-    let pkgs: Map<string, Package> = new Map();
-    let names: Set<string> = new Set(); // Solving circular references - Issue #11
+    const pkgs: Map<string, Package> = new Map();
+    const names: Set<string> = new Set(); // Solving circular references - Issue #11
     let error: boolean = false;
     for (const pkgName of pkgNames) {
       if (!pkgName || !pkgName.trim()) {
         continue;
       }
-      let repo = installedOnly
+      const repo = installedOnly
         ? this.config.repositoryManager.repositoryInstalled
         : this.config.repositoryManager.repository;
-      let myError: boolean = this.resolveInRepo(repo, pkgs, names, pkgName, showLog);
+      const myError: boolean = this.resolveInRepo(repo, pkgs, names, pkgName, showLog);
       error = error || myError;
     }
 
@@ -53,8 +53,8 @@ export default class PackageManager {
       log.debug("# Package list (in order):");
     }
 
-    let result: Package[] = [];
-    for (let name of pkgs.keys()) {
+    const result: Package[] = [];
+    for (const name of pkgs.keys()) {
       const pkg = pkgs.get(name)!;
       this.knownPackages.set(name, pkg);
       result.push(pkg);
@@ -69,7 +69,7 @@ export default class PackageManager {
   static removeExtension(pkgNames: string[]) {
     log.debug(`removeExtension <- ${pkgNames}`);
 
-    let filteredPkgNames = pkgNames
+    const filteredPkgNames = pkgNames
       .map((pkgName) => {
         if (!pkgName || !pkgName.trim()) {
           log.warn(`Ignoring package with null name, check your configuration file.`);
@@ -93,7 +93,7 @@ export default class PackageManager {
   }
 
   async getVar(pkgName: string, vName: string): Promise<string | undefined> {
-    let pkg = this.package(pkgName);
+    const pkg = this.package(pkgName);
     if (!pkg) {
       return undefined;
     }
@@ -101,7 +101,7 @@ export default class PackageManager {
     let value: string | undefined = undefined;
 
     if (!value && pkg) {
-      let handler: any = pkg;
+      const handler: any = pkg;
       value = handler[vName];
     }
 
@@ -109,7 +109,7 @@ export default class PackageManager {
       value = pkg.yamlItem(vName);
     }
 
-    let pkgConfig = pkg.yamlItem("config");
+    const pkgConfig = pkg.yamlItem("config");
     if (!value && pkgConfig) {
       value = pkgConfig[vName];
     }
@@ -122,12 +122,12 @@ export default class PackageManager {
     return await this.config.replaceVars(value!, pkgName);
   }
 
-  getSimilarNames(pkgName: string, installedOnly = false): Set<String> {
-    let repo = installedOnly
+  getSimilarNames(pkgName: string, installedOnly = false): Set<string> {
+    const repo = installedOnly
       ? this.config.repositoryManager.repositoryInstalled
       : this.config.repositoryManager.repository;
 
-    let names: string[] = [];
+    const names: string[] = [];
     repo?.listPackages().forEach((element) => {
       names.push(element.name);
     });
@@ -137,7 +137,7 @@ export default class PackageManager {
   private resolveInRepo(
     repo: Repository,
     pkgs: Map<string, Package>,
-    names: Set<String>,
+    names: Set<string>,
     pkgName: string,
     showLog: boolean,
   ): boolean {
@@ -149,7 +149,7 @@ export default class PackageManager {
     if (pkgs.has(pkgName)) {
       return false;
     } else if (names.has(pkgName)) {
-      let msg = `Circular dependencies found at ${pkgName}`;
+      const msg = `Circular dependencies found at ${pkgName}`;
       log.debug("");
       log.debug(msg);
       log.debug("Packages seen:");
@@ -172,8 +172,8 @@ export default class PackageManager {
     // Deep first navigation - topological order of dependencies
     let error: boolean = false;
     if (pkgDef.dependencies) {
-      for (let dep of pkgDef.dependencies) {
-        let myError: boolean = this.resolveInRepo(repo, pkgs, names, dep, showLog);
+      for (const dep of pkgDef.dependencies) {
+        const myError: boolean = this.resolveInRepo(repo, pkgs, names, dep, showLog);
         error = error || myError;
       }
     }

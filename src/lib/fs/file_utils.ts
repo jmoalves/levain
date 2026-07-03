@@ -1,11 +1,10 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import { ensureDirSync, existsSync } from "https://deno.land/std/fs/mod.ts";
-import { copy } from "https://deno.land/std/io/mod.ts";
+import * as log from "@std/log";
+import * as path from "@std/path";
+import { ensureDirSync, existsSync } from "@std/fs";
+import { copy } from "@std/io";
 
-import ProgressBar from "https://deno.land/x/progress/mod.ts";
+import ProgressBar from "@deno-library/progress";
 
-import OsUtils from "../os/os_utils.ts";
 import DateUtils from "../utils/date_utils.ts";
 import FileWriter from "../io/file_writer.ts";
 import ProgressReader from "../io/progress_reader.ts";
@@ -115,13 +114,13 @@ export class FileUtils {
 
       try {
         await r.rewind();
-        let dst = new FileWriter(dstFile);
+        const dst = new FileWriter(dstFile);
 
-        let title = r.title ? StringUtils.compressText(r.title, 50) : undefined;
-        let total = r.size;
+        const title = r.title ? StringUtils.compressText(r.title, 50) : undefined;
+        const total = r.size;
 
         if (total) {
-          let pb = new ProgressBar({
+          const pb = new ProgressBar({
             title,
             total,
             complete: "=",
@@ -181,7 +180,7 @@ export class FileUtils {
       return undefined;
     }
 
-    let now = new Date();
+    const now = new Date();
     let bkp = "";
 
     do bkp = filename + "." + DateUtils.dateTag(now) + "." + DateUtils.timeTagWithMillis("", now) + ".bkp"; while (

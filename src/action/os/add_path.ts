@@ -1,5 +1,5 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
+import * as log from "@std/log";
+import * as path from "@std/path";
 
 import Config from "../../lib/config.ts";
 import Package from "../../lib/package/package.ts";
@@ -12,7 +12,7 @@ export default class AddPathAction implements Action {
   constructor(private config: Config) {
   }
 
-  async execute(pkg: Package | undefined, parameters: string[]): Promise<void> {
+  async execute(_pkg: Package | undefined, parameters: string[]): Promise<void> {
     const myArgs = parseArgs(parameters, {
       boolean: [
         "permanent",

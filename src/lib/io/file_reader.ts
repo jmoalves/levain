@@ -1,8 +1,8 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import { existsSync } from "https://deno.land/std/fs/exists.ts";
+import * as log from "@std/log";
+import * as path from "@std/path";
+import { existsSync } from "@std/fs";
 
-import ProgressBar from "https://deno.land/x/progress/mod.ts";
+import ProgressBar from "@deno-library/progress";
 
 import ProgressReader from "./progress_reader.ts";
 
@@ -64,12 +64,13 @@ export default class FileReader implements ProgressReader {
   }
 
   // Deno.Reader
+  // deno-lint-ignore require-await
   async read(p: Uint8Array): Promise<number | null> {
     if (!this.file) {
       return Promise.resolve(null);
     }
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _reject) => {
       this.file?.read(p).then((size: number | null) => {
         if (size) {
           this.bytesRead += size;
@@ -83,6 +84,7 @@ export default class FileReader implements ProgressReader {
     });
   }
 
+  // deno-lint-ignore require-await
   async close() {
     if (!this.file) {
       return;
