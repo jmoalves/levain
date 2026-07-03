@@ -52,8 +52,9 @@ async function runTest(file?: string): Promise<void> {
   }
   console.log("RUNTEST", testFile, cmd);
   console.time("runtest");
-  const command = new Deno.Command(cmd[0], {
-    args: cmd.splice(1),
+  const [exec, ...args] = cmd;
+  const command = new Deno.Command(exec, {
+    args,
     stdout: "inherit",
     stderr: "inherit",
     stdin: "inherit"

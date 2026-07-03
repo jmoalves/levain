@@ -1,5 +1,5 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
+import * as log from "@std/log";
+import * as path from "@std/path";
 
 import Config from "../../lib/config.ts";
 import Package from "../../lib/package/package.ts";
@@ -13,7 +13,7 @@ export default class Mkdir implements Action {
   }
 
   async execute(pkg: Package | undefined, parameters: string[]): Promise<void> {
-    let args = parseArgs(parameters, {
+    const args = parseArgs(parameters, {
       boolean: [
         "compact",
       ],
@@ -45,11 +45,12 @@ export default class Mkdir implements Action {
 
     const windir = dirname.replace(/\//g, "\\");
     log.debug(`COMPACT ${windir}`);
-    let args = `compact /q /c /s:${windir}`.split(" ");
+    const cmd = `compact /q /c /s:${windir}`;
 
+    const [exec, ...args] = OsUtils.parseCmd(cmd)
     
-    const command = new Deno.Command(args[0], {
-      args: args.splice(1),
+    const command = new Deno.Command(exec, {
+      args,
       stdout: "null",
       stderr: "null",
     });

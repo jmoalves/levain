@@ -1,4 +1,4 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "@std/log";
 import * as path from "https://deno.land/std/path/mod.ts";
 
 export class Powershell {
@@ -37,8 +37,9 @@ export class Powershell {
       stderr: "inherit",
     });*/
     // %PWS% -File %currentFileDir%createShortcut.ps1 "%TARGET_FILE%" "%SHORTCUT_DIR%"
-    const command = new Deno.Command(args[0], {
-      args: args.splice(1),
+    const [exec, ...cmd_args] = args;
+    const command = new Deno.Command(exec, {
+      args: cmd_args,
       stderr: "piped",
       stdout: "piped",
     });

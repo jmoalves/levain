@@ -1,7 +1,7 @@
-import * as path from "https://deno.land/std/path/mod.ts";
-import { dirname, fromFileUrl } from "https://deno.land/std/path/mod.ts";
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as fs from "https://deno.land/std/fs/mod.ts";
+import * as path from "@std/path";
+import { dirname, fromFileUrl } from "@std/path";
+import * as log from "@std/log";
+import * as fs from "@std/fs";
 import { ArrayUtils } from "../utils/array_utils.ts";
 import { envChain } from "../utils/utils.ts";
 import { Powershell } from "./powershell.ts";
@@ -119,7 +119,7 @@ export default class OsUtils {
     OsUtils.onlyInWindows();
 
     const path = await this.getUserPath();
-    let newPath = ArrayUtils.remove(path, newPathItem);
+    const newPath = ArrayUtils.remove(path, newPathItem);
     newPath.unshift(newPathItem);
 
     return await this.setUserPath(newPath);
@@ -129,7 +129,7 @@ export default class OsUtils {
     OsUtils.onlyInWindows();
 
     const path = await this.getUserPath();
-    let newPath = ArrayUtils.remove(path, itemToRemove);
+    const newPath = ArrayUtils.remove(path, itemToRemove);
     return await this.setUserPath(newPath);
   }
 
@@ -145,18 +145,19 @@ export default class OsUtils {
     log.debug(`runAndLog\n${command}`);
 
     let args: string[];
+    let exec: string;
 
     if (typeof command === "string") {
-      args = command.split(" ");
+      [exec, ...args] = OsUtils.parseCmd(command);
     } else if (command instanceof Array) {
-      args = command;
+      [exec, ...args] = command;
     } else {
       log.error(command);
       throw `********** Unknown command type ${typeof command}`;
     }
   
-    const dcommand = new Deno.Command(args[0], {
-      args: args.splice(1),
+    const dcommand = new Deno.Command(exec, {
+      args: args,
       cwd: workDir,
       stderr: "piped",
       stdout: "piped",
@@ -324,5 +325,12 @@ export default class OsUtils {
     if (fs.existsSync(dirPath)) {
       Deno.removeSync(dirPath, { recursive: true });
     }
+  }
+
+  static parseCmd(cmd: string): string[] {
+    // FIXME: This may break on commands that have space.
+    // Ideally, it should use a better cmdline parser (such as the one from shell-quote library)
+    // but it may require to rewrite a few commands
+    return cmd.split(' ');
   }
 }
