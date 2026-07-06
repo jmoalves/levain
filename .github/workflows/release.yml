@@ -1,5 +1,8 @@
 name: Create a new release
 
+permissions:
+  contents: write
+
 on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -7,7 +10,7 @@ on:
       denoVersion:
         description: "Deno version (optional)"
         required: false
-        default: "1.46.3"
+        default: "2.9.1"
 
 jobs:
   createRelease:
@@ -176,115 +179,25 @@ jobs:
 
       - name: Create release
         id: create_release
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ env.RELEASE_VERSION }}
-          release_name: v${{ env.RELEASE_VERSION }}
-          commitish: ${{ github.ref_name }}
           body_path: ${{ runner.temp }}/changelog.${{ env.RELEASE_VERSION }}.md
-          draft: true
+          draft: false
           prerelease: true
+          fail_on_unmatched_files: true
+          files: |
+            ${{ runner.temp }}/levain.exe.sha256
+            ${{ runner.temp }}/levain-v${{ env.RELEASE_VERSION }}-windows-x86_64.zip
+            ${{ runner.temp }}/levain-v${{ env.RELEASE_VERSION }}-windows-x86_64.zip.sha256
+            ${{ runner.temp }}/levain-windows-x86_64.zip
+            ${{ runner.temp }}/levain-windows-x86_64.zip.sha256
+            ${{ runner.temp }}/levain-extra-bin-windows-x86_64.zip
+            ${{ runner.temp }}/levain-extra-bin-windows-x86_64.zip.sha256
+            ${{ runner.temp }}/install.ps1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }}
-
-      - name: Upload asset - levain.exe.sha256
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LEVAIN_VERSION: ${{ env.RELEASE_VERSION }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ runner.temp }}/levain.exe.sha256
-          asset_name: levain.exe.sha256
-          asset_content_type: text/plain
-
-      - name: Upload asset - levain-v${{ env.RELEASE_VERSION }}-windows-x86_64.zip
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LEVAIN_VERSION: ${{ env.RELEASE_VERSION }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ runner.temp }}/levain-v${{ env.RELEASE_VERSION }}-windows-x86_64.zip
-          asset_name: levain-v${{ env.RELEASE_VERSION }}-windows-x86_64.zip
-          asset_content_type: application/zip
-
-      - name: Upload asset - levain-v${{ env.RELEASE_VERSION }}-windows-x86_64.zip.sha256
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LEVAIN_VERSION: ${{ env.RELEASE_VERSION }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ runner.temp }}/levain-v${{ env.RELEASE_VERSION }}-windows-x86_64.zip.sha256
-          asset_name: levain-v${{ env.RELEASE_VERSION }}-windows-x86_64.zip.sha256
-          asset_content_type: text/plain
-
-      - name: Upload asset - levain-windows-x86_64.zip
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LEVAIN_VERSION: ${{ env.RELEASE_VERSION }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ runner.temp }}/levain-windows-x86_64.zip
-          asset_name: levain-windows-x86_64.zip
-          asset_content_type: application/zip
-
-      - name: Upload asset - levain-windows-x86_64.zip.sha256
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LEVAIN_VERSION: ${{ env.RELEASE_VERSION }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ runner.temp }}/levain-windows-x86_64.zip.sha256
-          asset_name: levain-windows-x86_64.zip.sha256
-          asset_content_type: text/plain
-
-      - name: Upload asset - levain-extra-bin-windows-x86_64.zip
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LEVAIN_VERSION: ${{ env.RELEASE_VERSION }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ runner.temp }}/levain-extra-bin-windows-x86_64.zip
-          asset_name: levain-extra-bin-windows-x86_64.zip
-          asset_content_type: application/zip
-
-      - name: Upload asset - levain-extra-bin-windows-x86_64.zip.sha256
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LEVAIN_VERSION: ${{ env.RELEASE_VERSION }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ runner.temp }}/levain-extra-bin-windows-x86_64.zip.sha256
-          asset_name: levain-extra-bin-windows-x86_64.zip.sha256
-          asset_content_type: text/plain
-
-      - name: Upload asset - install.ps1
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LEVAIN_VERSION: ${{ env.RELEASE_VERSION }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ runner.temp }}/install.ps1
-          asset_name: install.ps1
-          asset_content_type: text/plain
-
-      ##############################################################
-      ### Publish release
-      ##############################################################
-      - name: Publish release
-        uses: eregon/publish-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          release_id: ${{ steps.create_release.outputs.id }}
 
     outputs:
       levainRelease: ${{ env.RELEASE_VERSION }}
