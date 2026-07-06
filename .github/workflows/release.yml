@@ -210,12 +210,13 @@ jobs:
 
     steps:
       - name: Install Levain
+        shell: pwsh
         run: |
           # Which levain version?
           $levainVersion = "${{ needs.createRelease.outputs.levainRelease }}"
 
           # Install script
-          $scriptUrl = "https://github.com/jmoalves/levain/releases/download/v${levainVersion}/install.ps1"
+          $scriptUrl = "https://github.com/${{ github.repository }}/releases/download/v${levainVersion}/install.ps1"
 
           # Headless
           $levainHeadless = "true"
