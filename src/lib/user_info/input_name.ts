@@ -1,7 +1,5 @@
-import { Input, ValidateResult } from '@cliffy/prompt';
+import { Input } from '@cliffy/prompt';
 import { NameValidator } from "./validators/validators.ts";
-import { readLines } from "https://deno.land/std/io/mod.ts";
-import OsUtils from "../os/os_utils.ts";
 
 import t from "../i18n.ts";
 
@@ -14,44 +12,5 @@ export class InputFullName {
       default: defaultValue,
       validate: NameValidator.validate,
     });
-  }
-
-  static async inputAndValidateWithEncoding(defaultValue: string): Promise<string> {
-    let fullName: string;
-    let validateResult: ValidateResult = false;
-
-    do {
-      if (validateResult) {
-        console.log(validateResult);
-      }
-      fullName = await InputFullName.promptWithEncoding(this.defaultMessage, defaultValue);
-
-      validateResult = NameValidator.validate(fullName);
-    } while (validateResult !== true);
-
-    return fullName;
-  }
-
-  static async promptWithEncoding(
-    message: string,
-    defaultValue: string = "",
-    encoding: string = "utf8",
-  ): Promise<string> {
-    if (defaultValue) {
-      message += t("lib.user_info.input_name.enterDefault", { defaultValue: defaultValue });
-    }
-
-    if (!encoding) {
-      if (OsUtils.isWindows()) {
-        encoding = "latin1";
-      } else {
-        encoding = "utf8";
-      }
-    }
-
-    console.log(message);
-
-    const { value } = await readLines(Deno.stdin, { encoding }).next();
-    return <string> value || defaultValue;
   }
 }

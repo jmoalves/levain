@@ -38,15 +38,16 @@ export default class CommandFactory {
       log.error("");
       log.error("");
 
-      let similar = StringUtils.findSimilar(cmd, this.list());
-      if (similar.size > 0) {}
       log.error(t("cmd.command_factory.notFound", { cmd: cmd }));
-      log.error("");
-      log.error(t("cmd.command_factory.didYouMean"));
-      similar.forEach((element) => {
-        log.error(`\t${element}`);
-      });
-      log.error("");
+      const similar = StringUtils.findSimilar(cmd, this.list());
+      if (similar.size > 0) {
+        log.error("");
+        log.error(t("cmd.command_factory.didYouMean"));
+        similar.forEach((element) => {
+          log.error(`\t${element}`);
+        });
+        log.error("");
+      }
 
       throw new CommandNotFoundError(cmd);
     }

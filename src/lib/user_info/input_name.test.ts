@@ -20,7 +20,7 @@ Deno.test("InputFullName.inputAndValidate should accept a default value", async 
 
   assertEquals(input, "Groku");
 });
-Deno.test("InputFullName.inputAndValidate should reject an invalid value", async () => {
+Deno.test("InputFullName.inputAndValidate should reject an invalid value", () => {
   CliffyTestHelper.inputResponse("not-a-name!");
 
   assertRejects(

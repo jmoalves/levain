@@ -174,6 +174,7 @@ export default class OsUtils {
     const output = OsUtils.decodeOutput(stdout);
 
     // TODO it should not be necessary to remove \u0000 from stdout. Is it a bug in Deno 1.13.2?
+    // deno-lint-ignore no-control-regex
     const cleanOutput = output.replaceAll(/\u0000/gm, "");
 
     log.debug(`stdout ${cleanOutput}`);

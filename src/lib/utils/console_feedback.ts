@@ -36,7 +36,7 @@ export default class ConsoleFeedback {
   }
 
   private inc() {
-    let now = new Date().getTime();
+    const now = new Date().getTime();
     if (now < (this.lastInc + ConsoleFeedback.MIN_INTERVAL_MS)) {
       return;
     }

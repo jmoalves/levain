@@ -21,7 +21,7 @@ Deno.test("InputLogin.inputAndValidate should accept a default value", async () 
 
   assertEquals(input, "ppppp");
 });
-Deno.test("InputEmail.inputAndValidate should reject an invalid value", async () => {
+Deno.test("InputEmail.inputAndValidate should reject an invalid value", () => {
   CliffyTestHelper.inputResponse("--invalid-email--");
 
   assertRejects(

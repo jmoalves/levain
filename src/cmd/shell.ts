@@ -48,7 +48,7 @@ export default class Shell implements Command {
 
     // Actions
     if (curDirPkg && pkgActions) {
-      for (let action of pkgActions) {
+      for (const action of pkgActions) {
         // Infinite loop protection - https://github.com/jmoalves/levain/issues/111
         if (action.startsWith("levainShell ")) {
           throw new Error(t("cmd.shell.notAllowed", { pkg: curDirPkg.name, action: action }));

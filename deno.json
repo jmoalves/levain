@@ -9,16 +9,14 @@
     "strictNullChecks": true
   },
   "lint": {
-    "files": {
-      "include": [
-        "src/",
-        "*.ts"
-      ],
-      "exclude": [
-        "src/testdata/",
-        "data/"
-      ]
-    },
+    "include": [
+      "src/",
+      "*.ts"
+    ],
+    "exclude": [
+      "src/testdata/",
+      "data/"
+    ],
     "rules": {
       "tags": [
         "recommended"
@@ -87,6 +85,7 @@
     "@std/log": "jsr:@std/log@^0.224.14",
     "@std/path": "jsr:@std/path@^1.1.6",
     "@std/yaml": "jsr:@std/yaml@^1.1.2",
+    "@webui/deno-webui": "jsr:@webui/deno-webui@^2.5.15",
     "@zip.js/zip.js": "npm:@zip.js/zip.js@^2.8.26",
     "date-fns": "npm:date-fns@^4.4.0",
     "fastest-levenshtein": "npm:fastest-levenshtein@^1.0.16",
