@@ -211,6 +211,8 @@ jobs:
     steps:
       - name: Install Levain
         shell: pwsh
+        env:
+          REPOSITORY: ${{ github.repository }}
         run: |
           # Which levain version?
           $levainVersion = "${{ needs.createRelease.outputs.levainRelease }}"

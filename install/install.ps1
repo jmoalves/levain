@@ -23,12 +23,21 @@ if (! $levainHome) {
   $levainHome = "$HOME\levain"
 }
 
+if (! $levainRepository) {
+  $levainRepository = if ($env:REPOSITORY) {
+    $env:REPOSITORY
+  } else {
+    "jmoalves/levain"
+  }
+}
+
+
 if (! $levainUrlBase) {
-  $levainUrlBase = "https://github.com/jmoalves/levain"
+  $levainUrlBase = "https://github.com/$levainRepository"
 }
 
 if (! $levainRepo) {
-  $levainRepo = "https://github.com/jmoalves/levain-pkgs.git"
+  $levainRepo = "https://github.com/$levainRepository-pkgs.git"
 }
 
 #
