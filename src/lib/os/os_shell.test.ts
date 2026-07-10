@@ -13,13 +13,13 @@ Deno.test("OsShell.adjustArgs should add quotation marks around parameters with 
   assertEquals(adjustedArgs, expectedArgs);
 });
 
-Deno.test("OsShell.prepareShellOptions should add quotation marks around parameters with spaces", () => {
+Deno.test("OsShell.prepareShellOptions should add quotation marks around parameters with spaces", async () => {
   const config = TestHelper.getConfig();
   config.packageManager = new PackageManagerMock(config);
   const osShell = new OsShell(config, ["abc"], true);
   const args = ["noSpaces", "with spaces"];
 
-  const shellOptions = osShell.prepareShellOptions(args);
+  const shellOptions = await osShell.prepareShellOptions(args);
 
   const expectedArgs = ["noSpaces", "with spaces"];
   assertArrayEndsWith(shellOptions.cmd, expectedArgs);

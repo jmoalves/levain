@@ -4,12 +4,15 @@ recipesDir: ${baseDir}/build/recipes
 
 cmd.install:
   - copy --verbose ../../levain.cmd ../../build ${baseDir}
+  - copy --verbose ../../levain.ps1 ../../build ${baseDir}
+  - copy --verbose ../../levain.sh ../../build ${baseDir}
   - addPath --permanent ${baseDir}/bin
   - addPath --permanent ${baseDir}
   # Tab completion
   # Command extensions
   # UNC Path
   - levainShell reg import ${pkgDir}/cmd-config.reg 2>nul
+  - activateInit --cmd --bash --powershell 2>nul
 
 cmd.env:
   - addPath ${baseDir}

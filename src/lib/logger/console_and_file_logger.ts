@@ -1,5 +1,5 @@
 import * as log from "@std/log";
-import { ConsoleHandler, FileHandler } from "@std/log";
+import { BaseHandler, ConsoleHandler, FileHandler } from "@std/log";
 import * as path from "@std/path";
 
 import Config from "../config.ts";
@@ -9,15 +9,19 @@ import LogUtils from "./log_utils.ts";
 import OsUtils from "../os/os_utils.ts";
 import { FileUtils } from "../fs/file_utils.ts";
 import DateUtils from "../utils/date_utils.ts";
+import { StderrConsoleHandler } from "./stderr_handler.ts";
+import ConsoleFeedback from "../utils/console_feedback.ts";
+import { NullWriter } from "./null_writer.ts";
 
 export default class ConsoleAndFileLogger {
   static config: Config;
   logFiles: string[] = [];
   handlers: any = {};
 
-  public static async setup(logFiles: string[] = []): Promise<ConsoleAndFileLogger> {
+  public static async setup(logFiles: string[] = [], omitLog = false): Promise<ConsoleAndFileLogger> {
     const logger = new ConsoleAndFileLogger();
-    logger.handlers["console"] = logger.getConsoleHandler();
+    logger.handlers["console"] = logger.getConsoleHandler(omitLog);
+    ConsoleFeedback.OUT = omitLog ? new NullWriter() : Deno.stdout;
     logFiles.forEach((it) => logger.addLogFile(it));
 
     const handlerNames = Object.keys(logger.handlers);
@@ -64,10 +68,15 @@ export default class ConsoleAndFileLogger {
     return msg.replace(ConsoleAndFileLogger.config.password, "******");
   }
 
-  getConsoleHandler(): ConsoleHandler {
-    return new ConsoleHandler("INFO", {
-      formatter: LogFormatterFactory.getHidePasswordFormatter(),
-    });
+  getConsoleHandler(omitLog: boolean = false): BaseHandler {
+    const formatter = LogFormatterFactory.getHidePasswordFormatter();
+    
+    if (omitLog) {
+      const handler = new StderrConsoleHandler("CRITICAL");
+      handler.formatter = formatter;
+      return handler;
+    }
+    return new ConsoleHandler("INFO", { formatter });
   }
 
   static getLogFileInTempFolder(): string {

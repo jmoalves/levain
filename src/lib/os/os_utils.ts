@@ -84,6 +84,31 @@ export default class OsUtils {
     }
   }
 
+  static windowsToBashPath(path: string): string {
+    // Already looks like a Unix path.
+    if (path.startsWith("/")) {
+      return path;
+    }
+
+    // Match drive letter.
+    const match = path.match(/^([A-Za-z]):[\\/](.*)$/);
+    if (!match) {
+      return path.replace(/\\/g, "/");
+    }
+
+    const [, drive, rest] = match;
+    return `/${drive.toLowerCase()}/${rest.replace(/\\/g, "/")}`;
+  }
+
+  static async exists(path: string): Promise<boolean> {
+    try {
+      await Deno.stat(path);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   static isWindows(): boolean {
     return this.getOs() === "windows";
   }

@@ -16,6 +16,13 @@
       "actionsFound": "= Ações:",
       "example": "  actions <optional search text>"
     },
+    "activate": {
+      "example": "  activate <pacote opcional>",
+      "installMissing": "Erro! É necessário instalar o módulo de activate com o comando:"
+    },
+    "_activate-machine": {
+      "example": "  _activate-machine init --cmd --bash --powershell"
+    },
     "clean": {
       "startFeedback": "# CLEAN...",
       "logs": "limpando logs",
@@ -95,6 +102,33 @@
     }
   },
   "lib": {
+    "activate": {
+      "bash_initializer": {
+        "install": "Perfil para Bash:",
+        "installEnd": "Perfil adicionado. Se você estiver no bash, reinicie o shell ou execute"
+      },
+      "cmd_initializer": {
+        "install": "Hook e Autorun do Cmd:",
+        "installHook": "Escrevendo arquivo hook: {{ hookPath }}",
+        "existingAutorun": "Autorun existente encontrado. Pulando...",
+        "installEnd": "Cmd configurado. Se você estiver no cmd, reinicie o shell"
+      },
+      "cmder_initializer": {
+        "install": "Script de prompt e perfil para powershell do Cmder:",
+        "installEnd": "Cmder configurado. Pode ser necessário reiniciar a sessão",
+        "noConfigError": "Não foi possível localizar o diretório de configuração do Cmder"
+      },
+      "powershell_initializer": {
+        "install": "Perfil para Powershell:",
+        "installEnd": "Perfil adicionado. Se você estiver no powershell, reinicie o shell ou execute"
+      },
+      "profile_editor": {
+        "existingProfile": "Arquivo de perfil encontrado: {{ profile }}", 
+        "newProfile": "Criando novo arquivo de perfil: {{ profile }}",
+        "replaceBlock": "Substituindo bloco de inicialização existente",
+        "newBlock": "Adicionando bloco de inicialização no fim do perfil"
+      }
+    },
     "repository": {
       "repository_manager": {
         "loaded": "- Lidos REPOS {{repos}}",

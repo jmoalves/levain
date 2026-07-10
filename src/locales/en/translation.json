@@ -16,6 +16,13 @@
       "actionsFound": "= Actions:",
       "example": "  actions [optional search text]"
     },
+    "activate": {
+      "example": "  activate [optional package name]",
+      "installMissing": "Error! It is necessary to install the activation module with:"
+    },
+    "_activate-machine": {
+      "example": "  _activate-machine init --cmd --bash --powershell"
+    },
     "clean": {
       "startFeedback": "# CLEAN...",
       "logs": "cleaning logs",
@@ -95,6 +102,33 @@
     }
   },
   "lib": {
+    "activate": {
+      "bash_initializer": {
+        "install": "Bash Profile:",
+        "installEnd": "Profile created. If you are using bash, restart the shell or run"
+      },
+      "cmd_initializer": {
+        "install": "Cmd Hook and Autorun:",
+        "installHook": "Writing hook file: {{ hookPath }}",
+        "existingAutorun": "Found existing autorun. Skipping...",
+        "installEnd": "Cmd configured. If you are using cmd, restart the shell"
+      },
+      "cmder_initializer": {
+        "install": "Cmder prompt script and powershell profile:",
+        "installEnd": "Cmder configured. You may need to restart it",
+        "noConfigError": "Could not locate the Cmder config directory"
+      },
+      "powershell_initializer": {
+        "install": "Powershell Profile:",
+        "installEnd": "Profile created. If you are using powershell, restart the shell or run"
+      },
+      "profile_editor": {
+        "existingProfile": "Found existing profile file: {{ profile }}", 
+        "newProfile": "Creating new profile file: {{ profile }}",
+        "replaceBlock": "Replacing existing initialization block",
+        "newBlock": "Adding initialization block to the end of the profile"
+      }
+    },
     "repository": {
       "repository_manager": {
         "loaded": "- Loaded REPOS {{repos}}",

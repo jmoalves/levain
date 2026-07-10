@@ -9,7 +9,7 @@ import Loader from "../lib/loader.ts";
 import Command from "./command.ts";
 
 export default class Shell implements Command {
-  constructor(private config: Config) {
+  constructor(private config: Config, private openShell: boolean=true) {
   }
 
   async execute(args: string[]) {
@@ -61,7 +61,7 @@ export default class Shell implements Command {
     // Running shell
     const osShell: OsShell = new OsShell(this.config, pkgNames, true);
     osShell.interactive = true;
-    await osShell.execute([]);
+    await osShell.execute([], this.openShell);
   }
 
   readonly oneLineExample = t("cmd.shell.example");

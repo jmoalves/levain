@@ -12,6 +12,9 @@ Deno.test("ActionFactory should list actions", () => {
   const actions: string[] = factory.list();
 
   assertArrayEqualsInAnyOrder(actions, [
+    "activateCmd",
+    "activatePre",
+    "activateInit",
     "addPath",
     "addToDesktop",
     "addToStartMenu",

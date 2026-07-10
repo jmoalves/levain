@@ -84,6 +84,7 @@
     "@std/io": "jsr:@std/io@^0.225.3",
     "@std/log": "jsr:@std/log@^0.224.14",
     "@std/path": "jsr:@std/path@^1.1.6",
+    "@std/testing": "jsr:@std/testing@^1.0.19",
     "@std/yaml": "jsr:@std/yaml@^1.1.2",
     "@webui/deno-webui": "jsr:@webui/deno-webui@^2.5.15",
     "@zip.js/zip.js": "npm:@zip.js/zip.js@^2.8.26",

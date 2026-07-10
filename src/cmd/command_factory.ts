@@ -7,6 +7,8 @@ import StringUtils from "../lib/utils/string_utils.ts";
 
 import Install from "./install.ts";
 import Shell from "./shell.ts";
+import Activate from "./activate.ts";
+import ActivateMachine from "./activate_machine.ts";
 import Command from "./command.ts";
 import ListCommand from "./list_command.ts";
 import CleanCommand from "./clean.ts";
@@ -19,6 +21,7 @@ import Update from "./update.ts";
 const commandMap = new Map<string, (config: Config) => Command>([
   ["install", (config: Config) => new Install(config)],
   ["shell", (config: Config) => new Shell(config)],
+  ["activate", (config: Config) => new Activate(config)],
   ["list", (config: Config) => new ListCommand(config)],
   ["clean", (config: Config) => new CleanCommand(config)],
   ["actions", (config: Config) => new ActionsCommand(config)],
@@ -26,6 +29,7 @@ const commandMap = new Map<string, (config: Config) => Command>([
   ["explain", (config: Config) => new ExplainCommand(config)],
   ["clone", (config: Config) => new Clone(config)],
   ["update", (config: Config) => new Update(config)],
+  ["_activate-machine", (config: Config) => new ActivateMachine(config)],
 ]);
 export default class CommandFactory {
   list() {
