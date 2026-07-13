@@ -177,7 +177,6 @@ export class OsShell {
 
     let cmd: string[];
     let cmdString: string;
-    opt.env["PROMPT"] = "[%LEVAIN_CURRENT%] %_LEVAIN_OLD_PROMPT%\""
     if (this.interactive) {
       if (this.config.shellPath) {
         cmdString = `cmd /c start ${this.config.shellPath}`;
