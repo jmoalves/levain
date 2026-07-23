@@ -12,7 +12,7 @@ cmd.install:
   # Command extensions
   # UNC Path
   - levainShell reg import ${pkgDir}/cmd-config.reg 2>nul
-  - activateInit --cmd --bash --powershell 2>nul
+  - activateInit --cmd --bash
 
 cmd.env:
   - addPath ${baseDir}
