@@ -1,4 +1,4 @@
-import { assertEquals } from "@std/assert";
+import { assertEquals, fail } from "@std/assert";
 import * as path from "@std/path";
 
 import TestHelper from "../lib/test/test_helper.ts";
@@ -18,6 +18,8 @@ Deno.test("ExtractAction should check if source exists", async () => {
     const expectedMsg = `File ${src} does not exist`;
     if (err instanceof Error) {
       assertEquals(err.message, expectedMsg);
+    } else {
+      fail("The exception should be an instance of Error indicating that file does not exist");
     }
   }
 });
