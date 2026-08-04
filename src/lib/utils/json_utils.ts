@@ -1,22 +1,26 @@
 import * as path from "@std/path";
 import { ensureDirSync } from "@std/fs";
 import { FileUtils } from "../fs/file_utils.ts";
+import { fileError } from "./error_utils.ts";
+import t from "../i18n.ts";
 
 export default class JsonUtils {
   static load(filename: string): any {
-    return JSON.parse(FileUtils.readTextFileSync(path.resolve(filename)));
+    const data = FileUtils.readTextFileSync(path.resolve(filename));
+    if (data.trim() == "") {
+      return {}; // Empty file should return an empty object instead of throwing exception
+    }
+    try {
+      return JSON.parse(data);
+    } catch (err) {
+      throw fileError(err, filename, t("lib.utils.json_utils.loadError"));
+    }
   }
 
   static save(fileName: string, json: any) {
-    try {
-      const filePath = path.dirname(fileName);
-      ensureDirSync(filePath);
-      FileUtils.writeTextFileSync(fileName, JSON.stringify(json, null, 3));
-    } catch (err) {
-      if (!(err instanceof Error) || (err.name == "NotFound")) {
-        throw Error(`File ${fileName} not found`);
-      }
-    }
+    const filePath = path.dirname(fileName);
+    ensureDirSync(filePath);
+    FileUtils.writeTextFileSync(fileName, JSON.stringify(json, null, 3));
   }
 
   static translatePath(propertyPath: string): string[] {

@@ -231,6 +231,9 @@
     "utils": {
       "error_utils": {
         "fileError": "Error while trying to {{operation}} {{filePath}}: {{err}}"
+      },
+      "json_utils": {
+        "loadError": "parse json of"
       }
     }
   }
