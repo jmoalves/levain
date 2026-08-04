@@ -4,13 +4,7 @@ import { FileUtils } from "../fs/file_utils.ts";
 
 export default class JsonUtils {
   static load(filename: string): any {
-    try {
-      return JSON.parse(FileUtils.readTextFileSync(path.resolve(filename)));
-    } catch (err) {
-      if (!(err instanceof Error) || (err.name == "NotFound")) {
-        throw Error(`File ${filename} not found`);
-      }
-    }
+    return JSON.parse(FileUtils.readTextFileSync(path.resolve(filename)));
   }
 
   static save(fileName: string, json: any) {

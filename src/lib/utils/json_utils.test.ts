@@ -4,6 +4,7 @@ import * as path from "@std/path";
 import TestHelper from "../test/test_helper.ts";
 
 import JsonUtils from "./json_utils.ts";
+import t from "../i18n.ts";
 
 // TODO JsonUtils should save when folder does not exist
 
@@ -23,7 +24,7 @@ Deno.test("JsonUtils - should inform that file does not exist", async () => {
       JsonUtils.load(filename);
     },
     Error,
-    `File ${filename} not found`,
+    t("lib.utils.error_utils.fileError", { err: "NotFound", filePath: filename, operation: t("lib.fs.file_utils.readTextFileSyncError") })
   );
 });
 //

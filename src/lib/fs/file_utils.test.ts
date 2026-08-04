@@ -7,6 +7,7 @@ import TestHelper from "../test/test_helper.ts";
 import { assertNumberEquals } from "../test/more_asserts.ts";
 
 import { FileUtils } from "./file_utils.ts";
+import t from "../i18n.ts";
 
 const readOnlyFolder = TestHelper.getTestDataPath("file_utils/read_only_folder");
 const folderThatDoesNotExist = TestHelper.getTestDataPath("file_utils/--does_not_exist--");
@@ -152,7 +153,7 @@ Deno.test("FileUtils - throwIfNotExists should throw error when file does not ex
       FileUtils.throwIfNotExists(filePath);
     },
     Error,
-    `File ${filePath} does not exist`,
+    t("lib.fs.file_utils.throwIfNotExistsError", { filePath })
   );
 });
 
