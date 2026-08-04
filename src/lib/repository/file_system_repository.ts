@@ -230,20 +230,21 @@ export default class FileSystemRepository extends AbstractRepository {
     }
 
     let fileinfo = undefined;
+    let yamlStr: string | undefined = undefined;
     try {
       fileinfo = Deno.lstatSync(yamlFile);
+      yamlStr = FileUtils.readTextFileSync(yamlFile);
+      if (!fileinfo || !fileinfo.isFile) {
+        return undefined;
+      }
     } catch (error) {
       log.error(`!!! error loading package ${yamlFile}: ${error}`);
-    }
-
-    if (!fileinfo || !fileinfo.isFile) {
       return undefined;
     }
 
     const packageName = yamlFile.replace(/.*[\/|\\]/g, "").replace(/\.levain(\.ya?ml)?/, "");
     log.debug(`readPackage ${packageName} ${yamlFile}`);
 
-    const yamlStr: string = Deno.readTextFileSync(yamlFile);
     // log.debug(`yaml ${packageName} -> ${yamlStr}`)
 
     // log.debug(`pkg ${packageName} -> ${pkg}`)

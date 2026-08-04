@@ -4,7 +4,10 @@ import { existsSync } from "@std/fs";
 
 import ProgressBar from "@deno-library/progress";
 
+import t from "../i18n.ts";
+import { fileError } from "../utils/error_utils.ts";
 import ProgressReader from "./progress_reader.ts";
+import { FileUtils } from "../fs/file_utils.ts";
 
 export default class FileReader implements ProgressReader {
   private filePath: string;
@@ -22,7 +25,7 @@ export default class FileReader implements ProgressReader {
       throw Error(`File ${this.filePath} does not exist`);
     }
 
-    this.fileInfo = Deno.statSync(this.filePath);
+    this.fileInfo = FileUtils.getFileInfoSync(this.filePath);
   }
 
   get name(): string {
@@ -58,8 +61,12 @@ export default class FileReader implements ProgressReader {
   rewind() {
     this.close();
     log.debug(`Reading ${this.filePath}`);
-    this.file = Deno.openSync(this.filePath, { read: true });
-    this.fileInfo = Deno.statSync(this.filePath);
+    try {
+      this.file = Deno.openSync(this.filePath, { read: true });
+      this.fileInfo = FileUtils.getFileInfoSync(this.filePath);
+    } catch (err) {
+      throw fileError(err, this.filePath, t("lib.io.file_reader.rewindError"));
+    }
     this.bytesRead = 0;
   }
 
@@ -93,7 +100,7 @@ export default class FileReader implements ProgressReader {
     log.debug(`Closing ${this.filePath}`);
     this.file.close();
 
-    this.fileInfo = Deno.statSync(this.filePath);
+    this.fileInfo = FileUtils.getFileInfoSync(this.filePath);
   }
 
   // Timestamps

@@ -5,12 +5,15 @@ import { copy } from "@std/io";
 
 import ProgressBar from "@deno-library/progress";
 
+import t from "../i18n.ts";
 import DateUtils from "../utils/date_utils.ts";
 import FileWriter from "../io/file_writer.ts";
 import ProgressReader from "../io/progress_reader.ts";
 import ReaderFactory from "../io/reader_factory.ts";
 import StringUtils from "../utils/string_utils.ts";
 import ConsoleFeedback from "../utils/console_feedback.ts";
+import { fileError } from "../utils/error_utils.ts";
+
 
 export class FileUtils {
   static getModificationTimestamp(filePath: string): Date | undefined {
@@ -20,8 +23,12 @@ export class FileUtils {
     return modificationTimestamp || undefined;
   }
 
-  static getFileInfoSync(filePath: string): Deno.FileInfo {
-    return Deno.statSync(filePath);
+  static getFileInfoSync(filePath: string, operationNameOnError:string = t("lib.fs.file_utils.getFileInfoSyncError")): Deno.FileInfo {
+    try {
+      return Deno.statSync(filePath);
+    } catch (err) {
+      throw fileError(err, filePath, operationNameOnError);
+    }
   }
 
   static canReadSync(filePath: string) {
@@ -165,13 +172,13 @@ export class FileUtils {
   }
 
   static getSize(path: string) {
-    const stat = Deno.statSync(path);
+    const stat = FileUtils.getFileInfoSync(path, t("lib.fs.file_utils.getSizeError"))
     return stat.size;
   }
 
   static throwIfNotExists(filePath: string) {
     if (!existsSync(filePath)) {
-      throw new Deno.errors.NotFound(`File ${filePath} does not exist`);
+      throw new Deno.errors.NotFound(t("lib.fs.file_utils.throwIfNotExistsError", { filePath }));
     }
   }
 
@@ -187,7 +194,11 @@ export class FileUtils {
       existsSync(bkp)
     );
 
-    Deno.copyFileSync(filename, bkp);
+    try {
+      Deno.copyFileSync(filename, bkp);
+    } catch (err) {
+      throw fileError(err, filename, t("lib.fs.file_utils.createBackupError"));
+    }
     return bkp;
   }
 
@@ -205,6 +216,26 @@ export class FileUtils {
   }
 
   static async createEmptyFile(filePath: string): Promise<void> {
-    await Deno.writeTextFile(filePath, "");
+    try {
+      await Deno.writeTextFile(filePath, "");
+    } catch (err) {
+      throw fileError(err, filePath, t("lib.fs.file_utils.createEmptyFileError"));
+    }
+  }
+
+  static readTextFileSync(filePath: string | URL): string {
+    try {
+      return Deno.readTextFileSync(filePath);
+    } catch (err) {
+      throw fileError(err, filePath, t("lib.fs.file_utils.readTextFileSyncError"));
+    }
+  }
+
+  static writeTextFileSync(filePath: string | URL, data: string, options: Deno.WriteFileOptions | undefined = undefined) {
+    try {
+       Deno.writeTextFileSync(filePath, data, options);
+    } catch (err) {
+      throw fileError(err, filePath, t("lib.fs.file_utils.writeTextFileSyncError"));
+    }
   }
 }

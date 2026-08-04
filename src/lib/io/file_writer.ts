@@ -6,9 +6,11 @@ import { existsSync } from "@std/fs";
 import ProgressBar from "@deno-library/progress";
 import type { Closer, Writer } from "@std/io";
 
-
+import t from "../i18n.ts";
+import { fileError } from "../utils/error_utils.ts";
 import Progress from "./progress.ts";
 import Timestamps from "./timestamps.ts";
+import { FileUtils } from "../fs/file_utils.ts";
 
 export default class FileWriter implements Writer, Progress, Timestamps, Closer {
   private filePath: string;
@@ -27,10 +29,13 @@ export default class FileWriter implements Writer, Progress, Timestamps, Closer 
     const dstDir = path.dirname(this.filePath);
     ensureDirSync(dstDir);
 
-    this.tempPath = Deno.makeTempFileSync({ dir: dstDir, prefix: "levain-temp-" });
-
-    log.debug(`Writing to ${this.tempPath}`);
-    this.file = Deno.openSync(this.tempPath, { write: true, create: true, truncate: true });
+    try {
+      this.tempPath = Deno.makeTempFileSync({ dir: dstDir, prefix: "levain-temp-" });
+      log.debug(`Writing to ${this.tempPath}`);
+      this.file = Deno.openSync(this.tempPath, { write: true, create: true, truncate: true });
+    } catch (err) {
+      throw fileError(err, dstDir, t("lib.io.file_writer.constructorError"));
+    }
   }
 
   // Progress
@@ -89,7 +94,7 @@ export default class FileWriter implements Writer, Progress, Timestamps, Closer 
     log.debug(`Moving ${this.tempPath} => ${this.filePath}`);
     Deno.renameSync(this.tempPath, this.filePath);
 
-    this.fileInfo = Deno.statSync(this.filePath);
+    this.fileInfo = FileUtils.getFileInfoSync(this.filePath);
   }
 
   // Timestamps

@@ -250,7 +250,7 @@ export default class Config {
     log.debug(`${JSON.stringify(cfg, null, 3)}`);
 
     ensureDirSync(this.levainConfigDir);
-    Deno.writeTextFileSync(fileName, JSON.stringify(cfg, null, 3));
+    FileUtils.writeTextFileSync(fileName, JSON.stringify(cfg, null, 3));
     log.debug(`saved ${fileName}`);
 
     try {
@@ -337,7 +337,7 @@ export default class Config {
   private loadText(filename: string): string | null {
     try {
       log.debug(`LOAD ${filename}`);
-      const data = Deno.readTextFileSync(filename);
+      const data = FileUtils.readTextFileSync(filename);
       log.debug(`- DATA ${data}`);
       return data;
     } catch (err) {

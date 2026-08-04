@@ -129,6 +129,25 @@
         "newBlock": "Adding initialization block to the end of the profile"
       }
     },
+    "fs": {
+      "file_utils": {
+        "getFileInfoSyncError": "read metadata of",
+        "getSizeError": "read size of",
+        "createBackupError": "create backup of",
+        "createEmptyFileError": "create empty file",
+        "readTextFileSyncError": "read text of",
+        "writeTextFileSyncError": "write text to",
+        "throwIfNotExistsError": "File {{filePath}} does not exist"
+      }
+    },
+    "io": {
+      "file_reader": {
+        "rewindError": "read file"
+      },
+      "file_writer": {
+        "constructorError": "create temp file for writing on"
+      }
+    },
     "repository": {
       "repository_manager": {
         "loaded": "- Loaded REPOS {{repos}}",
@@ -208,6 +227,11 @@
       "defaultPackage": "Changing default package: {{oldPackage}} => {{newPackage}}",
       "errorReading": "Error reading config - {{filename}}",
       "noHomeValid": "No valid levainHome in your list"
+    },
+    "utils": {
+      "error_utils": {
+        "fileError": "Error while trying to {{operation}} {{filePath}}: {{err}}"
+      }
     }
   }
 }

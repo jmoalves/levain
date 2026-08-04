@@ -4,6 +4,7 @@ import * as yaml from "@std/yaml";
 import VersionNumber from "./lib/utils/version_number.ts";
 
 import Levain from "../levain.ts";
+import { FileUtils } from "./lib/fs/file_utils.ts";
 
 export default class LevainVersion {
   static get levainSrcDir(): string {
@@ -16,7 +17,7 @@ export default class LevainVersion {
 
   static get levainVersion(): VersionNumber {
     const levainRecipe = path.resolve(LevainVersion.levainRecipesDir, "levain.levain.yaml");
-    const yamlStr: string = Deno.readTextFileSync(levainRecipe);
+    const yamlStr: string = FileUtils.readTextFileSync(levainRecipe);
     const yamlStruct: any = yaml.parse(yamlStr);
     return new VersionNumber(yamlStruct.version);
   }

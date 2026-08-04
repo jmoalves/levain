@@ -129,6 +129,25 @@
         "newBlock": "Adicionando bloco de inicialização no fim do perfil"
       }
     },
+    "fs": {
+      "file_utils": {
+        "getFileInfoSyncError": "ler metadados de",
+        "getSizeError": "ler tamanho de",
+        "createBackupError": "fazer backup de",
+        "createEmptyFileError": "criar arquivo vazio",
+        "readTextFileSyncError": "ler texto de",
+        "writeTextFileSyncError": "escrever texto em",
+        "throwIfNotExistsError": "Arquivo {{filePath}} não existe"
+      }
+    },
+    "io": {
+      "file_reader": {
+        "rewindError": "ler arquivo"
+      },
+      "file_writer": {
+        "constructorError": "criar arquivo temporário para escrita em"
+      }
+    },
     "repository": {
       "repository_manager": {
         "loaded": "- Lidos REPOS {{repos}}",
@@ -208,6 +227,11 @@
       "defaultPackage": "Alterando pacote default: {{oldPackage}} => {{newPackage}}",
       "errorReading": "Erro ao ler o config - {{filename}}",
       "noHomeValid": "Não há um levainHome válido na sua lista"
+    },
+    "utils": {
+      "error_utils": {
+        "fileError": "Erro ao tentar {{operation}} {{filePath}}: {{err}}"
+      }
     }
   }
 }

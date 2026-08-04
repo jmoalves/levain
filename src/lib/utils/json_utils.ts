@@ -1,10 +1,11 @@
 import * as path from "@std/path";
 import { ensureDirSync } from "@std/fs";
+import { FileUtils } from "../fs/file_utils.ts";
 
 export default class JsonUtils {
   static load(filename: string): any {
     try {
-      return JSON.parse(Deno.readTextFileSync(path.resolve(filename)));
+      return JSON.parse(FileUtils.readTextFileSync(path.resolve(filename)));
     } catch (err) {
       if (!(err instanceof Error) || (err.name == "NotFound")) {
         throw Error(`File ${filename} not found`);
@@ -16,7 +17,7 @@ export default class JsonUtils {
     try {
       const filePath = path.dirname(fileName);
       ensureDirSync(filePath);
-      Deno.writeTextFileSync(fileName, JSON.stringify(json, null, 3));
+      FileUtils.writeTextFileSync(fileName, JSON.stringify(json, null, 3));
     } catch (err) {
       if (!(err instanceof Error) || (err.name == "NotFound")) {
         throw Error(`File ${fileName} not found`);

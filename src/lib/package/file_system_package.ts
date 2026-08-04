@@ -51,7 +51,7 @@ export default class FileSystemPackage extends AbstractPackage {
     if (!this.installed) {
       this.updateAvailable = true;
     } else {
-      let installedRecipe = Deno.readTextFileSync(this.installedRecipeFilepath());
+      let installedRecipe = FileUtils.readTextFileSync(this.installedRecipeFilepath());
       installedRecipe = JSON.stringify(yaml.parse(installedRecipe));
 
       const currentRecipe = JSON.stringify(this.yamlStruct);
