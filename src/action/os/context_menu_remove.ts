@@ -61,6 +61,6 @@ export default class ContextMenuRemoveAction implements Action {
     const loader = new Loader(this.config);
     await loader.action(pkg, action);
 
-    //Deno.removeSync(tempFilename);
+    //FileUtils.removeSync(tempFilename);
   }
 }

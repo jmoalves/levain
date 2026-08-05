@@ -11,6 +11,7 @@ import { fileError } from "../utils/error_utils.ts";
 import Progress from "./progress.ts";
 import Timestamps from "./timestamps.ts";
 import { FileUtils } from "../fs/file_utils.ts";
+import OsUtils from "../os/os_utils.ts";
 
 export default class FileWriter implements Writer, Progress, Timestamps, Closer {
   private filePath: string;
@@ -86,14 +87,12 @@ export default class FileWriter implements Writer, Progress, Timestamps, Closer 
   async close() {
     log.debug(`Closing ${this.tempPath}`);
     this.file.close()
-    if (existsSync(this.filePath)) {
+    if (OsUtils.removeFile(this.filePath)) {
       log.debug(`Removing ${this.filePath}`);
-      Deno.removeSync(this.filePath);
     }
-
     log.debug(`Moving ${this.tempPath} => ${this.filePath}`);
-    Deno.renameSync(this.tempPath, this.filePath);
-
+    FileUtils.renameSync(this.tempPath, this.filePath);
+    
     this.fileInfo = FileUtils.getFileInfoSync(this.filePath);
   }
 

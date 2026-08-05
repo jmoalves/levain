@@ -7,6 +7,8 @@ import { parseArgs } from "../../lib/parse_args.ts";
 import OsUtils from "../../lib/os/os_utils.ts";
 
 import Action from "../action.ts";
+import { FileUtils } from "../../lib/fs/file_utils.ts";
+import { isNotFoundFileError } from "../../lib/utils/error_utils.ts";
 
 export default class Mkdir implements Action {
   constructor(private config: Config) {
@@ -60,7 +62,7 @@ export default class Mkdir implements Action {
 
   private dirExists(dirname: string): boolean {
     try {
-      const fileInfo = Deno.statSync(dirname);
+      const fileInfo = FileUtils.getFileInfoSync(dirname);
       if (fileInfo.isDirectory) {
         return true;
       }
@@ -69,7 +71,7 @@ export default class Mkdir implements Action {
         throw `Action - mkdir - ${dirname} already exists and it is not a directory`;
       }
     } catch (err) {
-      if (!(err instanceof Error) || (err.name != "NotFound")) {
+      if (!isNotFoundFileError(err)) {
         throw err;
       }
     }

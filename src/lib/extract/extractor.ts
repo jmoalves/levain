@@ -51,7 +51,7 @@ export abstract class Extractor {
       }
     }
 
-    await retry(this.maxRetries, () => Deno.removeSync(srcDir));
+    await retry(this.maxRetries, () => FileUtils.removeSync(srcDir));
   }
 
   async extractToTemp(src: string, dst: string): Promise<string> {

@@ -13,6 +13,7 @@ import { FileUtils } from "./fs/file_utils.ts";
 import { homedir } from "./utils/utils.ts";
 import VarResolver from "./var_resolver.ts";
 import ConfigPersistentAttributes from "./config-persistent-attributes.ts";
+import { isNotFoundFileError } from "./utils/error_utils.ts";
 
 export default class Config {
   packageManager: PackageManager;
@@ -254,10 +255,10 @@ export default class Config {
     log.debug(`saved ${fileName}`);
 
     try {
-      Deno.removeSync(this.oldLevainConfigFile);
+      FileUtils.removeSync(this.oldLevainConfigFile);
       log.debug(`DEL ${this.oldLevainConfigFile}`);
     } catch (err) {
-      if (!(err instanceof Error) || (err.name != "NotFound")) {
+      if (!isNotFoundFileError(err)) {
         log.error(t("lib.config.errorReading", { filename: this.oldLevainConfigFile }));
         throw err;
       }
@@ -341,7 +342,7 @@ export default class Config {
       log.debug(`- DATA ${data}`);
       return data;
     } catch (err) {
-      if (!(err instanceof Error) || (err.name != "NotFound")) {
+      if (!isNotFoundFileError(err)) {
         log.error(t("lib.config.errorReading", { filename: filename }));
         throw err;
       }
@@ -416,7 +417,7 @@ export default class Config {
 
     const config = path.resolve(this.levainSrcDir, "..", ".levain", "config.json");
     try {
-      if (Deno.statSync(config)) {
+      if (FileUtils.getFileInfoSync(config)) {
         this._env["levainHome"] = path.resolve(this.levainSrcDir, "..");
         log.debug(`CFG levainHome=${this._env["levainHome"]}`);
         return;

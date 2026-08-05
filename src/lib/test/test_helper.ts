@@ -170,9 +170,7 @@ export default class TestHelper {
 
   private static removeOnExit(pathname: string): void {
     globalThis.addEventListener("unload", () => {
-      if (existsSync(pathname)) {
-        Deno.removeSync(pathname, { recursive: true });
-      }
+      OsUtils.removeDir(pathname);
     });
   }
 
@@ -200,9 +198,7 @@ export default class TestHelper {
   }
 
   static remove(path: string) {
-    if (existsSync(path)) {
-      Deno.removeSync(path, { recursive: true });
-    }
+    OsUtils.removeDir(path);
   }
 
   static async getMockRepositoryInitialized(): Promise<MockRepository> {

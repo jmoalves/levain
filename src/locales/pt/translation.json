@@ -129,6 +129,12 @@
         "newBlock": "Adicionando bloco de inicialização no fim do perfil"
       }
     },
+    "extract": {
+      "denozip_extractor": {
+        "extractImplReadError": "ler zip",
+        "extractImplWriteError": "extrair {{filePath}}. Arquivo:"
+      }
+    },
     "fs": {
       "file_utils": {
         "getFileInfoSyncError": "ler metadados de",
@@ -137,7 +143,9 @@
         "createEmptyFileError": "criar arquivo vazio",
         "readTextFileSyncError": "ler texto de",
         "writeTextFileSyncError": "escrever texto em",
-        "throwIfNotExistsError": "Arquivo {{filePath}} não existe"
+        "throwIfNotExistsError": "Arquivo {{filePath}} não existe",
+        "removeSyncError": "remover arquivo",
+        "renameSyncError": "renomear {{old}} para"
       }
     },
     "io": {
@@ -145,7 +153,8 @@
         "rewindError": "ler arquivo"
       },
       "file_writer": {
-        "constructorError": "criar arquivo temporário para escrita em"
+        "constructorError": "criar arquivo temporário para escrita em",
+        "closeRenameError": "renomear {{old} para"
       }
     },
     "repository": {

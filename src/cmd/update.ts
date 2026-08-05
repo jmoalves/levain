@@ -16,6 +16,7 @@ import LevainVersion from "../levain_version.ts";
 import DateUtils from "../lib/utils/date_utils.ts";
 
 import Command from "./command.ts";
+import { FileUtils } from "../lib/fs/file_utils.ts";
 
 export default class Update implements Command {
   private registry: Registry;
@@ -130,7 +131,7 @@ export default class Update implements Command {
       if (existsSync(registryEntry)) {
         try {
           log.debug(`REMOVE ${registryEntry}`);
-          Deno.removeSync(registryEntry);
+          FileUtils.removeSync(registryEntry);
         } catch (error) {
           log.debug(t("cmd.install.ignoreError", { error: error }));
           shouldInstall = false;
@@ -209,12 +210,13 @@ export default class Update implements Command {
         suffix: ".tmp",
       });
       log.debug(`- SAVE-REN   ${src} => ${renameDir}`);
-      Deno.removeSync(renameDir, { recursive: true });
-      Deno.renameSync(src, renameDir);
+      FileUtils.removeSync(renameDir, { recursive: true });
+      FileUtils.renameSync(src, renameDir);
 
       try {
+        // ToDo: Check this. Why does it delete the temp dir immediately after creating it?
         log.debug(`- SAVE-DEL   ${renameDir}`);
-        Deno.removeSync(renameDir, { recursive: true });
+        FileUtils.removeSync(renameDir, { recursive: true });
       } catch (error) {
         log.debug(t("cmd.install.ignoreError", { error: error }));
       }

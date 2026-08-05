@@ -31,6 +31,14 @@ export class FileUtils {
     }
   }
 
+  static async getFileInfo(filePath: string, operationNameOnError:string = t("lib.fs.file_utils.getFileInfoSyncError")): Promise<Deno.FileInfo> {
+    try {
+      return await Deno.stat(filePath);
+    } catch (err) {
+      throw fileError(err, filePath, operationNameOnError);
+    }
+  }
+
   static canReadSync(filePath: string) {
     const bitwisePermission = 0b100_000_000;
     return this.checkBitwisePermission(filePath, bitwisePermission);
@@ -93,7 +101,7 @@ export class FileUtils {
         prefix: "test-can-write",
       };
       const tempFile = Deno.makeTempFileSync(options);
-      Deno.removeSync(tempFile);
+      FileUtils.removeSync(tempFile);
       return true;
     } catch (error) {
       log.debug(`Cannot create a file in ${dir}`);
@@ -236,6 +244,22 @@ export class FileUtils {
        Deno.writeTextFileSync(filePath, data, options);
     } catch (err) {
       throw fileError(err, filePath, t("lib.fs.file_utils.writeTextFileSyncError"));
+    }
+  }
+
+  static removeSync(filePath: string | URL, options: Deno.RemoveOptions | undefined = undefined) {
+    try {
+       Deno.removeSync(filePath, options);
+    } catch (err) {
+      throw fileError(err, filePath, t("lib.fs.file_utils.removeSyncError"));
+    }
+  }
+
+  static renameSync(oldPath: string | URL, newPath: string | URL, ) {
+    try {
+       Deno.renameSync(oldPath, newPath);
+    } catch (err) {
+      throw fileError(err, newPath, t("lib.fs.file_utils.renameSyncError", { old: oldPath}));
     }
   }
 }

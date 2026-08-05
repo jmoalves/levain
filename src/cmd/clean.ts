@@ -16,6 +16,7 @@ import LevainVersion from "../levain_version.ts";
 import ConsoleFeedback from "../lib/utils/console_feedback.ts";
 
 import Command from "./command.ts";
+import { FileUtils } from "../lib/fs/file_utils.ts";
 
 const cacheExpiration = 30;
 
@@ -110,7 +111,7 @@ export default class CleanCommand implements Command {
       cacheDir,
       cleanCache ? undefined : (dirEntry: Deno.DirEntry) => {
         const entry = path.resolve(cacheDir, dirEntry.name);
-        const stat = Deno.statSync(entry);
+        const stat = FileUtils.getFileInfoSync(entry);
         return (!stat.atime ? false : isBefore(stat.atime, DateUtils.daysAgo(cacheExpiration)));
       },
     );
@@ -122,10 +123,10 @@ export default class CleanCommand implements Command {
 
     this.feedback.show();
 
-    const entryInfo = Deno.statSync(entryPath);
+    const entryInfo = FileUtils.getFileInfoSync(entryPath);
     if (!entryInfo.isDirectory) {
       try {
-        Deno.removeSync(entryPath);
+        FileUtils.removeSync(entryPath);
         // log.debug(`DEL-FILE ${entryPath} - ${entryInfo.size}`)
         return entryInfo.size;
       } catch (error) {
@@ -143,7 +144,7 @@ export default class CleanCommand implements Command {
       );
 
     try {
-      Deno.removeSync(entryPath);
+      FileUtils.removeSync(entryPath);
     } catch (error) {
       log.debug(t("cmd.clean.entryPathIgnoringError", { error: error, entryPath: entryPath }));
     }

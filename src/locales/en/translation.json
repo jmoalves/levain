@@ -129,6 +129,12 @@
         "newBlock": "Adding initialization block to the end of the profile"
       }
     },
+    "extract": {
+      "denozip_extractor": {
+        "extractImplReadError": "read zip",
+        "extractImplWriteError": "extract {{filePath}}. File:"
+      }
+    },
     "fs": {
       "file_utils": {
         "getFileInfoSyncError": "read metadata of",
@@ -137,7 +143,9 @@
         "createEmptyFileError": "create empty file",
         "readTextFileSyncError": "read text of",
         "writeTextFileSyncError": "write text to",
-        "throwIfNotExistsError": "File {{filePath}} does not exist"
+        "throwIfNotExistsError": "File {{filePath}} does not exist",
+        "removeSyncError": "remove file",
+        "renameSyncError": "rename {{old}} to"
       }
     },
     "io": {
@@ -145,7 +153,8 @@
         "rewindError": "read file"
       },
       "file_writer": {
-        "constructorError": "create temp file for writing on"
+        "constructorError": "create temp file for writing on",
+        "closeRenameError": "rename {{old} to"
       }
     },
     "repository": {

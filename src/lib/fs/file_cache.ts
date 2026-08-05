@@ -7,6 +7,7 @@ import ProgressReader from "../io/progress_reader.ts";
 
 import { FileUtils } from "./file_utils.ts";
 import ReaderFactory from "../io/reader_factory.ts";
+import OsUtils from "../os/os_utils.ts";
 
 export default class FileCache {
   constructor(
@@ -38,9 +39,8 @@ export default class FileCache {
       return filePathInCache;
     }
 
-    if (existsSync(filePathInCache)) {
+    if (OsUtils.removeDir(filePathInCache)) {
       log.debug(`Cache - invalidate ${filePathInCache}`);
-      Deno.removeSync(filePathInCache, { recursive: true });
     }
 
     return await this.copyToCache(r);
@@ -58,7 +58,7 @@ export default class FileCache {
         return false;
       }
 
-      const cacheInfo = Deno.statSync(cachePath);
+      const cacheInfo = FileUtils.getFileInfoSync(cachePath);
       return this.fileMatch(src, cacheInfo);
     } catch (error) {
       log.debug(`Error: ${error}`);

@@ -5,6 +5,8 @@ import Package from "../../lib/package/package.ts";
 import { parseArgs } from "../../lib/parse_args.ts";
 
 import Action from "../action.ts";
+import { FileUtils } from "../../lib/fs/file_utils.ts";
+import { isNotFoundFileError } from "../../lib/utils/error_utils.ts";
 
 export default class CheckFileExists implements Action {
   constructor(private config: Config) {
@@ -23,15 +25,19 @@ export default class CheckFileExists implements Action {
     let fileExists = false;
     const promises = files.map(async (file) => {
       try {
-        const fileStat = await Deno.stat(file);
+        const fileStat = await FileUtils.getFileInfo(file);
         log.debug(`${file} - ${fileStat.isFile}`);
         if (fileStat.isFile) {
           fileExists = true;
         } else {
           log.debug(`NOT A FILE: ${file}`);
         }
-      } catch (_error) {
-        log.debug(`NOT FOUND: ${file}`);
+      } catch (err) {
+        if (isNotFoundFileError(err)) {
+          log.debug(`NOT FOUND: ${file}`);
+        } else {
+          throw err;
+        }
       }
     });
 

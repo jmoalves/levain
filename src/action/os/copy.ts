@@ -40,7 +40,7 @@ export default class CopyAction implements Action {
 
     let copyToDir = false;
     try {
-      const fileInfo = Deno.statSync(dst);
+      const fileInfo = FileUtils.getFileInfoSync(dst);
       if (args.ifNotExists && existsSync(dst)) {
         return;
       }
@@ -84,7 +84,7 @@ export default class CopyAction implements Action {
   }
 
   private copySrcFromFileSystem(item: string, dst: string, copyToDir: boolean, args: any) {
-    const fileInfo = Deno.statSync(item);
+    const fileInfo = FileUtils.getFileInfoSync(item);
     if (args.strip && fileInfo.isDirectory) {
       for (const entry of walkSync(item)) {
         if (entry.path == item) {

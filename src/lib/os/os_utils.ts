@@ -6,6 +6,8 @@ import { ArrayUtils } from "../utils/array_utils.ts";
 import { envChain } from "../utils/utils.ts";
 import { Powershell } from "./powershell.ts";
 import ExtraBin from "../extra_bin.ts";
+import { FileUtils } from "../fs/file_utils.ts";
+import { isNotFoundFileError } from "../utils/error_utils.ts";
 
 export default class OsUtils {
   static get tempDir(): string {
@@ -102,10 +104,13 @@ export default class OsUtils {
 
   static async exists(path: string): Promise<boolean> {
     try {
-      await Deno.stat(path);
+      await FileUtils.getFileInfo(path);
       return true;
-    } catch {
-      return false;
+    } catch (err) {
+      if (isNotFoundFileError(err)) {
+        return false;
+      }
+      throw err;
     }
   }
 
@@ -341,16 +346,20 @@ export default class OsUtils {
     await OsUtils.createShortcut(targetFile, shortcutDir);
   }
 
-  static removeFile(filePath: string): void {
+  static removeFile(filePath: string): boolean {
     if (fs.existsSync(filePath)) {
-      Deno.removeSync(filePath);
-    }
+      FileUtils.removeSync(filePath);
+      return true;
+    } 
+    return false;
   }
 
-  static removeDir(dirPath: string): void {
+  static removeDir(dirPath: string): boolean {
     if (fs.existsSync(dirPath)) {
-      Deno.removeSync(dirPath, { recursive: true });
+      FileUtils.removeSync(dirPath, { recursive: true });
+      return true;
     }
+    return false;
   }
 
   static parseCmd(cmd: string): string[] {

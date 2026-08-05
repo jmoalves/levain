@@ -16,6 +16,7 @@ import DateUtils from "../lib/utils/date_utils.ts";
 import { retry } from "../lib/utils/utils.ts";
 
 import Command from "./command.ts";
+import { FileUtils } from "../lib/fs/file_utils.ts";
 
 export default class Install implements Command {
   private registry: Registry;
@@ -191,7 +192,7 @@ export default class Install implements Command {
       if (existsSync(registryEntry)) {
         try {
           log.debug(`REMOVE ${registryEntry}`);
-          Deno.removeSync(registryEntry);
+          FileUtils.removeSync(registryEntry);
         } catch (error) {
           log.debug(t("cmd.install.ignoreError", { error: error }));
           shouldInstall = false;
@@ -270,14 +271,14 @@ export default class Install implements Command {
         suffix: ".tmp",
       });
       log.debug(`- SAVE-PRE   ${deletedDir}`);
-      await retry(this.maxRetries, () => Deno.removeSync(deletedDir, { recursive: true }));
+      await retry(this.maxRetries, () => FileUtils.removeSync(deletedDir, { recursive: true }));
 
       log.debug(`- SAVE-MOV   ${src} => ${deletedDir}`);
       await retry(this.maxRetries, () => moveSync(src, deletedDir));
 
       try {
         log.debug(`- SAVE-DEL   ${deletedDir}`);
-        await retry(this.maxRetries, () => Deno.removeSync(deletedDir, { recursive: true }));
+        await retry(this.maxRetries, () => FileUtils.removeSync(deletedDir, { recursive: true }));
       } catch (error) {
         log.debug(t("cmd.install.ignoreError", { error: error }));
       }
