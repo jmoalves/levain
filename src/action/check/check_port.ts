@@ -1,4 +1,4 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "@std/log";
 
 import Config from "../../lib/config.ts";
 import Package from "../../lib/package/package.ts";
@@ -10,8 +10,9 @@ export default class CheckPort implements Action {
   constructor(private config: Config) {
   }
 
-  async execute(pkg: Package | undefined, parameters: string[]): Promise<void> {
-    let args = parseArgs(parameters, {
+  // deno-lint-ignore require-await
+  async execute(_pkg: Package | undefined, parameters: string[]): Promise<void> {
+    const args = parseArgs(parameters, {
       stringOnce: [
         "port",
         "transport",
@@ -23,7 +24,7 @@ export default class CheckPort implements Action {
       throw new Error("You must inform the port to check");
     }
 
-    let options: any = {};
+    const options: any = {};
     options.port = +args.port;
 
     if (args.transport) {
@@ -44,8 +45,8 @@ export default class CheckPort implements Action {
     log.debug(`CHECK-PORT ${JSON.stringify(options)}`);
     try {
       const listener = Deno.listen(options);
-      // listener.close() - not needed with Deno.Command
-    } catch (error) {
+      listener.close()
+    } catch (_error) {
       throw Error(`Port already in use ${JSON.stringify(options)}`);
     }
   }

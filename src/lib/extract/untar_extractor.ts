@@ -1,8 +1,9 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "@std/log";
 
-import Config from "../config.ts";
+import type Config from "../config.ts";
 import ExtraBin from "../extra_bin.ts";
 import { Extractor } from "./extractor.ts";
+import OsUtils from "../os/os_utils.ts";
 
 export class UnTar extends Extractor {
   constructor(config: Config) {
@@ -17,16 +18,17 @@ export class UnTar extends Extractor {
 
     log.debug(`-- UNTAR ${src} => ${dst}`);
 
-    let args =
+    const [exec, ...args] = OsUtils.parseCmd(
       `cmd /u /c path ${ExtraBin.sevenZipDir};%PATH% && ( ${ExtraBin.sevenZipDir}\\7z.exe x ${src} -bsp2 -so | ${ExtraBin.sevenZipDir}\\7z.exe x -si -bd -ttar -o${dst} )`
-        .split(" ");
+    )
 
-    const p = Deno.run({
+    const pcommand = await new Deno.Command(exec, {
+      args: args,
       stdout: "null",
-      cmd: args,
     });
 
-    let status = await p.output();
+    const status = await pcommand.output();
+
     if (!status.success) {
       throw "CMD terminated with code " + status.code;
     }

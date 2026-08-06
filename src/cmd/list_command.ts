@@ -1,4 +1,5 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "@std/log";
+import { distance } from "fastest-levenshtein";
 
 import t from "../lib/i18n.ts";
 
@@ -7,7 +8,6 @@ import StringUtils from "../lib/utils/string_utils.ts";
 
 import Command from "./command.ts";
 
-import { distance } from "https://deno.land/x/fastest_levenshtein/mod.ts";
 
 export default class ListCommand implements Command {
   constructor(private config: Config) {
@@ -33,7 +33,6 @@ export default class ListCommand implements Command {
       if (filteredPackageCount > 0) {
         log.info(`  ${t("cmd.list_command.packagesFound", { pkg: filteredPackageCount, count: packageCount })}`);
         log.info("");
-        const filteredPluralChar = filteredPackageCount > 1 ? "s" : "";
         log.info(`== ${t("cmd.list_command.packages", { count: filteredPackageCount })}`);
         // TODO: Inform if package is already installed.
         filteredPackages.forEach((pkg) => {
@@ -49,7 +48,7 @@ export default class ListCommand implements Command {
           log.info(`${searchText} - ${t("cmd.list_command.unableToSimilar")}`);
         } else {
           log.info(`${searchText} - ${t("cmd.list_command.similarPackages")}`);
-          for (let a of similarPackages) {
+          for (const a of similarPackages) {
             log.info(a.name);
           }
         }
@@ -67,7 +66,7 @@ export default class ListCommand implements Command {
       return true;
     }
 
-    let d = distance(name1.toLowerCase(), name2.toLowerCase());
+    const d = distance(name1.toLowerCase(), name2.toLowerCase());
     if (d <= 2) {
       return true;
     }

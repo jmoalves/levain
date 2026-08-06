@@ -1,8 +1,9 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import { LogLevels, LogRecord } from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
+import * as log from "@std/log";
+import { LogLevels } from "@std/log";
+import { LogRecord } from "@std/log/logger";
+import * as path from "@std/path";
 
-import { copySync, existsSync } from "https://deno.land/std/fs/mod.ts";
+import { copySync } from "@std/fs";
 
 import Config from "../config.ts";
 import { MockPackage } from "../package/mock_package.ts";
@@ -15,6 +16,8 @@ import MockRepository from "../repository/mock_repository.ts";
 import OsUtils from "../os/os_utils.ts";
 
 export default class TestHelper {
+  private static originalPrompt = globalThis.prompt;
+
   static async setupTestLogger() {
     return await TestLogger.setup();
   }
@@ -40,6 +43,28 @@ export default class TestHelper {
       level,
       loggerName: "anyLogger",
     });
+  }
+
+  
+  static mockInput(value: string): void {
+    globalThis.prompt = () => value;
+  }
+
+  static restoreInput(): void {
+    globalThis.prompt = TestHelper.originalPrompt;
+  }
+  
+  static async mockInputWrap<T>(
+    value: string,
+    fn: () => T | Promise<T>,
+  ): Promise<T> {
+    TestHelper.mockInput(value);
+
+    try {
+      return await fn();
+    } finally {
+      TestHelper.restoreInput();
+    }
   }
 
   static mockPackage() {
@@ -145,9 +170,7 @@ export default class TestHelper {
 
   private static removeOnExit(pathname: string): void {
     globalThis.addEventListener("unload", () => {
-      if (existsSync(pathname)) {
-        Deno.removeSync(pathname, { recursive: true });
-      }
+      OsUtils.removeDir(pathname);
     });
   }
 
@@ -163,7 +186,7 @@ export default class TestHelper {
 
   static randomString(size = 32) {
     let outString = "";
-    let inOptions = "abcdefghijklmnopqrstuvwxyz0123456789";
+    const inOptions = "abcdefghijklmnopqrstuvwxyz0123456789";
 
     for (let i = 0; i < size; i++) {
       outString += inOptions.charAt(
@@ -175,9 +198,7 @@ export default class TestHelper {
   }
 
   static remove(path: string) {
-    if (existsSync(path)) {
-      Deno.removeSync(path, { recursive: true });
-    }
+    OsUtils.removeDir(path);
   }
 
   static async getMockRepositoryInitialized(): Promise<MockRepository> {
@@ -222,7 +243,7 @@ export default class TestHelper {
       flags = "i";
     }
 
-    let regExpStr = `${strPath}`
+    const regExpStr = `${strPath}`
       .replaceAll("\\", "\\\\")
       .replaceAll("/", "\\/");
 

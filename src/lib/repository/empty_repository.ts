@@ -27,7 +27,7 @@ export class EmptyRepository implements Repository {
     return Promise.resolve([]);
   }
 
-  resolvePackage(packageName: string): Package | undefined {
+  resolvePackage(_packageName: string): Package | undefined {
     return undefined;
   }
 

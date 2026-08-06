@@ -1,10 +1,10 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import * as yaml from "https://deno.land/std/yaml/mod.ts";
+import * as path from "@std/path";
+import * as yaml from "@std/yaml";
 
 import VersionNumber from "./lib/utils/version_number.ts";
 
 import Levain from "../levain.ts";
+import { FileUtils } from "./lib/fs/file_utils.ts";
 
 export default class LevainVersion {
   static get levainSrcDir(): string {
@@ -17,13 +17,13 @@ export default class LevainVersion {
 
   static get levainVersion(): VersionNumber {
     const levainRecipe = path.resolve(LevainVersion.levainRecipesDir, "levain.levain.yaml");
-    const yamlStr: string = Deno.readTextFileSync(levainRecipe);
+    const yamlStr: string = FileUtils.readTextFileSync(levainRecipe);
     const yamlStruct: any = yaml.parse(yamlStr);
     return new VersionNumber(yamlStruct.version);
   }
 
   static isHeadVersion(version?: VersionNumber): boolean {
-    let myVersion = version || LevainVersion.levainVersion;
+    const myVersion = version || LevainVersion.levainVersion;
     return myVersion.isHEAD;
   }
 }

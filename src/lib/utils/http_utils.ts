@@ -1,7 +1,7 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import * as deno_validator from "https://deno.land/x/deno_validator/mod.ts";
-import { sleepRandomAmountOfSeconds } from "https://deno.land/x/sleep/mod.ts";
+import * as log from "@std/log";
+import * as path from "@std/path";
+import validator from "validator";
+import { sleepRandomAmountOfSeconds } from "./utils.ts";
 
 export default class HttpUtils {
   static async get(url: string, tries: number = 3): Promise<Response> {
@@ -16,7 +16,7 @@ export default class HttpUtils {
       try {
         const c = new AbortController();
         const id = setTimeout(() => c.abort(), 5000);
-        let response = await fetch(url, { signal: c.signal, redirect: "follow" });
+        const response = await fetch(url, { signal: c.signal, redirect: "follow" });
         clearTimeout(id);
 
         if (response) {
@@ -35,7 +35,7 @@ export default class HttpUtils {
   }
 
   static resolve(uri: string) {
-    if (deno_validator.isURL(uri, {})) {
+    if (validator.isURL(uri, {})) {
       return uri;
     }
     return path.resolve(uri);

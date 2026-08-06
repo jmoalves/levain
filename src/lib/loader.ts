@@ -1,4 +1,4 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "@std/log";
 
 import CommandFactory from "../cmd/command_factory.ts";
 import Command from "../cmd/command.ts";
@@ -35,7 +35,7 @@ export default class Loader {
     log.debug(`+ ACTION: ${JSON.stringify(cmdline)}`);
 
     let args = cmdline.split(" ");
-    let action = args.shift();
+    const action = args.shift();
 
     if (action == undefined) {
       throw "No action to perform";
@@ -46,7 +46,7 @@ export default class Loader {
     log.debug(`- ARG-QUOT ${args}`);
     const handler: Action = this.actionFactory.get(action, this.config);
 
-    for (let index in args) {
+    for (const index in args) {
       args[index] = await this.config.replaceVars(args[index], pkg?.name);
     }
 

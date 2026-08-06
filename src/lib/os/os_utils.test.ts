@@ -4,12 +4,10 @@ import {
   assertMatch,
   assertNotEquals,
   assertNotMatch,
-  assertThrows,
-} from "https://deno.land/std/assert/mod.ts";
-import { existsSync } from "https://deno.land/std/fs/exists.ts";
-import * as fs from "https://deno.land/std/fs/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import * as log from "https://deno.land/std/log/mod.ts";
+} from "@std/assert";
+import { existsSync } from "@std/fs";
+import * as path from "@std/path";
+import * as log from "@std/log";
 
 import OsUtils from "./os_utils.ts";
 import { assertGreaterThan, assertPathExists } from "../test/more_asserts.ts";
@@ -213,7 +211,7 @@ if (OsUtils.isWindows()) {
 
   Deno.test({
     name: "OsUtils.sanitizePathString should remove invalid chars",
-    async fn() {
+    fn() {
       const path = 'C:\\src\\dev-env\\levain";"C:\\Program Files (x86)\\Common Files\\Oracle\\Java\\javapath"';
       const sanitizedPath = OsUtils.sanitizePathString(path);
       assertEquals(
@@ -225,7 +223,7 @@ if (OsUtils.isWindows()) {
 
   Deno.test({
     name: "OsUtils.sanitizePathArray should remove invalid chars",
-    async fn() {
+    fn() {
       const pathArray = [
         '%USERPROFILE%\\AppData\\Local\\Microsoft\\WindowsApps"',
         '"C:\\Program Files\\Docker\\Docker\\resources\\bin"',
@@ -263,6 +261,7 @@ if (OsUtils.isWindows()) {
 const getCurrentDirCommand = OsUtils.isWindows() ? "cmd /u /c echo %cd%" : "pwd";
 Deno.test("OsUtils.runAndLog should not insert unicode zeros in stdout", async () => {
   const stdout = await OsUtils.runAndLog(getCurrentDirCommand);
+  // deno-lint-ignore no-control-regex
   assertNotMatch(stdout, /\u0000/);
 });
 Deno.test("OsUtils.runAndLog should execute and return stdout", async () => {

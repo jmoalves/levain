@@ -1,11 +1,13 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
+import * as log from "@std/log";
+import * as path from "@std/path";
 
 import Config from "../lib/config.ts";
 import Package from "../lib/package/package.ts";
 import { parseArgs } from "../lib/parse_args.ts";
+import { FileUtils } from "../lib/fs/file_utils.ts";
 
 import Action from "./action.ts";
+import { isNotFoundFileError } from "../lib/utils/error_utils.ts";
 
 export default class Template implements Action {
   constructor(private config: Config) {
@@ -14,7 +16,7 @@ export default class Template implements Action {
   async execute(pkg: Package | undefined, parameters: string[]) {
     log.debug(`INI - TEMPLATE ${parameters}`);
 
-    let args = parseArgs(parameters, {
+    const args = parseArgs(parameters, {
       stringMany: [
         "replace",
         "with",
@@ -28,11 +30,11 @@ export default class Template implements Action {
 
     log.debug(`ARG - TEMPLATE ${JSON.stringify(args)}`);
 
-    let src = pkg ? path.resolve(pkg.pkgDir, args._[0]) : path.resolve(args._[0]);
+    const src = pkg ? path.resolve(pkg.pkgDir, args._[0]) : path.resolve(args._[0]);
     let dst = pkg ? path.resolve(pkg.baseDir, args._[1]) : path.resolve(args._[1]);
 
     log.debug(`TEMPLATE ${src} => ${dst}`);
-    let data = Deno.readTextFileSync(src);
+    let data = FileUtils.readTextFileSync(src);
     for (let x = 0; x < args.replace.length; x++) {
       let replacement = args.with[x];
       if (args.doubleBackslash) {
@@ -44,8 +46,8 @@ export default class Template implements Action {
 
       if (args.replace[x].search(/^\/(.+)\/([a-z]?)/) != -1) {
         // É regexp
-        let regexp = args.replace[x].replace(/^\/(.+)\/([a-z]?)/, "$1");
-        let flags = args.replace[x].replace(/^\/(.+)\/([a-z]?)/, "$2");
+        const regexp = args.replace[x].replace(/^\/(.+)\/([a-z]?)/, "$1");
+        const flags = args.replace[x].replace(/^\/(.+)\/([a-z]?)/, "$2");
 
         log.debug(`- ${x}: REPLACE[rxp] /${regexp}/${flags} => ${replacement}`);
         data = data.replace(new RegExp(regexp, flags), replacement);
@@ -56,12 +58,12 @@ export default class Template implements Action {
     }
 
     try {
-      const fileInfo = Deno.statSync(dst);
+      const fileInfo = FileUtils.getFileInfoSync(dst);
       if (fileInfo.isDirectory) {
         dst = path.resolve(dst, path.basename(src));
       }
     } catch (err) {
-      if (err.name != "NotFound") {
+      if (!isNotFoundFileError(err)) {
         throw err;
       }
     }
@@ -69,7 +71,7 @@ export default class Template implements Action {
     log.debug(`- WRITE ${dst}`);
     log.debug(`- DATA`);
     log.debug(data);
-    await Deno.writeTextFileSync(dst, data);
+    await FileUtils.writeTextFileSync(dst, data);
   }
 
   private verifyArgs(args: any): void {

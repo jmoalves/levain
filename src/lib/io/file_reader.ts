@@ -1,10 +1,13 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import { existsSync } from "https://deno.land/std/fs/exists.ts";
+import * as log from "@std/log";
+import * as path from "@std/path";
+import { existsSync } from "@std/fs";
 
-import ProgressBar from "https://deno.land/x/progress/mod.ts";
+import ProgressBar from "@deno-library/progress";
 
+import t from "../i18n.ts";
+import { fileError } from "../utils/error_utils.ts";
 import ProgressReader from "./progress_reader.ts";
+import { FileUtils } from "../fs/file_utils.ts";
 
 export default class FileReader implements ProgressReader {
   private filePath: string;
@@ -22,7 +25,7 @@ export default class FileReader implements ProgressReader {
       throw Error(`File ${this.filePath} does not exist`);
     }
 
-    this.fileInfo = Deno.statSync(this.filePath);
+    this.fileInfo = FileUtils.getFileInfoSync(this.filePath);
   }
 
   get name(): string {
@@ -56,20 +59,25 @@ export default class FileReader implements ProgressReader {
 
   // RewindReader
   rewind() {
-    // this.close() - not needed with Deno.Command
+    this.close();
     log.debug(`Reading ${this.filePath}`);
-    this.file = Deno.openSync(this.filePath, { read: true });
-    this.fileInfo = Deno.statSync(this.filePath);
+    try {
+      this.file = Deno.openSync(this.filePath, { read: true });
+      this.fileInfo = FileUtils.getFileInfoSync(this.filePath);
+    } catch (err) {
+      throw fileError(err, this.filePath, t("lib.io.file_reader.rewindError"));
+    }
     this.bytesRead = 0;
   }
 
   // Deno.Reader
+  // deno-lint-ignore require-await
   async read(p: Uint8Array): Promise<number | null> {
     if (!this.file) {
       return Promise.resolve(null);
     }
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _reject) => {
       this.file?.read(p).then((size: number | null) => {
         if (size) {
           this.bytesRead += size;
@@ -83,17 +91,16 @@ export default class FileReader implements ProgressReader {
     });
   }
 
+  // deno-lint-ignore require-await
   async close() {
     if (!this.file) {
       return;
     }
 
     log.debug(`Closing ${this.filePath}`);
-    this
-      // file.close() - not needed with Deno.Command
-      .this.file = undefined;
+    this.file.close();
 
-    this.fileInfo = Deno.statSync(this.filePath);
+    this.fileInfo = FileUtils.getFileInfoSync(this.filePath);
   }
 
   // Timestamps

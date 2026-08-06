@@ -1,4 +1,4 @@
-import { assert, assertEquals, assertThrows } from "https://deno.land/std/assert/mod.ts";
+import { assertEquals, assertThrows } from "@std/assert";
 
 import { parseArgs } from "./parse_args.ts";
 
@@ -58,7 +58,7 @@ Deno.test("should parse stringOnce option", () => {
 Deno.test("should use stringOnce option only once", () => {
   assertThrows(
     () => {
-      const args = parseArgs(["--stringOption", "firstOption", "--stringOption", "secondOption"], {
+      const _args = parseArgs(["--stringOption", "firstOption", "--stringOption", "secondOption"], {
         stringOnce: [
           "stringOption",
         ],

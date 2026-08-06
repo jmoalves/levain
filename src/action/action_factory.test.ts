@@ -1,4 +1,4 @@
-import { assert, assertThrows } from "https://deno.land/std/assert/mod.ts";
+import { assert, assertThrows } from "@std/assert";
 
 import TestHelper from "../lib/test/test_helper.ts";
 import { assertArrayEqualsInAnyOrder } from "../lib/test/more_asserts.ts";
@@ -12,6 +12,9 @@ Deno.test("ActionFactory should list actions", () => {
   const actions: string[] = factory.list();
 
   assertArrayEqualsInAnyOrder(actions, [
+    "activateCmd",
+    "activatePre",
+    "activateInit",
     "addPath",
     "addToDesktop",
     "addToStartMenu",

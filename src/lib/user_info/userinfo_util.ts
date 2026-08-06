@@ -1,15 +1,6 @@
-// CLIFFY STUB - Remove after fixing
-const Input = { prompt: async (opts: any) => opts.default || "" };
-const Select = { prompt: async (opts: any) => opts.options?.[0] || "" };
-const Confirm = { prompt: async (opts: any) => false };
-const Command = class Command {
-  parse() {}
-};
-
-import * as log from "https://deno.land/std/log/mod.ts";
-import { existsSync } from "https://deno.land/std/fs/mod.ts";
-
-// TEMP DISABLED: import {ValidateResult} from 'https://deno.land/x/cliffy@v1.0.0-rc.3/prompt/mod.ts'
+import * as log from "@std/log";
+import { existsSync } from "@std/fs";
+import { ValidateResult } from "@cliffy/prompt";
 
 import t from "../i18n.ts";
 
@@ -24,7 +15,7 @@ import { NameValidator } from "./validators/validators.ts";
 import { InputFullName } from "./input_name.ts";
 import { InputEmail } from "./input_email.ts";
 import { InputLogin } from "./input_login.ts";
-
+ 
 const passwordSizeMin = 3;
 
 export default class UserInfoUtil {
@@ -147,7 +138,7 @@ export default class UserInfoUtil {
     }
 
     const email = await InputEmail.inputAndValidate(defaultValue || "");
-
+    
     if (!email) {
       throw new Error(t("lib.user_info.userinfo_util.unableEmail"));
     }
@@ -179,6 +170,7 @@ export default class UserInfoUtil {
     return newValue;
   }
 
+  // deno-lint-ignore require-await
   async askPassword(config: Config): Promise<string> {
     // const allowedAndTestedPasswordChars = '#!@$'
     const forbiddenPasswordChars = "^&";

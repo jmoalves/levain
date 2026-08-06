@@ -1,6 +1,6 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import { copySync, existsSync, moveSync } from "https://deno.land/std/fs/mod.ts";
+import * as log from "@std/log";
+import * as path from "@std/path";
+import { copySync, existsSync, moveSync } from "@std/fs";
 
 import t from "../lib/i18n.ts";
 
@@ -16,6 +16,7 @@ import DateUtils from "../lib/utils/date_utils.ts";
 import { retry } from "../lib/utils/utils.ts";
 
 import Command from "./command.ts";
+import { FileUtils } from "../lib/fs/file_utils.ts";
 
 export default class Install implements Command {
   private registry: Registry;
@@ -38,7 +39,7 @@ export default class Install implements Command {
     let pkgNames: string[] = myArgs._;
 
     if (pkgNames.length == 0) {
-      let curDirPkg = await this.config.repositoryManager.currentDirPackage();
+      const curDirPkg = await this.config.repositoryManager.currentDirPackage();
       if (curDirPkg && curDirPkg.dependencies && curDirPkg.dependencies.length > 0) {
         pkgNames = curDirPkg.dependencies;
       }
@@ -50,14 +51,14 @@ export default class Install implements Command {
 
     let pkgs: Package[] | null = this.config.packageManager.resolvePackages(pkgNames);
     if (!pkgs) {
-      let missing = pkgNames.filter((name) => !this.config.packageManager.getSimilarNames(name).has(name));
+      const missing = pkgNames.filter((name) => !this.config.packageManager.getSimilarNames(name).has(name));
 
       log.info(``);
       log.info(t("cmd.install.unableToFind", { pkgNames: missing }));
 
       log.info("");
       log.info(t("cmd.install.similar"));
-      for (let name of missing) {
+      for (const name of missing) {
         log.info(`${name} => ${[...this.config.packageManager.getSimilarNames(name)]}`);
       }
       log.info("");
@@ -78,10 +79,10 @@ export default class Install implements Command {
 
     if (!myArgs.force && !myArgs.noUpdate) {
       // Check updates
-      let willUpdate = [];
-      let willInstall = [];
+      const willUpdate = [];
+      const willInstall = [];
 
-      for (let pkg of pkgs) {
+      for (const pkg of pkgs) {
         const name = pkg.name;
         if (!pkg.installed) {
           willInstall.push(name);
@@ -100,7 +101,7 @@ export default class Install implements Command {
         log.info(`${JSON.stringify(willUpdate, null, 3)}`);
         log.info("");
 
-        let answer = prompt(t("cmd.install.updatePrompt"), t("cmd.install.updatePromptDefault"));
+        const answer = prompt(t("cmd.install.updatePrompt"), t("cmd.install.updatePromptDefault"));
         if (!answer || ![t("cmd.install.updatePromptDefault")].includes(answer.toUpperCase())) {
           log.info(t("cmd.install.askLater"));
           shouldUpdate = false;
@@ -115,10 +116,10 @@ export default class Install implements Command {
       }
     }
 
-    let pkgNameSet = new Set(pkgNames);
-    let bkpTag = this.bkpTag();
-    for (let pkg of pkgs) {
-      let forcePkg = myArgs.force && pkgNameSet.has(pkg.name);
+    const pkgNameSet = new Set(pkgNames);
+    const bkpTag = this.bkpTag();
+    for (const pkg of pkgs) {
+      const forcePkg = myArgs.force && pkgNameSet.has(pkg.name);
       await this.installPackage(bkpTag, pkg, forcePkg, shouldUpdate);
     }
 
@@ -187,11 +188,11 @@ export default class Install implements Command {
 
     // https://github.com/jmoalves/levain/issues/148
     if (shouldInstall) {
-      let registryEntry = path.resolve(this.config.levainRegistryDir, path.basename(pkg.filePath));
+      const registryEntry = path.resolve(this.config.levainRegistryDir, path.basename(pkg.filePath));
       if (existsSync(registryEntry)) {
         try {
           log.debug(`REMOVE ${registryEntry}`);
-          Deno.removeSync(registryEntry);
+          FileUtils.removeSync(registryEntry);
         } catch (error) {
           log.debug(t("cmd.install.ignoreError", { error: error }));
           shouldInstall = false;
@@ -199,10 +200,10 @@ export default class Install implements Command {
       }
     }
 
-    let actions = [];
+    const actions = [];
 
     if (shouldInstall) {
-      let installActions = pkg.yamlItem("cmd.install") || [];
+      const installActions = pkg.yamlItem("cmd.install") || [];
       if (!pkg.skipInstallDir()) {
         installActions.unshift("mkdir ${baseDir}");
       }
@@ -216,7 +217,7 @@ export default class Install implements Command {
     }
 
     // Standard actions - Env - At the rear (push), they are in normal order (like a QUEUE)
-    let envActions = pkg.yamlItem("cmd.env");
+    const envActions = pkg.yamlItem("cmd.env");
     if (envActions) {
       Array.prototype.push.apply(actions, envActions);
     }
@@ -230,7 +231,7 @@ export default class Install implements Command {
     }
 
     const loader = new Loader(this.config);
-    for (let action of actions) {
+    for (const action of actions) {
       await loader.action(pkg, action);
     }
 
@@ -245,9 +246,9 @@ export default class Install implements Command {
     }
 
     try {
-      let bkpDir = path.resolve(this.config.levainBackupDir, bkpTag);
-      let src = pkg.baseDir;
-      let dst = path.resolve(bkpDir, path.basename(src));
+      const bkpDir = path.resolve(this.config.levainBackupDir, bkpTag);
+      const src = pkg.baseDir;
+      const dst = path.resolve(bkpDir, path.basename(src));
 
       log.info(`SAVING ${src} => ${dst}`);
 
@@ -264,20 +265,20 @@ export default class Install implements Command {
         return true;
       }
 
-      let deletedDir = Deno.makeTempDirSync({
+      const deletedDir = Deno.makeTempDirSync({
         dir: path.dirname(src),
         prefix: ".deleted." + path.basename(src) + ".",
         suffix: ".tmp",
       });
       log.debug(`- SAVE-PRE   ${deletedDir}`);
-      await retry(this.maxRetries, () => Deno.removeSync(deletedDir, { recursive: true }));
+      await retry(this.maxRetries, () => FileUtils.removeSync(deletedDir, { recursive: true }));
 
       log.debug(`- SAVE-MOV   ${src} => ${deletedDir}`);
       await retry(this.maxRetries, () => moveSync(src, deletedDir));
 
       try {
         log.debug(`- SAVE-DEL   ${deletedDir}`);
-        await retry(this.maxRetries, () => Deno.removeSync(deletedDir, { recursive: true }));
+        await retry(this.maxRetries, () => FileUtils.removeSync(deletedDir, { recursive: true }));
       } catch (error) {
         log.debug(t("cmd.install.ignoreError", { error: error }));
       }

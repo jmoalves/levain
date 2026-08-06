@@ -1,5 +1,5 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
+import * as log from "@std/log";
+import * as path from "@std/path";
 
 import t from "./src/lib/i18n.ts";
 
@@ -56,7 +56,7 @@ export default class Levain {
           "levain-upgrade",
         ],
       });
-
+      
       await this.prepareLogs(this.myArgs);
 
       log.info("");
@@ -99,8 +99,9 @@ export default class Levain {
   }
 
   async prepareLogs(myArgs: any): Promise<ConsoleAndFileLogger> {
+    const omitLog =  (myArgs?._?.length > 1 && (myArgs._[0] == "_activate-machine") && (myArgs._[1] == "cmd"));
     this.logFiles = this.getLogFiles(myArgs["add-log"], myArgs["add-log-dir"]);
-    this.logger = await ConsoleAndFileLogger.setup(this.logFiles);
+    this.logger = await ConsoleAndFileLogger.setup(this.logFiles, omitLog);
     this.logger.showLogFiles(this.logFiles);
     return this.logger;
   }

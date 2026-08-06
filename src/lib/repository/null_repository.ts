@@ -8,6 +8,7 @@ export default class NullRepository extends AbstractRepository {
     super("nullRepo");
   }
 
+  // deno-lint-ignore require-await
   async init(): Promise<void> {
     this.setInitialized();
   }
@@ -15,7 +16,7 @@ export default class NullRepository extends AbstractRepository {
   invalidatePackages() {
   }
 
-  resolvePackage(packageName: string): Package | undefined {
+  resolvePackage(_packageName: string): Package | undefined {
     return undefined;
   }
 
@@ -23,6 +24,7 @@ export default class NullRepository extends AbstractRepository {
     return [];
   }
 
+  // deno-lint-ignore require-await
   async readPackages(): Promise<Array<Package>> {
     return [];
   }

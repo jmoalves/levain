@@ -1,17 +1,19 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import { ensureDirSync, existsSync } from "https://deno.land/std/fs/mod.ts";
-import { copy } from "https://deno.land/std/io/mod.ts";
+import * as log from "@std/log";
+import * as path from "@std/path";
+import { ensureDirSync, existsSync } from "@std/fs";
+import { copy } from "@std/io";
 
-import ProgressBar from "https://deno.land/x/progress/mod.ts";
+import ProgressBar from "@deno-library/progress";
 
-import OsUtils from "../os/os_utils.ts";
+import t from "../i18n.ts";
 import DateUtils from "../utils/date_utils.ts";
 import FileWriter from "../io/file_writer.ts";
 import ProgressReader from "../io/progress_reader.ts";
 import ReaderFactory from "../io/reader_factory.ts";
 import StringUtils from "../utils/string_utils.ts";
 import ConsoleFeedback from "../utils/console_feedback.ts";
+import { fileError } from "../utils/error_utils.ts";
+
 
 export class FileUtils {
   static getModificationTimestamp(filePath: string): Date | undefined {
@@ -21,43 +23,28 @@ export class FileUtils {
     return modificationTimestamp || undefined;
   }
 
-  static getFileInfoSync(filePath: string): Deno.FileInfo {
-    return Deno.statSync(filePath);
+  static getFileInfoSync(filePath: string, operationNameOnError:string = t("lib.fs.file_utils.getFileInfoSyncError")): Deno.FileInfo {
+    try {
+      return Deno.statSync(filePath);
+    } catch (err) {
+      throw fileError(err, filePath, operationNameOnError);
+    }
+  }
+
+  static async getFileInfo(filePath: string, operationNameOnError:string = t("lib.fs.file_utils.getFileInfoSyncError")): Promise<Deno.FileInfo> {
+    try {
+      return await Deno.stat(filePath);
+    } catch (err) {
+      throw fileError(err, filePath, operationNameOnError);
+    }
   }
 
   static canReadSync(filePath: string) {
-    // FIXME Will not need the following code block when Deno.statSync.mode is fully implemented for Windows
-    if (OsUtils.isWindows()) {
-      try {
-        if (!existsSync(filePath)) {
-          return false;
-        }
-        // const fileInfo = this.getFileInfoSync(filePath)
-        // if (fileInfo.isFile) {
-        //     const file = Deno.openSync(filePath)
-        //     // file.close() - not needed with Deno.Command
-        //     Deno.readDirSync(filePath)
-        // }
-        return true;
-      } catch (e) {
-        if (e.name != "PermissionDenied") {
-          log.debug(`Error reading ${filePath}`);
-        }
-        return false;
-      }
-    }
-
     const bitwisePermission = 0b100_000_000;
     return this.checkBitwisePermission(filePath, bitwisePermission);
   }
 
   static canWriteSync(filePath: string) {
-    if (OsUtils.isWindows()) {
-      if (FileUtils.isDir(filePath)) {
-        return FileUtils.canCreateTempFileInDir(filePath);
-      }
-      throw "How do I check if a file is writable in Windows?";
-    }
     const bitwisePermission = 0b010_000_000;
     return this.checkBitwisePermission(filePath, bitwisePermission);
   }
@@ -67,31 +54,8 @@ export class FileUtils {
       return false;
     }
     const fileInfo = this.getFileInfoSync(filePath);
-    if (OsUtils.isWindows()) {
-      if (fileInfo !== undefined) {
-        throw "Please check https://doc.deno.land/builtin/stable#Deno.FileInfo . Is Deno.statSync.mode is implemented for Windows?\n";
-      }
-      throw "How do I check file/folder permissions in Windows? https://doc.deno.land/builtin/stable#Deno.FileInfo";
-    }
-
     const mode = fileInfo.mode || 0;
     return !!(mode & bitwisePermission);
-  }
-
-  static waitForFilesToClose() {
-    while (this.getFileResources().length > 0) {
-      console.debug(
-        `Waiting for Deno.resources to close ${JSON.stringify({} /* Deno.resources() removed in Deno 2 */)}`,
-      );
-    }
-  }
-
-  static getFileResources(): [string, any][] {
-    const resourceMap = {}; /* removed in Deno 2 */
-    const resourceArray = Object.entries(resourceMap);
-    return resourceArray.filter(
-      (it) => it[1].toString() === "fsFile",
-    );
   }
 
   static isDir(filePath: string) {
@@ -137,7 +101,7 @@ export class FileUtils {
         prefix: "test-can-write",
       };
       const tempFile = Deno.makeTempFileSync(options);
-      Deno.removeSync(tempFile);
+      FileUtils.removeSync(tempFile);
       return true;
     } catch (error) {
       log.debug(`Cannot create a file in ${dir}`);
@@ -165,13 +129,13 @@ export class FileUtils {
 
       try {
         await r.rewind();
-        let dst = new FileWriter(dstFile);
+        const dst = new FileWriter(dstFile);
 
-        let title = r.title ? StringUtils.compressText(r.title, 50) : undefined;
-        let total = r.size;
+        const title = r.title ? StringUtils.compressText(r.title, 50) : undefined;
+        const total = r.size;
 
         if (total) {
-          let pb = new ProgressBar({
+          const pb = new ProgressBar({
             title,
             total,
             complete: "=",
@@ -186,8 +150,8 @@ export class FileUtils {
 
         await copy(r, dst);
 
-        // await // r.close() - not needed with Deno.Command
-        // await // dst.close() - not needed with Deno.Command
+        await r.close()
+        await dst.close()
 
         if (r.size && dst.size && r.size != dst.size) {
           throw Error(`Copy size does not match ${r.size} => ${dst.size}`);
@@ -216,13 +180,13 @@ export class FileUtils {
   }
 
   static getSize(path: string) {
-    const stat = Deno.statSync(path);
+    const stat = FileUtils.getFileInfoSync(path, t("lib.fs.file_utils.getSizeError"))
     return stat.size;
   }
 
   static throwIfNotExists(filePath: string) {
     if (!existsSync(filePath)) {
-      throw new Deno.errors.NotFound(`File ${filePath} does not exist`);
+      throw new Deno.errors.NotFound(t("lib.fs.file_utils.throwIfNotExistsError", { filePath }));
     }
   }
 
@@ -231,14 +195,18 @@ export class FileUtils {
       return undefined;
     }
 
-    let now = new Date();
+    const now = new Date();
     let bkp = "";
 
     do bkp = filename + "." + DateUtils.dateTag(now) + "." + DateUtils.timeTagWithMillis("", now) + ".bkp"; while (
       existsSync(bkp)
     );
 
-    Deno.copyFileSync(filename, bkp);
+    try {
+      Deno.copyFileSync(filename, bkp);
+    } catch (err) {
+      throw fileError(err, filename, t("lib.fs.file_utils.createBackupError"));
+    }
     return bkp;
   }
 
@@ -256,6 +224,42 @@ export class FileUtils {
   }
 
   static async createEmptyFile(filePath: string): Promise<void> {
-    await Deno.writeTextFile(filePath, "");
+    try {
+      await Deno.writeTextFile(filePath, "");
+    } catch (err) {
+      throw fileError(err, filePath, t("lib.fs.file_utils.createEmptyFileError"));
+    }
+  }
+
+  static readTextFileSync(filePath: string | URL): string {
+    try {
+      return Deno.readTextFileSync(filePath);
+    } catch (err) {
+      throw fileError(err, filePath, t("lib.fs.file_utils.readTextFileSyncError"));
+    }
+  }
+
+  static writeTextFileSync(filePath: string | URL, data: string, options: Deno.WriteFileOptions | undefined = undefined) {
+    try {
+       Deno.writeTextFileSync(filePath, data, options);
+    } catch (err) {
+      throw fileError(err, filePath, t("lib.fs.file_utils.writeTextFileSyncError"));
+    }
+  }
+
+  static removeSync(filePath: string | URL, options: Deno.RemoveOptions | undefined = undefined) {
+    try {
+       Deno.removeSync(filePath, options);
+    } catch (err) {
+      throw fileError(err, filePath, t("lib.fs.file_utils.removeSyncError"));
+    }
+  }
+
+  static renameSync(oldPath: string | URL, newPath: string | URL, ) {
+    try {
+       Deno.renameSync(oldPath, newPath);
+    } catch (err) {
+      throw fileError(err, newPath, t("lib.fs.file_utils.renameSyncError", { old: oldPath}));
+    }
   }
 }

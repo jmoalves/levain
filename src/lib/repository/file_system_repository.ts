@@ -1,6 +1,6 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import { existsSync, ExpandGlobOptions } from "https://deno.land/std/fs/mod.ts";
+import * as log from "@std/log";
+import * as path from "@std/path";
+import { existsSync, ExpandGlobOptions } from "@std/fs";
 
 import t from "../i18n.ts";
 
@@ -42,7 +42,7 @@ export default class FileSystemRepository extends AbstractRepository {
     super(`FileSystemRepo`, path.resolve(rootDir));
   }
 
-  describe(): string {
+  override describe(): string {
     const description: string = super.describe();
     if (this.rootDir !== this.absoluteURI) {
       return description.replace(/\)/, t("lib.repository.file_system_repository.resolvedFrom", { dir: this.rootDir }));
@@ -127,6 +127,7 @@ export default class FileSystemRepository extends AbstractRepository {
     return packages;
   }
 
+  // deno-lint-ignore require-await
   private async getPackageFiles(globOptions: ExpandGlobOptions, rootDirOnly: boolean = false): Promise<Array<Package>> {
     log.debug(`# readPackages: ${JSON.stringify(globOptions)}`);
     return this.crawlPackages(globOptions["root"] || ".", globOptions, rootDirOnly);
@@ -168,8 +169,8 @@ export default class FileSystemRepository extends AbstractRepository {
       return [];
     }
 
-    let promisesDir: Array<Promise<Array<Package>>> = [];
-    let promisesFile: Array<Promise<Package | undefined>> = [];
+    const promisesDir: Array<Promise<Array<Package>>> = [];
+    const promisesFile: Array<Promise<Package | undefined>> = [];
 
     for (const entry of entries) {
       // User feedback
@@ -198,11 +199,11 @@ export default class FileSystemRepository extends AbstractRepository {
       }
     }
 
-    let packages: Array<Package> = [];
+    const packages: Array<Package> = [];
 
     if (promisesFile.length > 0) {
-      let pkgsFile = await Promise.all(promisesFile);
-      for (let pkg of pkgsFile) {
+      const pkgsFile = await Promise.all(promisesFile);
+      for (const pkg of pkgsFile) {
         if (pkg) {
           packages.push(pkg);
         }
@@ -210,8 +211,8 @@ export default class FileSystemRepository extends AbstractRepository {
     }
 
     if (promisesDir.length > 0) {
-      let pkgsDir = await Promise.all(promisesDir);
-      for (let pkgArr of pkgsDir) {
+      const pkgsDir = await Promise.all(promisesDir);
+      for (const pkgArr of pkgsDir) {
         Array.prototype.push.apply(packages, pkgArr);
       }
     }
@@ -229,20 +230,21 @@ export default class FileSystemRepository extends AbstractRepository {
     }
 
     let fileinfo = undefined;
+    let yamlStr: string | undefined = undefined;
     try {
       fileinfo = Deno.lstatSync(yamlFile);
+      yamlStr = FileUtils.readTextFileSync(yamlFile);
+      if (!fileinfo || !fileinfo.isFile) {
+        return undefined;
+      }
     } catch (error) {
       log.error(`!!! error loading package ${yamlFile}: ${error}`);
-    }
-
-    if (!fileinfo || !fileinfo.isFile) {
       return undefined;
     }
 
     const packageName = yamlFile.replace(/.*[\/|\\]/g, "").replace(/\.levain(\.ya?ml)?/, "");
     log.debug(`readPackage ${packageName} ${yamlFile}`);
 
-    const yamlStr: string = Deno.readTextFileSync(yamlFile);
     // log.debug(`yaml ${packageName} -> ${yamlStr}`)
 
     // log.debug(`pkg ${packageName} -> ${pkg}`)

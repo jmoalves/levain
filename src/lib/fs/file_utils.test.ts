@@ -1,12 +1,13 @@
-import * as path from "https://deno.land/std/path/mod.ts";
-import { assert, assertEquals, assertNotEquals, assertThrows } from "https://deno.land/std/assert/mod.ts";
-import { ensureDirSync, ensureFileSync, existsSync } from "https://deno.land/std/fs/mod.ts";
+import * as path from "@std/path";
+import { assert, assertEquals, assertNotEquals, assertThrows } from "@std/assert";
+import { ensureDirSync, ensureFileSync, existsSync } from "@std/fs";
 
 import OsUtils from "../os/os_utils.ts";
 import TestHelper from "../test/test_helper.ts";
 import { assertNumberEquals } from "../test/more_asserts.ts";
 
 import { FileUtils } from "./file_utils.ts";
+import t from "../i18n.ts";
 
 const readOnlyFolder = TestHelper.getTestDataPath("file_utils/read_only_folder");
 const folderThatDoesNotExist = TestHelper.getTestDataPath("file_utils/--does_not_exist--");
@@ -15,13 +16,13 @@ const readWriteFolder = TestHelper.getTestDataPath("file_utils/");
 const readWriteFile = TestHelper.getTestDataPath("file_utils/can_read_and_write_this_file.txt");
 
 Deno.test("FileUtils - should create a backup for a given file in the same dir", () => {
-  let src = Deno.makeTempFileSync();
-  let myData = "some string data";
+  const src = Deno.makeTempFileSync();
+  const myData = "some string data";
   Deno.writeTextFileSync(src, myData);
   assert(existsSync(src));
 
-  let bkp1 = FileUtils.createBackup(src);
-  let bkp2 = FileUtils.createBackup(src);
+  const bkp1 = FileUtils.createBackup(src);
+  const bkp2 = FileUtils.createBackup(src);
 
   assert(bkp1);
   assert(existsSync(bkp1));
@@ -41,22 +42,14 @@ Deno.test("FileUtils - should create a backup for a given file in the same dir",
 });
 
 Deno.test("FileUtils - should NOT create a backup for a given file that does NOT exist", () => {
-  let src = "/tmp/doesNotExist";
+  const src = "/tmp/doesNotExist";
   assert(!existsSync(src));
 
-  let bkp = FileUtils.createBackup(src);
+  const bkp = FileUtils.createBackup(src);
 
   assert(bkp == undefined);
 });
 
-Deno.test("FileUtils - should get file permissions in Windows", () => {
-  if (OsUtils.isWindows()) {
-    const mode = Deno.statSync(readOnlyFile).mode;
-    if (mode) {
-      throw `Now we can check file permissions with Deno in Windows (${mode}). Please correct permission verifications in FileUtils`;
-    }
-  }
-});
 //
 // isReadOnly
 //
@@ -79,8 +72,14 @@ if (!OsUtils.isWindows()) {
     OsUtils.makeReadOnly(path);
     verifyFileReadWrite(path, true, false);
   });
-}
+} 
 if (OsUtils.isWindows()) {
+  Deno.test("FileUtils - should detect read only folder on windows", () => {
+    const wpath = Deno.env.get("WINDIR") ?? Deno.env.get("SystemRoot") ?? "C:\\Windows";
+    ensureDirSync(wpath);
+    const canWrite = FileUtils.canCreateTempFileInDir(wpath);
+    assertEquals(canWrite, false);
+  });
   Deno.test("FileUtils - should detect a folder without permissions", () => {
     // FIXME Will not need the folowing line when Deno.statSync.mode is fully implemented for Windows
     const fileUri = "d:\\Config.Msi";
@@ -93,10 +92,7 @@ Deno.test("FileUtils - should not read or write a folder that does not exist", (
 
 function verifyFileReadWrite(fileUri: string, shouldRead: boolean, shouldWrite: boolean = true) {
   assertEquals(FileUtils.canReadSync(fileUri), shouldRead, `should be able to read ${fileUri}`);
-  // FIXME Will be able to use the assertion below when Deno.statSync.mode is fully implemented for Windows
-  if (!OsUtils.isWindows()) {
-    assertEquals(FileUtils.canWriteSync(fileUri), shouldWrite, `should be able to write ${fileUri}`);
-  }
+  assertEquals(FileUtils.canWriteSync(fileUri), shouldWrite, `should be able to write ${fileUri}`);
 }
 
 //
@@ -126,18 +122,10 @@ Deno.test("FileUtils - canCreateTempFileInDir should be able to write in a temp 
 
   assertEquals(canWrite, true);
 });
-if (OsUtils.isWindows()) {
-  Deno.test("FileUtils - adjust test when chmodSync is implemented in Windows", () => {
-    ensureDirSync(readOnlyFolder);
-    assertThrows(
-      () => {
-        Deno.chmodSync(readOnlyFolder, 0o000);
-      },
-      Error,
-    );
-  });
-} else {
+if (!OsUtils.isWindows()) {
   Deno.test("FileUtils - canCreateTempFileInDir should not be able to write in a read only dir", () => {
+    // Deno.chmod does not make a folder read-only on Windows. 
+    // Thus, this test does not work on windows
     ensureDirSync(readOnlyFolder);
     Deno.chmodSync(readOnlyFolder, 0o000);
 
@@ -165,7 +153,7 @@ Deno.test("FileUtils - throwIfNotExists should throw error when file does not ex
       FileUtils.throwIfNotExists(filePath);
     },
     Error,
-    `File ${filePath} does not exist`,
+    t("lib.fs.file_utils.throwIfNotExistsError", { filePath })
   );
 });
 

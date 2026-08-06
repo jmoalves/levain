@@ -33,8 +33,14 @@ import KillProcessAction from "./os/killProcess.ts";
 import GitCloneAction from "./git/clone.ts";
 import MavenCopyAction from "./maven/maven_copy.ts";
 import ContextMenuRemoveAction from "./os/context_menu_remove.ts";
+import ActivateInit from "./activate/activate_init.ts";
+import ActivatePre from "./activate/activate_pre.ts";
+import ActivateCmd from "./activate/activate_cmd.ts";
 
 const actionMap = new Map<string, (config: Config) => Action>([
+  ["activateInit", (config: Config) => new ActivateInit(config)],
+  ["activatePre", (config: Config) => new ActivatePre(config)],
+  ["activateCmd", (config: Config) => new ActivateCmd(config)],
   ["addPath", (config: Config) => new AddPathAction(config)],
   ["addToDesktop", (config: Config) => new AddToDesktopAction(config)],
   ["addToStartup", (config: Config) => new AddToStartupAction(config)],

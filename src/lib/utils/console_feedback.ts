@@ -1,9 +1,10 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "@std/log";
 
 export default class ConsoleFeedback {
   public static readonly MIN_INTERVAL_MS = 50;
 
   private static readonly text = ["-", "\\", "|", "/"];
+  public static OUT = Deno.stdout;
 
   private idx = 0;
   private lastInc = new Date().getTime();
@@ -13,30 +14,30 @@ export default class ConsoleFeedback {
   start(msg: string | undefined = undefined) {
     if (msg) {
       log.debug(msg);
-      Deno.stdout.writeSync(new TextEncoder().encode(`${msg}`));
+      ConsoleFeedback.OUT.writeSync(new TextEncoder().encode(`${msg}`));
     }
     this.idx = 0;
   }
 
   show() {
-    if (!Deno.stdout.isTerminal()) {
+    if (!ConsoleFeedback.OUT.isTerminal()) {
       return;
     }
 
-    Deno.stdout.writeSync(new TextEncoder().encode(`\r${ConsoleFeedback.text[this.idx]}`));
+    ConsoleFeedback.OUT.writeSync(new TextEncoder().encode(`\r${ConsoleFeedback.text[this.idx]}`));
     this.inc();
   }
 
   reset(msg: string | undefined = undefined) {
     this.idx = 0;
     if (msg) {
-      Deno.stdout.writeSync(new TextEncoder().encode(`\r${msg}`));
+      ConsoleFeedback.OUT.writeSync(new TextEncoder().encode(`\r${msg}`));
     }
-    Deno.stdout.writeSync(new TextEncoder().encode(`\r\n`));
+    ConsoleFeedback.OUT.writeSync(new TextEncoder().encode(`\r\n`));
   }
 
   private inc() {
-    let now = new Date().getTime();
+    const now = new Date().getTime();
     if (now < (this.lastInc + ConsoleFeedback.MIN_INTERVAL_MS)) {
       return;
     }

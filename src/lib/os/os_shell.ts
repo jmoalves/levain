@@ -1,4 +1,4 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "@std/log";
 
 import LevainVersion from "../../levain_version.ts";
 import Config from "../config.ts";
@@ -24,7 +24,7 @@ export class OsShell {
     //     throw new Error("No package");
     // }
 
-    let pkgs: Package[] | null = this.config?.packageManager?.resolvePackages(pkgNames, installedOnly, false);
+    const pkgs: Package[] | null = this.config?.packageManager?.resolvePackages(pkgNames, installedOnly, false);
     if (!pkgs) {
       throw new Error("Unable to load dependencies for a Levain shell. Aborting...");
     }
@@ -64,12 +64,14 @@ export class OsShell {
     return this._stripCRLF;
   }
 
-  async execute(args: string[]) {
-    for (let pkg of this.dependencies) {
+  async execute(args: string[], openShell: boolean = true) {
+    for (const pkg of this.dependencies) {
       await this.shellActions(pkg);
     }
 
-    await this.openShell(args);
+    if (openShell) {
+      await this.openShell(args);
+    }
   }
 
   private async shellActions(pkg: Package) {
@@ -78,7 +80,7 @@ export class OsShell {
     }
 
     let actions = pkg.yamlItem("cmd.shell");
-    let envActions = pkg.yamlItem("cmd.env");
+    const envActions = pkg.yamlItem("cmd.env");
 
     log.debug(`${pkg.name} SHELL actions: ${JSON.stringify(actions)}`);
     log.debug(`${pkg.name} ENV   actions: ${JSON.stringify(envActions)}`);
@@ -98,7 +100,7 @@ export class OsShell {
 
     log.debug(`=== ENV ${pkg.name} - ${pkg.version}`);
     const loader = new Loader(this.config);
-    for (let action of actions) {
+    for (const action of actions) {
       // Infinite loop protection - https://github.com/jmoalves/levain/issues/111
       if (action.startsWith("levainShell ")) {
         throw new Error(
@@ -113,19 +115,20 @@ export class OsShell {
   async openShell(args: string[]) {
     // TODO: Handle other os's
     OsUtils.onlyInWindows();
-    let opt = this.prepareShellOptions(args);
+    const opt = await this.prepareShellOptions(args);
 
-    log.debug(`Deno.run: ${JSON.stringify(opt)}`);
-    const p = Deno.run(opt);
-    let status = await p.output();
+    log.debug(`Deno.command: ${JSON.stringify(opt)}`);
 
-    if (!this.ignoreErrors && !status.success) {
-      throw new Error("CMD terminated with code " + status.code);
+    const pcommand = new Deno.Command(opt.exec_cmd, opt);
+    const { success, stdout, code } = await pcommand.output();
+
+    if (!this.ignoreErrors && !success) {
+      throw new Error("CMD terminated with code " + code);
     }
 
     if (this.saveVar) {
-      let rawOutput = await p.output();
-      let cmdOutput = new TextDecoder().decode(rawOutput);
+      //let rawOutput = await pcommand.output();
+      let cmdOutput = new TextDecoder().decode(stdout);
       if (this.stripCRLF) {
         cmdOutput = cmdOutput
           .replace(/\r\n$/, "")
@@ -136,8 +139,41 @@ export class OsShell {
     }
   }
 
-  prepareShellOptions(args: string[]) {
+  public async prepareEnv(env: any) {
+    this.setEnv(env);
+    
+    const curDirPkg = await this.config.repositoryManager.currentDirPackage();
+    const myVersion = this.versionTag();
+    env["LEVAIN_CURRENT"] = `levain${myVersion}` + (
+      curDirPkg? ` ${curDirPkg.name}`: "" 
+    );
+
+    if (this.config.levainHome) {
+      env["levainHome"] = this.config.levainHome;
+    }
+
+    const myPath = this.getCmdPath();
+    if (myPath) {
+      log.debug(`- PATH - ${myPath}`);
+      env["PATH"] = myPath;
+    }
+
+    if (this.dependencies) {
+      const pkgNamesVar = this.dependencies.map((pkg) => pkg.name).join(";");
+      log.debug(`- LEVAIN_PKG_NAMES=${pkgNamesVar}`);
+      env["LEVAIN_PKG_NAMES"] = pkgNamesVar;
+    }
+  }
+
+  async prepareShellOptions(args: string[]): Promise<IShellOptions> {
     // const adjustedArgs = OsShell.adjustArgs(args)
+    const opt: IShellOptions = {
+      env: {},
+      cmd: [],
+      exec_cmd: "",
+      args: [],
+    };
+    opt.env = {};
 
     let cmd: string[];
     let cmdString: string;
@@ -145,8 +181,7 @@ export class OsShell {
       if (this.config.shellPath) {
         cmdString = `cmd /c start ${this.config.shellPath}`;
       } else {
-        let myVersion = this.versionTag();
-        cmdString = `cmd /c start cmd /u /k prompt [levain${myVersion}]$P$G`;
+        cmdString = `cmd /c start cmd /u /k prompt [%LEVAIN_CURRENT%] %_LEVAIN_OLD_PROMPT%`;
       }
       cmd = StringUtils.splitSpaces(cmdString);
     } else {
@@ -156,27 +191,10 @@ export class OsShell {
     }
 
     log.debug(`- CMD - ${cmd}`);
-
-    let opt: any = {};
+    
     opt.cmd = cmd;
-    opt.env = {};
-
-    this.setEnv(opt.env);
-    if (this.config.levainHome) {
-      opt.env["levainHome"] = this.config.levainHome;
-    }
-
-    let myPath = this.getCmdPath();
-    if (myPath) {
-      log.debug(`- PATH - ${myPath}`);
-      opt.env["PATH"] = myPath;
-    }
-
-    if (this.dependencies) {
-      let pkgNamesVar = this.dependencies.map((pkg) => pkg.name).join(";");
-      log.debug(`- LEVAIN_PKG_NAMES=${pkgNamesVar}`);
-      opt.env["LEVAIN_PKG_NAMES"] = pkgNamesVar;
-    }
+    [opt.exec_cmd, ...opt.args] = cmd
+    await this.prepareEnv(opt.env);
 
     if (this.saveVar) {
       opt.stdout = "piped";
@@ -204,8 +222,8 @@ export class OsShell {
     });
   }
 
-  private versionTag(): string {
-    let myVersion = LevainVersion.levainVersion;
+  public versionTag(): string {
+    const myVersion = LevainVersion.levainVersion;
     if (!myVersion) {
       return "";
     }
@@ -230,7 +248,7 @@ export class OsShell {
     let sep = "";
     let idx = 1;
     let result: string = "";
-    for (let part of parts) {
+    for (const part of parts) {
       if (part) {
         if (idx == 1) {
           sep = "";
@@ -257,8 +275,8 @@ export class OsShell {
     myPath.unshift(this.config.levainBaseDir);
     myPath = [...new Set(myPath)]; // Remove duplicates
 
-    let pathStr = myPath.join(";");
-    let envPath = Deno.env.get("PATH");
+    const pathStr = myPath.join(";");
+    const envPath = Deno.env.get("PATH");
     if (!envPath) {
       return pathStr;
     }
@@ -271,11 +289,22 @@ export class OsShell {
       return undefined;
     }
 
-    for (let key of Object.keys(this.config.context.action.setEnv.env)) {
-      let value = this.config.context.action.setEnv.env[key];
+    for (const key of Object.keys(this.config.context.action.setEnv.env)) {
+      const value = this.config.context.action.setEnv.env[key];
       if (value) {
         env[key] = value;
       }
     }
   }
 }
+
+export interface IShellOptions {
+  env: Record<string, string>;
+  cmd: string[];
+  exec_cmd: string;
+  args: string[];
+  stdout?: "piped" | "inherit" | "null" | undefined;
+  stdin?: "piped" | "inherit" | "null" | undefined;
+  stderr?: "piped" | "inherit" | "null" | undefined;
+}
+

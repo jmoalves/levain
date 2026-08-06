@@ -1,4 +1,4 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "@std/log";
 
 import t from "../lib/i18n.ts";
 
@@ -7,12 +7,24 @@ import { OsShell } from "../lib/os/os_shell.ts";
 import Loader from "../lib/loader.ts";
 
 import Command from "./command.ts";
+import Package from "../lib/package/package.ts";
 
 export default class Shell implements Command {
+  private loader: Loader;
+
   constructor(private config: Config) {
+    this.loader = new Loader(config);
   }
 
   async execute(args: string[]) {
+    const { pkgNames, pkgActions, curDirPkg } = await this.readPackages(args);
+    await this.installPackages(pkgNames);
+    const osShell: OsShell = new OsShell(this.config, pkgNames, true);
+    osShell.interactive = true;
+    await this.runShell(osShell, curDirPkg, pkgActions, true);
+  }
+  
+  async readPackages(args: string[]): Promise<ShellPackages> {
     let pkgNames = args;
     let pkgActions = undefined;
     let curDirPkg = undefined;
@@ -35,34 +47,42 @@ export default class Shell implements Command {
         pkgNames = [this.config.defaultPackage];
       }
     }
+    return { pkgNames, pkgActions, curDirPkg };
 
-    const loader = new Loader(this.config);
+  }
 
+  async installPackages(pkgNames: string[]) {
     log.debug(t("cmd.shell.checkUpdates", { shouldCheck: this.config.shellCheckForUpdate }));
     if (this.config.shellCheckForUpdate) {
-      await loader.command("install", pkgNames);
+      await this.loader.command("install", pkgNames);
     } else {
-      await loader.command("install", ["--noUpdate"].concat(pkgNames));
+      await this.loader.command("install", ["--noUpdate"].concat(pkgNames));
     }
     await this.config.repositoryManager.reload();
+  }
 
-    // Actions
+  async runShell(osShell: OsShell, curDirPkg: Package | undefined, pkgActions: string[] | undefined, openShell: boolean) {
+     // Actions
     if (curDirPkg && pkgActions) {
-      for (let action of pkgActions) {
+      for (const action of pkgActions) {
         // Infinite loop protection - https://github.com/jmoalves/levain/issues/111
         if (action.startsWith("levainShell ")) {
           throw new Error(t("cmd.shell.notAllowed", { pkg: curDirPkg.name, action: action }));
         }
 
-        await loader.action(curDirPkg, action);
+        await this.loader.action(curDirPkg, action);
       }
     }
 
     // Running shell
-    const osShell: OsShell = new OsShell(this.config, pkgNames, true);
-    osShell.interactive = true;
-    await osShell.execute([]);
+    await osShell.execute([], openShell);
   }
 
   readonly oneLineExample = t("cmd.shell.example");
+}
+
+export interface ShellPackages {
+  pkgNames: string[];
+  pkgActions: string[] | undefined;
+  curDirPkg: Package | undefined;
 }

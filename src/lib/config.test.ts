@@ -1,5 +1,5 @@
-import { assert, assertEquals, assertMatch, assertNotEquals } from "https://deno.land/std/assert/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
+import { assert, assertEquals, assertMatch, assertNotEquals } from "@std/assert";
+import * as path from "@std/path";
 
 import Config from "./config.ts";
 import { assertStringEndsWith } from "./test/more_asserts.ts";
@@ -65,7 +65,7 @@ Deno.test("Config should have assertNotEquals default levainCache", () => {
   const config = new Config([]);
 
   const dir = config.levainCacheDir;
-
+  
   assertEquals(dir, path.join(config.levainHome, ".levainCache"));
 });
 Deno.test("Config should set levainCache", () => {

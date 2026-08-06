@@ -1,6 +1,6 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import { ensureDirSync, existsSync } from "https://deno.land/std/fs/mod.ts";
+import * as log from "@std/log";
+import * as path from "@std/path";
+import { ensureDirSync, existsSync } from "@std/fs";
 
 import t from "../i18n.ts";
 
@@ -25,6 +25,7 @@ export default class LevainReleases {
   constructor(private config: Config) {
   }
 
+  // deno-lint-ignore require-await
   async releases(): Promise<any> {
     if (LevainReleases.releasesCache) {
       return Promise.resolve(LevainReleases.releasesCache);
@@ -74,6 +75,7 @@ export default class LevainReleases {
     return `${this.downloadUrl}/${versionPath}/levain-${versionPath}-windows-x86_64.zip`;
   }
 
+  // deno-lint-ignore require-await
   async latest(): Promise<any> {
     if (LevainReleases.latestNotFound) {
       return Promise.resolve(undefined);
@@ -115,10 +117,10 @@ export default class LevainReleases {
     });
   }
 
+  // deno-lint-ignore require-await
   async latestVersion(): Promise<VersionNumber | undefined> {
-    const obj = this;
     return new Promise((resolve, reject) => {
-      obj.latest()
+      this.latest()
         .then((release) => {
           if (!release) {
             log.debug(`No latest release found`);
@@ -164,8 +166,8 @@ export default class LevainReleases {
     }
 
     try {
-      let levainReleases = new LevainReleases(this.config);
-      let latestVersion = await levainReleases.latestVersion();
+      const levainReleases = new LevainReleases(this.config);
+      const latestVersion = await levainReleases.latestVersion();
       if (!this.needsUpdate(latestVersion)) {
         return;
       }
@@ -185,7 +187,7 @@ export default class LevainReleases {
 
         console.log("");
         this.config.lastUpdateQuestion = DateUtils.dateTag();
-        let answer = prompt(
+        const answer = prompt(
           t("lib.releases.levain_releases.updateNow"),
           t("lib.releases.levain_releases.updateNowDefault"),
         );
@@ -218,7 +220,7 @@ export default class LevainReleases {
       return false;
     }
 
-    let myVersion = LevainVersion.levainVersion;
+    const myVersion = LevainVersion.levainVersion;
     if (myVersion.isHEAD) {
       log.debug(`No update needed - vHEAD version`);
       return false;
@@ -245,18 +247,18 @@ export default class LevainReleases {
   }
 
   async prepareNewRelease() {
-    let releasesDir = path.resolve(OsUtils.tempDir, "levain");
+    const releasesDir = path.resolve(OsUtils.tempDir, "levain");
     log.debug(`Levain releases dir ${releasesDir}`);
     ensureDirSync(releasesDir);
 
-    let newVersionDir = path.resolve(releasesDir, `levain-${await this.latestVersion()}`);
+    const newVersionDir = path.resolve(releasesDir, `levain-${await this.latestVersion()}`);
     log.debug(`Checking (1) Levain at ${newVersionDir}`);
     if (!existsSync(newVersionDir)) {
       try {
         log.debug(`Extracting Levain to ${releasesDir}`);
-        let url = await this.levainZipUrl();
-        let action = `extract ${url} ${releasesDir}`;
-        let loader = new Loader(this.config);
+        const url = await this.levainZipUrl();
+        const action = `extract ${url} ${releasesDir}`;
+        const loader = new Loader(this.config);
         await loader.action(undefined, action);
       } catch (error) {
         log.error(t("lib.releases.levain_releases.unableToExtract", { error: JSON.stringify(error) }));

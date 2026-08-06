@@ -1,11 +1,13 @@
-import * as path from "https://deno.land/std/path/mod.ts";
-import { dirname, fromFileUrl } from "https://deno.land/std/path/mod.ts";
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as fs from "https://deno.land/std/fs/mod.ts";
+import * as path from "@std/path";
+import { dirname, fromFileUrl } from "@std/path";
+import * as log from "@std/log";
+import * as fs from "@std/fs";
 import { ArrayUtils } from "../utils/array_utils.ts";
 import { envChain } from "../utils/utils.ts";
 import { Powershell } from "./powershell.ts";
 import ExtraBin from "../extra_bin.ts";
+import { FileUtils } from "../fs/file_utils.ts";
+import { isNotFoundFileError } from "../utils/error_utils.ts";
 
 export default class OsUtils {
   static get tempDir(): string {
@@ -84,6 +86,34 @@ export default class OsUtils {
     }
   }
 
+  static windowsToBashPath(path: string): string {
+    // Already looks like a Unix path.
+    if (path.startsWith("/")) {
+      return path;
+    }
+
+    // Match drive letter.
+    const match = path.match(/^([A-Za-z]):[\\/](.*)$/);
+    if (!match) {
+      return path.replace(/\\/g, "/");
+    }
+
+    const [, drive, rest] = match;
+    return `/${drive.toLowerCase()}/${rest.replace(/\\/g, "/")}`;
+  }
+
+  static async exists(path: string): Promise<boolean> {
+    try {
+      await FileUtils.getFileInfo(path);
+      return true;
+    } catch (err) {
+      if (isNotFoundFileError(err)) {
+        return false;
+      }
+      throw err;
+    }
+  }
+
   static isWindows(): boolean {
     return this.getOs() === "windows";
   }
@@ -119,7 +149,7 @@ export default class OsUtils {
     OsUtils.onlyInWindows();
 
     const path = await this.getUserPath();
-    let newPath = ArrayUtils.remove(path, newPathItem);
+    const newPath = ArrayUtils.remove(path, newPathItem);
     newPath.unshift(newPathItem);
 
     return await this.setUserPath(newPath);
@@ -129,7 +159,7 @@ export default class OsUtils {
     OsUtils.onlyInWindows();
 
     const path = await this.getUserPath();
-    let newPath = ArrayUtils.remove(path, itemToRemove);
+    const newPath = ArrayUtils.remove(path, itemToRemove);
     return await this.setUserPath(newPath);
   }
 
@@ -145,47 +175,36 @@ export default class OsUtils {
     log.debug(`runAndLog\n${command}`);
 
     let args: string[];
+    let exec: string;
 
     if (typeof command === "string") {
-      args = command.split(" ");
+      [exec, ...args] = OsUtils.parseCmd(command);
     } else if (command instanceof Array) {
-      args = command;
+      [exec, ...args] = command;
     } else {
       log.error(command);
       throw `********** Unknown command type ${typeof command}`;
     }
-
-    // https://github.com/denoland/deno/issues/4568
-    const runOptions: Deno.RunOptions = {
-      cmd: args,
+  
+    const dcommand = new Deno.Command(exec, {
+      args: args,
       cwd: workDir,
       stderr: "piped",
       stdout: "piped",
-    };
-    const proc = Deno.run(runOptions);
+    });
+    const { success, stdout, stderr, code } = await dcommand.output();
 
-    const [
-      stderr,
-      stdout,
-      status,
-    ] = await Promise.all([
-      proc.stderrOutput(),
-      proc.output(),
-      proc.output(),
-    ]);
+    log.debug(`status ${JSON.stringify({ success, code })}`);
 
-    // close() not needed with Deno.Command
-
-    log.debug(`status ${JSON.stringify(status)}`);
-
-    if (!status.success) {
-      let stderrOutput = OsUtils.decodeOutput(stderr);
-      throw `Error ${status.code} running "${command}\n${stderrOutput}"`;
+    if (!success) {
+      const stderrOutput = OsUtils.decodeOutput(stderr);
+      throw `Error ${code} running "${command}\n${stderrOutput}"`;
     }
 
     const output = OsUtils.decodeOutput(stdout);
 
     // TODO it should not be necessary to remove \u0000 from stdout. Is it a bug in Deno 1.13.2?
+    // deno-lint-ignore no-control-regex
     const cleanOutput = output.replaceAll(/\u0000/gm, "");
 
     log.debug(`stdout ${cleanOutput}`);
@@ -327,15 +346,26 @@ export default class OsUtils {
     await OsUtils.createShortcut(targetFile, shortcutDir);
   }
 
-  static removeFile(filePath: string): void {
+  static removeFile(filePath: string): boolean {
     if (fs.existsSync(filePath)) {
-      Deno.removeSync(filePath);
-    }
+      FileUtils.removeSync(filePath);
+      return true;
+    } 
+    return false;
   }
 
-  static removeDir(dirPath: string): void {
+  static removeDir(dirPath: string): boolean {
     if (fs.existsSync(dirPath)) {
-      Deno.removeSync(dirPath, { recursive: true });
+      FileUtils.removeSync(dirPath, { recursive: true });
+      return true;
     }
+    return false;
+  }
+
+  static parseCmd(cmd: string): string[] {
+    // FIXME: This may break on commands that have space.
+    // Ideally, it should use a better cmdline parser (such as the one from shell-quote library)
+    // but it may require to rewrite a few commands
+    return cmd.split(' ');
   }
 }

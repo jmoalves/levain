@@ -1,7 +1,6 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import * as yaml from "https://deno.land/std/yaml/mod.ts";
-import { existsSync } from "https://deno.land/std/fs/mod.ts";
+import * as path from "@std/path";
+import * as yaml from "@std/yaml";
+import { existsSync } from "@std/fs";
 
 import Repository from "../repository/repository.ts";
 import Config from "../config.ts";
@@ -52,7 +51,7 @@ export default class FileSystemPackage extends AbstractPackage {
     if (!this.installed) {
       this.updateAvailable = true;
     } else {
-      let installedRecipe = Deno.readTextFileSync(this.installedRecipeFilepath());
+      let installedRecipe = FileUtils.readTextFileSync(this.installedRecipeFilepath());
       installedRecipe = JSON.stringify(yaml.parse(installedRecipe));
 
       const currentRecipe = JSON.stringify(this.yamlStruct);
@@ -75,7 +74,7 @@ export default class FileSystemPackage extends AbstractPackage {
     return undefined;
   }
 
-  toString(): string {
+  override toString(): string {
     return "FSPackage[" +
       this.name +
       (this.version ? ` v${this.version}` : "") +
@@ -90,7 +89,7 @@ export default class FileSystemPackage extends AbstractPackage {
       return undefined;
     }
 
-    let set: Set<string> = new Set<string>();
+    const set: Set<string> = new Set<string>();
     set.add("levain"); // first dependency
 
     if (deps) {

@@ -1,6 +1,6 @@
+import * as path from "@std/path";
+import { assertEquals } from "@std/assert";
 import HttpUtils from "./http_utils.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import { assertEquals } from "https://deno.land/std/assert/mod.ts";
 
 //
 // resolve

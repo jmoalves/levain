@@ -1,31 +1,30 @@
-import * as path from "https://deno.land/std/path/mod.ts";
-import { ensureDirSync } from "https://deno.land/std/fs/mod.ts";
+import * as path from "@std/path";
+import { ensureDirSync } from "@std/fs";
+import { FileUtils } from "../fs/file_utils.ts";
+import { fileError } from "./error_utils.ts";
+import t from "../i18n.ts";
 
 export default class JsonUtils {
   static load(filename: string): any {
+    const data = FileUtils.readTextFileSync(path.resolve(filename));
+    if (data.trim() == "") {
+      return {}; // Empty file should return an empty object instead of throwing exception
+    }
     try {
-      return JSON.parse(Deno.readTextFileSync(path.resolve(filename)));
+      return JSON.parse(data);
     } catch (err) {
-      if (err.name == "NotFound") {
-        throw Error(`File ${filename} not found`);
-      }
+      throw fileError(err, filename, t("lib.utils.json_utils.loadError"));
     }
   }
 
   static save(fileName: string, json: any) {
-    try {
-      const filePath = path.dirname(fileName);
-      ensureDirSync(filePath);
-      Deno.writeTextFileSync(fileName, JSON.stringify(json, null, 3));
-    } catch (err) {
-      if (err.name == "NotFound") {
-        throw Error(`File ${fileName} not found`);
-      }
-    }
+    const filePath = path.dirname(fileName);
+    ensureDirSync(filePath);
+    FileUtils.writeTextFileSync(fileName, JSON.stringify(json, null, 3));
   }
 
   static translatePath(propertyPath: string): string[] {
-    let matches = propertyPath.match(/\[[^[\]]+\]/g);
+    const matches = propertyPath.match(/\[[^[\]]+\]/g);
     if (!matches || matches.length == 0) {
       return [propertyPath];
     }
@@ -39,10 +38,10 @@ export default class JsonUtils {
   }
 
   static get(json: any, property: string, defaultValue?: any): any {
-    let jsonPath = this.translatePath(property);
+    const jsonPath = this.translatePath(property);
 
     let obj = json;
-    for (let item of jsonPath) {
+    for (const item of jsonPath) {
       if (obj[item] != undefined) {
         obj = obj[item];
       } else {
@@ -58,7 +57,7 @@ export default class JsonUtils {
   }
 
   static set(json: any, property: string, value: any, ifNotExists = false): boolean {
-    let jsonPath = this.translatePath(property);
+    const jsonPath = this.translatePath(property);
     // log.debug(`\nValue: ${value} jsonPath ${jsonPath} - json: ${JSON.stringify(json)} - length ${jsonPath.length}`);
 
     let level = 0;
@@ -120,7 +119,7 @@ export default class JsonUtils {
       return false; // we only process strings!
     }
 
-    let s: any = str;
+    const s: any = str;
     return !isNaN(s) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
       !isNaN(parseFloat(s)); // ...and ensure strings of whitespace fail
   }

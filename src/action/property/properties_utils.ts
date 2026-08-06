@@ -3,7 +3,7 @@ import { FileUtils } from "../../lib/fs/file_utils.ts";
 export default class PropertiesUtils {
   static load(filePath: any): Map<string, string> {
     const propertiesMap = new Map<string, string>();
-    const text = Deno.readTextFileSync(filePath);
+    const text = FileUtils.readTextFileSync(filePath);
     const lines = text.split("\n");
     lines
       .map((line) => line?.toString()?.trim())
@@ -49,6 +49,6 @@ export default class PropertiesUtils {
 
   static save(filePath: string, content: Map<string, string>) {
     const stringContent = PropertiesUtils.stringify(content);
-    Deno.writeTextFileSync(filePath, stringContent);
+    FileUtils.writeTextFileSync(filePath, stringContent);
   }
 }

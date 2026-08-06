@@ -1,14 +1,14 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import { readerFromStreamReader } from "https://deno.land/std/streams/mod.ts";
+import * as log from "@std/log";
+import * as path from "@std/path";
+import ProgressBar from "@deno-library/progress";
 
-import ProgressBar from "https://deno.land/x/progress/mod.ts";
 
 import HttpUtils from "../utils/http_utils.ts";
 import ProgressReader from "../io/progress_reader.ts";
 
 export default class HttpReader implements ProgressReader {
-  private reader: Deno.Reader | null = null;
+  private reader: ReadableStreamDefaultReader<Uint8Array> | null = null;
+  private pending: Uint8Array<ArrayBufferLike> = new Uint8Array(0);
 
   private contentLength: number | undefined;
   private lastModified: Date | null = null;
@@ -50,26 +50,26 @@ export default class HttpReader implements ProgressReader {
 
   // RewindReader
   async rewind() {
-    // this.close() - not needed with Deno.Command
+    this.close();
     log.debug(`Reading ${this.url}`);
     this.bytesRead = 0;
 
-    let response = await HttpUtils.get(this.url);
+    const response = await HttpUtils.get(this.url);
 
     this.contentLength = Number(response.headers.get("content-length")) || undefined;
     log.debug(`size: ${this.contentLength} - ${this.url}`);
 
     this.lastModified = null;
-    let strDate = response.headers.get("last-modified");
+    const strDate = response.headers.get("last-modified");
     log.debug(`mtime: ${strDate} - ${this.url}`);
 
     if (strDate) {
       this.lastModified = new Date(strDate);
     }
 
-    let stream = await response.body;
+    const stream = response.body;
     if (stream) {
-      this.reader = readerFromStreamReader(stream.getReader());
+      this.reader = stream.getReader();
     }
   }
 
@@ -77,23 +77,29 @@ export default class HttpReader implements ProgressReader {
   async read(p: Uint8Array): Promise<number | null> {
     if (!this.reader) {
       log.debug(`- reader null`);
-      return Promise.resolve(null);
+      return null;
     }
 
-    // log.debug(`- pre-read ${p.length}`)
-    return new Promise((resolve, reject) => {
-      this.reader?.read(p).then((size) => {
-        // log.debug(`- read ${size}`)
-        if (size) {
-          this.bytesRead += size;
-          if (this.progressBar) {
-            this.progressBar.render(this.bytesRead);
-          }
-        }
+    while (this.pending.length === 0) {
+      const { value, done } = await this.reader.read();
 
-        resolve(size);
-      });
-    });
+      if (done) {
+        return null;
+      }
+
+      this.pending = value;
+    }
+
+    const n = Math.min(p.length, this.pending.length);
+
+    p.set(this.pending.subarray(0, n));
+
+    this.pending = this.pending.subarray(n);
+
+    this.bytesRead += n;
+    await this.progressBar?.render(this.bytesRead);
+
+    return n;
   }
 
   async close() {
@@ -102,7 +108,11 @@ export default class HttpReader implements ProgressReader {
     }
 
     log.debug(`Closing ${this.url}`);
+    await this.reader.cancel();
+    this.reader.releaseLock();
+
     this.reader = null;
+    this.pending = new Uint8Array(0);
   }
 
   // Timestamps

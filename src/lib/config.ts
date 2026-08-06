@@ -1,6 +1,6 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import { ensureDirSync, existsSync } from "https://deno.land/std/fs/mod.ts";
+import * as log from "@std/log";
+import * as path from "@std/path";
+import { ensureDirSync, existsSync } from "@std/fs";
 
 import t from "./i18n.ts";
 
@@ -13,6 +13,7 @@ import { FileUtils } from "./fs/file_utils.ts";
 import { homedir } from "./utils/utils.ts";
 import VarResolver from "./var_resolver.ts";
 import ConfigPersistentAttributes from "./config-persistent-attributes.ts";
+import { isNotFoundFileError } from "./utils/error_utils.ts";
 
 export default class Config {
   packageManager: PackageManager;
@@ -43,8 +44,8 @@ export default class Config {
   constructor(args: any = {}) {
     this.packageManager = new PackageManager(this);
     this._repoManager = new RepositoryManager(this);
-
-    let loaded = this.load(this.levainConfigFile);
+    
+    const loaded = this.load(this.levainConfigFile);
 
     this.configEnv(args);
     this.configHome(args);
@@ -225,6 +226,7 @@ export default class Config {
     }
   }
 
+  // deno-lint-ignore require-await
   async replaceVars(text: string, pkgName?: string | undefined): Promise<string> {
     return VarResolver.replaceVars(text, pkgName, this);
   }
@@ -240,23 +242,23 @@ export default class Config {
   }
 
   public save(): void {
-    let cfg = this.buildCfg();
+    const cfg = this.buildCfg();
     this.lastCfg = cfg;
 
-    let fileName = this.levainConfigFile;
+    const fileName = this.levainConfigFile;
 
     log.debug(`SAVE ${fileName}`);
     log.debug(`${JSON.stringify(cfg, null, 3)}`);
 
     ensureDirSync(this.levainConfigDir);
-    Deno.writeTextFileSync(fileName, JSON.stringify(cfg, null, 3));
+    FileUtils.writeTextFileSync(fileName, JSON.stringify(cfg, null, 3));
     log.debug(`saved ${fileName}`);
 
     try {
-      Deno.removeSync(this.oldLevainConfigFile);
+      FileUtils.removeSync(this.oldLevainConfigFile);
       log.debug(`DEL ${this.oldLevainConfigFile}`);
     } catch (err) {
-      if (err.name != "NotFound") {
+      if (!isNotFoundFileError(err)) {
         log.error(t("lib.config.errorReading", { filename: this.oldLevainConfigFile }));
         throw err;
       }
@@ -264,7 +266,7 @@ export default class Config {
   }
 
   private buildCfg(): ConfigPersistentAttributes {
-    let cfg = new ConfigPersistentAttributes();
+    const cfg = new ConfigPersistentAttributes();
     cfg.repos = this.repositoryManager.saveState;
     cfg.defaultPackage = this._defaultPackage;
     cfg.cacheDir = this.levainCacheDir;
@@ -282,12 +284,12 @@ export default class Config {
       return false;
     }
 
-    let data = this.loadText(configFile);
+    const data = this.loadText(configFile);
     if (!data) {
       return false;
     }
 
-    let cfg = JSON.parse(data);
+    const cfg = JSON.parse(data);
     log.debug(`- PARSE ${JSON.stringify(cfg)}`);
     this.lastCfg = cfg;
 
@@ -320,7 +322,7 @@ export default class Config {
       this._autoUpdate = cfg.autoUpdate;
     }
 
-    if (cfg.hasOwnProperty("shellCheckForUpdate")) {
+    if (Object.hasOwn(cfg, "shellCheckForUpdate")) {
       this._shellCheckForUpdate = cfg.shellCheckForUpdate;
     } else {
       this._shellCheckForUpdate = true;
@@ -336,11 +338,11 @@ export default class Config {
   private loadText(filename: string): string | null {
     try {
       log.debug(`LOAD ${filename}`);
-      let data = Deno.readTextFileSync(filename);
+      const data = FileUtils.readTextFileSync(filename);
       log.debug(`- DATA ${data}`);
       return data;
     } catch (err) {
-      if (err.name != "NotFound") {
+      if (!isNotFoundFileError(err)) {
         log.error(t("lib.config.errorReading", { filename: filename }));
         throw err;
       }
@@ -391,14 +393,14 @@ export default class Config {
     }
 
     if (args["levainHome"]) {
-      let dirs: string[] = args["levainHome"];
-      let homeDir = dirs.find((dir) => {
-        let home = path.resolve(Deno.cwd(), dir);
+      const dirs: string[] = args["levainHome"];
+      const homeDir = dirs.find((dir) => {
+        const home = path.resolve(Deno.cwd(), dir);
         log.debug(`Checking home at ${home}`);
         try {
           ensureDirSync(home);
           return true;
-        } catch (err) {
+        } catch (_err) {
           log.debug(`${home} not available`);
           return false;
         }
@@ -413,25 +415,25 @@ export default class Config {
       return;
     }
 
-    let config = path.resolve(this.levainSrcDir, "..", ".levain", "config.json");
+    const config = path.resolve(this.levainSrcDir, "..", ".levain", "config.json");
     try {
-      if (Deno.statSync(config)) {
+      if (FileUtils.getFileInfoSync(config)) {
         this._env["levainHome"] = path.resolve(this.levainSrcDir, "..");
         log.debug(`CFG levainHome=${this._env["levainHome"]}`);
         return;
       }
-    } catch (err) {
+    } catch (_err) {
       //ignore
     }
 
-    let levainHome = Deno.env.get("levainHome");
+    const levainHome = Deno.env.get("levainHome");
     if (levainHome) {
       this._env["levainHome"] = path.resolve(levainHome);
       log.debug(`ENV levainHome=${this._env["levainHome"]}`);
       return;
     }
 
-    let home = homedir();
+    const home = homedir();
     if (home) {
       this._env["levainHome"] = path.resolve(home, "levain");
       log.debug(`DEFAULT levainHome=${this._env["levainHome"]}`);

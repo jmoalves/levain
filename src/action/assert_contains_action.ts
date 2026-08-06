@@ -8,7 +8,8 @@ export default class AssertContainsAction implements Action {
   constructor(private config: Config) {
   }
 
-  async execute(pkg: Package | undefined, parameters: string[]): Promise<void> {
+  // deno-lint-ignore require-await
+  async execute(_pkg: Package | undefined, parameters: string[]): Promise<void> {
     const args = parseArgs(parameters, {
       stringOnce: [
         "message",

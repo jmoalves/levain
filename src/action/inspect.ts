@@ -1,18 +1,20 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
+import * as log from "@std/log";
+import * as path from "@std/path";
 
 import Config from "../lib/config.ts";
 import Package from "../lib/package/package.ts";
 import { parseArgs } from "../lib/parse_args.ts";
 
 import Action from "./action.ts";
+import { FileUtils } from "../lib/fs/file_utils.ts";
 
 export default class Inspect implements Action {
   constructor(private config: Config) {
   }
 
-  async execute(pkg: Package | undefined, parameters: string[]) {
-    let args = parseArgs(parameters, {
+  // deno-lint-ignore require-await
+  async execute(_pkg: Package | undefined, parameters: string[]) {
+    const args = parseArgs(parameters, {
       stringMany: [
         "regExp",
         "saveVar",
@@ -21,26 +23,26 @@ export default class Inspect implements Action {
 
     this.verifyArgs(args); // throws
 
-    let src = path.resolve(Deno.cwd(), args._[0]);
+    const src = path.resolve(Deno.cwd(), args._[0]);
 
     log.debug(`INSPECT ${src}`);
-    let data = Deno.readTextFileSync(src);
-    for (let index in args.regExp) {
-      let regexp = args.regExp[index];
-      let varName = args.saveVar[index];
+    const data = FileUtils.readTextFileSync(src);
+    for (const index in args.regExp) {
+      const regexp = args.regExp[index];
+      const varName = args.saveVar[index];
 
-      let pattern = regexp.replace(/^\/(.+)\/([a-z]?)/, "$1");
-      let flags = regexp.replace(/^\/(.+)\/([a-z]?)/, "$2");
+      const pattern = regexp.replace(/^\/(.+)\/([a-z]?)/, "$1");
+      const flags = regexp.replace(/^\/(.+)\/([a-z]?)/, "$2");
 
       log.debug(`- INSPECT[rxp] /${pattern}/${flags} => ${varName}`);
-      let matchArray = data.match(new RegExp(pattern, flags));
+      const matchArray = data.match(new RegExp(pattern, flags));
 
       if (!matchArray) {
         throw new Error(`${regexp} not found at ${src}`);
       }
 
       // FIXME: Check if regExp has match group or not...
-      let value = matchArray[1] || matchArray[0];
+      const value = matchArray[1] || matchArray[0];
       log.debug(`- INSPECT[rxp] /${pattern}/${flags} = ${value}`);
       this.config.setVar(varName, value);
     }
@@ -63,7 +65,7 @@ export default class Inspect implements Action {
       throw "Inform the source file";
     }
 
-    for (let x in args.regExp) {
+    for (const x in args.regExp) {
       if (args.regExp[x].search(/^\/(.+)\/([a-z]?)/) == -1) {
         throw "You must use regExps - " + args.regExp[x];
       }

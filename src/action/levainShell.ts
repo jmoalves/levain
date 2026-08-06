@@ -1,4 +1,4 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "@std/log";
 
 import Config from "../lib/config.ts";
 import Package from "../lib/package/package.ts";
@@ -28,7 +28,7 @@ export default class LevainShell implements Action {
       ],
     });
 
-    let osShell: OsShell = new OsShell(this.config, [pkg.name]);
+    const osShell: OsShell = new OsShell(this.config, [pkg.name]);
     osShell.saveVar = myArgs.saveVar;
     osShell.interactive = false;
     osShell.stripCRLF = myArgs.stripCRLF;

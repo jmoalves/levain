@@ -1,7 +1,7 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import { copySync } from "https://deno.land/std/fs/copy.ts";
-import { existsSync, walkSync } from "https://deno.land/std/fs/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
+import * as log from "@std/log";
+import { copySync } from "@std/fs";
+import { existsSync, walkSync } from "@std/fs";
+import * as path from "@std/path";
 
 import Config from "../../lib/config.ts";
 import Package from "../../lib/package/package.ts";
@@ -15,7 +15,7 @@ export default class CopyAction implements Action {
   }
 
   async execute(pkg: Package | undefined, parameters: string[]): Promise<void> {
-    let args = parseArgs(parameters, {
+    const args = parseArgs(parameters, {
       boolean: [
         "verbose",
         "strip",
@@ -40,7 +40,7 @@ export default class CopyAction implements Action {
 
     let copyToDir = false;
     try {
-      const fileInfo = Deno.statSync(dst);
+      const fileInfo = FileUtils.getFileInfoSync(dst);
       if (args.ifNotExists && existsSync(dst)) {
         return;
       }
@@ -48,7 +48,9 @@ export default class CopyAction implements Action {
       if (fileInfo.isDirectory) {
         copyToDir = true;
       }
-    } catch (err) {
+    } catch (_err) {
+      // It will throw the error message later (copyToDir = false)
+      // It is not necessary to handle here
     }
 
     const len = src?.length || 0;
@@ -66,7 +68,7 @@ export default class CopyAction implements Action {
 
     log.debug(`COPY ${src} => ${dst}`);
 
-    for (let item of src) {
+    for (const item of src) {
       log.debug(`- CHECK ${item}`);
       try {
         if (FileUtils.isFileSystemUrl(item)) {
@@ -82,7 +84,7 @@ export default class CopyAction implements Action {
   }
 
   private copySrcFromFileSystem(item: string, dst: string, copyToDir: boolean, args: any) {
-    const fileInfo = Deno.statSync(item);
+    const fileInfo = FileUtils.getFileInfoSync(item);
     if (args.strip && fileInfo.isDirectory) {
       for (const entry of walkSync(item)) {
         if (entry.path == item) {
@@ -102,7 +104,7 @@ export default class CopyAction implements Action {
     }
   }
 
-  private async copySrcFromUrl(url: string, dst: string, copyToDir: boolean, args: any) {
+  private async copySrcFromUrl(url: string, dst: string, copyToDir: boolean, _args: any) {
     let realDst = dst;
     if (copyToDir) {
       realDst = path.resolve(dst, path.basename(url));
