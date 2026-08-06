@@ -1,7 +1,7 @@
 import * as log from "@std/log";
 import * as zip from "@zip.js/zip.js";
 
-import Config from "../config.ts";
+import type Config from "../config.ts";
 import { Extractor } from "./extractor.ts";
 import { fileError } from "../utils/error_utils.ts";
 import t from "../i18n.ts";

@@ -2,7 +2,7 @@ import * as log from "@std/log";
 import * as path from "@std/path";
 import { ensureDirSync, moveSync } from "@std/fs";
 
-import Config from "../config.ts";
+import type Config from "../config.ts";
 import { Timer } from "../timer.ts";
 import { FileUtils } from "../fs/file_utils.ts";
 import ConsoleFeedback from "../utils/console_feedback.ts";

@@ -3,7 +3,7 @@ import { LogLevels } from "@std/log";
 import { LogRecord } from "@std/log/logger";
 import * as path from "@std/path";
 
-import { copySync, existsSync } from "@std/fs";
+import { copySync } from "@std/fs";
 
 import Config from "../config.ts";
 import { MockPackage } from "../package/mock_package.ts";

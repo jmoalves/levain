@@ -1,4 +1,4 @@
-import Config from "../config.ts";
+import type Config from "../config.ts";
 import OsUtils from "../os/os_utils.ts";
 import { SevenZip } from "./sevenzip_extractor.ts";
 import { DenoZip } from "./denozip_extractor.ts";
