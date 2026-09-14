@@ -2,26 +2,24 @@ import * as log from "@std/log";
 
 import t from "../i18n.ts";
 
-import Config from "../config.ts";
-import Package from "../package/package.ts";
+import type Config from "../config.ts";
+import type Package from "../package/package.ts";
 
-import Repository from "./repository.ts";
+import type Repository from "./repository.ts";
 import ChainRepository from "./chain_repository.ts";
 import RepositoryFactory from "./repository_factory.ts";
 import Repositories from "./repositories.ts";
 import { EmptyRepository } from "./empty_repository.ts";
 import GitUtils from "../utils/git_utils.ts";
+import LevainPaths from "../paths/levain_paths.ts";
 
 export default class RepositoryManager {
-  private repoFactory: RepositoryFactory;
   private extraRepos: Set<string> = new Set<string>();
   private tempRepos: Set<string> = new Set<string>();
 
   repositories = new Repositories();
 
-  constructor(private config: Config) {
-    this.repoFactory = new RepositoryFactory(config);
-  }
+  constructor(private config: Config) { }
 
   async init({ extraRepos, tempRepos }: { extraRepos: string[]; tempRepos?: string[] }): Promise<Repository[]> {
     log.debug("");
@@ -221,13 +219,13 @@ export default class RepositoryManager {
   }
 
   private addLevainRepo(repos: string[]) {
-    log.debug(`addRepo DEFAULT ${this.config.levainSrcDir} --> Levain src dir`);
-    repos.push(this.config.levainSrcDir);
+    log.debug(`addRepo DEFAULT ${LevainPaths.levainSrcDir} --> Levain src dir`);
+    repos.push(LevainPaths.levainSrcDir);
   }
 
   private addLevainRegistryRepo(repos: string[]) {
-    log.debug(`addRepo DEFAULT ${this.config.levainRegistryDir} --> Levain registry dir`);
-    repos.push(this.config.levainRegistryDir);
+    log.debug(`addRepo DEFAULT ${this.config.configPaths.levainRegistryDir} --> Levain registry dir`);
+    repos.push(this.config.configPaths.levainRegistryDir);
   }
 
   private addExtraRepos(repos: string[]) {
@@ -243,7 +241,7 @@ export default class RepositoryManager {
   private async createRepos(repoDirs: string[], rootOnly: boolean = false): Promise<Repository> {
     const repoArr: Repository[] = [];
     for (const repoPath of RepositoryFactory.normalizeList(repoDirs)) {
-      repoArr.push(await this.repoFactory.getOrCreate(repoPath, rootOnly));
+      repoArr.push(await RepositoryFactory.getOrCreate(this.config, repoPath, rootOnly));
     }
 
     const repoCount = repoArr.length;

@@ -2,12 +2,12 @@ import * as log from "@std/log";
 import * as path from "@std/path";
 import { existsSync } from "@std/fs";
 
-import ProgressBar from "@deno-library/progress";
+import type ProgressBar from "@deno-library/progress";
 
 import t from "../i18n.ts";
 import { fileError } from "../utils/error_utils.ts";
-import ProgressReader from "./progress_reader.ts";
 import { FileUtils } from "../fs/file_utils.ts";
+import type ProgressReader from "./progress_reader.ts";
 
 export default class FileReader implements ProgressReader {
   private filePath: string;

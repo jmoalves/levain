@@ -1,4 +1,4 @@
-import Package from "../lib/package/package.ts";
+import type Package from "../lib/package/package.ts";
 
 export default interface Action {
   // TODO Implement the examples

@@ -4,7 +4,7 @@ import { ensureDirSync, existsSync } from "@std/fs";
 
 import t from "../i18n.ts";
 
-import Config from "../config.ts";
+import type Config from "../config.ts";
 import HttpUtils from "../utils/http_utils.ts";
 import DateUtils from "../utils/date_utils.ts";
 import OsUtils from "../os/os_utils.ts";

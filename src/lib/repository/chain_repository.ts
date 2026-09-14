@@ -1,7 +1,7 @@
-import Config from "../config.ts";
-import Package from "../package/package.ts";
+import type Config from "../config.ts";
+import type Package from "../package/package.ts";
 
-import Repository from "./repository.ts";
+import type Repository from "./repository.ts";
 import AbstractRepository from "./abstract_repository.ts";
 import { ArrayUtils } from "../utils/array_utils.ts";
 

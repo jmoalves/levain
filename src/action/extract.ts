@@ -1,12 +1,12 @@
 import * as log from "@std/log";
 
-import Config from "../lib/config.ts";
-import Package from "../lib/package/package.ts";
+import type Config from "../lib/config.ts";
+import type Package from "../lib/package/package.ts";
 import { parseArgs } from "../lib/parse_args.ts";
 import FileCache from "../lib/fs/file_cache.ts";
-import { Extractor } from "../lib/extract/extractor.ts";
+import { type Extractor } from "../lib/extract/extractor.ts";
 
-import Action from "./action.ts";
+import type Action from "./action.ts";
 import { FileUtils } from "../lib/fs/file_utils.ts";
 import { ExtractorFactory } from "../lib/extract/extractor_factory.ts";
 

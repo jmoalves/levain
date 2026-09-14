@@ -5,7 +5,7 @@ import { ValidateResult } from "@cliffy/prompt";
 import t from "../i18n.ts";
 
 import { envChain, promptSecret } from "../utils/utils.ts";
-import Config from "../config.ts";
+import type Config from "../config.ts";
 import StringUtils from "../utils/string_utils.ts";
 import OsUtils from "../os/os_utils.ts";
 import YamlFileUtils from "../utils/yaml_file_utils.ts";

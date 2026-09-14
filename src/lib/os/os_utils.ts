@@ -5,7 +5,7 @@ import * as fs from "@std/fs";
 import { ArrayUtils } from "../utils/array_utils.ts";
 import { envChain } from "../utils/utils.ts";
 import { Powershell } from "./powershell.ts";
-import ExtraBin from "../extra_bin.ts";
+import ExtraBin from "../paths/extra_bin.ts";
 import { FileUtils } from "../fs/file_utils.ts";
 import { isNotFoundFileError } from "../utils/error_utils.ts";
 
@@ -268,8 +268,9 @@ export default class OsUtils {
 
     return await Powershell.run(script, false, false, [sanitizedPath]);
   }
-
+  
   static getScriptUri(scriptName: string) {
+    OsUtils.onlyInWindows();
     const scriptsDir = ExtraBin.osUtilsDir;
     return path.resolve(scriptsDir, scriptName);
   }

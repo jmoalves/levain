@@ -1,7 +1,7 @@
 import * as log from "@std/log";
 
 import type Config from "../config.ts";
-import ExtraBin from "../extra_bin.ts";
+import ExtraBin from "../paths/extra_bin.ts";
 import { Extractor } from "./extractor.ts";
 import OsUtils from "../os/os_utils.ts";
 
@@ -12,9 +12,7 @@ export class UnTar extends Extractor {
 
   async extractImpl(src: string, dst: string) {
     // TODO: Handle other os's
-    if (Deno.build.os != "windows") {
-      throw `${Deno.build.os} not supported`;
-    }
+    OsUtils.onlyInWindows();
 
     log.debug(`-- UNTAR ${src} => ${dst}`);
 

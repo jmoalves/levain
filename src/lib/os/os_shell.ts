@@ -1,8 +1,8 @@
 import * as log from "@std/log";
 
 import LevainVersion from "../../levain_version.ts";
-import Config from "../config.ts";
-import Package from "../package/package.ts";
+import type Config from "../config.ts";
+import type Package from "../package/package.ts";
 import Loader from "../loader.ts";
 
 import OsUtils from "./os_utils.ts";
@@ -148,8 +148,8 @@ export class OsShell {
       curDirPkg? ` ${curDirPkg.name}`: "" 
     );
 
-    if (this.config.levainHome) {
-      env["levainHome"] = this.config.levainHome;
+    if (this.config.configPaths.levainHome != "<unset>") {
+      env["levainHome"] = this.config.configPaths.levainHome;
     }
 
     const myPath = this.getCmdPath();
@@ -272,7 +272,7 @@ export class OsShell {
     }
 
     myPath.reverse(); // Issue https://github.com/jmoalves/levain/issues/115
-    myPath.unshift(this.config.levainBaseDir);
+    myPath.unshift(this.config.configPaths.levainBaseDir);
     myPath = [...new Set(myPath)]; // Remove duplicates
 
     const pathStr = myPath.join(";");

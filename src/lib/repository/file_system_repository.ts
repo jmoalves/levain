@@ -4,8 +4,8 @@ import { existsSync, ExpandGlobOptions } from "@std/fs";
 
 import t from "../i18n.ts";
 
-import Config from "../config.ts";
-import Package from "../package/package.ts";
+import type Config from "../config.ts";
+import type Package from "../package/package.ts";
 import FileSystemPackage from "../package/file_system_package.ts";
 import { Timer } from "../timer.ts";
 import { FileUtils } from "../fs/file_utils.ts";
@@ -15,7 +15,7 @@ import AbstractRepository from "./abstract_repository.ts";
 import DirUtils from "../fs/dir_utils.ts";
 import StringUtils from "../utils/string_utils.ts";
 
-export default class FileSystemRepository extends AbstractRepository {
+export class FileSystemRepository extends AbstractRepository {
   readonly excludeDirs = [
     ".git",
     "node_modules",

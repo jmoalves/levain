@@ -31,7 +31,7 @@ Deno.test({
     const src = TestHelper.validZipFile;
     const dst = TestHelper.getNewTempDir();
     const config = TestHelper.getConfig();
-    config.levainCacheDir = TestHelper.getNewTempDir();
+    config.configPaths.levainCacheDir = TestHelper.getNewTempDir();
     const action = new Extract(config);
     const pkg = TestHelper.mockPackage();
 
@@ -54,14 +54,14 @@ Deno.test({
     const src = TestHelper.validZipFile;
     const dst = TestHelper.getNewTempDir();
     const config = TestHelper.getConfig();
-    config.levainCacheDir = TestHelper.getNewTempDir();
+    config.configPaths.levainCacheDir = TestHelper.getNewTempDir();
     const action = new Extract(config);
     const pkg = TestHelper.mockPackage();
     const cachedSrc = new FileCache(config).cachedFilePath(src);
 
     await action.execute(pkg, [src, dst]);
 
-    assertFolderIncludes(config.levainCacheDir, [cachedSrc]);
+    assertFolderIncludes(config.configPaths.levainCacheDir, [cachedSrc]);
   },
   sanitizeResources: false,
   sanitizeOps: false,
@@ -73,7 +73,7 @@ Deno.test({
     const src = TestHelper.validZipFileWithoutExtension;
     const dst = TestHelper.getNewTempDir();
     const config = TestHelper.getConfig();
-    config.levainCacheDir = TestHelper.getNewTempDir();
+    config.configPaths.levainCacheDir = TestHelper.getNewTempDir();
     const action = new Extract(config);
     const pkg = TestHelper.mockPackage();
 

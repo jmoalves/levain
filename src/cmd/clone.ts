@@ -3,12 +3,12 @@ import * as path from "@std/path";
 
 import t from "../lib/i18n.ts";
 
-import Config from "../lib/config.ts";
+import type Config from "../lib/config.ts";
 import Loader from "../lib/loader.ts";
 import { parseArgs } from "../lib/parse_args.ts";
 import GitUtils from "../lib/utils/git_utils.ts";
 
-import Command from "./command.ts";
+import type Command from "./command.ts";
 import { FileUtils } from "../lib/fs/file_utils.ts";
 
 export default class Clone implements Command {

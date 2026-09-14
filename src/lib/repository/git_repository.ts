@@ -2,18 +2,17 @@ import * as log from "@std/log";
 import * as path from "@std/path";
 import { existsSync } from "@std/fs";
 
-import Package from "../package/package.ts";
-import Config from "../config.ts";
+import type Package from "../package/package.ts";
+import type Config from "../config.ts";
 import GitUtils from "../utils/git_utils.ts";
 
 import AbstractRepository from "./abstract_repository.ts";
-import Repository from "./repository.ts";
+import type Repository from "./repository.ts";
 import RepositoryFactory from "./repository_factory.ts";
 
-export default class GitRepository extends AbstractRepository {
+export class GitRepository extends AbstractRepository {
   private readonly gitUtils: GitUtils;
 
-  private repoFactory: RepositoryFactory;
   private readonly localDir: string;
   private localRepo: Repository | undefined;
 
@@ -21,10 +20,9 @@ export default class GitRepository extends AbstractRepository {
     super("GitRepo", rootUrl);
 
     log.debug(`GitRepo: Root=${this.rootUrl}`);
-    this.repoFactory = new RepositoryFactory(config);
 
     this.gitUtils = new GitUtils();
-    this.localDir = path.resolve(this.config.levainConfigDir, "gitRepos", GitUtils.localBaseDir(this.rootUrl));
+    this.localDir = path.resolve(this.config.configPaths.levainConfigDir, "gitRepos", GitUtils.localBaseDir(this.rootUrl));
   }
 
   async init(): Promise<void> {
@@ -38,7 +36,7 @@ export default class GitRepository extends AbstractRepository {
       await this.gitUtils.clone(this.rootUrl, this.localDir, true);
     }
 
-    this.localRepo = await this.repoFactory.getOrCreate(this.localDir, this.rootOnly);
+    this.localRepo = await RepositoryFactory.getOrCreate(this.config, this.localDir, this.rootOnly);
 
     this.setInitialized();
   }

@@ -1,15 +1,14 @@
 import * as log from "@std/log";
 import * as path from "@std/path";
 import { ensureDirSync } from "@std/fs";
-import { existsSync } from "@std/fs";
 
 import ProgressBar from "@deno-library/progress";
-import type { Closer, Writer } from "@std/io";
+import { type Closer, type Writer } from "@std/io";
 
 import t from "../i18n.ts";
 import { fileError } from "../utils/error_utils.ts";
-import Progress from "./progress.ts";
-import Timestamps from "./timestamps.ts";
+import type Progress from "./progress.ts";
+import type Timestamps from "./timestamps.ts";
 import { FileUtils } from "../fs/file_utils.ts";
 import OsUtils from "../os/os_utils.ts";
 

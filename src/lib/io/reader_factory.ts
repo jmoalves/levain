@@ -1,4 +1,4 @@
-import ProgressReader from "../io/progress_reader.ts";
+import type ProgressReader from "../io/progress_reader.ts";
 import FileReader from "./file_reader.ts";
 import HttpReader from "./http_reader.ts";
 

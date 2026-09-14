@@ -1,7 +1,7 @@
 import * as log from "@std/log";
-import Package from "../package/package.ts";
+import type Package from "../package/package.ts";
 
-import Repository from "./repository.ts";
+import type Repository from "./repository.ts";
 
 export default abstract class AbstractRepository implements Repository {
   private _initialized = false;

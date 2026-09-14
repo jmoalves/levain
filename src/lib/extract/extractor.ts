@@ -8,6 +8,7 @@ import { FileUtils } from "../fs/file_utils.ts";
 import ConsoleFeedback from "../utils/console_feedback.ts";
 import StringUtils from "../utils/string_utils.ts";
 import { retry } from "../utils/utils.ts";
+import { FileProgress } from "../io/file_progress.ts";
 
 export abstract class Extractor {
   readonly feedback = new ConsoleFeedback();
@@ -25,7 +26,7 @@ export abstract class Extractor {
   async copy(srcFile: string, dstFile: string): Promise<string> {
     log.debug(`- COPY ${srcFile} => ${dstFile}`);
 
-    await FileUtils.copyWithProgress(srcFile, dstFile);
+    await FileProgress.copyWithProgress(srcFile, dstFile);
     return dstFile;
   }
 

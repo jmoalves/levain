@@ -3,29 +3,6 @@ import * as path from "@std/path";
 
 import { delay } from "@std/async/delay";
 
-export function homedir(): string {
-  // Common option
-  const home = Deno.env.get("HOME");
-  if (home) {
-    return home;
-  }
-
-  // Not found - Windows?
-  const userprofile = Deno.env.get("userprofile");
-  if (userprofile) {
-    return userprofile;
-  }
-
-  const homedrive = Deno.env.get("homedrive");
-  const homepath = Deno.env.get("homepath");
-  if (homedrive && homepath) {
-    return path.resolve(homedrive, homepath);
-  }
-
-  // What else?
-  throw "No home for levain. Do you have a refrigerator?";
-};
-
 // https://github.com/caspervonb/deno-prompts/blob/master/mod.ts
 export function promptSecret(message: string): string | undefined {
   Deno.stdout.writeSync(new TextEncoder().encode(message));

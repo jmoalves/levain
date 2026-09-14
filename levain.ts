@@ -1,5 +1,4 @@
 import * as log from "@std/log";
-import * as path from "@std/path";
 
 import t from "./src/lib/i18n.ts";
 
@@ -10,17 +9,6 @@ import { Timer } from "./src/lib/timer.ts";
 import LevainCli from "./src/levain_cli.ts";
 
 export default class Levain {
-  static get levainRootFile(): string {
-    //https://stackoverflow.com/questions/76647896/determine-if-running-uncompiled-ts-script-or-compiled-deno-executable
-    // SEE ALSO: scripts\levain-compile.cmd
-
-    const isCompiled = Deno.args.includes("--is_compiled_binary");
-    return isCompiled ? Deno.execPath() : path.fromFileUrl(import.meta.url);
-  }
-
-  static get levainRootDir(): string {
-    return path.dirname(Levain.levainRootFile);
-  }
 
   logFiles: string[] = [];
   timer = new Timer();

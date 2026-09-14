@@ -2,18 +2,19 @@ import * as log from "@std/log";
 import * as path from "@std/path";
 import { existsSync } from "@std/fs";
 
-import Config from "../config.ts";
-import ProgressReader from "../io/progress_reader.ts";
+import type Config from "../config.ts";
+import type ProgressReader from "../io/progress_reader.ts";
 
 import { FileUtils } from "./file_utils.ts";
 import ReaderFactory from "../io/reader_factory.ts";
 import OsUtils from "../os/os_utils.ts";
+import { FileProgress } from "../io/file_progress.ts";
 
 export default class FileCache {
   constructor(
     private config: Config,
   ) {
-    this.dir = this.config.levainCacheDir;
+    this.dir = this.config.configPaths.levainCacheDir;
   }
 
   public readonly dir: string;
@@ -84,7 +85,7 @@ export default class FileCache {
   async copyToCache(src: ProgressReader): Promise<string> {
     log.debug(`- COPY TO CACHE ${src.name}`);
     const filePathInCache = this.cachedFilePath(src.name);
-    await FileUtils.copyWithProgress(src, filePathInCache);
+    await FileProgress.copyWithProgress(src, filePathInCache);
     return filePathInCache;
   }
 }

@@ -1,7 +1,7 @@
-import Package from "../../lib/package/package.ts";
-import Config from "../../lib/config.ts";
+import type Package from "../../lib/package/package.ts";
+import type Config from "../../lib/config.ts";
 import Shell from "../../cmd/shell.ts";
-import Action from "../action.ts";
+import type Action from "../action.ts";
 import { OsShell } from "../../lib/os/os_shell.ts";
 
 export default class ActivatePre implements Action {

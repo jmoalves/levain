@@ -1,8 +1,8 @@
 import * as log from "@std/log";
 
-import Action from "../action.ts";
-import Package from "../../lib/package/package.ts";
-import Config from "../../lib/config.ts";
+import type Action from "../action.ts";
+import type Package from "../../lib/package/package.ts";
+import type Config from "../../lib/config.ts";
 import { parseArgs } from "../../lib/parse_args.ts";
 
 export default class JsonRemove implements Action {

@@ -2,14 +2,14 @@ import * as log from "@std/log";
 
 import t from "../lib/i18n.ts";
 
-import Config from "../lib/config.ts";
+import type Config from "../lib/config.ts";
 import StringUtils from "../lib/utils/string_utils.ts";
 
 import Install from "./install.ts";
 import Shell from "./shell.ts";
 import Activate from "./activate.ts";
 import ActivateMachine from "./activate_machine.ts";
-import Command from "./command.ts";
+import type Command from "./command.ts";
 import ListCommand from "./list_command.ts";
 import CleanCommand from "./clean.ts";
 import ActionsCommand from "./actions.ts";

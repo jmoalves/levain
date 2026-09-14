@@ -2,20 +2,19 @@ import * as log from "@std/log";
 import * as path from "@std/path";
 import { ensureDirSync, existsSync } from "@std/fs";
 
-import Package from "../package/package.ts";
-import Config from "../config.ts";
+import type Package from "../package/package.ts";
+import type Config from "../config.ts";
 import FileCache from "../fs/file_cache.ts";
-import { Extractor } from "../extract/extractor.ts";
+import { type Extractor } from "../extract/extractor.ts";
 
-import Repository from "./repository.ts";
+import type Repository from "./repository.ts";
 import AbstractRepository from "./abstract_repository.ts";
 import RepositoryFactory from "./repository_factory.ts";
 
 import ReaderFactory from "../io/reader_factory.ts";
 import { ExtractorFactory } from "../extract/extractor_factory.ts";
 
-export default class ZipRepository extends AbstractRepository {
-  private repoFactory: RepositoryFactory;
+export class ZipRepository extends AbstractRepository {
 
   private readonly localZip: string;
   private readonly localDir: string;
@@ -33,10 +32,9 @@ export default class ZipRepository extends AbstractRepository {
     }
 
     log.debug(`ZipRepo: Root=${this.rootUrl}`);
-    this.repoFactory = new RepositoryFactory(config);
 
-    this.localZip = path.resolve(this.config.levainCacheDir, "zipRepos", "zips", path.basename(this.rootUrl));
-    this.localDir = path.resolve(this.config.levainCacheDir, "zipRepos", "dirs", path.basename(this.rootUrl, ".zip"));
+    this.localZip = path.resolve(this.config.configPaths.levainCacheDir, "zipRepos", "zips", path.basename(this.rootUrl));
+    this.localDir = path.resolve(this.config.configPaths.levainCacheDir, "zipRepos", "dirs", path.basename(this.rootUrl, ".zip"));
   }
 
   override describe(): string {
@@ -53,7 +51,7 @@ export default class ZipRepository extends AbstractRepository {
       await this.extractLocalZip(zipfile);
     }
 
-    this.localRepo = await this.repoFactory.getOrCreate(this.localDir, this.rootOnly);
+    this.localRepo = await RepositoryFactory.getOrCreate(this.config, this.localDir, this.rootOnly);
 
     this.setInitialized();
   }

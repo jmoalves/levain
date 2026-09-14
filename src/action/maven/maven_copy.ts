@@ -1,5 +1,5 @@
 import OsUtils from "../../lib/os/os_utils.ts";
-import Action from "../action.ts";
+import type Action from "../action.ts";
 import { mvnCli } from "./maven_utils.ts";
 
 class MavenCopyAction implements Action {
