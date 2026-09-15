@@ -71,6 +71,11 @@ export default class Template implements Action {
     log.debug(`- WRITE ${dst}`);
     log.debug(`- DATA`);
     log.debug(data);
+
+    // Create folder if it does not exist already
+    const dir = path.dirname(dst);
+    await Deno.mkdir(dir, { recursive: true })
+
     await FileUtils.writeTextFileSync(dst, data);
   }
 
