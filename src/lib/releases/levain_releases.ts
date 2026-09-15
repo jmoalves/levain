@@ -11,6 +11,7 @@ import OsUtils from "../os/os_utils.ts";
 import LevainVersion from "../../levain_version.ts";
 import Loader from "../loader.ts";
 import VersionNumber from "../utils/version_number.ts";
+import GeneralPaths from "../paths/general_paths.ts";
 
 const UPDATE_REQUEST = 42;
 
@@ -247,7 +248,7 @@ export default class LevainReleases {
   }
 
   async prepareNewRelease() {
-    const releasesDir = path.resolve(OsUtils.tempDir, "levain");
+    const releasesDir = GeneralPaths.tempLevainReleasesDir;
     log.debug(`Levain releases dir ${releasesDir}`);
     ensureDirSync(releasesDir);
 

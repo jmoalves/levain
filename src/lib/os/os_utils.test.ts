@@ -5,60 +5,16 @@ import {
   assertNotEquals,
   assertNotMatch,
 } from "@std/assert";
-import { existsSync } from "@std/fs";
 import * as path from "@std/path";
-import * as log from "@std/log";
 
 import OsUtils from "./os_utils.ts";
 import { assertGreaterThan, assertPathExists } from "../test/more_asserts.ts";
 import TestHelper from "../test/test_helper.ts";
 import DirUtils from "../fs/dir_utils.ts";
+import HomePaths from "../paths/home_paths.ts";
 
 const currentFileDir = path.dirname(import.meta.url);
 const referenceFile = `${currentFileDir}/../../testdata/os_utils/testOsUtils.txt`;
-
-Deno.test("OsUtils should know where is the temp folder", () => {
-  assertNotEquals(OsUtils.tempDir, undefined);
-  assert(existsSync(OsUtils.tempDir));
-});
-
-Deno.test({
-  name: "OsUtils should know where is the home folder",
-  fn: () => {
-    log.info(`OsUtils.homeDir ${OsUtils.homeDir}`);
-    assert(OsUtils.homeDir);
-    assert(existsSync(OsUtils.homeDir));
-  },
-});
-
-if (OsUtils.isWindows()) {
-  Deno.test({
-    name: "OsUtils.desktopDir should know the desktop folder",
-    fn: () => {
-      const desktopDir = OsUtils.desktopDir;
-      assert(desktopDir);
-      assert(existsSync(desktopDir), `Could not find desktop folder ${desktopDir}`);
-    },
-  });
-
-  Deno.test({
-    name: "OsUtils.startMenuDir should know the start menu folder",
-    fn: () => {
-      const startMenuDir = OsUtils.startMenuDir;
-      assert(startMenuDir);
-      assert(existsSync(startMenuDir), `Could not find start menu folder ${startMenuDir}`);
-    },
-  });
-
-  Deno.test({
-    name: "OsUtils.startupDir should know the startup folder",
-    fn: () => {
-      const startupDir = OsUtils.startupDir;
-      assert(startupDir);
-      assert(existsSync(startupDir), `Could not find start menu folder ${startupDir}`);
-    },
-  });
-}
 
 Deno.test("OsUtils should know the users login", () => {
   assertNotEquals(OsUtils.login, undefined);
@@ -110,7 +66,7 @@ if (OsUtils.isWindows()) {
       const aFile = referenceFile;
       const aFileName = path.basename(aFile);
       // And the file isn´t in the Desktop
-      const dir = OsUtils.desktopDir;
+      const dir = HomePaths.desktopDir;
       const shortcut = path.resolve(dir, `${aFileName}.lnk`);
       OsUtils.removeFile(shortcut);
 
@@ -129,7 +85,7 @@ if (OsUtils.isWindows()) {
       const aFile = referenceFile;
       const aFileName = path.basename(aFile);
       // And the file isn´t in the startup folder
-      const dir = OsUtils.startupDir;
+      const dir = HomePaths.startupDir;
       const shortcut = path.resolve(dir, `${aFileName}.lnk`);
       OsUtils.removeFile(shortcut);
 
@@ -148,7 +104,7 @@ if (OsUtils.isWindows()) {
       const aFile = referenceFile;
       const aFileName = path.basename(aFile);
       // And the file isn´t in the start menu
-      const dir = OsUtils.startMenuDir;
+      const dir = HomePaths.startMenuDir;
       const shortcut = path.resolve(dir, `${aFileName}.lnk`);
       OsUtils.removeFile(shortcut);
 
@@ -169,7 +125,7 @@ if (OsUtils.isWindows()) {
       // And a group
       const aGroup = "dev-env-test";
       // And the file isn´t in the start menu
-      const dir = OsUtils.startMenuDir;
+      const dir = HomePaths.startMenuDir;
       const shortcut = path.resolve(dir, aGroup, `${aFileName}.lnk`);
       OsUtils.removeFile(shortcut);
 

@@ -1,5 +1,4 @@
 import * as log from "@std/log";
-import * as path from "@std/path";
 
 import { delay } from "@std/async/delay";
 

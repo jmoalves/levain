@@ -8,7 +8,6 @@ import t from "../lib/i18n.ts";
 
 import type Config from "../lib/config.ts";
 import { parseArgs } from "../lib/parse_args.ts";
-import OsUtils from "../lib/os/os_utils.ts";
 import StringUtils from "../lib/utils/string_utils.ts";
 import DateUtils from "../lib/utils/date_utils.ts";
 import LevainVersion from "../levain_version.ts";
@@ -17,6 +16,7 @@ import ConsoleFeedback from "../lib/utils/console_feedback.ts";
 import type Command from "./command.ts";
 import { FileUtils } from "../lib/fs/file_utils.ts";
 import LogUtils from "../lib/logger/log_utils.ts";
+import GeneralPaths from "../lib/paths/general_paths.ts";
 
 const cacheExpiration = 30;
 
@@ -175,7 +175,7 @@ export default class CleanCommand implements Command {
   }
 
   private cleanOsTempDir(shallow: boolean): number {
-    const tempDir = this.getOsTempDir();
+    const tempDir = GeneralPaths.tempDir;
     if (!tempDir) {
       return 0;
     }
@@ -197,7 +197,7 @@ export default class CleanCommand implements Command {
       return false;
     });
 
-    const levainReleasesDir = path.resolve(tempDir, "levain");
+    const levainReleasesDir = GeneralPaths.tempLevainReleasesDir;
     if (existsSync(levainReleasesDir)) {
       size += this.cleanDir(levainReleasesDir, (dirEntry: any) => {
         if (dirEntry.name.match(`^levain-${LevainVersion.levainVersion.versionNumber}$`)) {
@@ -219,7 +219,7 @@ export default class CleanCommand implements Command {
   private cleanLogs(): number {
     log.debug(t("cmd.clean.logs"));
 
-    const tempDir = this.getOsTempDir();
+    const tempDir = GeneralPaths.tempDir;
     if (!tempDir) {
       return 0;
     }
@@ -234,10 +234,6 @@ export default class CleanCommand implements Command {
 
       return false;
     });
-  }
-
-  private getOsTempDir() {
-    return OsUtils.tempDir;
   }
 
   readonly oneLineExample = t("cmd.clean.example");

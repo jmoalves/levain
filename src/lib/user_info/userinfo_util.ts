@@ -15,6 +15,7 @@ import { NameValidator } from "./validators/validators.ts";
 import { InputFullName } from "./input_name.ts";
 import { InputEmail } from "./input_email.ts";
 import { InputLogin } from "./input_login.ts";
+import HomePaths from "../paths/home_paths.ts";
  
 const passwordSizeMin = 3;
 
@@ -22,7 +23,7 @@ export default class UserInfoUtil {
   userInfo: UserInfo = new UserInfo();
 
   constructor(
-    public readonly userinfoFileUri: string = `${OsUtils.homeDir}/.levain.yaml`,
+    public readonly userinfoFileUri: string = HomePaths.levainYaml,
   ) {
   }
 

@@ -33,6 +33,29 @@ export default class HomePaths {
     return path.resolve(HomePaths.homedir(), "levain");
   }
 
+  static get levainLog(): string {
+    return path.resolve(HomePaths.homedir(), "levain.log");
+  }
+
+  static get levainYaml(): string {
+    return path.resolve(HomePaths.homedir(), ".levain.yaml");
+  }
+
+  static get desktopDir(): string {
+    return path.resolve(HomePaths.homedir(), "Desktop");
+  }
+
+  static get startMenuDir(): string {
+    return path.resolve(
+      HomePaths.homedir(),
+      "AppData/Roaming/Microsoft/Windows/Start Menu/Programs",
+    );
+  }
+
+  static get startupDir(): string {
+    return path.resolve(HomePaths.startMenuDir, "Startup");
+  }
+
   static profileCandidates(home?: string): string[] {
     if (home === undefined) {
       home = HomePaths.homedir();

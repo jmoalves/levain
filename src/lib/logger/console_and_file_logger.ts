@@ -11,6 +11,7 @@ import { FileUtils } from "../fs/file_utils.ts";
 import { StderrConsoleHandler } from "./stderr_handler.ts";
 import ConsoleFeedback from "../utils/console_feedback.ts";
 import { NullWriter } from "./null_writer.ts";
+import HomePaths from "../paths/home_paths.ts";
 
 export default class ConsoleAndFileLogger {
   static config: Config;
@@ -66,7 +67,7 @@ export default class ConsoleAndFileLogger {
   }
 
   static getLogFileInHomeFolder(): string {
-    return path.join(OsUtils.homeDir, "levain.log");
+    return HomePaths.levainLog;
   }
 
   static getLogFileInExtraDir(extraDir: string) {

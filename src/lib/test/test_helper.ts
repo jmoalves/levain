@@ -14,6 +14,8 @@ import ActionFactory from "../../action/action_factory.ts";
 import Action from "../../action/action.ts";
 import MockRepository from "../repository/mock_repository.ts";
 import OsUtils from "../os/os_utils.ts";
+import HomePaths from "../paths/home_paths.ts";
+import LevainPaths from "../paths/levain_paths.ts";
 
 export default class TestHelper {
   private static originalPrompt = globalThis.prompt;
@@ -71,7 +73,7 @@ export default class TestHelper {
     return new MockPackage();
   }
 
-  static readonly folderThatAlwaysExists = OsUtils.homeDir;
+  static readonly folderThatAlwaysExists = HomePaths.homedir();
   static readonly folderThatDoesNotExist = "this-folder-does-not-exist";
   static readonly anotherFolderThatDoesNotExist = "another-folder-that-does-not-exist";
   static readonly fileThatDoesNotExist = path.join(
@@ -83,7 +85,7 @@ export default class TestHelper {
     "this-file-also-does-not-exist.txt",
   );
   static readonly testdataDir = path.resolve(
-    `${OsUtils.projectRootDir}/testdata`,
+    `${LevainPaths.levainRootDir}/testdata`,
   );
   static readonly fileThatExists = path.resolve(
     `${TestHelper.testdataDir}/file_utils/can_read_and_write_this_file.txt`,
@@ -98,13 +100,13 @@ export default class TestHelper {
     `${TestHelper.testdataDir}/extract/zip_file_without_extension`,
   );
   static readonly emptyFile = path.resolve(
-    OsUtils.projectRootDir,
+    LevainPaths.levainRootDir,
     "testdata",
     "copyAction",
     "emptyFile.txt",
   );
   static readonly fileWithContent = path.resolve(
-    OsUtils.projectRootDir,
+    LevainPaths.levainRootDir,
     "testdata",
     "copyAction",
     "fileWithContent.txt",
