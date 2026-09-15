@@ -11,7 +11,7 @@ export default class LevainPaths {
       return Deno.execPath();
     }
     // Considering src\lib\paths\levain_paths.ts
-    const projectRoot = new URL("../../../", import.meta.url);
+    const projectRoot = new URL("../../", import.meta.url);
     return path.fromFileUrl(projectRoot);
   }
 
