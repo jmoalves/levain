@@ -1,13 +1,14 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import { ensureDirSync, moveSync } from "https://deno.land/std/fs/mod.ts";
+import * as log from "@std/log";
+import * as path from "@std/path";
+import { ensureDirSync, moveSync } from "@std/fs";
 
-import Config from "../config.ts";
+import type Config from "../config.ts";
 import { Timer } from "../timer.ts";
 import { FileUtils } from "../fs/file_utils.ts";
 import ConsoleFeedback from "../utils/console_feedback.ts";
 import StringUtils from "../utils/string_utils.ts";
 import { retry } from "../utils/utils.ts";
+import { FileProgress } from "../io/file_progress.ts";
 
 export abstract class Extractor {
   readonly feedback = new ConsoleFeedback();
@@ -18,14 +19,14 @@ export abstract class Extractor {
   }
 
   async extract(strip: boolean, src: string, dst: string) {
-    let extractedTempDir = await this.extractToTemp(src, dst);
+    const extractedTempDir = await this.extractToTemp(src, dst);
     await this.move(strip, extractedTempDir, dst);
   }
 
   async copy(srcFile: string, dstFile: string): Promise<string> {
     log.debug(`- COPY ${srcFile} => ${dstFile}`);
 
-    await FileUtils.copyWithProgress(srcFile, dstFile);
+    await FileProgress.copyWithProgress(srcFile, dstFile);
     return dstFile;
   }
 
@@ -33,10 +34,10 @@ export abstract class Extractor {
 
   async move(strip: boolean, srcDir: string, dstDir: string): Promise<void> {
     let count = 0;
-    for (let child of Deno.readDirSync(srcDir)) {
+    for (const child of Deno.readDirSync(srcDir)) {
       count++;
 
-      let from = path.resolve(srcDir, child.name);
+      const from = path.resolve(srcDir, child.name);
       if (strip) {
         if (count > 1) { // There can be only one!
           throw `You should not ask for --strip if there are more than one directory`;
@@ -45,13 +46,13 @@ export abstract class Extractor {
         log.debug(`- STRIP ${from}`);
         await this.move(false, from, dstDir);
       } else {
-        let dst = path.resolve(dstDir, child.name);
+        const dst = path.resolve(dstDir, child.name);
         log.debug(`- MOVE ${from} => ${dst}`);
         await retry(this.maxRetries, () => moveSync(from, dst));
       }
     }
 
-    await retry(this.maxRetries, () => Deno.removeSync(srcDir));
+    await retry(this.maxRetries, () => FileUtils.removeSync(srcDir));
   }
 
   async extractToTemp(src: string, dst: string): Promise<string> {
@@ -59,7 +60,7 @@ export abstract class Extractor {
     log.debug(`safeTempDir ${safeTempDir}`);
 
     ensureDirSync(safeTempDir);
-    let tempDir = Deno.makeTempDirSync({
+    const tempDir = Deno.makeTempDirSync({
       dir: safeTempDir,
       prefix: "extract-",
     });
@@ -68,7 +69,7 @@ export abstract class Extractor {
     log.debug(`- EXTRACT ${src} => ${tempDir}`);
     this.feedback.start(`# ${StringUtils.compressText(src, 80)}`);
 
-    let tick = setInterval(() => this.feedback.show(), 300);
+    const tick = setInterval(() => this.feedback.show(), 300);
     await this.extractImpl(src, tempDir);
     clearInterval(tick);
 

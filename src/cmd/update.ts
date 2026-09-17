@@ -1,12 +1,12 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import { copySync } from "https://deno.land/std/fs/copy.ts";
-import { existsSync } from "https://deno.land/std/fs/mod.ts";
+import * as log from "@std/log";
+import * as path from "@std/path";
+import { copySync } from "@std/fs";
+import { existsSync } from "@std/fs";
 
 import t from "../lib/i18n.ts";
 
-import Config from "../lib/config.ts";
-import Package from "../lib/package/package.ts";
+import type Config from "../lib/config.ts";
+import type Package from "../lib/package/package.ts";
 import Loader from "../lib/loader.ts";
 import { Timer } from "../lib/timer.ts";
 import Registry from "../lib/repository/registry.ts";
@@ -15,14 +15,15 @@ import VersionNumber from "../lib/utils/version_number.ts";
 import LevainVersion from "../levain_version.ts";
 import DateUtils from "../lib/utils/date_utils.ts";
 
-import Command from "./command.ts";
+import type Command from "./command.ts";
+import { FileUtils } from "../lib/fs/file_utils.ts";
 
 export default class Update implements Command {
   private registry: Registry;
   private readonly currentLevainVersion: VersionNumber;
 
   constructor(private config: Config) {
-    this.registry = new Registry(config, config.levainRegistryDir);
+    this.registry = new Registry(config, config.configPaths.levainRegistryDir);
     this.currentLevainVersion = LevainVersion.levainVersion;
   }
 
@@ -36,7 +37,7 @@ export default class Update implements Command {
     let pkgNames: string[] = myArgs._;
 
     if (pkgNames.length == 0) {
-      let installedPkgs = await this.config.repositoryManager.repositoryInstalled.listPackages();
+      const installedPkgs = await this.config.repositoryManager.repositoryInstalled.listPackages();
       if (installedPkgs?.length > 0) {
         pkgNames = installedPkgs.map((pkg) => pkg.name);
       }
@@ -46,7 +47,7 @@ export default class Update implements Command {
       throw new Error(t("cmd.install.noPackages"));
     }
 
-    let pkgs: Package[] | null = this.config.packageManager.resolvePackages(pkgNames);
+    const pkgs: Package[] | null = this.config.packageManager.resolvePackages(pkgNames);
     if (!pkgs) {
       return; // Won't happen
     }
@@ -54,10 +55,10 @@ export default class Update implements Command {
     log.info("");
     log.info("-----------------");
 
-    let pkgNameSet = new Set(pkgNames);
-    let bkpTag = this.bkpTag();
-    for (let pkg of pkgs) {
-      let forcePkg = myArgs.force && pkgNameSet.has(pkg.name);
+    const pkgNameSet = new Set(pkgNames);
+    const bkpTag = this.bkpTag();
+    for (const pkg of pkgs) {
+      const forcePkg = myArgs.force && pkgNameSet.has(pkg.name);
       await this.installPackage(bkpTag, pkg, forcePkg);
     }
 
@@ -126,11 +127,11 @@ export default class Update implements Command {
 
     // https://github.com/jmoalves/levain/issues/148
     if (shouldInstall) {
-      let registryEntry = path.resolve(this.config.levainRegistryDir, path.basename(pkg.filePath));
+      const registryEntry = path.resolve(this.config.configPaths.levainRegistryDir, path.basename(pkg.filePath));
       if (existsSync(registryEntry)) {
         try {
           log.debug(`REMOVE ${registryEntry}`);
-          Deno.removeSync(registryEntry);
+          FileUtils.removeSync(registryEntry);
         } catch (error) {
           log.debug(t("cmd.install.ignoreError", { error: error }));
           shouldInstall = false;
@@ -138,24 +139,24 @@ export default class Update implements Command {
       }
     }
 
-    let actions = [];
+    const actions = [];
 
     if (shouldInstall) {
-      let installActions = pkg.yamlItem("cmd.install") || [];
+      const installActions = pkg.yamlItem("cmd.install") || [];
       if (!pkg.skipInstallDir()) {
         installActions.unshift("mkdir ${baseDir}");
       }
 
       // Standard actions - At the head (unshift), they are in reverse order (like a STACK)
-      actions.unshift("mkdir " + this.config.levainSafeTempDir);
-      actions.unshift("mkdir " + this.config.levainRegistryDir);
+      actions.unshift("mkdir " + this.config.configPaths.levainSafeTempDir);
+      actions.unshift("mkdir " + this.config.configPaths.levainRegistryDir);
       actions.unshift("mkdir --compact ${levainHome}");
 
       Array.prototype.push.apply(actions, installActions);
     }
 
     // Standard actions - Env - At the rear (push), they are in normal order (like a QUEUE)
-    let envActions = pkg.yamlItem("cmd.env");
+    const envActions = pkg.yamlItem("cmd.env");
     if (envActions) {
       Array.prototype.push.apply(actions, envActions);
     }
@@ -164,12 +165,12 @@ export default class Update implements Command {
       // Standard actions - At the rear (push), they are in normal order (like a QUEUE)
       if (!pkg.skipRegistry()) {
         // TODO this.registry.add(pkg)
-        actions.push(`copy --verbose ${pkg.filePath} ${this.config.levainRegistryDir}`);
+        actions.push(`copy --verbose ${pkg.filePath} ${this.config.configPaths.levainRegistryDir}`);
       }
     }
 
     const loader = new Loader(this.config);
-    for (let action of actions) {
+    for (const action of actions) {
       await loader.action(pkg, action);
     }
 
@@ -184,9 +185,9 @@ export default class Update implements Command {
     }
 
     try {
-      let bkpDir = path.resolve(this.config.levainBackupDir, bkpTag);
-      let src = pkg.baseDir;
-      let dst = path.resolve(bkpDir, path.basename(src));
+      const bkpDir = path.resolve(this.config.configPaths.levainBackupDir, bkpTag);
+      const src = pkg.baseDir;
+      const dst = path.resolve(bkpDir, path.basename(src));
 
       log.info(`SAVING ${src} => ${dst}`);
 
@@ -203,18 +204,19 @@ export default class Update implements Command {
         return true;
       }
 
-      let renameDir = Deno.makeTempDirSync({
+      const renameDir = Deno.makeTempDirSync({
         dir: path.dirname(src),
         prefix: ".rename." + path.basename(src) + ".",
         suffix: ".tmp",
       });
       log.debug(`- SAVE-REN   ${src} => ${renameDir}`);
-      Deno.removeSync(renameDir, { recursive: true });
-      Deno.renameSync(src, renameDir);
+      FileUtils.removeSync(renameDir, { recursive: true });
+      FileUtils.renameSync(src, renameDir);
 
       try {
+        // ToDo: Check this. Why does it delete the temp dir immediately after creating it?
         log.debug(`- SAVE-DEL   ${renameDir}`);
-        Deno.removeSync(renameDir, { recursive: true });
+        FileUtils.removeSync(renameDir, { recursive: true });
       } catch (error) {
         log.debug(t("cmd.install.ignoreError", { error: error }));
       }

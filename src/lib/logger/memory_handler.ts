@@ -1,4 +1,4 @@
-import { BaseHandler, LevelName } from "https://deno.land/std/log/mod.ts";
+import { BaseHandler, LevelName } from "@std/log";
 
 export default class MemoryHandler extends BaseHandler {
   constructor(levelName: LevelName, options: any = {}) {
@@ -8,7 +8,7 @@ export default class MemoryHandler extends BaseHandler {
 
   public messages: string[] = [];
 
-  public log(str: string): void {
+  public override log(str: string): void {
     this.messages.push(str);
   }
 }

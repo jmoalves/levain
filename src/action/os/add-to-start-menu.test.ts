@@ -1,9 +1,9 @@
+import { assert } from "@std/assert";
+import * as path from "@std/path";
 import TestHelper from "../../lib/test/test_helper.ts";
 import ActionFactory from "../action_factory.ts";
 import AddToStartMenuAction from "./add-to-start-menu.ts";
-import { assert } from "https://deno.land/std/assert/mod.ts";
 import OsUtils from "../../lib/os/os_utils.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
 import { assertPathDoesNotExist, assertPathExists } from "../../lib/test/more_asserts.ts";
 
 Deno.test("AddToStartMenuAction should be obtainable with action factory", () => {

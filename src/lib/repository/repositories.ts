@@ -1,4 +1,4 @@
-import Repository from "./repository.ts";
+import type Repository from "./repository.ts";
 import { ArrayUtils } from "../utils/array_utils.ts";
 
 export default class Repositories {

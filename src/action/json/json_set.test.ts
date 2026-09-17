@@ -1,9 +1,10 @@
-import { assertEquals, assertRejects } from "https://deno.land/std/assert/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
+import { assertEquals, assertRejects } from "@std/assert";
+import * as path from "@std/path";
 
 import TestHelper from "../../lib/test/test_helper.ts";
 
 import JsonSet from "./json_set.ts";
+import { FileUtils } from "../../lib/fs/file_utils.ts";
 
 Deno.test("JsonSet - should throw exception for missing parameters", async () => {
   const action = new JsonSet(TestHelper.getConfig());
@@ -61,21 +62,21 @@ Deno.test("JsonSet - should throw exception for missing parameters", async () =>
 });
 
 Deno.test("JsonSet - should set simple string property", async () => {
-  let tempfile = Deno.makeTempFileSync();
+  const tempfile = Deno.makeTempFileSync();
   Deno.copyFileSync(TestHelper.resolveTestFile("json/test.json"), tempfile);
   const action = getJsonSetAction();
   const params = [tempfile, "property", "newValue"];
 
   await action.execute(TestHelper.mockPackage(), params);
 
-  let json = JSON.parse(Deno.readTextFileSync(tempfile));
+  const json = JSON.parse(FileUtils.readTextFileSync(tempfile));
   Deno.removeSync(tempfile);
 
   assertEquals(json.property, "newValue");
 });
 
 Deno.test("JsonSet - should set simple number property", async () => {
-  let tempfile = Deno.makeTempFileSync();
+  const tempfile = Deno.makeTempFileSync();
   Deno.copyFileSync(TestHelper.resolveTestFile("json/test.json"), tempfile);
 
   const config = TestHelper.getConfig();
@@ -84,14 +85,14 @@ Deno.test("JsonSet - should set simple number property", async () => {
 
   await action.execute(TestHelper.mockPackage(), params);
 
-  let json = JSON.parse(Deno.readTextFileSync(tempfile));
+  const json = JSON.parse(Deno.readTextFileSync(tempfile));
   Deno.removeSync(tempfile);
 
   assertEquals(json.numberProperty, 25.00);
 });
 
 Deno.test("JsonSet - should set simple boolean property", async () => {
-  let tempfile = Deno.makeTempFileSync();
+  const tempfile = Deno.makeTempFileSync();
   Deno.copyFileSync(TestHelper.resolveTestFile("json/test.json"), tempfile);
 
   const config = TestHelper.getConfig();
@@ -100,14 +101,14 @@ Deno.test("JsonSet - should set simple boolean property", async () => {
 
   await action.execute(TestHelper.mockPackage(), params);
 
-  let json = JSON.parse(Deno.readTextFileSync(tempfile));
+  const json = JSON.parse(Deno.readTextFileSync(tempfile));
   Deno.removeSync(tempfile);
 
   assertEquals(json.booleanProperty, true);
 });
 
 Deno.test("JsonSet - should set an inner string property", async () => {
-  let tempfile = Deno.makeTempFileSync();
+  const tempfile = Deno.makeTempFileSync();
   Deno.copyFileSync(TestHelper.resolveTestFile("json/test.json"), tempfile);
 
   const config = TestHelper.getConfig();
@@ -116,14 +117,14 @@ Deno.test("JsonSet - should set an inner string property", async () => {
 
   await action.execute(TestHelper.mockPackage(), params);
 
-  let json = JSON.parse(Deno.readTextFileSync(tempfile));
+  const json = JSON.parse(Deno.readTextFileSync(tempfile));
   Deno.removeSync(tempfile);
 
   assertEquals(json.newObject.newArray[0].stringProperty, "name");
 });
 
 Deno.test("JsonSet - should set an string property with dots", async () => {
-  let tempfile = Deno.makeTempFileSync();
+  const tempfile = Deno.makeTempFileSync();
   Deno.copyFileSync(TestHelper.resolveTestFile("json/test.json"), tempfile);
 
   const config = TestHelper.getConfig();
@@ -132,14 +133,14 @@ Deno.test("JsonSet - should set an string property with dots", async () => {
 
   await action.execute(TestHelper.mockPackage(), params);
 
-  let json = JSON.parse(Deno.readTextFileSync(tempfile));
+  const json = JSON.parse(Deno.readTextFileSync(tempfile));
   Deno.removeSync(tempfile);
 
   assertEquals(json["newProperty.with.dots"], "dotValue");
 });
 
 Deno.test("JsonSet - should NOT set an inner string property that exists", async () => {
-  let tempfile = Deno.makeTempFileSync();
+  const tempfile = Deno.makeTempFileSync();
   Deno.copyFileSync(TestHelper.resolveTestFile("json/test.json"), tempfile);
 
   const config = TestHelper.getConfig();
@@ -148,14 +149,14 @@ Deno.test("JsonSet - should NOT set an inner string property that exists", async
 
   await action.execute(TestHelper.mockPackage(), params);
 
-  let json = JSON.parse(Deno.readTextFileSync(tempfile));
+  const json = JSON.parse(Deno.readTextFileSync(tempfile));
   Deno.removeSync(tempfile);
 
   assertEquals(json.objectProperty.innerProperty, "innerValue");
 });
 
 Deno.test("JsonSet - should NOT set an inner string property that exists", async () => {
-  let tempfile = Deno.makeTempFileSync();
+  const tempfile = Deno.makeTempFileSync();
   Deno.copyFileSync(TestHelper.resolveTestFile("json/test.json"), tempfile);
 
   const config = TestHelper.getConfig();
@@ -164,14 +165,14 @@ Deno.test("JsonSet - should NOT set an inner string property that exists", async
 
   await action.execute(TestHelper.mockPackage(), params);
 
-  let json = JSON.parse(Deno.readTextFileSync(tempfile));
+  const json = JSON.parse(Deno.readTextFileSync(tempfile));
   Deno.removeSync(tempfile);
 
   assertEquals(json.objectProperty.innerProperty, "innerValue");
 });
 
 Deno.test("JsonSet - should set an string property with dots", async () => {
-  let tempfile = Deno.makeTempFileSync();
+  const tempfile = Deno.makeTempFileSync();
   Deno.copyFileSync(TestHelper.resolveTestFile("json/test.json"), tempfile);
 
   const config = TestHelper.getConfig();
@@ -180,14 +181,14 @@ Deno.test("JsonSet - should set an string property with dots", async () => {
 
   await action.execute(TestHelper.mockPackage(), params);
 
-  let json = JSON.parse(Deno.readTextFileSync(tempfile));
+  const json = JSON.parse(Deno.readTextFileSync(tempfile));
   Deno.removeSync(tempfile);
 
   assertEquals(json["property.with.dots"], "dotValue");
 });
 
 Deno.test("JsonSet - should set a new array element", async () => {
-  let tempfile = Deno.makeTempFileSync();
+  const tempfile = Deno.makeTempFileSync();
   Deno.copyFileSync(TestHelper.resolveTestFile("json/test.json"), tempfile);
 
   const config = TestHelper.getConfig();
@@ -196,7 +197,7 @@ Deno.test("JsonSet - should set a new array element", async () => {
 
   await action.execute(TestHelper.mockPackage(), params);
 
-  let json = JSON.parse(Deno.readTextFileSync(tempfile));
+  const json = JSON.parse(Deno.readTextFileSync(tempfile));
   Deno.removeSync(tempfile);
 
   assertEquals(json.arrayProperty.length, 4);
@@ -204,7 +205,7 @@ Deno.test("JsonSet - should set a new array element", async () => {
 });
 
 Deno.test("JsonSet - should set the last array element", async () => {
-  let tempfile = Deno.makeTempFileSync();
+  const tempfile = Deno.makeTempFileSync();
   Deno.copyFileSync(TestHelper.resolveTestFile("json/test.json"), tempfile);
 
   const config = TestHelper.getConfig();
@@ -213,7 +214,7 @@ Deno.test("JsonSet - should set the last array element", async () => {
 
   await action.execute(TestHelper.mockPackage(), params);
 
-  let json = JSON.parse(Deno.readTextFileSync(tempfile));
+  const json = JSON.parse(Deno.readTextFileSync(tempfile));
   Deno.removeSync(tempfile);
 
   assertEquals(json.arrayProperty.length, 3);
@@ -221,7 +222,7 @@ Deno.test("JsonSet - should set the last array element", async () => {
 });
 
 Deno.test("JsonSet - should set an string property with a windows path", async () => {
-  let tempfile = Deno.makeTempFileSync();
+  const tempfile = Deno.makeTempFileSync();
   Deno.copyFileSync(TestHelper.resolveTestFile("json/test.json"), tempfile);
 
   const config = TestHelper.getConfig();
@@ -230,7 +231,7 @@ Deno.test("JsonSet - should set an string property with a windows path", async (
 
   await action.execute(TestHelper.mockPackage(), params);
 
-  let json = JSON.parse(Deno.readTextFileSync(tempfile));
+  const json = JSON.parse(Deno.readTextFileSync(tempfile));
   Deno.removeSync(tempfile);
 
   assertEquals(json.pathProperty, "d:\\test\\dir\\subdir");
@@ -249,7 +250,7 @@ Deno.test("JsonSet should create file when it doesnt exist", () => {
   assertEquals(newFileText, '{\n   "newProperty": "newValue"\n}');
 });
 Deno.test("JsonSet should set an attr when file is empty", () => {
-  let emptyTempFile = Deno.makeTempFileSync();
+  const emptyTempFile = Deno.makeTempFileSync();
   const action = getJsonSetAction();
 
   const params = [emptyTempFile, "pathProperty", "newValue"];

@@ -1,4 +1,4 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "@std/log";
 
 export class AutoFlushLogFileHandler extends log.FileHandler {
   constructor(
@@ -8,7 +8,7 @@ export class AutoFlushLogFileHandler extends log.FileHandler {
     super(levelName, fullOptions);
   }
 
-  log(msg: string): void {
+  override log(msg: string): void {
     super.log(msg);
     super.flush();
   }

@@ -1,4 +1,4 @@
-import { assertArrayIncludes, assertEquals, assertThrows } from "https://deno.land/std/assert/mod.ts";
+import { assertArrayIncludes, assertEquals, assertThrows } from "@std/assert";
 
 import DirUtils from "./dir_utils.ts";
 import TestHelper from "../test/test_helper.ts";
@@ -11,7 +11,7 @@ Deno.test("DirUtils.count should count dir elements", () => {
   assertEquals(DirUtils.count(testDataDir), 8);
 });
 Deno.test("DirUtils.count should throw error when folder does not exist", () => {
-  let folder = TestHelper.folderThatDoesNotExist;
+  const folder = TestHelper.folderThatDoesNotExist;
   assertThrows(
     () => {
       DirUtils.count(folder);
@@ -24,7 +24,7 @@ Deno.test("DirUtils.count should throw error when folder does not exist", () => 
 // listFiles
 //
 Deno.test("DirUtils.listFiles should throw error when directory does not exist", () => {
-  let folder = TestHelper.folderThatDoesNotExist;
+  const folder = TestHelper.folderThatDoesNotExist;
   assertThrows(
     () => {
       DirUtils.listFiles(folder);

@@ -1,4 +1,4 @@
-import { assert, assertEquals, assertMatch, assertRejects, assertThrows } from "https://deno.land/std/assert/mod.ts";
+import { assert, assertEquals, assertMatch, assertRejects, assertThrows } from "@std/assert";
 
 import GitUtils from "./git_utils.ts";
 import TestHelper from "../test/test_helper.ts";
@@ -34,7 +34,7 @@ invalidUrls.forEach((gitPath) => {
 });
 
 Deno.test(`GitUtils - parseGitPath('git@github.com:jmoalves/levain.git#develop')`, () => {
-  let gitPath = GitUtils.parseGitPath("git@github.com:jmoalves/levain.git#develop");
+  const gitPath = GitUtils.parseGitPath("git@github.com:jmoalves/levain.git#develop");
   assertEquals(gitPath.url, "git@github.com:jmoalves/levain.git");
   assertEquals(gitPath.branch, "develop");
   assertEquals(gitPath.user, "jmoalves");
@@ -42,7 +42,7 @@ Deno.test(`GitUtils - parseGitPath('git@github.com:jmoalves/levain.git#develop')
 });
 
 Deno.test(`GitUtils - parseGitPath('git@github.com:jmoalves/levain.git')`, () => {
-  let gitPath = GitUtils.parseGitPath("git@github.com:jmoalves/levain.git");
+  const gitPath = GitUtils.parseGitPath("git@github.com:jmoalves/levain.git");
   assertEquals(gitPath.url, "git@github.com:jmoalves/levain.git");
   assertEquals(gitPath.branch, undefined);
   assertEquals(gitPath.user, "jmoalves");
@@ -50,7 +50,7 @@ Deno.test(`GitUtils - parseGitPath('git@github.com:jmoalves/levain.git')`, () =>
 });
 
 Deno.test(`GitUtils - parseGitPath('git@gitlab.bndes.net:sist-pme/pme.git#develop')`, () => {
-  let gitPath = GitUtils.parseGitPath("git@gitlab.bndes.net:sist-pme/pme.git#develop");
+  const gitPath = GitUtils.parseGitPath("git@gitlab.bndes.net:sist-pme/pme.git#develop");
   assertEquals(gitPath.url, "git@gitlab.bndes.net:sist-pme/pme.git");
   assertEquals(gitPath.branch, "develop");
   assertEquals(gitPath.user, "sist-pme");
@@ -58,7 +58,7 @@ Deno.test(`GitUtils - parseGitPath('git@gitlab.bndes.net:sist-pme/pme.git#develo
 });
 
 Deno.test(`GitUtils - parseGitPath('git@gitlab.bndes.net:sist-pme/pme.git')`, () => {
-  let gitPath = GitUtils.parseGitPath("git@gitlab.bndes.net:sist-pme/pme.git");
+  const gitPath = GitUtils.parseGitPath("git@gitlab.bndes.net:sist-pme/pme.git");
   assertEquals(gitPath.url, "git@gitlab.bndes.net:sist-pme/pme.git");
   assertEquals(gitPath.branch, undefined);
   assertEquals(gitPath.user, "sist-pme");
@@ -66,7 +66,7 @@ Deno.test(`GitUtils - parseGitPath('git@gitlab.bndes.net:sist-pme/pme.git')`, ()
 });
 
 Deno.test(`GitUtils - parseGitPath('https://github.com/jmoalves/levain.git#develop')`, () => {
-  let gitPath = GitUtils.parseGitPath("https://github.com/jmoalves/levain.git#develop");
+  const gitPath = GitUtils.parseGitPath("https://github.com/jmoalves/levain.git#develop");
   assertEquals(gitPath.url, "https://github.com/jmoalves/levain.git");
   assertEquals(gitPath.branch, "develop");
   assertEquals(gitPath.user, "jmoalves");
@@ -74,7 +74,7 @@ Deno.test(`GitUtils - parseGitPath('https://github.com/jmoalves/levain.git#devel
 });
 
 Deno.test(`GitUtils - parseGitPath('https://github.com/jmoalves/levain.git')`, () => {
-  let gitPath = GitUtils.parseGitPath("https://github.com/jmoalves/levain.git");
+  const gitPath = GitUtils.parseGitPath("https://github.com/jmoalves/levain.git");
   assertEquals(gitPath.url, "https://github.com/jmoalves/levain.git");
   assertEquals(gitPath.branch, undefined);
   assertEquals(gitPath.user, "jmoalves");
@@ -82,7 +82,7 @@ Deno.test(`GitUtils - parseGitPath('https://github.com/jmoalves/levain.git')`, (
 });
 
 Deno.test(`GitUtils - parseGitPath('https://gitlab.bndes.net/sist-pme/pme.git#develop')`, () => {
-  let gitPath = GitUtils.parseGitPath("https://gitlab.bndes.net/sist-pme/pme.git#develop");
+  const gitPath = GitUtils.parseGitPath("https://gitlab.bndes.net/sist-pme/pme.git#develop");
   assertEquals(gitPath.url, "https://gitlab.bndes.net/sist-pme/pme.git");
   assertEquals(gitPath.branch, "develop");
   assertEquals(gitPath.user, "sist-pme");
@@ -90,7 +90,7 @@ Deno.test(`GitUtils - parseGitPath('https://gitlab.bndes.net/sist-pme/pme.git#de
 });
 
 Deno.test(`GitUtils - parseGitPath('https://gitlab.bndes.net/sist-pme/pme.git')`, () => {
-  let gitPath = GitUtils.parseGitPath("https://gitlab.bndes.net/sist-pme/pme.git");
+  const gitPath = GitUtils.parseGitPath("https://gitlab.bndes.net/sist-pme/pme.git");
   assertEquals(gitPath.url, "https://gitlab.bndes.net/sist-pme/pme.git");
   assertEquals(gitPath.branch, undefined);
   assertEquals(gitPath.user, "sist-pme");

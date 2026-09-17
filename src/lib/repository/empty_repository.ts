@@ -1,5 +1,5 @@
-import Repository from "./repository.ts";
-import Package from "../package/package.ts";
+import type Repository from "./repository.ts";
+import type Package from "../package/package.ts";
 
 export class EmptyRepository implements Repository {
   name = "EmptyRepo";
@@ -27,7 +27,7 @@ export class EmptyRepository implements Repository {
     return Promise.resolve([]);
   }
 
-  resolvePackage(packageName: string): Package | undefined {
+  resolvePackage(_packageName: string): Package | undefined {
     return undefined;
   }
 

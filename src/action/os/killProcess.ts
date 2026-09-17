@@ -1,10 +1,10 @@
-import Action from "../action.ts";
-import Package from "../../lib/package/package.ts";
+import type Action from "../action.ts";
+import type Package from "../../lib/package/package.ts";
 import { parseArgs } from "../../lib/parse_args.ts";
 import OsUtils from "../../lib/os/os_utils.ts";
 
 export default class KillProcessAction implements Action {
-  async execute(pkg: Package | undefined, parameters: string[]): Promise<void> {
+  async execute(_pkg: Package | undefined, parameters: string[]): Promise<void> {
     const args = parseArgs(parameters);
 
     const processName = args._[0];

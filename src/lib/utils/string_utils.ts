@@ -1,4 +1,4 @@
-import { distance } from "https://deno.land/x/fastest_levenshtein/mod.ts";
+import { distance } from "fastest-levenshtein";
 
 export default class StringUtils {
   static textContainsAtLeastOneChar(text: string, chars: string): boolean {

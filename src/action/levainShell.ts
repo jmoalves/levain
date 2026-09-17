@@ -1,11 +1,11 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "@std/log";
 
-import Config from "../lib/config.ts";
-import Package from "../lib/package/package.ts";
+import type Config from "../lib/config.ts";
+import type Package from "../lib/package/package.ts";
 import { parseArgs } from "../lib/parse_args.ts";
 import { OsShell } from "../lib/os/os_shell.ts";
 
-import Action from "./action.ts";
+import type Action from "./action.ts";
 
 export default class LevainShell implements Action {
   constructor(private config: Config) {
@@ -28,7 +28,7 @@ export default class LevainShell implements Action {
       ],
     });
 
-    let osShell: OsShell = new OsShell(this.config, [pkg.name]);
+    const osShell: OsShell = new OsShell(this.config, [pkg.name]);
     osShell.saveVar = myArgs.saveVar;
     osShell.interactive = false;
     osShell.stripCRLF = myArgs.stripCRLF;

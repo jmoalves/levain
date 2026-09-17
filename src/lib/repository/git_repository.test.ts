@@ -1,8 +1,8 @@
 import Repository from "./repository.ts";
 import Config from "../config.ts";
 
-import { assertEquals, assertRejects } from "https://deno.land/std/assert/mod.ts";
-import GitRepository from "./git_repository.ts";
+import { assertEquals, assertRejects } from "@std/assert";
+import { GitRepository } from "./git_repository.ts";
 import LevainAsserts from "../test/levain_asserts.ts";
 
 Deno.test("GitRepository should have a name", () => {

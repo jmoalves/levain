@@ -1,20 +1,22 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import { existsSync } from "https://deno.land/std/fs/mod.ts";
+import * as log from "@std/log";
 
-import Package from "../../lib/package/package.ts";
-import Config from "../../lib/config.ts";
+import { existsSync } from "@std/fs";
+
+import type Package from "../../lib/package/package.ts";
+import type Config from "../../lib/config.ts";
 import { parseArgs } from "../../lib/parse_args.ts";
 
-import Action from "../action.ts";
+import type Action from "../action.ts";
 
 export default class CheckChainDirExists implements Action {
   constructor(private config: Config) {
   }
 
-  async execute(pkg: Package | undefined, parameters: string[]) {
+  // deno-lint-ignore require-await
+  async execute(_pkg: Package | undefined, parameters: string[]) {
     log.debug(`CHECK CHAIN DIRS EXIST ${parameters.join(" ")}`);
 
-    let args = parseArgs(parameters, {
+    const args = parseArgs(parameters, {
       stringOnce: [
         "saveVar",
         "default",
@@ -26,7 +28,7 @@ export default class CheckChainDirExists implements Action {
     const dirs: string[] = args._;
     const defaultValue = args.default;
 
-    let found = dirs
+    const found = dirs
       .find((it) => {
         try {
           log.debug(`checking dir ${it}`);

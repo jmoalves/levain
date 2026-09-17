@@ -5,7 +5,7 @@ import {
   MinLengthValidator,
   NameValidator,
 } from "./validators.ts";
-import { assertEquals } from "https://deno.land/std/assert/mod.ts";
+import { assertEquals } from "@std/assert";
 
 //
 // MinLengthValidator

@@ -1,4 +1,4 @@
-import i18next from "https://deno.land/x/i18next/index.js";
+import i18next from "@i18next/i18next";
 
 import enTranslation from "../locales/en/translation.json" with {
   type: "json",

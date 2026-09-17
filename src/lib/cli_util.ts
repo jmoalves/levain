@@ -1,4 +1,4 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "@std/log";
 
 import t from "./i18n.ts";
 
@@ -10,7 +10,7 @@ export default class CliUtil {
       return;
     }
 
-    let answer = prompt(t("lib.cli_util.continue"), t("lib.cli_util.continueDefault"));
+    const answer = prompt(t("lib.cli_util.continue"), t("lib.cli_util.continueDefault"));
     if (!answer || ![t("lib.cli_util.continueDefault")].includes(answer.toUpperCase())) {
       log.info("");
       log.info(t("lib.cli_util.aborting"));

@@ -1,5 +1,5 @@
-import * as path from "https://deno.land/std/path/mod.ts";
-import { assert, assertEquals, assertNotEquals } from "https://deno.land/std/assert/mod.ts";
+import * as path from "@std/path";
+import { assert, assertEquals, assertNotEquals } from "@std/assert";
 
 import TestHelper from "../../lib/test/test_helper.ts";
 
@@ -76,7 +76,7 @@ Deno.test("PropertiesUtils.save should save content", () => {
 //
 Deno.test({
   name: "PropertiesUtils.set should change a value",
-  async fn() {
+  fn() {
     const originalFile = path.join("testdata", "properties", "person.properties");
     const newTempFile = TestHelper.getNewTempFile(originalFile);
     try {
@@ -97,7 +97,7 @@ Deno.test({
 });
 Deno.test({
   name: "PropertiesUtils.set should create the file if it does not exist",
-  async fn() {
+  fn() {
     const newTempFile = TestHelper.getNewTempFile();
     try {
       TestHelper.remove(newTempFile);
@@ -117,7 +117,7 @@ Deno.test({
 });
 Deno.test({
   name: "PropertiesUtils.set should work with a empty file",
-  async fn() {
+  fn() {
     const newTempFile = TestHelper.getNewTempFile();
     try {
       const key = "email";
@@ -135,7 +135,7 @@ Deno.test({
 });
 Deno.test({
   name: "PropertiesUtils.set should work with a new attribute",
-  async fn() {
+  fn() {
     const newTempFile = TestHelper.getNewTempFile();
     try {
       const key = "--new-attribute--";
@@ -153,7 +153,7 @@ Deno.test({
 });
 Deno.test({
   name: "PropertiesUtils.set should not replace value when ifNotExists",
-  async fn() {
+  fn() {
     const originalFile = path.join("testdata", "properties", "person.properties");
     const newTempFile = TestHelper.getNewTempFile(originalFile);
     try {

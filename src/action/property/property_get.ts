@@ -1,9 +1,9 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "@std/log";
 
-import Action from "../action.ts";
-import Package from "../../lib/package/package.ts";
+import type Action from "../action.ts";
+import type Package from "../../lib/package/package.ts";
 import { parseArgs } from "../../lib/parse_args.ts";
-import Config from "../../lib/config.ts";
+import type Config from "../../lib/config.ts";
 
 import PropertiesUtils from "./properties_utils.ts";
 
@@ -13,10 +13,11 @@ export default class PropertyGetAction implements Action {
   ) {
   }
 
-  async execute(pkg: Package, parameters: string[]) {
+  // deno-lint-ignore require-await
+  async execute(_pkg: Package, parameters: string[]) {
     log.debug(`PROPERTY-GET ${parameters.join(" ")}`);
 
-    let myArgs = parseArgs(parameters, {
+    const myArgs = parseArgs(parameters, {
       stringOnce: [
         "setVar",
         "default",

@@ -1,12 +1,13 @@
 // To run this script:
-// deno run --allow-all --unstable hello_world.ts
+// deno run --allow-all hello_world.ts
 
 // Import from local (Debugging and Development)
 // import { WebUI } from "../../mod.ts";
 
 // Import from deno.land (Production)
-import { WebUI } from "https://deno.land/x/webui/mod.ts";
+import { WebUI } from "@webui/deno-webui";
 
+// deno-lint-ignore require-await
 async function checkResult(e: WebUI.Event) {
   const a = e.arg.number(0); // First argument
   const b = e.arg.number(1); // Second argument
@@ -20,20 +21,20 @@ async function checkResult(e: WebUI.Event) {
 
 async function calculate(e: WebUI.Event) {
   // Run JavaScript and wait for response
-  const getA = await e.globalThis.window.script("return get_A()").catch((error) => {
+  const getA = await e.window.scriptClient(e, "return get_A()").catch((error) => {
     console.error(`Error in the JavaScript: ${error}`);
     return "";
   });
-  const getB = await e.globalThis.window.script("return get_B()").catch((error) => {
+  const getB = await e.window.scriptClient(e, "return get_B()").catch((error) => {
     console.error(`Error in the JavaScript: ${error}`);
     return "";
   });
 
   // Calculate
-  const result = parseInt(getA) + parseInt(getB);
+  const result = Number(getA) + Number(getB);
 
   // Run JavaScript without waiting for response (Quick)
-  e.globalThis.window.run(`set_result(${result});`);
+  e.window.run(`set_result(${result});`);
 }
 
 // Create new window

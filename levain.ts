@@ -1,5 +1,4 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
+import * as log from "@std/log";
 
 import t from "./src/lib/i18n.ts";
 
@@ -10,17 +9,6 @@ import { Timer } from "./src/lib/timer.ts";
 import LevainCli from "./src/levain_cli.ts";
 
 export default class Levain {
-  static get levainRootFile(): string {
-    //https://stackoverflow.com/questions/76647896/determine-if-running-uncompiled-ts-script-or-compiled-deno-executable
-    // SEE ALSO: scripts\levain-compile.cmd
-
-    const isCompiled = Deno.args.includes("--is_compiled_binary");
-    return isCompiled ? Deno.execPath() : path.fromFileUrl(import.meta.url);
-  }
-
-  static get levainRootDir(): string {
-    return path.dirname(Levain.levainRootFile);
-  }
 
   logFiles: string[] = [];
   timer = new Timer();
@@ -56,7 +44,7 @@ export default class Levain {
           "levain-upgrade",
         ],
       });
-
+      
       await this.prepareLogs(this.myArgs);
 
       log.info("");
@@ -99,8 +87,9 @@ export default class Levain {
   }
 
   async prepareLogs(myArgs: any): Promise<ConsoleAndFileLogger> {
+    const omitLog =  (myArgs?._?.length > 1 && (myArgs._[0] == "_activate-machine") && (myArgs._[1] == "cmd"));
     this.logFiles = this.getLogFiles(myArgs["add-log"], myArgs["add-log-dir"]);
-    this.logger = await ConsoleAndFileLogger.setup(this.logFiles);
+    this.logger = await ConsoleAndFileLogger.setup(this.logFiles, omitLog);
     this.logger.showLogFiles(this.logFiles);
     return this.logger;
   }

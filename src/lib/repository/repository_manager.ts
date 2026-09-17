@@ -1,27 +1,25 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "@std/log";
 
 import t from "../i18n.ts";
 
-import Config from "../config.ts";
-import Package from "../package/package.ts";
+import type Config from "../config.ts";
+import type Package from "../package/package.ts";
 
-import Repository from "./repository.ts";
+import type Repository from "./repository.ts";
 import ChainRepository from "./chain_repository.ts";
 import RepositoryFactory from "./repository_factory.ts";
 import Repositories from "./repositories.ts";
 import { EmptyRepository } from "./empty_repository.ts";
 import GitUtils from "../utils/git_utils.ts";
+import LevainPaths from "../paths/levain_paths.ts";
 
 export default class RepositoryManager {
-  private repoFactory: RepositoryFactory;
   private extraRepos: Set<string> = new Set<string>();
   private tempRepos: Set<string> = new Set<string>();
 
   repositories = new Repositories();
 
-  constructor(private config: Config) {
-    this.repoFactory = new RepositoryFactory(config);
-  }
+  constructor(private config: Config) { }
 
   async init({ extraRepos, tempRepos }: { extraRepos: string[]; tempRepos?: string[] }): Promise<Repository[]> {
     log.debug("");
@@ -121,10 +119,10 @@ export default class RepositoryManager {
       throw Error(t("lib.repository.repository_manager.notFound"));
     }
 
-    let repos: any = this.repositories;
-    for (let key in repos) {
+    const repos: any = this.repositories;
+    for (const key in repos) {
       if (repos[key]) {
-        let repo: Repository = repos[key];
+        const repo: Repository = repos[key];
         log.debug(`INVALIDATE-PACKAGES Repo[${key}] - ${repo.name}`);
         repo.reload();
       }
@@ -148,14 +146,14 @@ export default class RepositoryManager {
       throw Error(t("lib.repository.repository_manager.notFound"));
     }
 
-    let repos: any = this.repositories;
+    const repos: any = this.repositories;
     log.debug(`## repos: ${this.repositories?.describe()}`);
 
-    let initializedRepositories: Repository[] = [];
+    const initializedRepositories: Repository[] = [];
 
-    for (let key in repos) {
+    for (const key in repos) {
       if (repos[key]) {
-        let repo: Repository = repos[key];
+        const repo: Repository = repos[key];
         if (!repo.initialized()) {
           log.debug(`INIT Repo[${key}] - ${repo.describe()} initialized? ${repo.initialized()}`);
           await repo.init();
@@ -171,7 +169,7 @@ export default class RepositoryManager {
 
   private logRepos(repos: any) {
     log.debug(`=== REPOS`);
-    for (let key in repos) {
+    for (const key in repos) {
       if (repos[key]) {
         log.debug(`Repo[${key}] - ${repos[key].name}`);
       }
@@ -180,7 +178,7 @@ export default class RepositoryManager {
 
   public async createCurrentDirRepo(): Promise<Repository> {
     const currentDir = Deno.cwd();
-    let dirs = [currentDir];
+    const dirs = [currentDir];
 
     const gitDir = GitUtils.gitRoot(currentDir);
     if (gitDir) {
@@ -195,18 +193,19 @@ export default class RepositoryManager {
 
   public async createInstalledRepo(): Promise<Repository> {
     log.debug("createInstalledRepo");
-    let repos = await this.repoList(true);
+    const repos = await this.repoList(true);
     return this.repositories.installed = await this.createRepos(repos);
   }
 
   public async createRegularRepositories(): Promise<Repository> {
     log.debug("createRegularRepository");
-    let repos = await this.repoList(false);
+    const repos = await this.repoList(false);
     return this.repositories.regular = await this.createRepos(repos);
   }
 
+  // deno-lint-ignore require-await
   public async repoList(installedOnly: boolean): Promise<string[]> {
-    let repos: string[] = [];
+    const repos: string[] = [];
 
     if (installedOnly) {
       this.addLevainRegistryRepo(repos);
@@ -220,13 +219,13 @@ export default class RepositoryManager {
   }
 
   private addLevainRepo(repos: string[]) {
-    log.debug(`addRepo DEFAULT ${this.config.levainSrcDir} --> Levain src dir`);
-    repos.push(this.config.levainSrcDir);
+    log.debug(`addRepo DEFAULT ${LevainPaths.levainSrcDir} --> Levain src dir`);
+    repos.push(LevainPaths.levainSrcDir);
   }
 
   private addLevainRegistryRepo(repos: string[]) {
-    log.debug(`addRepo DEFAULT ${this.config.levainRegistryDir} --> Levain registry dir`);
-    repos.push(this.config.levainRegistryDir);
+    log.debug(`addRepo DEFAULT ${this.config.configPaths.levainRegistryDir} --> Levain registry dir`);
+    repos.push(this.config.configPaths.levainRegistryDir);
   }
 
   private addExtraRepos(repos: string[]) {
@@ -240,9 +239,9 @@ export default class RepositoryManager {
   }
 
   private async createRepos(repoDirs: string[], rootOnly: boolean = false): Promise<Repository> {
-    let repoArr: Repository[] = [];
-    for (let repoPath of RepositoryFactory.normalizeList(repoDirs)) {
-      repoArr.push(await this.repoFactory.getOrCreate(repoPath, rootOnly));
+    const repoArr: Repository[] = [];
+    for (const repoPath of RepositoryFactory.normalizeList(repoDirs)) {
+      repoArr.push(await RepositoryFactory.getOrCreate(this.config, repoPath, rootOnly));
     }
 
     const repoCount = repoArr.length;

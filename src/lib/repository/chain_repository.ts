@@ -1,7 +1,7 @@
-import Config from "../config.ts";
-import Package from "../package/package.ts";
+import type Config from "../config.ts";
+import type Package from "../package/package.ts";
 
-import Repository from "./repository.ts";
+import type Repository from "./repository.ts";
 import AbstractRepository from "./abstract_repository.ts";
 import { ArrayUtils } from "../utils/array_utils.ts";
 
@@ -48,8 +48,8 @@ export default class ChainRepository extends AbstractRepository {
   }
 
   resolvePackage(packageName: string): Package | undefined {
-    for (let repo of this.repositories) {
-      let pkg = repo.resolvePackage(packageName);
+    for (const repo of this.repositories) {
+      const pkg = repo.resolvePackage(packageName);
       if (pkg) {
         return pkg;
       }

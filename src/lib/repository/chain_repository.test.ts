@@ -1,4 +1,4 @@
-import { assertEquals } from "https://deno.land/std/assert/mod.ts";
+import { assertEquals } from "@std/assert";
 
 import Config from "../config.ts";
 import { MockPackage } from "../package/mock_package.ts";
@@ -48,7 +48,7 @@ Deno.test("ChainRepository should resolve package that only exists in second rep
   assertEquals(pkg?.version?.versionNumber, "3.0.0");
 });
 
-Deno.test("ChainRepository should ignore duplicated repos", async () => {
+Deno.test("ChainRepository should ignore duplicated repos", () => {
   const chainRepository = new ChainRepository(new Config([]), [repoMock1, repoMock1, repoMock2]);
 
   const repos = chainRepository.repositories;

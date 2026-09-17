@@ -1,4 +1,4 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "@std/log";
 
 const timer = (ms: number) => new Promise((res) => setTimeout(res, ms));
 

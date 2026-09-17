@@ -1,20 +1,21 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "@std/log";
 
-import Config from "../lib/config.ts";
-import Package from "../lib/package/package.ts";
+import type Config from "../lib/config.ts";
+import type Package from "../lib/package/package.ts";
 
-import Action from "./action.ts";
+import type Action from "./action.ts";
 
 export default class ShellPath implements Action {
   constructor(private config: Config) {
   }
 
-  async execute(pkg: Package | undefined, parameters: string[]): Promise<void> {
+  // deno-lint-ignore require-await
+  async execute(_pkg: Package | undefined, parameters: string[]): Promise<void> {
     if (parameters.length != 1) {
       throw `You must inform the shell path ${parameters}`;
     }
 
-    let shellPath = parameters[0];
+    const shellPath = parameters[0];
     log.debug(`SHELL-PATH ${shellPath}`);
 
     this.config.shellPath = shellPath;

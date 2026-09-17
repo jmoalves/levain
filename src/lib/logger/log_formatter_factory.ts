@@ -1,16 +1,17 @@
-import { LogRecord } from "https://deno.land/std/log/logger.ts";
+import { LogRecord } from "@std/log";
 
-import ConsoleAndFileLogger from "./console_and_file_logger.ts";
+import LogUtils from "./log_utils.ts";
+import type Config from "../config.ts";
 
 export default class LogFormatterFactory {
-  static getFormatterWithDatetimeAndLevel(): (logRecord: LogRecord) => string {
+  static getFormatterWithDatetimeAndLevel(config: Config | null): (logRecord: LogRecord) => string {
     return (logRecord) => {
-      let msg = ConsoleAndFileLogger.hidePassword(logRecord.msg);
-      return `${ConsoleAndFileLogger.logTag(logRecord.datetime)} ${logRecord.levelName} ${msg}`;
+      const msg = LogUtils.hidePassword(config, logRecord.msg);
+      return `${LogUtils.logTag(logRecord.datetime)} ${logRecord.levelName} ${msg}`;
     };
   }
 
-  static getHidePasswordFormatter(): (logRecord: LogRecord) => string {
-    return (logRecord) => ConsoleAndFileLogger.hidePassword(logRecord.msg);
+  static getHidePasswordFormatter(config: Config | null): (logRecord: LogRecord) => string {
+    return (logRecord) => LogUtils.hidePassword(config, logRecord.msg);
   }
 }

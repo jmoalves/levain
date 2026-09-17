@@ -1,4 +1,4 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "@std/log";
 
 import t from "./lib/i18n.ts";
 
@@ -9,17 +9,17 @@ import UserInfoUtil from "./lib/user_info/userinfo_util.ts";
 import CliUtil from "./lib/cli_util.ts";
 import CommandFactory, { CommandNotFoundError } from "./cmd/command_factory.ts";
 import LevainReleases from "./lib/releases/levain_releases.ts";
-import Levain from "../levain.ts";
 
 import LevainVersion from "./levain_version.ts";
 import OsUtils from "./lib/os/os_utils.ts";
+import LevainPaths from "./lib/paths/levain_paths.ts";
 
 export default class LevainCli {
   async execute(myArgs: any = {}): Promise<void> {
     log.info(t("levain_cli.levainVersion", {
       version: LevainVersion.levainVersion,
       denoVersion: Deno.version.deno,
-      levainRootFile: Levain.levainRootFile,
+      levainRootFile: LevainPaths.levainRootFile,
     }));
     log.info("");
 
@@ -50,7 +50,7 @@ export default class LevainCli {
     }
 
     // First parameter is the command
-    let cmd: string = getCmdFromArgs();
+    const cmd: string = getCmdFromArgs();
 
     // Ask for user_info
     if (cmd === "install") {
@@ -64,7 +64,7 @@ export default class LevainCli {
     }
 
     if (!myArgs["skip-levain-updates"]) {
-      let levainReleases = new LevainReleases(config);
+      const levainReleases = new LevainReleases(config);
       await levainReleases.checkLevainUpdate();
     }
 

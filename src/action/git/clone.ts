@@ -1,7 +1,7 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "@std/log";
 
-import Action from "../action.ts";
-import Package from "../../lib/package/package.ts";
+import type Action from "../action.ts";
+import type Package from "../../lib/package/package.ts";
 import { parseArgs } from "../../lib/parse_args.ts";
 import GitUtils from "../../lib/utils/git_utils.ts";
 import DirUtils from "../../lib/fs/dir_utils.ts";
@@ -10,7 +10,7 @@ export default class GitCloneAction implements Action {
   // TODO readonly oneLineExample = 'clone <src-url> <dest-dir> --branch <branch name>'
   readonly oneLineExample = "clone <src-url> <dest-dir>";
 
-  async execute(pkg: Package | undefined, parameters: string[]): Promise<void> {
+  async execute(_pkg: Package | undefined, parameters: string[]): Promise<void> {
     const myArgs = parseArgs(parameters, {});
     const params = myArgs?._;
 

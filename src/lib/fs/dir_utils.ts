@@ -1,4 +1,6 @@
-import { existsSync, WalkEntry, walkSync } from "https://deno.land/std/fs/mod.ts";
+import { existsSync, WalkEntry, walkSync } from "@std/fs";
+import { FileUtils } from "./file_utils.ts";
+import { isNotFoundFileError } from "../utils/error_utils.ts";
 
 export default class DirUtils {
   static listFileNames(path: string): string[] {
@@ -29,11 +31,11 @@ export default class DirUtils {
 
   static isDirectory(path: string) {
     try {
-      const fileInfo = Deno.statSync(path);
+      const fileInfo = FileUtils.getFileInfoSync(path);
       const dirExists = fileInfo?.isDirectory;
       return dirExists;
     } catch (err) {
-      if (err instanceof Deno.errors.NotFound) {
+      if (isNotFoundFileError(err)) {
         return false;
       }
       throw err;

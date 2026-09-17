@@ -1,4 +1,4 @@
-import { assertEquals } from "https://deno.land/std/assert/mod.ts";
+import { assertEquals } from "@std/assert";
 import Repository from "./repository.ts";
 import { EmptyRepository } from "./empty_repository.ts";
 
@@ -33,6 +33,7 @@ Deno.test("EmptyRepository should resolvePackage packages to undefined", async (
   assertEquals(repo.resolvePackage("abc"), undefined);
 });
 
+// deno-lint-ignore require-await
 async function getRepo(): Promise<Repository> {
   return new EmptyRepository();
 }

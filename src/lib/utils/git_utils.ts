@@ -1,7 +1,7 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
+import * as log from "@std/log";
+import * as path from "@std/path";
 
-import ExtraBin from "../extra_bin.ts";
+import ExtraBin from "../paths/extra_bin.ts";
 import OsUtils from "../os/os_utils.ts";
 import { Timer } from "../timer.ts";
 
@@ -39,7 +39,7 @@ export default class GitUtils {
     }
 
     if (urlGroups) {
-      for (let key in urlGroups) {
+      for (const key in urlGroups) {
         result[key] = urlGroups[key];
       }
     }

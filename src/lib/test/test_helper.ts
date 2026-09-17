@@ -1,8 +1,9 @@
-import * as log from "https://deno.land/std/log/mod.ts";
-import { LogLevels, LogRecord } from "https://deno.land/std/log/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
+import * as log from "@std/log";
+import { LogLevels } from "@std/log";
+import { LogRecord } from "@std/log/logger";
+import * as path from "@std/path";
 
-import { copySync, existsSync } from "https://deno.land/std/fs/mod.ts";
+import { copySync } from "@std/fs";
 
 import Config from "../config.ts";
 import { MockPackage } from "../package/mock_package.ts";
@@ -13,8 +14,12 @@ import ActionFactory from "../../action/action_factory.ts";
 import Action from "../../action/action.ts";
 import MockRepository from "../repository/mock_repository.ts";
 import OsUtils from "../os/os_utils.ts";
+import HomePaths from "../paths/home_paths.ts";
+import LevainPaths from "../paths/levain_paths.ts";
 
 export default class TestHelper {
+  private static originalPrompt = globalThis.prompt;
+
   static async setupTestLogger() {
     return await TestLogger.setup();
   }
@@ -42,11 +47,33 @@ export default class TestHelper {
     });
   }
 
+  
+  static mockInput(value: string): void {
+    globalThis.prompt = () => value;
+  }
+
+  static restoreInput(): void {
+    globalThis.prompt = TestHelper.originalPrompt;
+  }
+  
+  static async mockInputWrap<T>(
+    value: string,
+    fn: () => T | Promise<T>,
+  ): Promise<T> {
+    TestHelper.mockInput(value);
+
+    try {
+      return await fn();
+    } finally {
+      TestHelper.restoreInput();
+    }
+  }
+
   static mockPackage() {
     return new MockPackage();
   }
 
-  static readonly folderThatAlwaysExists = OsUtils.homeDir;
+  static readonly folderThatAlwaysExists = HomePaths.homedir();
   static readonly folderThatDoesNotExist = "this-folder-does-not-exist";
   static readonly anotherFolderThatDoesNotExist = "another-folder-that-does-not-exist";
   static readonly fileThatDoesNotExist = path.join(
@@ -58,7 +85,7 @@ export default class TestHelper {
     "this-file-also-does-not-exist.txt",
   );
   static readonly testdataDir = path.resolve(
-    `${OsUtils.projectRootDir}/testdata`,
+    `${LevainPaths.levainRootDir}/testdata`,
   );
   static readonly fileThatExists = path.resolve(
     `${TestHelper.testdataDir}/file_utils/can_read_and_write_this_file.txt`,
@@ -73,13 +100,13 @@ export default class TestHelper {
     `${TestHelper.testdataDir}/extract/zip_file_without_extension`,
   );
   static readonly emptyFile = path.resolve(
-    OsUtils.projectRootDir,
+    LevainPaths.levainRootDir,
     "testdata",
     "copyAction",
     "emptyFile.txt",
   );
   static readonly fileWithContent = path.resolve(
-    OsUtils.projectRootDir,
+    LevainPaths.levainRootDir,
     "testdata",
     "copyAction",
     "fileWithContent.txt",
@@ -145,9 +172,7 @@ export default class TestHelper {
 
   private static removeOnExit(pathname: string): void {
     globalThis.addEventListener("unload", () => {
-      if (existsSync(pathname)) {
-        Deno.removeSync(pathname, { recursive: true });
-      }
+      OsUtils.removeDir(pathname);
     });
   }
 
@@ -163,7 +188,7 @@ export default class TestHelper {
 
   static randomString(size = 32) {
     let outString = "";
-    let inOptions = "abcdefghijklmnopqrstuvwxyz0123456789";
+    const inOptions = "abcdefghijklmnopqrstuvwxyz0123456789";
 
     for (let i = 0; i < size; i++) {
       outString += inOptions.charAt(
@@ -175,9 +200,7 @@ export default class TestHelper {
   }
 
   static remove(path: string) {
-    if (existsSync(path)) {
-      Deno.removeSync(path, { recursive: true });
-    }
+    OsUtils.removeDir(path);
   }
 
   static async getMockRepositoryInitialized(): Promise<MockRepository> {
@@ -222,7 +245,7 @@ export default class TestHelper {
       flags = "i";
     }
 
-    let regExpStr = `${strPath}`
+    const regExpStr = `${strPath}`
       .replaceAll("\\", "\\\\")
       .replaceAll("/", "\\/");
 

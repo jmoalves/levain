@@ -1,1 +1,1 @@
-deno test --allow-all --unstable --watch --filter %*
+deno test --allow-all --watch --filter %*

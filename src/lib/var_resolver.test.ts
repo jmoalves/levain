@@ -1,10 +1,10 @@
-import { assertEquals, assertMatch, assertRejects } from "https://deno.land/std/assert/mod.ts";
+import { assertEquals, assertMatch, assertRejects } from "@std/assert";
 
 import VarResolver from "./var_resolver.ts";
 import Config from "./config.ts";
 import TestHelper from "./test/test_helper.ts";
 
-import { homedir } from "./utils/utils.ts";
+import HomePaths from "./paths/home_paths.ts";
 
 //
 // replaceVars
@@ -81,7 +81,7 @@ Deno.test("VarResolver.getVarValue should return undefined for unknown vars", as
   await verifyVarValueEquals("var-that-does-not-exist", undefined);
 });
 Deno.test("VarResolver.getVarValue should get home", async () => {
-  await verifyVarValueEquals("home", `${homedir()}`);
+  await verifyVarValueEquals("home", `${HomePaths.homedir()}`);
 });
 // Deno.test('VarResolver.getVarValue should get levain.homeDir', async () => {
 //     await verifyVarValueMatches('levain.homeDir', /.*levain/)

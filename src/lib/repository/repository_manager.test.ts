@@ -1,7 +1,8 @@
 import RepositoryManager from "./repository_manager.ts";
 import Config from "../config.ts";
 import TestHelper from "../test/test_helper.ts";
-import { assert, assertEquals } from "https://deno.land/std/assert/mod.ts";
+import { assert, assertEquals } from "@std/assert";
+import LevainPaths from "../paths/levain_paths.ts";
 
 Deno.test({
   name: "RepositoryManager.init should prepare repos for package resolving",
@@ -60,7 +61,7 @@ Deno.test("RepositoryManager.createInstalledRepo should user registryDir", async
 
   const repo = await repositoryManager.createInstalledRepo();
 
-  const registryDir = config.levainRegistryDir;
+  const registryDir = config.configPaths.levainRegistryDir;
   assert(
     repo.describe().match(TestHelper.pathRegExp(registryDir, { ignoreCase: true })),
     "repo does not contain registryDir",
@@ -74,7 +75,7 @@ Deno.test("RepositoryManager.createRegularRepositories should use levainSrcDir",
 
   const repo = await repositoryManager.createRegularRepositories();
 
-  const repoDir = config.levainSrcDir;
+  const repoDir = LevainPaths.levainSrcDir;
   assert(
     repo.describe().match(TestHelper.pathRegExp(repoDir, { ignoreCase: true })),
     "repoDir does not match levainSrcDir",
@@ -95,7 +96,7 @@ Deno.test("RepositoryManager.createRegularRepositories should add tempRepos and 
   await repositoryManager.init({ extraRepos, tempRepos });
   const repo = await repositoryManager.createRegularRepositories();
 
-  const repoDir = config.levainSrcDir;
+  const repoDir = LevainPaths.levainSrcDir;
   assert(
     repo.describe().match(TestHelper.pathRegExp(repoDir, { ignoreCase: true })),
     "repo does not contain levainSrcDir",

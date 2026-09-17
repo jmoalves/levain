@@ -1,20 +1,11 @@
-// CLIFFY STUB - Remove after fixing
-const Input = { prompt: async (opts: any) => opts.default || "" };
-const Select = { prompt: async (opts: any) => opts.options?.[0] || "" };
-const Confirm = { prompt: async (opts: any) => false };
-const Command = class Command {
-  parse() {}
-};
-
-import * as log from "https://deno.land/std/log/mod.ts";
-import { existsSync } from "https://deno.land/std/fs/mod.ts";
-
-// TEMP DISABLED: import {ValidateResult} from 'https://deno.land/x/cliffy@v1.0.0-rc.3/prompt/mod.ts'
+import * as log from "@std/log";
+import { existsSync } from "@std/fs";
+import { ValidateResult } from "@cliffy/prompt";
 
 import t from "../i18n.ts";
 
 import { envChain, promptSecret } from "../utils/utils.ts";
-import Config from "../config.ts";
+import type Config from "../config.ts";
 import StringUtils from "../utils/string_utils.ts";
 import OsUtils from "../os/os_utils.ts";
 import YamlFileUtils from "../utils/yaml_file_utils.ts";
@@ -24,14 +15,15 @@ import { NameValidator } from "./validators/validators.ts";
 import { InputFullName } from "./input_name.ts";
 import { InputEmail } from "./input_email.ts";
 import { InputLogin } from "./input_login.ts";
-
+import HomePaths from "../paths/home_paths.ts";
+ 
 const passwordSizeMin = 3;
 
 export default class UserInfoUtil {
   userInfo: UserInfo = new UserInfo();
 
   constructor(
-    public readonly userinfoFileUri: string = `${OsUtils.homeDir}/.levain.yaml`,
+    public readonly userinfoFileUri: string = HomePaths.levainYaml,
   ) {
   }
 
@@ -147,7 +139,7 @@ export default class UserInfoUtil {
     }
 
     const email = await InputEmail.inputAndValidate(defaultValue || "");
-
+    
     if (!email) {
       throw new Error(t("lib.user_info.userinfo_util.unableEmail"));
     }
@@ -179,6 +171,7 @@ export default class UserInfoUtil {
     return newValue;
   }
 
+  // deno-lint-ignore require-await
   async askPassword(config: Config): Promise<string> {
     // const allowedAndTestedPasswordChars = '#!@$'
     const forbiddenPasswordChars = "^&";

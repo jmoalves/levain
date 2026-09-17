@@ -1,12 +1,11 @@
-import { assertEquals } from "https://deno.land/std/assert/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
+import { assertEquals } from "@std/assert";
 
 import { assertFind } from "./src/lib/test/more_asserts.ts";
-import OsUtils from "./src/lib/os/os_utils.ts";
 import CliUtil from "./src/lib/cli_util.ts";
 import TestHelper from "./src/lib/test/test_helper.ts";
 
 import Levain from "./levain.ts";
+import HomePaths from "./src/lib/paths/home_paths.ts";
 
 Deno.test("should create a homeLog and a tempLog by default", async () => {
   let logger;
@@ -16,7 +15,7 @@ Deno.test("should create a homeLog and a tempLog by default", async () => {
 
     const logFiles = logger?.logFiles || [];
     assertEquals(logFiles.length, 2);
-    const expectedHomeLog = path.resolve(OsUtils.homeDir, "levain.log");
+    const expectedHomeLog = HomePaths.levainLog;
     assertFind(logFiles, (it) => it === expectedHomeLog, `couldn't find home ${expectedHomeLog} log in ${logFiles}`);
   } finally {
     await logger?.close();

@@ -1,11 +1,11 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "@std/log";
 
 import t from "../lib/i18n.ts";
 
-import Config from "../lib/config.ts";
+import type Config from "../lib/config.ts";
 import ActionFactory from "../action/action_factory.ts";
 
-import Command from "./command.ts";
+import type Command from "./command.ts";
 
 export default class ActionsCommand implements Command {
   constructor(

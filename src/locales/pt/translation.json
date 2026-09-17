@@ -16,6 +16,13 @@
       "actionsFound": "= Ações:",
       "example": "  actions <optional search text>"
     },
+    "activate": {
+      "example": "  activate <pacote opcional>",
+      "installMissing": "Erro! É necessário instalar o módulo de activate com o comando:"
+    },
+    "_activate-machine": {
+      "example": "  _activate-machine init --cmd --bash --powershell"
+    },
     "clean": {
       "startFeedback": "# CLEAN...",
       "logs": "limpando logs",
@@ -95,6 +102,61 @@
     }
   },
   "lib": {
+    "activate": {
+      "bash_initializer": {
+        "install": "Perfil para Bash:",
+        "installEnd": "Perfil adicionado. Se você estiver no bash, reinicie o shell ou execute"
+      },
+      "cmd_initializer": {
+        "install": "Hook e Autorun do Cmd:",
+        "installHook": "Escrevendo arquivo hook: {{ hookPath }}",
+        "existingAutorun": "Autorun existente encontrado. Pulando...",
+        "installEnd": "Cmd configurado. Se você estiver no cmd, reinicie o shell"
+      },
+      "cmder_initializer": {
+        "install": "Script de prompt e perfil para powershell do Cmder:",
+        "installEnd": "Cmder configurado. Pode ser necessário reiniciar a sessão",
+        "noConfigError": "Não foi possível localizar o diretório de configuração do Cmder"
+      },
+      "powershell_initializer": {
+        "install": "Perfil para Powershell:",
+        "installEnd": "Perfil adicionado. Se você estiver no powershell, reinicie o shell ou execute"
+      },
+      "profile_editor": {
+        "existingProfile": "Arquivo de perfil encontrado: {{ profile }}", 
+        "newProfile": "Criando novo arquivo de perfil: {{ profile }}",
+        "replaceBlock": "Substituindo bloco de inicialização existente",
+        "newBlock": "Adicionando bloco de inicialização no fim do perfil"
+      }
+    },
+    "extract": {
+      "denozip_extractor": {
+        "extractImplReadError": "ler zip",
+        "extractImplWriteError": "extrair {{filePath}}. Arquivo:"
+      }
+    },
+    "fs": {
+      "file_utils": {
+        "getFileInfoSyncError": "ler metadados de",
+        "getSizeError": "ler tamanho de",
+        "createBackupError": "fazer backup de",
+        "createEmptyFileError": "criar arquivo vazio",
+        "readTextFileSyncError": "ler texto de",
+        "writeTextFileSyncError": "escrever texto em",
+        "throwIfNotExistsError": "Arquivo {{filePath}} não existe",
+        "removeSyncError": "remover arquivo",
+        "renameSyncError": "renomear {{old}} para"
+      }
+    },
+    "io": {
+      "file_reader": {
+        "rewindError": "ler arquivo"
+      },
+      "file_writer": {
+        "constructorError": "criar arquivo temporário para escrita em",
+        "closeRenameError": "renomear {{old} para"
+      }
+    },
     "repository": {
       "repository_manager": {
         "loaded": "- Lidos REPOS {{repos}}",
@@ -174,6 +236,14 @@
       "defaultPackage": "Alterando pacote default: {{oldPackage}} => {{newPackage}}",
       "errorReading": "Erro ao ler o config - {{filename}}",
       "noHomeValid": "Não há um levainHome válido na sua lista"
+    },
+    "utils": {
+      "error_utils": {
+        "fileError": "Erro ao tentar {{operation}} {{filePath}}: {{err}}"
+      },
+      "json_utils": {
+        "loadError": "parsear json de"
+      }
     }
   }
 }

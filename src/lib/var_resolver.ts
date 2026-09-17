@@ -1,6 +1,6 @@
 import UserInfoUtil from "./user_info/userinfo_util.ts";
-import Config from "./config.ts";
-import { homedir } from "./utils/utils.ts";
+import type Config from "./config.ts";
+import HomePaths from "./paths/home_paths.ts";
 
 export default class VarResolver {
   static async replaceVars(text: string, pkgName: string | undefined, config: Config): Promise<string> {
@@ -70,19 +70,19 @@ export default class VarResolver {
           return config.fullname;
 
         case "levain.homeDir":
-          return config.levainHome;
+          return config.configPaths.levainHome;
 
         case "levain.cacheDir":
-          return config.levainCacheDir;
+          return config.configPaths.levainCacheDir;
 
         default:
           throw new Error(`Levain attribute ${vName} is undefined`);
       }
     } else if (vName == "home") {
-      return homedir();
+      return HomePaths.homedir();
     } else if (vName.search(/^pkg\.(.+)\.([^.]*)/) != -1) {
-      let pkgVarPkg = vName.replace(/^pkg\.(.+)\.([^.]*)/, "$1");
-      let pkgVarName = vName.replace(/^pkg\.(.+)\.([^.]*)/, "$2");
+      const pkgVarPkg = vName.replace(/^pkg\.(.+)\.([^.]*)/, "$1");
+      const pkgVarName = vName.replace(/^pkg\.(.+)\.([^.]*)/, "$2");
       return await config.packageManager.getVar(pkgVarPkg, pkgVarName) ?? "";
     } else {
       // General items

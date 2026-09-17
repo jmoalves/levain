@@ -1,5 +1,5 @@
-import * as path from "https://deno.land/std/path/mod.ts";
-import { assertEquals } from "https://deno.land/std/assert/mod.ts";
+import * as path from "@std/path";
+import { assertEquals } from "@std/assert";
 
 import TestHelper from "../test/test_helper.ts";
 import { assertFolderIncludes, assertStringEndsWith } from "../test/more_asserts.ts";
@@ -8,7 +8,7 @@ import FileCache from "./file_cache.ts";
 
 Deno.test("FileCache should get file from cache", async () => {
   const config = TestHelper.getConfig();
-  config.levainCacheDir = TestHelper.getNewTempDir();
+  config.configPaths.levainCacheDir = TestHelper.getNewTempDir();
   const fileCache = new FileCache(config);
 
   const cachedFile = await fileCache.get(TestHelper.validZipFile);

@@ -1,8 +1,8 @@
-import * as log from "https://deno.land/std/log/mod.ts";
+import * as log from "@std/log";
 
-import Config from "../config.ts";
+import type Config from "../config.ts";
 import OsUtils from "../os/os_utils.ts";
-import ExtraBin from "../extra_bin.ts";
+import ExtraBin from "../paths/extra_bin.ts";
 import { Extractor } from "./extractor.ts";
 
 export class SevenZip extends Extractor {

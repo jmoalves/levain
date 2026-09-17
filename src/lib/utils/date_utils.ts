@@ -1,4 +1,4 @@
-import subDays from "https://deno.land/x/date_fns/subDays/index.ts";
+import { subDays } from "date-fns";
 
 export default class DateUtils {
   static dateTimeTag(dt: Date = new Date()): string {
@@ -6,7 +6,7 @@ export default class DateUtils {
   }
 
   static dateTag(dt: Date = new Date()): string {
-    let month = dt.getMonth() + 1; // Date month starts with zero!
+    const month = dt.getMonth() + 1; // Date month starts with zero!
 
     let tag: string = "";
     tag += dt.getFullYear() + "";
@@ -24,7 +24,7 @@ export default class DateUtils {
   }
 
   static timeTagWithMillis(separator = ".", dt: Date = new Date()): string {
-    let millis = dt.getMilliseconds();
+    const millis = dt.getMilliseconds();
 
     let tag: string = this.timeTag(dt);
     tag += separator;

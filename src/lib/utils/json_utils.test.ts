@@ -1,36 +1,38 @@
-import { assert, assertEquals, assertRejects } from "https://deno.land/std/assert/mod.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
+import { assert, assertEquals, assertRejects } from "@std/assert";
+import * as path from "@std/path";
 
 import TestHelper from "../test/test_helper.ts";
 
 import JsonUtils from "./json_utils.ts";
+import t from "../i18n.ts";
 
 // TODO JsonUtils should save when folder does not exist
 
-Deno.test("JsonUtils - should load json file", async () => {
-  let filename = TestHelper.resolveTestFile("json/test.json");
-  let json = JsonUtils.load(filename);
+Deno.test("JsonUtils - should load json file", () => {
+  const filename = TestHelper.resolveTestFile("json/test.json");
+  const json = JsonUtils.load(filename);
 
   assertEquals(json.property, "value");
 });
 
 Deno.test("JsonUtils - should inform that file does not exist", async () => {
-  let filename = TestHelper.resolveTestFile("missing_file.json");
+  const filename = TestHelper.resolveTestFile("missing_file.json");
 
   await assertRejects(
+    // deno-lint-ignore require-await
     async () => {
       JsonUtils.load(filename);
     },
     Error,
-    `File ${filename} not found`,
+    t("lib.utils.error_utils.fileError", { err: "NotFound", filePath: filename, operation: t("lib.fs.file_utils.readTextFileSyncError") })
   );
 });
 //
 // save
 //
-Deno.test("JsonUtils.save should create folder when it does not exist", async () => {
+Deno.test("JsonUtils.save should create folder when it does not exist", () => {
   const tempdir = TestHelper.getNewTempDir();
-  let fileInFolderThatDoesNotExist = path.join(
+  const fileInFolderThatDoesNotExist = path.join(
     tempdir,
     "folder-that-does-not-exist",
     "file-that-does-not-exist.json",
@@ -43,56 +45,56 @@ Deno.test("JsonUtils.save should create folder when it does not exist", async ()
 //
 //
 //
-Deno.test("JsonUtils - should get simple string property", async () => {
-  let json = { "property": "value" };
+Deno.test("JsonUtils - should get simple string property", () => {
+  const json = { "property": "value" };
   assertEquals(JsonUtils.get(json, "property"), "value");
 });
 
-Deno.test("JsonUtils - should get default value for simple string property", async () => {
-  let json = { "property": "value" };
+Deno.test("JsonUtils - should get default value for simple string property", () => {
+  const json = { "property": "value" };
   assertEquals(JsonUtils.get(json, "notFound", "default"), "default");
 });
 
-Deno.test("JsonUtils - should get simple number property", async () => {
-  let json = { "property": 150.00 };
+Deno.test("JsonUtils - should get simple number property", () => {
+  const json = { "property": 150.00 };
   assertEquals(JsonUtils.get(json, "property"), 150.00);
 });
 
-Deno.test("JsonUtils - should get default value for simple number property", async () => {
-  let json = { "property": 150.00 };
+Deno.test("JsonUtils - should get default value for simple number property", () => {
+  const json = { "property": 150.00 };
   assertEquals(JsonUtils.get(json, "notFound", 200.00), 200.00);
 });
 
-Deno.test("JsonUtils - should get simple boolean property", async () => {
-  let json = { "property": true };
+Deno.test("JsonUtils - should get simple boolean property", () => {
+  const json = { "property": true };
   assertEquals(JsonUtils.get(json, "property"), true);
 });
 
-Deno.test("JsonUtils - should get default value for simple boolean property", async () => {
-  let json = { "property": true };
+Deno.test("JsonUtils - should get default value for simple boolean property", () => {
+  const json = { "property": true };
   assertEquals(JsonUtils.get(json, "notFound", true), true);
 });
 
-Deno.test("JsonUtils - should get default value for simple boolean property - handle false", async () => {
-  let json = { "property": false };
+Deno.test("JsonUtils - should get default value for simple boolean property - handle false", () => {
+  const json = { "property": false };
   assertEquals(JsonUtils.get(json, "property", true), false);
   assertEquals(JsonUtils.get(json, "notFound", false), false);
 });
 
-Deno.test("JsonUtils - should get simple string property", async () => {
-  let json = { "property.with.dots": "value" };
+Deno.test("JsonUtils - should get simple string property", () => {
+  const json = { "property.with.dots": "value" };
   assertEquals(JsonUtils.get(json, "property.with.dots"), "value");
 });
 
-Deno.test("JsonUtils - translate path", async () => {
+Deno.test("JsonUtils - translate path", () => {
   assertEquals(JsonUtils.translatePath("property.innerProperty"), ["property.innerProperty"]);
   assertEquals(JsonUtils.translatePath("[property][innerProperty]"), ["property", "innerProperty"]);
   assertEquals(JsonUtils.translatePath("['property']['innerProperty']"), ["property", "innerProperty"]);
   assertEquals(JsonUtils.translatePath('["property"]["innerProperty"]'), ["property", "innerProperty"]);
 });
 
-Deno.test("JsonUtils - should get an inner property", async () => {
-  let json = {
+Deno.test("JsonUtils - should get an inner property", () => {
+  const json = {
     property: {
       innerProperty: "innerValue",
     },
@@ -104,17 +106,17 @@ Deno.test("JsonUtils - should get an inner property", async () => {
   assertEquals(JsonUtils.get(json, '["property"]["innerProperty"]'), "innerValue");
 });
 
-Deno.test("JsonUtils - should get simple string property with []", async () => {
-  let json = { "property": "value" };
+Deno.test("JsonUtils - should get simple string property with []", () => {
+  const json = { "property": "value" };
   assertEquals(JsonUtils.get(json, "[property]"), "value");
 });
 
-Deno.test("JsonUtils - translate path with array", async () => {
+Deno.test("JsonUtils - translate path with array", () => {
   assertEquals(JsonUtils.translatePath("[property][array][2][name]"), ["property", "array", "2", "name"]);
 });
 
-Deno.test("JsonUtils - should get an inner property", async () => {
-  let json = {
+Deno.test("JsonUtils - should get an inner property", () => {
+  const json = {
     property: {
       innerProperty: "innerValue",
       array: [{
@@ -140,60 +142,60 @@ Deno.test("JsonUtils - should get an inner property", async () => {
   assertEquals(JsonUtils.get(json, "[property][array][2][name]", "myName"), "myName");
 });
 
-Deno.test("JsonUtils - should set simple string property", async () => {
-  let json = { "property": "value" };
+Deno.test("JsonUtils - should set simple string property", () => {
+  const json = { "property": "value" };
   JsonUtils.set(json, "property", "newValue");
   assertEquals(json.property, "newValue");
 });
 
-Deno.test("JsonUtils - should NOT set simple string property to the same value", async () => {
-  let json = { "property": "value" };
-  let changed = JsonUtils.set(json, "property", "value");
+Deno.test("JsonUtils - should NOT set simple string property to the same value", () => {
+  const json = { "property": "value" };
+  const changed = JsonUtils.set(json, "property", "value");
   assert(!changed);
   assertEquals(json.property, "value");
 });
 
-Deno.test("JsonUtils - should set simple number property", async () => {
-  let json = { "property": 10.00 };
+Deno.test("JsonUtils - should set simple number property", () => {
+  const json = { "property": 10.00 };
   JsonUtils.set(json, "property", 120.00);
   assertEquals(json.property, 120.00);
 });
 
-Deno.test("JsonUtils - should NOT set simple number property to the same value", async () => {
-  let json = { "property": 10.00 };
-  let changed = JsonUtils.set(json, "property", 10.00);
+Deno.test("JsonUtils - should NOT set simple number property to the same value", () => {
+  const json = { "property": 10.00 };
+  const changed = JsonUtils.set(json, "property", 10.00);
   assert(!changed);
   assertEquals(json.property, 10.00);
 });
 
-Deno.test("JsonUtils - should set simple boolean property", async () => {
-  let json = { "property": true };
+Deno.test("JsonUtils - should set simple boolean property", () => {
+  const json = { "property": true };
   JsonUtils.set(json, "property", false);
   assertEquals(json.property, false);
 });
 
-Deno.test("JsonUtils - should NOT set simple boolean property to the same value", async () => {
-  let json = { "property": true };
-  let changed = JsonUtils.set(json, "property", true);
+Deno.test("JsonUtils - should NOT set simple boolean property to the same value", () => {
+  const json = { "property": true };
+  const changed = JsonUtils.set(json, "property", true);
   assert(!changed);
   assertEquals(json.property, true);
 });
 
-Deno.test("JsonUtils - should NOT set simple string property that exists", async () => {
-  let json = { "property": "myValue" };
+Deno.test("JsonUtils - should NOT set simple string property that exists", () => {
+  const json = { "property": "myValue" };
   JsonUtils.set(json, "property", "otherValue", true);
   assertEquals(json.property, "myValue");
 });
 
-Deno.test("JsonUtils - should create simple string property that NOT exists", async () => {
-  let json: any = { "property": "myValue" };
+Deno.test("JsonUtils - should create simple string property that NOT exists", () => {
+  const json: any = { "property": "myValue" };
   JsonUtils.set(json, "newProperty", "otherValue", true);
   assertEquals(json.property, "myValue");
   assertEquals(json.newProperty, "otherValue");
 });
 
-Deno.test("JsonUtils - should set inner string property that NOT exists", async () => {
-  let json: any = {
+Deno.test("JsonUtils - should set inner string property that NOT exists", () => {
+  const json: any = {
     property: {
       innerProperty: "innerValue",
       array: [{
@@ -215,8 +217,8 @@ Deno.test("JsonUtils - should set inner string property that NOT exists", async 
   assertEquals(json.property.newProperty, "newValue");
 });
 
-Deno.test("JsonUtils - should set inner properties", async () => {
-  let json: any = {
+Deno.test("JsonUtils - should set inner properties", () => {
+  const json: any = {
     property: {
       innerProperty: "innerValue",
       array: [{

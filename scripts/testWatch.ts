@@ -1,4 +1,4 @@
-import { exists } from "https://deno.land/std/fs/mod.ts";
+import { exists } from "@std/fs";
 import OsUtils from "../src/lib/os/os_utils.ts";
 
 const watcher = Deno.watchFs("src/");
@@ -39,7 +39,7 @@ function bouncing(file: string): boolean {
 
 async function runTest(file?: string): Promise<void> {
   await OsUtils.clearConsole();
-  let cmd = ["deno", "test", "--unstable", "--allow-all"];
+  const cmd = ["deno", "test", "--allow-all"];
   const testFile = file?.replace(/(?:.test)?.ts$/, ".test.ts") ||
     "all tests";
 
@@ -52,6 +52,13 @@ async function runTest(file?: string): Promise<void> {
   }
   console.log("RUNTEST", testFile, cmd);
   console.time("runtest");
-  await Deno.run({ cmd });
+  const [exec, ...args] = cmd;
+  const command = new Deno.Command(exec, {
+    args,
+    stdout: "inherit",
+    stderr: "inherit",
+    stdin: "inherit"
+  })
+  await await command.output();
   console.timeEnd("runtest");
 }

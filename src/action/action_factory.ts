@@ -1,4 +1,4 @@
-import Action from "./action.ts";
+import type Action from "./action.ts";
 import AddPathAction from "./os/add_path.ts";
 import CheckFileExists from "./check/check_file_exists.ts";
 import CopyAction from "./os/copy.ts";
@@ -12,7 +12,7 @@ import Noop from "./noop.ts";
 import SetEnv from "./os/set_env.ts";
 import Template from "./template.ts";
 import AssertContainsAction from "./assert_contains_action.ts";
-import Config from "../lib/config.ts";
+import type Config from "../lib/config.ts";
 import CheckChainDirExists from "./check/check_chain_dir_exists.ts";
 import Echo from "./echo.ts";
 import RemoveFromRegistry from "./os/remove_from_registry.ts";
@@ -33,8 +33,14 @@ import KillProcessAction from "./os/killProcess.ts";
 import GitCloneAction from "./git/clone.ts";
 import MavenCopyAction from "./maven/maven_copy.ts";
 import ContextMenuRemoveAction from "./os/context_menu_remove.ts";
+import ActivateInit from "./activate/activate_init.ts";
+import ActivatePre from "./activate/activate_pre.ts";
+import ActivateCmd from "./activate/activate_cmd.ts";
 
 const actionMap = new Map<string, (config: Config) => Action>([
+  ["activateInit", (config: Config) => new ActivateInit(config)],
+  ["activatePre", (config: Config) => new ActivatePre(config)],
+  ["activateCmd", (config: Config) => new ActivateCmd(config)],
   ["addPath", (config: Config) => new AddPathAction(config)],
   ["addToDesktop", (config: Config) => new AddToDesktopAction(config)],
   ["addToStartup", (config: Config) => new AddToStartupAction(config)],

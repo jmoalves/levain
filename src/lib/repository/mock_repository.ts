@@ -1,5 +1,5 @@
 import { MockPackage } from "../package/mock_package.ts";
-import Package from "../package/package.ts";
+import type Package from "../package/package.ts";
 
 import AbstractRepository from "./abstract_repository.ts";
 import VersionNumber from "../utils/version_number.ts";
