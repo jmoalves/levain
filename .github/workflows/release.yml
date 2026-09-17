@@ -11,7 +11,7 @@ on:
       denoVersion:
         description: "Deno version (optional)"
         required: false
-        default: "2.9.1"
+        default: "2.9.6"
 
 jobs:
   createRelease:
