@@ -1,8 +1,8 @@
 import * as log from "@std/log";
 
-import Config from "../config.ts";
-import Package from "./package.ts";
-import Repository from "../repository/repository.ts";
+import type Config from "../config.ts";
+import type Package from "./package.ts";
+import type Repository from "../repository/repository.ts";
 import ConsoleFeedback from "../utils/console_feedback.ts";
 import StringUtils from "../utils/string_utils.ts";
 

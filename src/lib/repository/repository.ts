@@ -1,4 +1,4 @@
-import Package from "../package/package.ts";
+import type Package from "../package/package.ts";
 
 export default interface Repository {
   name: string;

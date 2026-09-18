@@ -1,16 +1,9 @@
-import * as path from "@std/path";
 import OsUtils from "../../lib/os/os_utils.ts";
+import GeneralPaths from "../../lib/paths/general_paths.ts";
 
 export async function mvnCli(): Promise<string> {
   // Common option
-  const m2home = Deno.env.get("M2_HOME");
-  if (!m2home) {
-    throw "M2_HOME not found";
-  }
-  let mavenCli = path.resolve(m2home, "bin", "mvn");
-  if (OsUtils.isWindows()) {
-    mavenCli += ".cmd";
-  }
+  const mavenCli = GeneralPaths.mvnCliPath(OsUtils.isWindows() ? ".cmd" : "");
   await checkMavenVersion(mavenCli);
   return mavenCli;
 };

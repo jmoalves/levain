@@ -2,8 +2,8 @@ import * as path from "@std/path";
 import * as yaml from "@std/yaml";
 import { existsSync } from "@std/fs";
 
-import Repository from "../repository/repository.ts";
-import Config from "../config.ts";
+import type Repository from "../repository/repository.ts";
+import type Config from "../config.ts";
 import { FileUtils } from "../fs/file_utils.ts";
 import AbstractPackage from "./abstract_package.ts";
 import VersionNumber from "../utils/version_number.ts";
@@ -51,7 +51,7 @@ export default class FileSystemPackage extends AbstractPackage {
     if (!this.installed) {
       this.updateAvailable = true;
     } else {
-      let installedRecipe = Deno.readTextFileSync(this.installedRecipeFilepath());
+      let installedRecipe = FileUtils.readTextFileSync(this.installedRecipeFilepath());
       installedRecipe = JSON.stringify(yaml.parse(installedRecipe));
 
       const currentRecipe = JSON.stringify(this.yamlStruct);
@@ -63,7 +63,7 @@ export default class FileSystemPackage extends AbstractPackage {
   }
 
   private installedRecipeFilepath() {
-    return path.resolve(this.config.levainRegistryDir, path.basename(this.filePath));
+    return path.resolve(this.config.configPaths.levainRegistryDir, path.basename(this.filePath));
   }
 
   yamlItem(key: string): any | undefined {

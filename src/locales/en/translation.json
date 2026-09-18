@@ -129,6 +129,34 @@
         "newBlock": "Adding initialization block to the end of the profile"
       }
     },
+    "extract": {
+      "denozip_extractor": {
+        "extractImplReadError": "read zip",
+        "extractImplWriteError": "extract {{filePath}}. File:"
+      }
+    },
+    "fs": {
+      "file_utils": {
+        "getFileInfoSyncError": "read metadata of",
+        "getSizeError": "read size of",
+        "createBackupError": "create backup of",
+        "createEmptyFileError": "create empty file",
+        "readTextFileSyncError": "read text of",
+        "writeTextFileSyncError": "write text to",
+        "throwIfNotExistsError": "File {{filePath}} does not exist",
+        "removeSyncError": "remove file",
+        "renameSyncError": "rename {{old}} to"
+      }
+    },
+    "io": {
+      "file_reader": {
+        "rewindError": "read file"
+      },
+      "file_writer": {
+        "constructorError": "create temp file for writing on",
+        "closeRenameError": "rename {{old} to"
+      }
+    },
     "repository": {
       "repository_manager": {
         "loaded": "- Loaded REPOS {{repos}}",
@@ -210,6 +238,9 @@
       "noHomeValid": "No valid levainHome in your list"
     },
     "utils": {
+      "error_utils": {
+        "fileError": "Error while trying to {{operation}} {{filePath}}: {{err}}"
+      },
       "git_utils": {
         "invalid_upstream": "[Git {{workingDir}}] Invalid upstream branch: {{ upstream }}",
         "no_current_branch": "[Git {{workingDir}}] Unable to determine current branch and no upstream is configured.",
@@ -218,6 +249,9 @@
         "commits_diverged": "[Git {{workingDir}}] Local repository contains commits not present on {{ remoteName }}/{{ branchName }}. Update aborted.",
         "branched_diverged": "[Git {{workingDir}}] Local branch and ${remoteName}/${branchName} have diverged. Update aborted to avoid losing local changes.",
         "unable_to_update": "Unable to update {{workingDir}}."
+      },
+      "json_utils": {
+        "loadError": "parse json of"
       }
     }
   }

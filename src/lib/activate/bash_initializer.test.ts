@@ -7,6 +7,16 @@ import { stub } from "@std/testing/mock";
 import BashInitializer from "./bash_initializer.ts";
 import OsUtils from "../os/os_utils.ts";
 import ProfileEditor from "./profile_editor.ts";
+import HomePaths from "../paths/home_paths.ts";
+
+function mockProfileCandidates(home: string) {
+  const result = HomePaths.profileCandidates(home);
+  return stub(
+    HomePaths,
+    "profileCandidates",
+    () => result,
+  );
+}
 
 Deno.test("findProfile returns .bashrc when it exists", async () => {
   const existsStub = stub(
@@ -15,15 +25,17 @@ Deno.test("findProfile returns .bashrc when it exists", async () => {
     // deno-lint-ignore require-await
     async (path: string) => path.endsWith(".bashrc"),
   );
+  const profileCandidatesStub = mockProfileCandidates("C:\\Users\\test");
 
   try {
     const initializer = new BashInitializer("C:\\levain");
 
-    const profile = await initializer.findProfile("C:\\Users\\test");
+    const profile = await initializer.findProfile();
 
     assertEquals(profile, "C:\\Users\\test\\.bashrc");
   } finally {
     existsStub.restore();
+    profileCandidatesStub.restore();
   }
 });
 
@@ -34,15 +46,18 @@ Deno.test("findProfile returns .bash_profile when .bashrc does not exist", async
     // deno-lint-ignore require-await
     async (path: string) => path.endsWith(".bash_profile"),
   );
+  const profileCandidatesStub = mockProfileCandidates("C:\\Users\\test");
+
 
   try {
     const initializer = new BashInitializer("C:\\levain");
 
-    const profile = await initializer.findProfile("C:\\Users\\test");
+    const profile = await initializer.findProfile();
 
     assertEquals(profile, "C:\\Users\\test\\.bash_profile");
   } finally {
     existsStub.restore();
+    profileCandidatesStub.restore();
   }
 });
 
@@ -53,15 +68,18 @@ Deno.test("findProfile returns .profile when only it exists", async () => {
     // deno-lint-ignore require-await
     async (path: string) => path.endsWith(".profile"),
   );
+  const profileCandidatesStub = mockProfileCandidates("C:\\Users\\test");
+
 
   try {
     const initializer = new BashInitializer("C:\\levain");
 
-    const profile = await initializer.findProfile("C:\\Users\\test");
+    const profile = await initializer.findProfile();
 
     assertEquals(profile, "C:\\Users\\test\\.profile");
   } finally {
     existsStub.restore();
+    profileCandidatesStub.restore();
   }
 });
 
@@ -72,15 +90,18 @@ Deno.test("findProfile prefers .bash_profile when none exist", async () => {
     // deno-lint-ignore require-await
     async () => false,
   );
+  const profileCandidatesStub = mockProfileCandidates("C:\\Users\\test");
+
 
   try {
     const initializer = new BashInitializer("C:\\levain");
 
-    const profile = await initializer.findProfile("C:\\Users\\test");
+    const profile = await initializer.findProfile();
 
     assertEquals(profile, "C:\\Users\\test\\.bash_profile");
   } finally {
     existsStub.restore();
+    profileCandidatesStub.restore();
   }
 });
 

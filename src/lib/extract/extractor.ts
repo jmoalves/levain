@@ -2,12 +2,13 @@ import * as log from "@std/log";
 import * as path from "@std/path";
 import { ensureDirSync, moveSync } from "@std/fs";
 
-import Config from "../config.ts";
+import type Config from "../config.ts";
 import { Timer } from "../timer.ts";
 import { FileUtils } from "../fs/file_utils.ts";
 import ConsoleFeedback from "../utils/console_feedback.ts";
 import StringUtils from "../utils/string_utils.ts";
 import { retry } from "../utils/utils.ts";
+import { FileProgress } from "../io/file_progress.ts";
 
 export abstract class Extractor {
   readonly feedback = new ConsoleFeedback();
@@ -25,7 +26,7 @@ export abstract class Extractor {
   async copy(srcFile: string, dstFile: string): Promise<string> {
     log.debug(`- COPY ${srcFile} => ${dstFile}`);
 
-    await FileUtils.copyWithProgress(srcFile, dstFile);
+    await FileProgress.copyWithProgress(srcFile, dstFile);
     return dstFile;
   }
 
@@ -51,7 +52,7 @@ export abstract class Extractor {
       }
     }
 
-    await retry(this.maxRetries, () => Deno.removeSync(srcDir));
+    await retry(this.maxRetries, () => FileUtils.removeSync(srcDir));
   }
 
   async extractToTemp(src: string, dst: string): Promise<string> {

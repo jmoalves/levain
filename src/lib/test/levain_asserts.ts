@@ -1,5 +1,5 @@
 import { assertEquals } from "@std/assert";
-import Package from "../package/package.ts";
+import type Package from "../package/package.ts";
 import { assertArrayIncludesElements } from "./more_asserts.ts";
 
 export default class LevainAsserts {

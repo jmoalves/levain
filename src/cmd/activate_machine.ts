@@ -1,8 +1,8 @@
 import t from "../lib/i18n.ts";
 
-import Config from "../lib/config.ts";
+import type Config from "../lib/config.ts";
 
-import Command from "./command.ts";
+import type Command from "./command.ts";
 import ActivateInit from "../action/activate/activate_init.ts";
 import ActivatePre from "../action/activate/activate_pre.ts";
 import ActivateCmd from "../action/activate/activate_cmd.ts";

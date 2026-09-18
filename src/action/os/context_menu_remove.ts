@@ -1,11 +1,11 @@
 import * as log from "@std/log";
 
-import Config from "../../lib/config.ts";
-import Package from "../../lib/package/package.ts";
+import type Config from "../../lib/config.ts";
+import type Package from "../../lib/package/package.ts";
 import { parseArgs } from "../../lib/parse_args.ts";
 import Loader from "../../lib/loader.ts";
 
-import Action from "../action.ts";
+import type Action from "../action.ts";
 
 export default class ContextMenuRemoveAction implements Action {
   constructor(private config: Config) {
@@ -61,6 +61,6 @@ export default class ContextMenuRemoveAction implements Action {
     const loader = new Loader(this.config);
     await loader.action(pkg, action);
 
-    //Deno.removeSync(tempFilename);
+    //FileUtils.removeSync(tempFilename);
   }
 }

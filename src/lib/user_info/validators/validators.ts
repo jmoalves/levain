@@ -1,6 +1,6 @@
 import validator from "validator";
 import { ValidateResult } from "@cliffy/prompt";
-import { Validator } from "./validator.ts";
+import { type Validator } from "./validator.ts";
 
 export class MinLengthValidator implements Validator {
   constructor(public minLength: number) {

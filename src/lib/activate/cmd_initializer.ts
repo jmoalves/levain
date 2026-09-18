@@ -1,20 +1,18 @@
 
 
 import * as log from "@std/log";
-import { join } from "@std/path";
+import { dirname } from "@std/path";
 import t from "../i18n.ts";
 import OsUtils from "../os/os_utils.ts";
 
 export default class CmdInitializer {
   
-  private levainHookPath: string;
   private hookCommand: string;
 
   constructor(
     private levainCmdPath: string,
-    private levainDir: string
+    private levainHookPath: string
   ) {
-    this.levainHookPath = join(levainDir, "levain-hook.cmd");
     this.hookCommand = `@CALL "${this.levainHookPath}"`;
   }
 
@@ -37,7 +35,7 @@ export default class CmdInitializer {
   }
 
   async createHook() {
-    await Deno.mkdir(this.levainDir, { recursive: true });
+    await Deno.mkdir(dirname(this.levainHookPath), { recursive: true });
     await Deno.writeTextFile(this.levainHookPath, this.hookTemplate());
   }
 

@@ -1,4 +1,4 @@
-import Action from "./action.ts";
+import type Action from "./action.ts";
 import AddPathAction from "./os/add_path.ts";
 import CheckFileExists from "./check/check_file_exists.ts";
 import CopyAction from "./os/copy.ts";
@@ -12,7 +12,7 @@ import Noop from "./noop.ts";
 import SetEnv from "./os/set_env.ts";
 import Template from "./template.ts";
 import AssertContainsAction from "./assert_contains_action.ts";
-import Config from "../lib/config.ts";
+import type Config from "../lib/config.ts";
 import CheckChainDirExists from "./check/check_chain_dir_exists.ts";
 import Echo from "./echo.ts";
 import RemoveFromRegistry from "./os/remove_from_registry.ts";

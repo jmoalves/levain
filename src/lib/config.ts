@@ -4,20 +4,22 @@ import { ensureDirSync, existsSync } from "@std/fs";
 
 import t from "./i18n.ts";
 
-import LevainVersion from "../levain_version.ts";
-
 import PackageManager from "./package/package_manager.ts";
 import Registry from "./repository/registry.ts";
 import RepositoryManager from "./repository/repository_manager.ts";
 import { FileUtils } from "./fs/file_utils.ts";
-import { homedir } from "./utils/utils.ts";
 import VarResolver from "./var_resolver.ts";
 import ConfigPersistentAttributes from "./config-persistent-attributes.ts";
+import { isNotFoundFileError } from "./utils/error_utils.ts";
+import LevainPaths from "./paths/levain_paths.ts";
+import HomePaths from "./paths/home_paths.ts";
+import ConfigPaths from "./paths/config_paths.ts";
 
 export default class Config {
   packageManager: PackageManager;
   private _repoManager: RepositoryManager;
 
+  public configPaths: ConfigPaths;
   private _env: any = {};
   private _context: any = {}; // Do we really need two of them (_env and _context)?
 
@@ -31,9 +33,6 @@ export default class Config {
 
   private _registry: Registry | undefined;
 
-  private _levainBackupDir: string | undefined;
-  private _levainCacheDir: string | undefined;
-
   private _lastKnownVersion: string | undefined;
   private _lastUpdateQuestion: string | undefined;
   private _autoUpdate: boolean | undefined;
@@ -41,16 +40,17 @@ export default class Config {
   private lastCfg?: ConfigPersistentAttributes;
 
   constructor(args: any = {}) {
+    this.configPaths = new ConfigPaths("<unset>");
     this.packageManager = new PackageManager(this);
     this._repoManager = new RepositoryManager(this);
     
-    const loaded = this.load(this.levainConfigFile);
+    const loaded = this.load(HomePaths.levainConfigFile);
 
     this.configEnv(args);
     this.configHome(args);
 
     if (!loaded) {
-      this.load(this.oldLevainConfigFile); // Backward compatibility
+      this.load(this.configPaths.oldLevainConfigFile); // Backward compatibility
     }
 
     this.configCache(args);
@@ -63,69 +63,11 @@ export default class Config {
     return this._repoManager;
   }
 
-  get levainHome(): string {
-    return this._env["levainHome"];
-  }
-
-  get levainBaseDir(): string {
-    return path.resolve(this.levainHome, "levain");
-  }
-
-  get levainConfigDir(): string {
-    const dir = path.resolve(this.levainHome, ".levain");
-    ensureDirSync(dir);
-    return dir;
-  }
-
-  get oldLevainConfigFile(): string {
-    return path.resolve(this.levainConfigDir, "config.json");
-  }
-
-  get levainConfigFile(): string {
-    return path.resolve(homedir(), "levain.config.json");
-  }
-
-  get levainRegistryDir(): string {
-    const dir = path.resolve(this.levainConfigDir, "registry");
-    ensureDirSync(dir);
-    return dir;
-  }
-
   get levainRegistry(): Registry {
-    if (this._registry?.rootDir !== this.levainRegistryDir) {
-      this._registry = new Registry(this, this.levainRegistryDir);
+    if (this._registry?.rootDir !== this.configPaths.levainRegistryDir) {
+      this._registry = new Registry(this, this.configPaths.levainRegistryDir);
     }
     return this._registry;
-  }
-
-  get levainSafeTempDir(): string {
-    const dir = path.resolve(this.levainConfigDir, "temp");
-    ensureDirSync(dir);
-    return dir;
-  }
-
-  set levainBackupDir(dir: string) {
-    this._levainBackupDir = dir;
-  }
-
-  get levainBackupDir(): string {
-    if (!this._levainBackupDir) {
-      this._levainBackupDir = path.resolve(this.levainConfigDir, "backup");
-    }
-    ensureDirSync(this._levainBackupDir);
-    return this._levainBackupDir;
-  }
-
-  set levainCacheDir(dir: string) {
-    this._levainCacheDir = dir;
-  }
-
-  get levainCacheDir(): string {
-    if (!this._levainCacheDir) {
-      this._levainCacheDir = path.resolve(this.levainHome, ".levainCache");
-    }
-    ensureDirSync(this._levainCacheDir);
-    return this._levainCacheDir;
   }
 
   get context(): any {
@@ -213,6 +155,9 @@ export default class Config {
   }
 
   setVar(name: string, value: string): void {
+    if (name == "levainHome") {
+      this.setLevainHome(value);
+    }
     this._env[name] = value;
   }
 
@@ -244,21 +189,21 @@ export default class Config {
     const cfg = this.buildCfg();
     this.lastCfg = cfg;
 
-    const fileName = this.levainConfigFile;
+    const fileName = HomePaths.levainConfigFile;
 
     log.debug(`SAVE ${fileName}`);
     log.debug(`${JSON.stringify(cfg, null, 3)}`);
 
-    ensureDirSync(this.levainConfigDir);
-    Deno.writeTextFileSync(fileName, JSON.stringify(cfg, null, 3));
+    ensureDirSync(this.configPaths.levainConfigDir);
+    FileUtils.writeTextFileSync(fileName, JSON.stringify(cfg, null, 3));
     log.debug(`saved ${fileName}`);
 
     try {
-      Deno.removeSync(this.oldLevainConfigFile);
-      log.debug(`DEL ${this.oldLevainConfigFile}`);
+      FileUtils.removeSync(this.configPaths.oldLevainConfigFile);
+      log.debug(`DEL ${this.configPaths.oldLevainConfigFile}`);
     } catch (err) {
-      if (!(err instanceof Error) || (err.name != "NotFound")) {
-        log.error(t("lib.config.errorReading", { filename: this.oldLevainConfigFile }));
+      if (!isNotFoundFileError(err)) {
+        log.error(t("lib.config.errorReading", { filename: this.configPaths.oldLevainConfigFile }));
         throw err;
       }
     }
@@ -268,13 +213,13 @@ export default class Config {
     const cfg = new ConfigPersistentAttributes();
     cfg.repos = this.repositoryManager.saveState;
     cfg.defaultPackage = this._defaultPackage;
-    cfg.cacheDir = this.levainCacheDir;
+    cfg.cacheDir = this.configPaths.levainCacheDir;
     cfg.shellPath = this._shellPath;
     cfg.lastKnownVersion = this._lastKnownVersion;
     cfg.lastUpdateQuestion = this._lastUpdateQuestion;
     cfg.autoUpdate = this._autoUpdate;
     cfg.shellCheckForUpdate = this._shellCheckForUpdate;
-    cfg.levainHome = this._env["levainHome"];
+    cfg.levainHome = this.configPaths.levainHome;
     return cfg;
   }
 
@@ -302,7 +247,7 @@ export default class Config {
     }
 
     if (cfg.cacheDir) {
-      this.levainCacheDir = cfg.cacheDir;
+      this.configPaths.levainCacheDir = cfg.cacheDir;
     }
 
     if (cfg.shellPath) {
@@ -328,7 +273,7 @@ export default class Config {
     }
 
     if (cfg.levainHome) {
-      this._env["levainHome"] = cfg.levainHome;
+      this.setLevainHome(cfg.levainHome);
     }
 
     return true;
@@ -337,11 +282,11 @@ export default class Config {
   private loadText(filename: string): string | null {
     try {
       log.debug(`LOAD ${filename}`);
-      const data = Deno.readTextFileSync(filename);
+      const data = FileUtils.readTextFileSync(filename);
       log.debug(`- DATA ${data}`);
       return data;
     } catch (err) {
-      if (!(err instanceof Error) || (err.name != "NotFound")) {
+      if (!isNotFoundFileError(err)) {
         log.error(t("lib.config.errorReading", { filename: filename }));
         throw err;
       }
@@ -371,25 +316,24 @@ export default class Config {
   private configEnv(args: any): void {
     Object.keys(args).forEach((key) => {
       if (!key.startsWith("_")) {
-        this._env[key] = args[key];
+        this.setVar(key, args[key]);
       }
     });
   }
 
   configCache(args: any): void {
     if (args.levainCache) {
-      this.levainCacheDir = args.levainCache;
+      this.configPaths.levainCacheDir = args.levainCache;
     }
   }
 
   private configHome(args: any): void {
-    if (Array.isArray(this._env["levainHome"])) {
-      this._env["levainHome"] = this._env["levainHome"][0];
-    }
-
-    if (typeof (this._env["levainHome"]) == "string") {
+    if (this.configPaths.levainHome != "<unset>") {
       return;
     }
+  
+
+
 
     if (args["levainHome"]) {
       const dirs: string[] = args["levainHome"];
@@ -409,16 +353,16 @@ export default class Config {
         throw `${t("lib.config.noHomeValid")}\n-> ${args["levainHome"]}`;
       }
 
-      this._env["levainHome"] = path.resolve(Deno.cwd(), homeDir);
-      log.debug(`ARG levainHome=${this._env["levainHome"]}`);
+      this.setLevainHome(path.resolve(Deno.cwd(), homeDir));
+      log.debug(`ARG levainHome=${this.configPaths.levainHome}`);
       return;
     }
 
-    const config = path.resolve(this.levainSrcDir, "..", ".levain", "config.json");
+    const config = path.resolve(LevainPaths.levainSrcDir, "..", ".levain", "config.json");
     try {
-      if (Deno.statSync(config)) {
-        this._env["levainHome"] = path.resolve(this.levainSrcDir, "..");
-        log.debug(`CFG levainHome=${this._env["levainHome"]}`);
+      if (FileUtils.getFileInfoSync(config)) {
+        this.setLevainHome(path.resolve(LevainPaths.levainSrcDir, ".."));
+        log.debug(`CFG levainHome=${this.configPaths.levainHome}`);
         return;
       }
     } catch (_err) {
@@ -427,20 +371,21 @@ export default class Config {
 
     const levainHome = Deno.env.get("levainHome");
     if (levainHome) {
-      this._env["levainHome"] = path.resolve(levainHome);
-      log.debug(`ENV levainHome=${this._env["levainHome"]}`);
+      this.setLevainHome(path.resolve(levainHome));
+      log.debug(`ENV levainHome=${this.configPaths.levainHome}`);
       return;
     }
 
-    const home = homedir();
-    if (home) {
-      this._env["levainHome"] = path.resolve(home, "levain");
-      log.debug(`DEFAULT levainHome=${this._env["levainHome"]}`);
-      return;
-    }
+    this.setLevainHome(HomePaths.levainFallbackHome);
+    log.debug(`DEFAULT levainHome=${this.configPaths.levainHome}`);
   }
 
-  get levainSrcDir(): string {
-    return LevainVersion.levainSrcDir;
+  private setLevainHome(levainHome: string | string[]) {
+    if (Array.isArray(levainHome)) {
+      this.setLevainHome(levainHome[0]);
+    } else {
+      this._env["levainHome"] = levainHome;
+      this.configPaths.levainHome = levainHome;
+    }
   }
 }

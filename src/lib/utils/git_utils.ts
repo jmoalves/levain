@@ -1,7 +1,7 @@
 import * as log from "@std/log";
 import * as path from "@std/path";
 
-import ExtraBin from "../extra_bin.ts";
+import ExtraBin from "../paths/extra_bin.ts";
 import OsUtils from "../os/os_utils.ts";
 import { Timer } from "../timer.ts";
 

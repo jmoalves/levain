@@ -2,11 +2,11 @@ import * as log from "@std/log";
 
 import t from "../lib/i18n.ts";
 
-import Config from "../lib/config.ts";
+import type Config from "../lib/config.ts";
 import { parseArgs } from "../lib/parse_args.ts";
-import Package from "../lib/package/package.ts";
+import type Package from "../lib/package/package.ts";
 
-import Command from "./command.ts";
+import type Command from "./command.ts";
 
 /*
  * TODO:

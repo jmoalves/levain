@@ -1,11 +1,12 @@
 import * as log from "@std/log";
 import * as path from "@std/path";
 
-import Config from "../lib/config.ts";
-import Package from "../lib/package/package.ts";
+import type Config from "../lib/config.ts";
+import type Package from "../lib/package/package.ts";
 import { parseArgs } from "../lib/parse_args.ts";
 
-import Action from "./action.ts";
+import type Action from "./action.ts";
+import { FileUtils } from "../lib/fs/file_utils.ts";
 
 export default class Inspect implements Action {
   constructor(private config: Config) {
@@ -25,7 +26,7 @@ export default class Inspect implements Action {
     const src = path.resolve(Deno.cwd(), args._[0]);
 
     log.debug(`INSPECT ${src}`);
-    const data = Deno.readTextFileSync(src);
+    const data = FileUtils.readTextFileSync(src);
     for (const index in args.regExp) {
       const regexp = args.regExp[index];
       const varName = args.saveVar[index];

@@ -10,7 +10,7 @@ import { UserInfo } from "./user_info.ts";
 
 Deno.test("UserInfoUtil should use user_info file in $HOME/credentials_jdoe.yaml", () => {
   const userInfoUtil = new UserInfoUtil();
-  assertStringEndsWith(userInfoUtil.userinfoFileUri, `/.levain.yaml`);
+  assertStringEndsWith(userInfoUtil.userinfoFileUri, `.levain.yaml`);
 });
 //
 // load

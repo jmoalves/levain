@@ -6,16 +6,17 @@ import { isBefore } from "date-fns";
 
 import t from "../lib/i18n.ts";
 
-import Config from "../lib/config.ts";
+import type Config from "../lib/config.ts";
 import { parseArgs } from "../lib/parse_args.ts";
-import ConsoleAndFileLogger from "../lib/logger/console_and_file_logger.ts";
-import OsUtils from "../lib/os/os_utils.ts";
 import StringUtils from "../lib/utils/string_utils.ts";
 import DateUtils from "../lib/utils/date_utils.ts";
 import LevainVersion from "../levain_version.ts";
 import ConsoleFeedback from "../lib/utils/console_feedback.ts";
 
-import Command from "./command.ts";
+import type Command from "./command.ts";
+import { FileUtils } from "../lib/fs/file_utils.ts";
+import LogUtils from "../lib/logger/log_utils.ts";
+import GeneralPaths from "../lib/paths/general_paths.ts";
 
 const cacheExpiration = 30;
 
@@ -67,7 +68,7 @@ export default class CleanCommand implements Command {
     }
 
     if (myArgs.temp) {
-      const tempDir = this.config.levainSafeTempDir;
+      const tempDir = this.config.configPaths.levainSafeTempDir;
       total += this.cleanDir(tempDir);
       total += this.cleanOsTempDir(shallow);
     }
@@ -82,7 +83,7 @@ export default class CleanCommand implements Command {
   }
 
   private cleanBackupDir(shallow: boolean) {
-    const backupDir = this.config.levainBackupDir;
+    const backupDir = this.config.configPaths.levainBackupDir;
 
     let checkFile = undefined;
     if (shallow) {
@@ -100,7 +101,7 @@ export default class CleanCommand implements Command {
   }
 
   private cleanCacheDir(cleanCache: boolean) {
-    const cacheDir = this.config.levainCacheDir;
+    const cacheDir = this.config.configPaths.levainCacheDir;
     if (cleanCache) {
       return this.cleanDir(cacheDir);
     }
@@ -110,7 +111,7 @@ export default class CleanCommand implements Command {
       cacheDir,
       cleanCache ? undefined : (dirEntry: Deno.DirEntry) => {
         const entry = path.resolve(cacheDir, dirEntry.name);
-        const stat = Deno.statSync(entry);
+        const stat = FileUtils.getFileInfoSync(entry);
         return (!stat.atime ? false : isBefore(stat.atime, DateUtils.daysAgo(cacheExpiration)));
       },
     );
@@ -122,10 +123,10 @@ export default class CleanCommand implements Command {
 
     this.feedback.show();
 
-    const entryInfo = Deno.statSync(entryPath);
+    const entryInfo = FileUtils.getFileInfoSync(entryPath);
     if (!entryInfo.isDirectory) {
       try {
-        Deno.removeSync(entryPath);
+        FileUtils.removeSync(entryPath);
         // log.debug(`DEL-FILE ${entryPath} - ${entryInfo.size}`)
         return entryInfo.size;
       } catch (error) {
@@ -143,7 +144,7 @@ export default class CleanCommand implements Command {
       );
 
     try {
-      Deno.removeSync(entryPath);
+      FileUtils.removeSync(entryPath);
     } catch (error) {
       log.debug(t("cmd.clean.entryPathIgnoringError", { error: error, entryPath: entryPath }));
     }
@@ -153,7 +154,7 @@ export default class CleanCommand implements Command {
   }
 
   private cleanFailedSaves(): number {
-    const saveDir = this.config.levainHome;
+    const saveDir = this.config.configPaths.levainHome;
     if (!saveDir) {
       return 0;
     }
@@ -174,7 +175,7 @@ export default class CleanCommand implements Command {
   }
 
   private cleanOsTempDir(shallow: boolean): number {
-    const tempDir = this.getOsTempDir();
+    const tempDir = GeneralPaths.tempDir;
     if (!tempDir) {
       return 0;
     }
@@ -196,7 +197,7 @@ export default class CleanCommand implements Command {
       return false;
     });
 
-    const levainReleasesDir = path.resolve(tempDir, "levain");
+    const levainReleasesDir = GeneralPaths.tempLevainReleasesDir;
     if (existsSync(levainReleasesDir)) {
       size += this.cleanDir(levainReleasesDir, (dirEntry: any) => {
         if (dirEntry.name.match(`^levain-${LevainVersion.levainVersion.versionNumber}$`)) {
@@ -218,14 +219,14 @@ export default class CleanCommand implements Command {
   private cleanLogs(): number {
     log.debug(t("cmd.clean.logs"));
 
-    const tempDir = this.getOsTempDir();
+    const tempDir = GeneralPaths.tempDir;
     if (!tempDir) {
       return 0;
     }
 
     return this.cleanDir(tempDir, (dirEntry) => {
       if (dirEntry.isFile && dirEntry.name.match("^levain-.*\.log")) {
-        const dateTag = ConsoleAndFileLogger.logDateTag();
+        const dateTag = LogUtils.logDateTag();
         if (!dirEntry.name.match(`^levain-${dateTag}-.*`)) { // Do not remove today's logs
           return true;
         }
@@ -233,10 +234,6 @@ export default class CleanCommand implements Command {
 
       return false;
     });
-  }
-
-  private getOsTempDir() {
-    return OsUtils.tempDir;
   }
 
   readonly oneLineExample = t("cmd.clean.example");

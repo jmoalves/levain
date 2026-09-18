@@ -1,12 +1,6 @@
-import { assertEquals, assertNotEquals } from "@std/assert";
+import { assertEquals } from "@std/assert";
 
-import { homedir, retry } from "./utils.ts";
-
-Deno.test("Utils", () => {
-  const home = homedir();
-
-  assertNotEquals(home, undefined);
-});
+import { retry } from "./utils.ts";
 
 Deno.test("retry", async () => {
   const startTime = performance.now();

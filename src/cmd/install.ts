@@ -4,8 +4,8 @@ import { copySync, existsSync, moveSync } from "@std/fs";
 
 import t from "../lib/i18n.ts";
 
-import Config from "../lib/config.ts";
-import Package from "../lib/package/package.ts";
+import type Config from "../lib/config.ts";
+import type Package from "../lib/package/package.ts";
 import Loader from "../lib/loader.ts";
 import { Timer } from "../lib/timer.ts";
 import Registry from "../lib/repository/registry.ts";
@@ -15,7 +15,8 @@ import LevainVersion from "../levain_version.ts";
 import DateUtils from "../lib/utils/date_utils.ts";
 import { retry } from "../lib/utils/utils.ts";
 
-import Command from "./command.ts";
+import type Command from "./command.ts";
+import { FileUtils } from "../lib/fs/file_utils.ts";
 
 export default class Install implements Command {
   private registry: Registry;
@@ -23,7 +24,7 @@ export default class Install implements Command {
   private readonly maxRetries = 5;
 
   constructor(private config: Config) {
-    this.registry = new Registry(config, config.levainRegistryDir);
+    this.registry = new Registry(config, config.configPaths.levainRegistryDir);
     this.currentLevainVersion = LevainVersion.levainVersion;
   }
 
@@ -187,11 +188,11 @@ export default class Install implements Command {
 
     // https://github.com/jmoalves/levain/issues/148
     if (shouldInstall) {
-      const registryEntry = path.resolve(this.config.levainRegistryDir, path.basename(pkg.filePath));
+      const registryEntry = path.resolve(this.config.configPaths.levainRegistryDir, path.basename(pkg.filePath));
       if (existsSync(registryEntry)) {
         try {
           log.debug(`REMOVE ${registryEntry}`);
-          Deno.removeSync(registryEntry);
+          FileUtils.removeSync(registryEntry);
         } catch (error) {
           log.debug(t("cmd.install.ignoreError", { error: error }));
           shouldInstall = false;
@@ -208,8 +209,8 @@ export default class Install implements Command {
       }
 
       // Standard actions - At the head (unshift), they are in reverse order (like a STACK)
-      actions.unshift("mkdir " + this.config.levainSafeTempDir);
-      actions.unshift("mkdir " + this.config.levainRegistryDir);
+      actions.unshift("mkdir " + this.config.configPaths.levainSafeTempDir);
+      actions.unshift("mkdir " + this.config.configPaths.levainRegistryDir);
       actions.unshift("mkdir --compact ${levainHome}");
 
       Array.prototype.push.apply(actions, installActions);
@@ -225,7 +226,7 @@ export default class Install implements Command {
       // Standard actions - At the rear (push), they are in normal order (like a QUEUE)
       if (!pkg.skipRegistry()) {
         // TODO this.registry.add(pkg)
-        actions.push(`copy --verbose ${pkg.filePath} ${this.config.levainRegistryDir}`);
+        actions.push(`copy --verbose ${pkg.filePath} ${this.config.configPaths.levainRegistryDir}`);
       }
     }
 
@@ -245,7 +246,7 @@ export default class Install implements Command {
     }
 
     try {
-      const bkpDir = path.resolve(this.config.levainBackupDir, bkpTag);
+      const bkpDir = path.resolve(this.config.configPaths.levainBackupDir, bkpTag);
       const src = pkg.baseDir;
       const dst = path.resolve(bkpDir, path.basename(src));
 
@@ -270,14 +271,14 @@ export default class Install implements Command {
         suffix: ".tmp",
       });
       log.debug(`- SAVE-PRE   ${deletedDir}`);
-      await retry(this.maxRetries, () => Deno.removeSync(deletedDir, { recursive: true }));
+      await retry(this.maxRetries, () => FileUtils.removeSync(deletedDir, { recursive: true }));
 
       log.debug(`- SAVE-MOV   ${src} => ${deletedDir}`);
       await retry(this.maxRetries, () => moveSync(src, deletedDir));
 
       try {
         log.debug(`- SAVE-DEL   ${deletedDir}`);
-        await retry(this.maxRetries, () => Deno.removeSync(deletedDir, { recursive: true }));
+        await retry(this.maxRetries, () => FileUtils.removeSync(deletedDir, { recursive: true }));
       } catch (error) {
         log.debug(t("cmd.install.ignoreError", { error: error }));
       }

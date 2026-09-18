@@ -2,10 +2,11 @@ import * as log from "@std/log";
 import * as path from "@std/path";
 import { copySync, ensureDirSync, existsSync } from "@std/fs";
 
-import Config from "../config.ts";
-import FileSystemPackage from "../package/file_system_package.ts";
+import type Config from "../config.ts";
+import type FileSystemPackage from "../package/file_system_package.ts";
 
-import FileSystemRepository from "./file_system_repository.ts";
+import { FileSystemRepository } from "./file_system_repository.ts";
+import OsUtils from "../os/os_utils.ts";
 
 export default class Registry extends FileSystemRepository {
   constructor(
@@ -38,8 +39,7 @@ export default class Registry extends FileSystemRepository {
     ];
     possibleFiles.forEach((it) => {
       log.debug(`Trying to remove ${it}`);
-      if (existsSync(it)) {
-        Deno.removeSync(it);
+      if (OsUtils.removeFile(it)) {
         shouldInvalidate = true;
       }
     });

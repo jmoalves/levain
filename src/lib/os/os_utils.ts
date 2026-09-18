@@ -1,24 +1,15 @@
 import * as path from "@std/path";
-import { dirname, fromFileUrl } from "@std/path";
 import * as log from "@std/log";
 import * as fs from "@std/fs";
 import { ArrayUtils } from "../utils/array_utils.ts";
 import { envChain } from "../utils/utils.ts";
 import { Powershell } from "./powershell.ts";
-import ExtraBin from "../extra_bin.ts";
+import ExtraBin from "../paths/extra_bin.ts";
+import { FileUtils } from "../fs/file_utils.ts";
+import { isNotFoundFileError } from "../utils/error_utils.ts";
+import HomePaths from "../paths/home_paths.ts";
 
 export default class OsUtils {
-  static get tempDir(): string {
-    const tempDirEnvVars = ["TEMP", "TMPDIR", "TMP"];
-    const tempDir = envChain(...tempDirEnvVars);
-    if (!tempDir) {
-      //throw `TempDir not found. Looked for env vars ${tempDirEnvVars.join()}`
-      return "/tmp";
-    }
-
-    return tempDir;
-  }
-
   static get login(): string {
     const userEnvStrings = ["USERID", "USER", "user", "username"];
     const userFromEnv = envChain(...userEnvStrings);
@@ -26,38 +17,6 @@ export default class OsUtils {
       throw `User not found. Looked for env vars ${userEnvStrings.join()}`;
     }
     return userFromEnv;
-  }
-
-  static get projectRootDir(): string {
-    const thisFileDir = dirname(fromFileUrl(import.meta.url));
-    return path.resolve(thisFileDir, "..", "..", "..");
-  }
-
-  static get desktopDir(): string {
-    OsUtils.onlyInWindows();
-    return path.resolve(OsUtils.homeDir, "Desktop");
-  }
-
-  static get startMenuDir(): string {
-    OsUtils.onlyInWindows();
-    return path.resolve(
-      OsUtils.homeDir,
-      "AppData/Roaming/Microsoft/Windows/Start Menu/Programs",
-    );
-  }
-
-  static get startupDir(): string {
-    OsUtils.onlyInWindows();
-    return path.resolve(OsUtils.startMenuDir, "Startup");
-  }
-
-  static get homeDir(): string {
-    const homeEnvStrings = ["HOME", "USERPROFILE"];
-    const folderFromEnv = envChain(...homeEnvStrings);
-    if (!folderFromEnv) {
-      throw `Home folder not found. Looked for env vars ${homeEnvStrings.join()}`;
-    }
-    return path.resolve(folderFromEnv);
   }
 
   static get hostname(): string | undefined {
@@ -102,10 +61,13 @@ export default class OsUtils {
 
   static async exists(path: string): Promise<boolean> {
     try {
-      await Deno.stat(path);
+      await FileUtils.getFileInfo(path);
       return true;
-    } catch {
-      return false;
+    } catch (err) {
+      if (isNotFoundFileError(err)) {
+        return false;
+      }
+      throw err;
     }
   }
 
@@ -263,8 +225,9 @@ export default class OsUtils {
 
     return await Powershell.run(script, false, false, [sanitizedPath]);
   }
-
+  
   static getScriptUri(scriptName: string) {
+    OsUtils.onlyInWindows();
     const scriptsDir = ExtraBin.osUtilsDir;
     return path.resolve(scriptsDir, scriptName);
   }
@@ -318,14 +281,14 @@ export default class OsUtils {
   static async addToStartup(targetFile: string) {
     log.debug(`addToStartup ${targetFile}`);
     OsUtils.onlyInWindows();
-    const startupDir = OsUtils.startupDir;
+    const startupDir = HomePaths.startupDir;
     await OsUtils.createShortcut(targetFile, startupDir);
   }
 
   static async addToDesktop(targetFile: string) {
     log.debug(`addToDesktop ${targetFile}`);
     OsUtils.onlyInWindows();
-    const desktopDir = OsUtils.desktopDir;
+    const desktopDir = HomePaths.desktopDir;
     await OsUtils.createShortcut(targetFile, desktopDir);
   }
 
@@ -334,23 +297,27 @@ export default class OsUtils {
     folderName: string | undefined = undefined,
   ) {
     OsUtils.onlyInWindows();
-    const startMenuDir = OsUtils.startMenuDir;
+    const startMenuDir = HomePaths.startMenuDir;
     const shortcutDir = folderName ? path.resolve(startMenuDir, folderName) : startMenuDir;
 
     log.debug(`addToStartMenu ${targetFile}`);
     await OsUtils.createShortcut(targetFile, shortcutDir);
   }
 
-  static removeFile(filePath: string): void {
+  static removeFile(filePath: string): boolean {
     if (fs.existsSync(filePath)) {
-      Deno.removeSync(filePath);
-    }
+      FileUtils.removeSync(filePath);
+      return true;
+    } 
+    return false;
   }
 
-  static removeDir(dirPath: string): void {
+  static removeDir(dirPath: string): boolean {
     if (fs.existsSync(dirPath)) {
-      Deno.removeSync(dirPath, { recursive: true });
+      FileUtils.removeSync(dirPath, { recursive: true });
+      return true;
     }
+    return false;
   }
 
   static parseCmd(cmd: string): string[] {

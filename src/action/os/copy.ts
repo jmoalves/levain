@@ -3,12 +3,13 @@ import { copySync } from "@std/fs";
 import { existsSync, walkSync } from "@std/fs";
 import * as path from "@std/path";
 
-import Config from "../../lib/config.ts";
-import Package from "../../lib/package/package.ts";
+import type Config from "../../lib/config.ts";
+import type Package from "../../lib/package/package.ts";
 import { parseArgs } from "../../lib/parse_args.ts";
 
-import Action from "../action.ts";
+import type Action from "../action.ts";
 import { FileUtils } from "../../lib/fs/file_utils.ts";
+import { FileProgress } from "../../lib/io/file_progress.ts";
 
 export default class CopyAction implements Action {
   constructor(private config: Config) {
@@ -40,7 +41,7 @@ export default class CopyAction implements Action {
 
     let copyToDir = false;
     try {
-      const fileInfo = Deno.statSync(dst);
+      const fileInfo = FileUtils.getFileInfoSync(dst);
       if (args.ifNotExists && existsSync(dst)) {
         return;
       }
@@ -84,7 +85,7 @@ export default class CopyAction implements Action {
   }
 
   private copySrcFromFileSystem(item: string, dst: string, copyToDir: boolean, args: any) {
-    const fileInfo = Deno.statSync(item);
+    const fileInfo = FileUtils.getFileInfoSync(item);
     if (args.strip && fileInfo.isDirectory) {
       for (const entry of walkSync(item)) {
         if (entry.path == item) {
@@ -110,7 +111,7 @@ export default class CopyAction implements Action {
       realDst = path.resolve(dst, path.basename(url));
     }
 
-    await FileUtils.copyWithProgress(url, realDst);
+    await FileProgress.copyWithProgress(url, realDst);
   }
 
   private doCopy(args: any, src: string, dst: string) {

@@ -1,10 +1,9 @@
 
 
 import * as log from "@std/log";
-import { join } from "@std/path";
 import t from "../i18n.ts";
-import { homedir } from "../utils/utils.ts";
 import OsUtils from "../os/os_utils.ts";
+import HomePaths from "../paths/home_paths.ts";
 import ProfileEditor from "./profile_editor.ts";
 
 export default class BashInitializer {
@@ -16,7 +15,7 @@ export default class BashInitializer {
 
   public async install() {
     if (!this.profile) {
-      this.profile = await this.findProfile(homedir());
+      this.profile = await this.findProfile();
     }
     const editor = new ProfileEditor();
     log.info("")
@@ -26,12 +25,8 @@ export default class BashInitializer {
     log.info(`source "${this.profile}"`);
   }
 
-  async findProfile(home: string): Promise<string> {
-    const candidates = [
-      join(home, ".bashrc"),
-      join(home, ".bash_profile"),
-      join(home, ".profile"),
-    ];
+  async findProfile(): Promise<string> {
+    const candidates = HomePaths.profileCandidates();
 
     for (const candidate of candidates) {
       if (await OsUtils.exists(candidate)) {

@@ -2,16 +2,16 @@ import * as log from "@std/log";
 import { BaseHandler, ConsoleHandler, FileHandler } from "@std/log";
 import * as path from "@std/path";
 
-import Config from "../config.ts";
+import type Config from "../config.ts";
 import { AutoFlushLogFileHandler } from "./auto_flush_log_file_handler.ts";
 import LogFormatterFactory from "./log_formatter_factory.ts";
 import LogUtils from "./log_utils.ts";
 import OsUtils from "../os/os_utils.ts";
 import { FileUtils } from "../fs/file_utils.ts";
-import DateUtils from "../utils/date_utils.ts";
 import { StderrConsoleHandler } from "./stderr_handler.ts";
 import ConsoleFeedback from "../utils/console_feedback.ts";
 import { NullWriter } from "./null_writer.ts";
+import HomePaths from "../paths/home_paths.ts";
 
 export default class ConsoleAndFileLogger {
   static config: Config;
@@ -48,28 +48,8 @@ export default class ConsoleAndFileLogger {
     });
   }
 
-  static logTag(dt: Date = new Date()): string {
-    return DateUtils.dateTimeTag(dt);
-  }
-
-  static logDateTag(dt: Date = new Date()): string {
-    return DateUtils.dateTag(dt);
-  }
-
-  static logTimeTag(dt: Date = new Date()): string {
-    return DateUtils.timeTag(dt);
-  }
-
-  static hidePassword(msg: string): string {
-    if (!ConsoleAndFileLogger.config?.password) {
-      return msg;
-    }
-
-    return msg.replace(ConsoleAndFileLogger.config.password, "******");
-  }
-
   getConsoleHandler(omitLog: boolean = false): BaseHandler {
-    const formatter = LogFormatterFactory.getHidePasswordFormatter();
+    const formatter = LogFormatterFactory.getHidePasswordFormatter(ConsoleAndFileLogger.config);
     
     if (omitLog) {
       const handler = new StderrConsoleHandler("CRITICAL");
@@ -81,18 +61,18 @@ export default class ConsoleAndFileLogger {
 
   static getLogFileInTempFolder(): string {
     return Deno.makeTempFileSync({
-      prefix: `levain-${ConsoleAndFileLogger.logTag()}-`,
+      prefix: `levain-${LogUtils.logTag()}-`,
       suffix: ".log",
     });
   }
 
   static getLogFileInHomeFolder(): string {
-    return path.join(OsUtils.homeDir, "levain.log");
+    return HomePaths.levainLog;
   }
 
   static getLogFileInExtraDir(extraDir: string) {
     const myFileName =
-      `levain-${OsUtils.hostname?.toLowerCase()}-${OsUtils.login?.toLowerCase()}-${ConsoleAndFileLogger.logTag()}.log`;
+      `levain-${OsUtils.hostname?.toLowerCase()}-${OsUtils.login?.toLowerCase()}-${LogUtils.logTag()}.log`;
     return path.join(extraDir, myFileName);
   }
 
@@ -116,7 +96,7 @@ export default class ConsoleAndFileLogger {
   getLogFileHandler(logFile: string, options = {}): FileHandler {
     const fullOptions = {
       filename: logFile,
-      formatter: LogFormatterFactory.getFormatterWithDatetimeAndLevel(),
+      formatter: LogFormatterFactory.getFormatterWithDatetimeAndLevel(ConsoleAndFileLogger.config),
       mode: "w",
       ...options,
     };

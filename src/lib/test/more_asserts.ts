@@ -120,13 +120,13 @@ export function assertFileSizeAprox(path: string, expectedSize: number) {
 }
 
 export async function assertFileSize(filePath: string, expectedSize: number): Promise<void> {
-  const fileInfo = await Deno.stat(filePath);
+  const fileInfo = await FileUtils.getFileInfo(filePath);
   assert(fileInfo.isFile, `Path is not a file: ${filePath}`);
   assertEquals(fileInfo.size, expectedSize, `Expected file size to be ${expectedSize} bytes, but got ${fileInfo.size}`);
 }
 
 export async function assertFileNotEmpty(filePath: string): Promise<void> {
-  const fileInfo = await Deno.stat(filePath);
+  const fileInfo = await FileUtils.getFileInfo(filePath);
   assert(fileInfo.isFile, `Path is not a file: ${filePath}`);
   assert(fileInfo.size > 0, `Expected file to be non-empty, but size is ${fileInfo.size}`);
 }

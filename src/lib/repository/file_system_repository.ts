@@ -4,8 +4,8 @@ import { existsSync, expandGlob, ExpandGlobOptions } from "@std/fs";
 
 import t from "../i18n.ts";
 
-import Config from "../config.ts";
-import Package from "../package/package.ts";
+import type Config from "../config.ts";
+import type Package from "../package/package.ts";
 import FileSystemPackage from "../package/file_system_package.ts";
 import { Timer } from "../timer.ts";
 import ConsoleFeedback from "../utils/console_feedback.ts";
@@ -13,8 +13,9 @@ import ConsoleFeedback from "../utils/console_feedback.ts";
 import AbstractRepository from "./abstract_repository.ts";
 import DirUtils from "../fs/dir_utils.ts";
 import StringUtils from "../utils/string_utils.ts";
+import { FileUtils } from "../fs/file_utils.ts";
 
-export default class FileSystemRepository extends AbstractRepository {
+export class FileSystemRepository extends AbstractRepository {
   readonly excludeDirs = [
     ".git",
     "node_modules",
@@ -168,11 +169,19 @@ export default class FileSystemRepository extends AbstractRepository {
 
 
   private async readPackage(yamlFile: string): Promise<Package | undefined> {
+
+    let yamlStr: string | undefined = undefined;
+    try {
+      yamlStr = FileUtils.readTextFileSync(yamlFile);
+    } catch (error) {
+      log.error(`!!! error loading package ${yamlFile}: ${error}`);
+      return undefined;
+    }
+
     const packageName = path.basename(yamlFile).replace(/\.levain(\.ya?ml)?$/, "");
-    
+
     log.debug(`readPackage ${packageName} ${yamlFile}`);
 
-    const yamlStr: string = Deno.readTextFileSync(yamlFile);
     // log.debug(`yaml ${packageName} -> ${yamlStr}`)
 
     // log.debug(`pkg ${packageName} -> ${pkg}`)

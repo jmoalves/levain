@@ -2,7 +2,7 @@ import { assertEquals, assertRejects } from "@std/assert";
 import * as path from "@std/path";
 
 import Config from "../config.ts";
-import ZipRepository from "./zip_repository.ts";
+import { ZipRepository } from "./zip_repository.ts";
 import LevainAsserts from "../test/levain_asserts.ts";
 import Repository from "./repository.ts";
 

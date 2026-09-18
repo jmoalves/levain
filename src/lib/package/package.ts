@@ -1,5 +1,5 @@
-import Repository from "../repository/repository.ts";
-import VersionNumber from "../utils/version_number.ts";
+import type Repository from "../repository/repository.ts";
+import type VersionNumber from "../utils/version_number.ts";
 
 export default interface Package {
   readonly name: string;

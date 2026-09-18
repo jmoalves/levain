@@ -1,26 +1,21 @@
 import * as path from "@std/path";
 
-import LevainVersion from "../levain_version.ts";
-
-import OsUtils from "../lib/os/os_utils.ts";
+import LevainPaths from "./levain_paths.ts";
 
 export default class ExtraBin {
   static get extraBinDir(): string {
-    return path.resolve(LevainVersion.levainSrcDir, "extra-bin", Deno.build.os);
+    return path.resolve(LevainPaths.levainSrcDir, "extra-bin", Deno.build.os);
   }
 
   static get sevenZipDir(): string {
-    OsUtils.onlyInWindows();
     return path.resolve(ExtraBin.extraBinDir, "7-Zip");
   }
 
   static get gitDir(): string {
-    OsUtils.onlyInWindows();
     return path.resolve(ExtraBin.extraBinDir, "git");
   }
 
   static get osUtilsDir(): string {
-    OsUtils.onlyInWindows();
     return path.resolve(ExtraBin.extraBinDir, "os-utils");
   }
 }

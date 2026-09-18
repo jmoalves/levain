@@ -4,13 +4,14 @@ import { ensureDirSync, existsSync } from "@std/fs";
 
 import t from "../i18n.ts";
 
-import Config from "../config.ts";
+import type Config from "../config.ts";
 import HttpUtils from "../utils/http_utils.ts";
 import DateUtils from "../utils/date_utils.ts";
 import OsUtils from "../os/os_utils.ts";
 import LevainVersion from "../../levain_version.ts";
 import Loader from "../loader.ts";
 import VersionNumber from "../utils/version_number.ts";
+import GeneralPaths from "../paths/general_paths.ts";
 
 const UPDATE_REQUEST = 42;
 
@@ -247,7 +248,7 @@ export default class LevainReleases {
   }
 
   async prepareNewRelease() {
-    const releasesDir = path.resolve(OsUtils.tempDir, "levain");
+    const releasesDir = GeneralPaths.tempLevainReleasesDir;
     log.debug(`Levain releases dir ${releasesDir}`);
     ensureDirSync(releasesDir);
 

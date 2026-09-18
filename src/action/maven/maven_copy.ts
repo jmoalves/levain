@@ -1,5 +1,5 @@
 import OsUtils from "../../lib/os/os_utils.ts";
-import Action from "../action.ts";
+import type Action from "../action.ts";
 import { mvnCli } from "./maven_utils.ts";
 
 class MavenCopyAction implements Action {
@@ -17,7 +17,7 @@ class MavenCopyAction implements Action {
 
     // Optionally handle flags like --ifNotExists
     const ifNotExists = args.includes("--ifNotExists");
-    if (ifNotExists && await exists(destinationDir)) {
+    if (ifNotExists && await OsUtils.exists(destinationDir)) {
       console.info(
         `File already exists: ${destinationDir}. Skipping copy.`,
       );
@@ -59,16 +59,6 @@ class MavenCopyAction implements Action {
     console.log(command.join(" "));
     await OsUtils.runAndLog(command);
     return dstFile;
-  }
-}
-
-// Helper function to check if a file exists
-async function exists(filePath: string): Promise<boolean> {
-  try {
-    await Deno.stat(filePath);
-    return true;
-  } catch {
-    return false;
   }
 }
 

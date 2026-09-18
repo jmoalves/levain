@@ -4,8 +4,8 @@ import * as log from "@std/log";
 import { join } from "@std/path";
 import t from "../i18n.ts";
 import OsUtils from "../os/os_utils.ts";
-import ProfileEditor from "./profile_editor.ts";
 import PowershellInitializer from "./powershell_initializer.ts";
+import ProfileEditor from "./profile_editor.ts";
 
 export default class CmderInitializer {
   

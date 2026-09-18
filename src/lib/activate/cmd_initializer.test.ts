@@ -10,7 +10,7 @@ import OsUtils from "../os/os_utils.ts";
 Deno.test("hookTemplate contains expected commands", () => {
   const initializer = new CmdInitializer(
     "C:\\Levain",
-    "C:\\Users\\test\\.levain",
+    "C:\\Users\\test\\.levain\\levain-hook.cmd",
   );
 
   const template = initializer.hookTemplate();
@@ -24,18 +24,17 @@ Deno.test("hookTemplate contains expected commands", () => {
 
 Deno.test("createHook creates hook file", async () => {
   const dir = await Deno.makeTempDir();
+  const hookPath = `${dir}/levain-hook.cmd`;
 
   try {
     const initializer = new CmdInitializer(
       "C:\\Levain",
-      dir,
+      hookPath,
     );
 
     await initializer.createHook();
 
-    const text = await Deno.readTextFile(
-      `${dir}/levain-hook.cmd`,
-    );
+    const text = await Deno.readTextFile(hookPath);
 
     assertStringIncludes(text, 'doskey levain=call "C:\\Levain\\levain.cmd"');
   } finally {
@@ -82,7 +81,7 @@ Deno.test("findExistingAutorun returns empty when AutoRun does not exist", async
   try {
     const initializer = new CmdInitializer(
       "C:\\Levain",
-      "C:\\Users\\test\\.levain",
+      "C:\\Users\\test\\.levain\\levain-hook.cmd",
     );
 
     const value = await initializer.findExistingAutorun();
@@ -109,7 +108,7 @@ Deno.test("registerAutorun creates AutoRun when none exists", async () => {
   try {
     const initializer = new CmdInitializer(
       "C:\\Levain",
-      "C:\\Users\\test\\.levain",
+      "C:\\Users\\test\\.levain\\levain-hook.cmd",
     );
 
     await initializer.registerAutorun("");
@@ -147,7 +146,7 @@ Deno.test("registerAutorun appends to existing AutoRun", async () => {
   try {
     const initializer = new CmdInitializer(
       "C:\\Levain",
-      "C:\\Users\\test\\.levain",
+      "C:\\Users\\test\\.levain\\levain-hook.cmd",
     );
 
     await initializer.registerAutorun("echo hello");
@@ -172,7 +171,7 @@ Deno.test("registerAutorun appends to existing AutoRun", async () => {
 Deno.test("install registers AutoRun when hook is missing", async () => {
   const initializer = new CmdInitializer(
     "C:\\Levain",
-    "C:\\Users\\test\\.levain",
+    "C:\\Users\\test\\.levain\\levain-hook.cmd",
   );
 
   let created = false;
@@ -218,7 +217,7 @@ Deno.test("install registers AutoRun when hook is missing", async () => {
 Deno.test("install skips registration when hook already exists", async () => {
   const initializer = new CmdInitializer(
     "C:\\Levain",
-    "C:\\Users\\test\\.levain",
+    "C:\\Users\\test\\.levain\\levain-hook.cmd",
   );
 
   const hook =

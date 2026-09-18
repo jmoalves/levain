@@ -47,13 +47,13 @@ function verifyClean(parameters: any[], shouldCleanBackupDir: boolean, shouldCle
   const backupDirCount = MathUtil.randomInt(10);
   const backupDir = TestHelper.getNewTempDir();
   TestHelper.addRandomFilesToDir(backupDir, backupDirCount);
-  config.levainBackupDir = backupDir;
+  config.configPaths.levainBackupDir = backupDir;
   assertDirCount(backupDir, backupDirCount);
 
   const cacheDirCount = MathUtil.randomInt(10);
   const cacheDir = TestHelper.getNewTempDir();
   TestHelper.addRandomFilesToDir(cacheDir, cacheDirCount);
-  config.levainCacheDir = cacheDir;
+  config.configPaths.levainCacheDir = cacheDir;
   assertDirCount(cacheDir, cacheDirCount);
 
   const command = new CleanCommand(config);

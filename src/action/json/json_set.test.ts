@@ -4,6 +4,7 @@ import * as path from "@std/path";
 import TestHelper from "../../lib/test/test_helper.ts";
 
 import JsonSet from "./json_set.ts";
+import { FileUtils } from "../../lib/fs/file_utils.ts";
 
 Deno.test("JsonSet - should throw exception for missing parameters", async () => {
   const action = new JsonSet(TestHelper.getConfig());
@@ -68,7 +69,7 @@ Deno.test("JsonSet - should set simple string property", async () => {
 
   await action.execute(TestHelper.mockPackage(), params);
 
-  const json = JSON.parse(Deno.readTextFileSync(tempfile));
+  const json = JSON.parse(FileUtils.readTextFileSync(tempfile));
   Deno.removeSync(tempfile);
 
   assertEquals(json.property, "newValue");

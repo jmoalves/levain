@@ -3,10 +3,10 @@ import { distance } from "fastest-levenshtein";
 
 import t from "../lib/i18n.ts";
 
-import Config from "../lib/config.ts";
+import type Config from "../lib/config.ts";
 import StringUtils from "../lib/utils/string_utils.ts";
 
-import Command from "./command.ts";
+import type Command from "./command.ts";
 
 
 export default class ListCommand implements Command {

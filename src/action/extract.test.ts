@@ -5,6 +5,7 @@ import TestHelper from "../lib/test/test_helper.ts";
 import { assertFolderIncludes } from "../lib/test/more_asserts.ts";
 import FileCache from "../lib/fs/file_cache.ts";
 import Extract from "./extract.ts";
+import t from "../lib/i18n.ts";
 
 Deno.test("ExtractAction should check if source exists", async () => {
   const src = TestHelper.fileThatDoesNotExist;
@@ -15,7 +16,7 @@ Deno.test("ExtractAction should check if source exists", async () => {
   try {
     await action.execute(pkg, [src, dst]);
   } catch (err) {
-    const expectedMsg = `File ${src} does not exist`;
+    const expectedMsg = t("lib.fs.file_utils.throwIfNotExistsError", { filePath: src })
     if (err instanceof Error) {
       assertEquals(err.message, expectedMsg);
     } else {
@@ -30,7 +31,7 @@ Deno.test({
     const src = TestHelper.validZipFile;
     const dst = TestHelper.getNewTempDir();
     const config = TestHelper.getConfig();
-    config.levainCacheDir = TestHelper.getNewTempDir();
+    config.configPaths.levainCacheDir = TestHelper.getNewTempDir();
     const action = new Extract(config);
     const pkg = TestHelper.mockPackage();
 
@@ -53,14 +54,14 @@ Deno.test({
     const src = TestHelper.validZipFile;
     const dst = TestHelper.getNewTempDir();
     const config = TestHelper.getConfig();
-    config.levainCacheDir = TestHelper.getNewTempDir();
+    config.configPaths.levainCacheDir = TestHelper.getNewTempDir();
     const action = new Extract(config);
     const pkg = TestHelper.mockPackage();
     const cachedSrc = new FileCache(config).cachedFilePath(src);
 
     await action.execute(pkg, [src, dst]);
 
-    assertFolderIncludes(config.levainCacheDir, [cachedSrc]);
+    assertFolderIncludes(config.configPaths.levainCacheDir, [cachedSrc]);
   },
   sanitizeResources: false,
   sanitizeOps: false,
@@ -72,7 +73,7 @@ Deno.test({
     const src = TestHelper.validZipFileWithoutExtension;
     const dst = TestHelper.getNewTempDir();
     const config = TestHelper.getConfig();
-    config.levainCacheDir = TestHelper.getNewTempDir();
+    config.configPaths.levainCacheDir = TestHelper.getNewTempDir();
     const action = new Extract(config);
     const pkg = TestHelper.mockPackage();
 

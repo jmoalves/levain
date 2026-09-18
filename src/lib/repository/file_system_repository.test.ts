@@ -6,7 +6,7 @@ import Config from "../config.ts";
 import FileSystemPackage from "../package/file_system_package.ts";
 import { assertArrayEqualsInAnyOrder } from "../test/more_asserts.ts";
 
-import FileSystemRepository from "./file_system_repository.ts";
+import { FileSystemRepository } from "./file_system_repository.ts";
 
 const rootDir = ".";
 Deno.test("FileSystemRepository should have a name", () => {

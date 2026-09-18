@@ -1,10 +1,10 @@
 import * as log from "@std/log";
 import * as path from "@std/path";
-import ProgressBar from "@deno-library/progress";
+import type ProgressBar from "@deno-library/progress";
 
 
 import HttpUtils from "../utils/http_utils.ts";
-import ProgressReader from "../io/progress_reader.ts";
+import type ProgressReader from "../io/progress_reader.ts";
 
 export default class HttpReader implements ProgressReader {
   private reader: ReadableStreamDefaultReader<Uint8Array> | null = null;

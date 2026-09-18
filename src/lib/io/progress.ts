@@ -1,4 +1,4 @@
-import ProgressBar from "@deno-library/progress";
+import type ProgressBar from "@deno-library/progress";
 
 export default interface Progress {
   readonly title: string | undefined;

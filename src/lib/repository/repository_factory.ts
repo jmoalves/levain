@@ -1,18 +1,13 @@
 import * as log from "@std/log";
-import Config from "../config.ts";
+import type Config from "../config.ts";
 import OsUtils from "../os/os_utils.ts";
 import GitUtils from "../utils/git_utils.ts";
 
-import Repository from "./repository.ts";
-import GitRepository from "./git_repository.ts";
-import FileSystemRepository from "./file_system_repository.ts";
-import ZipRepository from "./zip_repository.ts";
+import type Repository from "./repository.ts";
+
 
 export default class RepositoryFactory {
   static knownRepos = new Map<string, Repository>();
-
-  constructor(private config: Config) {
-  }
 
   static isGitPath(repoPath: string): boolean {
     return GitUtils.isGitPath(repoPath);
@@ -43,7 +38,7 @@ export default class RepositoryFactory {
     return repoPath.toLowerCase().trim();
   }
 
-  async getOrCreate(repoURI: string, rootOnly: boolean = false): Promise<Repository> {
+  static async getOrCreate(config: Config, repoURI: string, rootOnly: boolean = false): Promise<Repository> {
     log.debug(`RepoFactory.create - repo for uri ${repoURI}`);
 
     if (!repoURI) {
@@ -59,11 +54,14 @@ export default class RepositoryFactory {
 
     let repo: Repository;
     if (RepositoryFactory.isGitPath(repoPath)) {
-      repo = new GitRepository(this.config, repoPath, rootOnly);
+      const { GitRepository } = await import("./git_repository.ts"); 
+      repo = new GitRepository(config, repoPath, rootOnly);
     } else if (RepositoryFactory.isZipPath(repoPath)) {
-      repo = new ZipRepository(this.config, repoPath, rootOnly);
+      const { ZipRepository } = await import("./zip_repository.ts"); 
+      repo = new ZipRepository(config, repoPath, rootOnly);
     } else {
-      repo = new FileSystemRepository(this.config, repoPath, rootOnly);
+      const { FileSystemRepository } = await import("./file_system_repository.ts"); 
+      repo = new FileSystemRepository(config, repoPath, rootOnly);
     }
 
     await repo.init();
