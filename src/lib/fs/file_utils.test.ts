@@ -75,8 +75,8 @@ if (!OsUtils.isWindows()) {
 } 
 if (OsUtils.isWindows()) {
   Deno.test("FileUtils - should detect read only folder on windows", () => {
-    const wpath = Deno.env.get("WINDIR") ?? Deno.env.get("SystemRoot") ?? "C:\\Windows";
-    ensureDirSync(wpath);
+    const systemDrive = Deno.env.get("SystemDrive") ?? "C:";
+    const wpath = `${systemDrive}\\System Volume Information`;
     const canWrite = FileUtils.canCreateTempFileInDir(wpath);
     assertEquals(canWrite, false);
   });

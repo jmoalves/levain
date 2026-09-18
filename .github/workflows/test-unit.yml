@@ -36,7 +36,7 @@ jobs:
       - name: Get Deno
         shell: cmd
         env:
-          DENO_VERSION: ${{ github.event.inputs.denoVersion || env.DEFAULT_DENO_VERSION }}"
+          DENO_VERSION: ${{ github.event.inputs.denoVersion || env.DEFAULT_DENO_VERSION }}
           DENO_ROOT_PATH: ${{ runner.temp }}\deno
           GITHUB_WORKSPACE: ${{ github.workspace }}
         run: |
@@ -54,6 +54,7 @@ jobs:
       - name: Run tests
         shell: cmd
         run: |
+          set "PATH=%DENO_ROOT_PATH%;%PATH%"
           call "%GITHUB_WORKSPACE%\scripts\test.cmd" --denoDir %DENO_ROOT_PATH% --coverage --checkSources
           if errorlevel 1 exit /b %ERRORLEVEL%
         env:
