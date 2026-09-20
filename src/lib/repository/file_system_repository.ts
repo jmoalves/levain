@@ -1,6 +1,6 @@
 import * as log from "@std/log";
 import * as path from "@std/path";
-import { existsSync, expandGlob, ExpandGlobOptions } from "@std/fs";
+import { existsSync, ExpandGlobOptions } from "@std/fs";
 
 import t from "../i18n.ts";
 
@@ -8,12 +8,12 @@ import type Config from "../config.ts";
 import type Package from "../package/package.ts";
 import FileSystemPackage from "../package/file_system_package.ts";
 import { Timer } from "../timer.ts";
+import { FileUtils } from "../fs/file_utils.ts";
 import ConsoleFeedback from "../utils/console_feedback.ts";
 
 import AbstractRepository from "./abstract_repository.ts";
 import DirUtils from "../fs/dir_utils.ts";
 import StringUtils from "../utils/string_utils.ts";
-import { FileUtils } from "../fs/file_utils.ts";
 
 export class FileSystemRepository extends AbstractRepository {
   readonly excludeDirs = [
@@ -115,10 +115,7 @@ export class FileSystemRepository extends AbstractRepository {
       root: this.rootDir,
       extended: true,
       includeDirs: true,
-      exclude: this.excludeDirs.flatMap((dir) => [
-        `**/${dir}`,
-        `**/${dir}/**`,
-      ]),
+      exclude: this.excludeDirs,
     };
     const packages: Array<Package> = await this.getPackageFiles(globOptions, this.rootOnly);
 
@@ -126,49 +123,98 @@ export class FileSystemRepository extends AbstractRepository {
       "lib.repository.file_system_repository.found",
       { pkgNum: StringUtils.padNum(packages.length, 3), dir: this.rootDir, timer: timer.humanize() },
     ));
+
     return packages;
   }
 
   // deno-lint-ignore require-await
   private async getPackageFiles(globOptions: ExpandGlobOptions, rootDirOnly: boolean = false): Promise<Array<Package>> {
     log.debug(`# readPackages: ${JSON.stringify(globOptions)}`);
-    return this.crawlPackages(globOptions, rootDirOnly);
+    return this.crawlPackages(globOptions["root"] || ".", globOptions, rootDirOnly);
   }
 
   private async crawlPackages(
+    dirname: string,
     options: ExpandGlobOptions,
-    rootDirOnly: boolean = false
+    rootDirOnly: boolean = false,
+    currentLevel = 0,
   ): Promise<Array<Package>> {
-    const packages: Package[] = [];
-    const promises: Array<Promise<Package | undefined>> = [];
+    // TODO can we use expandGlob to get faster results?
+    const maxLevels = 5;
+    const nextLevel = currentLevel + 1;
 
-    const pattern = rootDirOnly
-      ? "*.levain{,.yaml,.yml}"
-      : "**/*.levain{,.yaml,.yml}";
+    // User feedback
+    this.feedback.show();
 
-    for await (const entry of expandGlob(pattern, options)) {
-      this.feedback.show();
-
-      if (!entry.isFile) {
-        continue;
-      }
-
-      promises.push(this.readPackage(entry.path));
+    if (currentLevel > maxLevels) {
+      log.debug(`skipping ${dirname}, more then ${maxLevels} levels deep`);
+      return [];
     }
 
-    const results = await Promise.all(promises);
+    if (this.excludeDirs.some((ignoreDir) => dirname.toLowerCase().endsWith(ignoreDir.toLowerCase()))) {
+      log.debug(`ignoring ${dirname}`);
+      return [];
+    }
 
-    for (const pkg of results) {
-      if (pkg) {
-        packages.push(pkg);
+    log.debug(`crawlPackages ${dirname}`);
+
+    let entries: AsyncIterable<Deno.DirEntry>;
+    try {
+      entries = Deno.readDir(dirname);
+    } catch (error) {
+      if (error instanceof Deno.errors.PermissionDenied) {
+        log.debug(`not crawling ${dirname} - permission denied`);
+        return [];
       }
+      log.debug(`error reading ${dirname} - ${error}`);
+      return [];
+    }
+
+
+    const promisesDir: Array<Promise<Array<Package>>> = [];
+    const promisesFile: Array<Promise<Package | undefined>> = [];
+
+    for await (const entry of entries) {
+      // User feedback
+      this.feedback.show();
+      const fullUri = path.resolve(dirname, entry.name);
+      if (entry.isFile) {
+        if (this.isPackageFile(entry.name)) {
+          promisesFile.push(this.readPackage(fullUri));
+        }
+        // An attempt to optmize search in a crowded directory without packages
+        // Perhaps it would be better to read entries with a pattern
+        continue;
+      }
+      if (!entry.isDirectory || rootDirOnly) {
+        continue;
+      }
+      promisesDir.push(this.crawlPackages(fullUri, options, false, nextLevel));
+    }
+
+    const packages: Array<Package> = [];
+    const filePackages = await Promise.all(promisesFile);
+    packages.push(
+      ...filePackages.filter(
+        (pkg): pkg is Package => pkg !== undefined,
+      ),
+    );
+    const childPackages = await Promise.all(promisesDir);
+    for (const child of childPackages) {
+      packages.push(...child);
     }
 
     return packages;
   }
 
+  private isPackageFile(yamlFile: string): boolean {
+    return yamlFile.match(/\.levain(\.ya?ml)?$/) != null;
+  }
 
   private async readPackage(yamlFile: string): Promise<Package | undefined> {
+    if (!this.isPackageFile(yamlFile)) {
+      return undefined;
+    }
 
     let yamlStr: string | undefined = undefined;
     try {
@@ -178,8 +224,7 @@ export class FileSystemRepository extends AbstractRepository {
       return undefined;
     }
 
-    const packageName = path.basename(yamlFile).replace(/\.levain(\.ya?ml)?$/, "");
-
+    const packageName = yamlFile.replace(/.*[\/|\\]/g, "").replace(/\.levain(\.ya?ml)?/, "");
     log.debug(`readPackage ${packageName} ${yamlFile}`);
 
     // log.debug(`yaml ${packageName} -> ${yamlStr}`)
