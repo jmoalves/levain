@@ -29,7 +29,7 @@ a machine that behaves subtly differently.
 
 ### Which edition
 
-Use **Windows 11 Enterprise Evaluation**, or Pro. Not Home.
+Use **Windows 11 Pro**, installed from the multi-edition retail ISO. Not Home.
 
 For what Levain actually touches — HKCU, the user PATH, shortcuts in the user
 profile, the file system, processes — Home behaves the same as Pro. The reasons
@@ -37,13 +37,21 @@ to avoid it are elsewhere:
 
 - Home forces a Microsoft account and an internet connection during setup, and
   recent builds removed the usual escapes. A disposable VM that is supposed to
-  be rebuilt from a recorded procedure should not depend on signing in.
+  be rebuilt from a recorded procedure should not depend on signing in. In Pro,
+  *Sign-in options -> Domain join instead* still creates a local account.
 - Group Policy, domain join and the policy-driven restrictions that shape
   corporate machines simply do not exist in Home, so it cannot represent the
   environment Levain's real users run in.
 
-Note that the consumer Windows 11 ISO is multi-edition: skipping the product key
-during setup lets you pick Pro from the same download.
+The consumer Windows 11 ISO is multi-edition: choosing *I don't have a product
+key* during setup lets you pick Pro from the same download. Left unactivated it
+runs indefinitely for testing - it only nags and blocks personalization.
+
+Enterprise is not worth chasing for this. The retail download page offers it
+only through a Microsoft 365 tenant, a Visual Studio subscription or the Insider
+programme, and the Evaluation Center ISO (25H2, 90 days, no key) needs
+registration and expects a Microsoft account sign-in. For everything Levain
+touches, Pro and Enterprise behave the same.
 
 Neither edition matches CI exactly — `windows-latest` is Windows Server, not a
 client Windows. That is fine and is the point of having both: CI covers the
@@ -52,10 +60,8 @@ installed on.
 
 Ways to obtain that exact file:
 
-- *Windows 11 Enterprise Evaluation* from the Microsoft Evaluation Center
-  (90 days, no key) — the simplest licensed option for a test machine.
-- A retail Windows 11 ISO left unactivated. It runs fine for testing; it only
-  nags and blocks personalization.
+- The multi-edition Windows 11 ISO from Microsoft's download page (see *Which
+  edition* above).
 - A tool that automates the official download (`mido`, `quickget`) when you want
   the fetch itself scripted rather than done through a browser.
 
