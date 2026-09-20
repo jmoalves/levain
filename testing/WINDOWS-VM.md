@@ -27,6 +27,29 @@ reproducible is the *identity* of the image, recorded here:
 VM, so a different build, language or edition fails loudly instead of producing
 a machine that behaves subtly differently.
 
+### Which edition
+
+Use **Windows 11 Enterprise Evaluation**, or Pro. Not Home.
+
+For what Levain actually touches — HKCU, the user PATH, shortcuts in the user
+profile, the file system, processes — Home behaves the same as Pro. The reasons
+to avoid it are elsewhere:
+
+- Home forces a Microsoft account and an internet connection during setup, and
+  recent builds removed the usual escapes. A disposable VM that is supposed to
+  be rebuilt from a recorded procedure should not depend on signing in.
+- Group Policy, domain join and the policy-driven restrictions that shape
+  corporate machines simply do not exist in Home, so it cannot represent the
+  environment Levain's real users run in.
+
+Note that the consumer Windows 11 ISO is multi-edition: skipping the product key
+during setup lets you pick Pro from the same download.
+
+Neither edition matches CI exactly — `windows-latest` is Windows Server, not a
+client Windows. That is fine and is the point of having both: CI covers the
+clean server case, the VM covers the client environment Levain is actually
+installed on.
+
 Ways to obtain that exact file:
 
 - *Windows 11 Enterprise Evaluation* from the Microsoft Evaluation Center
