@@ -52,6 +52,43 @@ ensure_libvirt_group() {
     exec sg libvirt -c "$(printf '%q ' "$0" "$@")"
 }
 
+# qemu does not run as you: it runs as its own user (libvirt-qemu on Debian and
+# Ubuntu, qemu on Fedora), which cannot traverse a 750 home directory, so the VM
+# disk and the ISO simply look missing to it. Grant that single user the minimum
+# with an ACL, instead of opening these directories to everyone with chmod o+x.
+qemu_user() {
+    local u
+    for u in libvirt-qemu qemu; do
+        id -u "$u" >/dev/null 2>&1 && { echo "$u"; return 0; }
+    done
+    return 1
+}
+
+grant_traverse() {
+    local user="$1" p
+    p="$(readlink -f "$2")"
+    while [ "$p" != "/" ]; do
+        # Only what we own can take an ACL; anything else is normally
+        # world-traversable already (/home, /storage/home).
+        [ -O "$p" ] && setfacl -m "u:$user:x" "$p"
+        p="$(dirname "$p")"
+    done
+}
+
+grant_qemu_access() {
+    local iso="$1" user
+    user="$(qemu_user)" || { echo "WARN - no qemu user found, skipping ACLs"; return 0; }
+    command -v setfacl >/dev/null 2>&1 || die "setfacl not found - install the 'acl' package"
+
+    setfacl -m "u:$user:r" "$iso"
+    grant_traverse "$user" "$(dirname "$iso")"
+
+    setfacl -R -m "u:$user:rwX" "$VM_DIR"
+    # Default ACL, so the overlay that 'reset' recreates inherits the access.
+    setfacl -d -m "u:$user:rwX" "$VM_DIR"
+    grant_traverse "$user" "$VM_DIR"
+}
+
 # Getting root without a terminal: this script is meant to be runnable from an
 # automated context, where sudo has no TTY to ask for a password on. With a
 # graphical session, ask through zenity; otherwise say so plainly.
@@ -111,6 +148,8 @@ cmd_create() {
         net_model=virtio
         extra_cdrom=(--disk "path=$VIRTIO_ISO,device=cdrom,readonly=on")
     fi
+
+    grant_qemu_access "$iso"
 
     # Windows 11 requires UEFI + TPM 2.0 - without both, setup refuses to run.
     virt-install \
