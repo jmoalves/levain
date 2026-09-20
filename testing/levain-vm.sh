@@ -34,7 +34,30 @@ OVERLAY_IMG="$VM_DIR/overlay.qcow2"
 
 die() { echo "ERROR: $*" >&2; exit 1; }
 
+# Getting root without a terminal: this script is meant to be runnable from an
+# automated context, where sudo has no TTY to ask for a password on. With a
+# graphical session, ask through zenity; otherwise say so plainly.
+ensure_sudo() {
+    sudo -n true 2>/dev/null && return 0
+    if [ -t 0 ]; then
+        sudo -v && return 0
+    fi
+    [ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ] && command -v zenity >/dev/null 2>&1 \
+        || die "sudo needs a password and there is no terminal - run this from a terminal"
+
+    local helper rc
+    helper="$(mktemp)"
+    printf '#!/bin/sh\nexec zenity --password --title="sudo - levain-vm.sh"\n' > "$helper"
+    chmod +x "$helper"
+    echo "=== Asking for your password in a dialog on the desktop"
+    SUDO_ASKPASS="$helper" sudo -A -v
+    rc=$?
+    rm -f "$helper"
+    [ $rc -eq 0 ] || die "sudo authentication failed"
+}
+
 cmd_deps() {
+    ensure_sudo
     sudo apt update
     sudo apt install -y \
         qemu-kvm libvirt-daemon-system libvirt-clients virtinst virt-manager \
