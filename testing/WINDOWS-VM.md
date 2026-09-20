@@ -9,7 +9,7 @@ the `deno2_opus` migration branch.
 
 ```bash
 ./levain-vm.sh deps                      # qemu-kvm, libvirt, ovmf, swtpm
-./levain-vm.sh create ~/iso/Win11.iso    # UEFI + TPM 2.0, boots the installer
+./levain-vm.sh create ~/Downloads/ISO/Win11.iso   # UEFI + TPM 2.0, boots the installer
 ```
 
 ## The Windows ISO, and reproducing this elsewhere
@@ -81,22 +81,26 @@ run is what counts.
 Sizing defaults to 4 vCPU / 8 GB / 80 GB, enough for the unit suite. The e2e
 "install EVERYTHING" job needs far more disk; leave that one on GitHub Actions.
 
-## Two directories, and why backups trip over them
+## Where the files live, and why backups trip over them
 
-The VM lives in two places on purpose: the disks in `~/vms` (NVMe, where test
-runs need the I/O) and the ISO in `/storage/home/<user>/vms` (the big disk, read
-once during setup). Both need to stay out of backups, and each needs its own
-marker - `.resticignore` and `.kopiaignore` in each directory, plus the path in
-`RSYNC_EXCLUDES` for the host, since rsync has no per-directory marker.
+The disks go in `~/vms`, a real directory on the NVMe, because that is where the
+test runs need the I/O. The ISO goes in `~/Downloads/ISO` — on this host
+`~/Downloads` is a symlink onto the big disk, so the 7.7 GB file lands there
+without the VM sprawling across two places.
 
-There is a second reason beyond size. While the domain exists, libvirt's DAC
-driver chowns the disk image *and the ISO* to the qemu user (`libvirt-qemu:kvm`
-here), so your own user can no longer read them. A backup tool that walks those
-directories does not merely copy gigabytes for nothing - it fails outright with
-`permission denied`. Ownership goes back when the domain is destroyed, but the
-exclusions are what keep the backup green in the meantime.
+Both spots are already outside the backups, and for a reason beyond their size.
+While the domain exists, libvirt's DAC driver chowns the disk image *and the
+ISO* to the qemu user (`libvirt-qemu:kvm` here), so your own user can no longer
+read them. A backup tool walking those directories does not merely copy
+gigabytes for nothing — it fails outright with `permission denied`. `~/vms`
+carries its own `.resticignore` and `.kopiaignore` and is listed in the host's
+rsync excludes; `~/Downloads` was already excluded from all three.
 
-Once Windows is installed, detaching the install CD-ROM releases the ISO:
+Two things worth knowing about that ownership dance:
+
+- Destroying the domain restores the disk image, but **not** the CD-ROM source:
+  the ISO stays owned by the qemu user until you chown it back.
+- Once Windows is installed, detaching the install CD-ROM releases the ISO:
 
 ```bash
 virsh --connect qemu:///system detach-device-alias levain-win11 sata0-0-1 --config
