@@ -20,8 +20,12 @@ reproducible is the *identity* of the image, recorded here:
 
 | | |
 |---|---|
-| Edition | *(fill in: e.g. Windows 11 Enterprise Evaluation, 23H2, en-us)* |
-| SHA-256 | *(fill in: `sha256sum` of the ISO)* |
+| File | `Win11_25H2_BrazilianPortuguese_x64_v2.iso` |
+| Edition | Windows 11, version 25H2, multi-edition retail (install **Pro**) |
+| Language | Brazilian Portuguese (pt-BR) — matches the machines Levain's users run |
+| Architecture | x64 |
+| Size | 8172068864 bytes |
+| SHA-256 | `50fe4703cf0df0072e093d1f5d58ed450e4c49d8ca960433bbe6278d5ef10107` |
 
 `levain-vm.sh create` verifies the file against `ISO_SHA256` before building the
 VM, so a different build, language or edition fails loudly instead of producing
