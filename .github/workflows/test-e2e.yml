@@ -27,19 +27,21 @@ jobs:
       - name: Install Levain
         run: |
           # Which levain version?
+          # The manual input wins. When triggered by a published release, use
+          # that release - it is still flagged as a pre-release at this point,
+          # so the "latest" URL would point to the PREVIOUS release.
           $levainVersion = "${{ github.event.inputs.levainVersion }}"
-
-          # Install script
-          $scriptUrl = if ($levainVersion) {
-            $scriptUrl = "https://github.com/${{ github.repository }}/releases/download/v${levainVersion}/install.ps1"
-          } else {
-            $scriptUrl = "https://github.com/${{ github.repository }}/releases/latest/download/install.ps1"
+          if (! $levainVersion) {
+            $levainVersion = "${{ github.event.release.tag_name }}" -replace '^v', ''
           }
 
-          ###
-          # Workaround until install maturity
-          $scriptUrl = "https://raw.githubusercontent.com/${{ github.repository }}/master/install/install.ps1"
-          ###
+          # Install script - from the release itself
+          $scriptUrl = if ($levainVersion) {
+            "https://github.com/${{ github.repository }}/releases/download/v${levainVersion}/install.ps1"
+          } else {
+            "https://github.com/${{ github.repository }}/releases/latest/download/install.ps1"
+          }
+          Write-Output "=== install.ps1 from $scriptUrl"
 
           # Headless
           $levainHeadless = "true"
