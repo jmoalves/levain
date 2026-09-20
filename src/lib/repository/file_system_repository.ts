@@ -212,10 +212,6 @@ export class FileSystemRepository extends AbstractRepository {
   }
 
   private async readPackage(yamlFile: string): Promise<Package | undefined> {
-    if (!this.isPackageFile(yamlFile)) {
-      return undefined;
-    }
-
     let yamlStr: string | undefined = undefined;
     try {
       yamlStr = FileUtils.readTextFileSync(yamlFile);
