@@ -29,10 +29,28 @@ VIRTIO_ISO="${VIRTIO_ISO:-}"
 # somewhere else. Override to move to another Windows build, and record it.
 ISO_SHA256="${ISO_SHA256:-}"
 
+# Pin the connection: without this, virt-install and virsh silently fall back to
+# qemu:///session when the caller is not (yet) in the libvirt group, and the VM
+# would be created somewhere else than where the default network lives.
+export LIBVIRT_DEFAULT_URI="${LIBVIRT_DEFAULT_URI:-qemu:///system}"
+
 BASE_IMG="$VM_DIR/base.qcow2"
 OVERLAY_IMG="$VM_DIR/overlay.qcow2"
 
 die() { echo "ERROR: $*" >&2; exit 1; }
+
+# Membership in the libvirt group only applies to a new login session. When the
+# user is already a member but this shell is not, re-exec under sg rather than
+# asking them to log out.
+ensure_libvirt_group() {
+    id -nG | tr ' ' '\n' | grep -qx libvirt && return 0
+    getent group libvirt | cut -d: -f4 | tr ',' '\n' | grep -qx "$USER" || return 0
+    [ -n "${LEVAIN_VM_SG:-}" ] && die "the libvirt group did not apply - log out and back in"
+
+    echo "=== Re-running under the libvirt group"
+    export LEVAIN_VM_SG=1
+    exec sg libvirt -c "$(printf '%q ' "$0" "$@")"
+}
 
 # Getting root without a terminal: this script is meant to be runnable from an
 # automated context, where sudo has no TTY to ask for a password on. With a
@@ -148,6 +166,12 @@ cmd_ip() {
     virsh domifaddr "$VM_NAME" --source agent 2>/dev/null \
         || virsh domifaddr "$VM_NAME"
 }
+
+# Before dispatching, and with the original arguments still intact, so the
+# re-exec below repeats the same command.
+case "${1:-}" in
+    create|freeze|reset|start|stop|ip) ensure_libvirt_group "$@" ;;
+esac
 
 case "${1:-}" in
     deps)   shift; cmd_deps "$@" ;;
