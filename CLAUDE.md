@@ -14,7 +14,7 @@ Deno version used in CI and releases: **1.46.3** (see `.github/workflows/*.yml`)
 
 `master` is still **Deno 1** (pinned 1.46.3): remote `https://deno.land/std/...` imports remapped by `import_map.json`, and Deno-1-only APIs such as `Deno.run` (see `src/action/os/mkdir.ts`). Do not introduce Deno 2-only APIs here, and do not start yet another migration.
 
-The migration lives on branch **`deno2_opus`** (pushed to `origin`, ahead of `master`, with outside contributions coming in as PRs). It moves dependencies to JSR/npm specifiers declared in `deno.json`, drops `import_map.json`, adds `deno task` entries (`test`, `compile:windows`, `fmt`, …) and reformats the whole tree. Earlier attempts survive as the stale `deno2` and `deno-latest` branches — `deno2_opus` is the one being validated.
+The migration lives on branch **`deno2_opus`** (pushed to `origin`, ahead of `master`, with outside contributions coming in as PRs). It moves dependencies to JSR/npm specifiers declared in `deno.json`, drops `import_map.json`, adds `deno task` entries (`test`, `compile:windows`, `fmt`, …) and reformats the whole tree. Earlier attempts (`deno2`, `deno-latest`, `binary-bundle`, `async_fs`) have been deleted — `deno2_opus` is the only one being validated.
 
 Practical consequence: keep changes to `master` small and easy to merge forward, and expect large formatting-only diffs when comparing against `deno2_opus`.
 
