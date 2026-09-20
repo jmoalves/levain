@@ -81,8 +81,32 @@ run is what counts.
 Sizing defaults to 4 vCPU / 8 GB / 80 GB, enough for the unit suite. The e2e
 "install EVERYTHING" job needs far more disk; leave that one on GitHub Actions.
 
+## Two directories, and why backups trip over them
+
+The VM lives in two places on purpose: the disks in `~/vms` (NVMe, where test
+runs need the I/O) and the ISO in `/storage/home/<user>/vms` (the big disk, read
+once during setup). Both need to stay out of backups, and each needs its own
+marker - `.resticignore` and `.kopiaignore` in each directory, plus the path in
+`RSYNC_EXCLUDES` for the host, since rsync has no per-directory marker.
+
+There is a second reason beyond size. While the domain exists, libvirt's DAC
+driver chowns the disk image *and the ISO* to the qemu user (`libvirt-qemu:kvm`
+here), so your own user can no longer read them. A backup tool that walks those
+directories does not merely copy gigabytes for nothing - it fails outright with
+`permission denied`. Ownership goes back when the domain is destroyed, but the
+exclusions are what keep the backup green in the meantime.
+
+Once Windows is installed, detaching the install CD-ROM releases the ISO:
+
+```bash
+virsh --connect qemu:///system detach-device-alias levain-win11 sata0-0-1 --config
+```
+
 ## Inside Windows
 
+0. At the first boot the firmware asks to *press any key to boot from CD or
+   DVD*. Miss that window and the VM sits at an empty prompt doing nothing -
+   which looks exactly like a broken install.
 1. **Local account**, no Microsoft account. Reproducibility matters more than
    convenience, and Levain writes to the user profile.
 2. **Leave Windows Defender on.** Defender blocking `levain.exe` is a real,
