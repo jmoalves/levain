@@ -35,11 +35,13 @@ jobs:
             $levainVersion = "${{ github.event.release.tag_name }}" -replace '^v', ''
           }
 
-          # Install script - from the release itself
+          # Install script - from the release itself when a version is known.
+          # Otherwise use the script from master, because the
+          # releases/latest URL may not exist for branches/forks running e2e.
           $scriptUrl = if ($levainVersion) {
             "https://github.com/${{ github.repository }}/releases/download/v${levainVersion}/install.ps1"
           } else {
-            "https://github.com/${{ github.repository }}/releases/latest/download/install.ps1"
+            "https://raw.githubusercontent.com/${{ github.repository }}/master/install/install.ps1"
           }
           Write-Output "=== install.ps1 from $scriptUrl"
 
