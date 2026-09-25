@@ -3,6 +3,8 @@ import { assert, assertEquals, assertMatch, assertRejects, assertThrows } from "
 import GitUtils from "./git_utils.ts";
 import TestHelper from "../test/test_helper.ts";
 import { assertDirCountGreaterOrEqualTo } from "../test/more_asserts.ts";
+import OsUtils from "../os/os_utils.ts";
+import t from "../i18n.ts";
 
 const validUrls = [
   "git@github.com:jmoalves/levain.git",
@@ -203,20 +205,184 @@ Deno.test("GitUtils.clone should clone a repo", async () => {
   assertDirCountGreaterOrEqualTo(tempFolder, 3);
 });
 Deno.test({
-  name: "GitUtils.pull should pull a repo",
+  name: "GitUtils.update should succeed when repository is already up to date",
   fn: async () => {
     const tempFolder = TestHelper.getNewTempDir();
     const gitRepo = "https://github.com/begin-examples/deno-hello-world.git";
 
     const gitUtils = new GitUtils();
+
     await gitUtils.clone(gitRepo, tempFolder);
-    await gitUtils.pull(tempFolder);
+
+    await gitUtils.update(tempFolder);
+    await gitUtils.update(tempFolder);
 
     assertDirCountGreaterOrEqualTo(tempFolder, 3);
   },
 });
 Deno.test({
-  name: "GitUtils.pull should throw an error if folder is not a git repo",
+  name: "GitUtils.update should fail when local branch is ahead of remote",
+  fn: async () => {
+    const tempFolder = TestHelper.getNewTempDir();
+    const gitRepo = "https://github.com/begin-examples/deno-hello-world.git";
+
+    const gitUtils = new GitUtils();
+
+    await gitUtils.clone(gitRepo, tempFolder);
+
+    await OsUtils.runAndLog(
+      ["git", "config", "user.email", "test@test.com"],
+      tempFolder,
+    );
+
+    await OsUtils.runAndLog(
+      ["git", "config", "user.name", "Test"],
+      tempFolder,
+    );
+
+    await Deno.writeTextFile(
+      `${tempFolder}/local-change.txt`,
+      "local-change",
+    );
+
+    await OsUtils.runAndLog(
+      ["git", "add", "."],
+      tempFolder,
+    );
+
+    await OsUtils.runAndLog(
+      ["git", "commit", "-m", "local commit"],
+      tempFolder,
+    );
+
+    await assertRejects(
+      async () => {
+        await gitUtils.update(tempFolder);
+      },
+      Error,
+    );
+  },
+});
+Deno.test({
+  name: "GitUtils.update should fail when local and remote branches diverge",
+  fn: async () => {
+    const remote = TestHelper.getNewTempDir();
+    const clone1 = TestHelper.getNewTempDir();
+    const clone2 = TestHelper.getNewTempDir();
+
+    await OsUtils.runAndLog(
+      ["git", "init", "--bare", remote],
+    );
+
+    await OsUtils.runAndLog(
+      ["git", "clone", remote, clone1],
+    );
+
+    await OsUtils.runAndLog(
+      ["git", "clone", remote, clone2],
+    );
+
+    for (const repo of [clone1, clone2]) {
+      await OsUtils.runAndLog(
+        ["git", "config", "user.email", "test@test.com"],
+        repo,
+      );
+
+      await OsUtils.runAndLog(
+        ["git", "config", "user.name", "Test"],
+        repo,
+      );
+    }
+
+    await Deno.writeTextFile(
+      `${clone1}/a.txt`,
+      "a",
+    );
+
+    await OsUtils.runAndLog(["git", "add", "."], clone1);
+    await OsUtils.runAndLog(["git", "commit", "-m", "a"], clone1);
+    await OsUtils.runAndLog(["git", "push"], clone1);
+
+    await Deno.writeTextFile(
+      `${clone2}/b.txt`,
+      "b",
+    );
+
+    await OsUtils.runAndLog(["git", "add", "."], clone2);
+    await OsUtils.runAndLog(["git", "commit", "-m", "b"], clone2);
+
+    await Deno.writeTextFile(
+      `${clone1}/c.txt`,
+      "c",
+    );
+
+    await OsUtils.runAndLog(["git", "add", "."], clone1);
+    await OsUtils.runAndLog(["git", "commit", "-m", "c"], clone1);
+    await OsUtils.runAndLog(["git", "push"], clone1);
+
+    const gitUtils = new GitUtils();
+
+    await assertRejects(
+      async () => {
+        await gitUtils.update(clone2);
+      },
+      Error,
+    );
+  },
+});
+Deno.test({
+  name: "GitUtils.update should not retry non retryable errors",
+  fn: async () => {
+    const logger = await TestHelper.setupTestLogger();
+
+    const tempFolder = TestHelper.getNewTempDir();
+    const gitRepo = "https://github.com/begin-examples/deno-hello-world.git";
+
+    const gitUtils = new GitUtils();
+
+    await gitUtils.clone(gitRepo, tempFolder);
+
+    await OsUtils.runAndLog(
+      ["git", "config", "user.email", "test@test.com"],
+      tempFolder,
+    );
+
+    await OsUtils.runAndLog(
+      ["git", "config", "user.name", "Test"],
+      tempFolder,
+    );
+
+    await Deno.writeTextFile(
+      `${tempFolder}/local.txt`,
+      "local",
+    );
+
+    await OsUtils.runAndLog(
+      ["git", "add", "."],
+      tempFolder,
+    );
+
+    await OsUtils.runAndLog(
+      ["git", "commit", "-m", "local"],
+      tempFolder,
+    );
+
+    await assertRejects(
+      async () => {
+        await gitUtils.update(tempFolder);
+      },
+      Error,
+    );
+
+    const retries = logger.messages.filter((m) =>
+      m.includes("RETRY")
+    );
+
+    assertEquals(retries.length, 0);
+  },
+});
+Deno.test({
+  name: "GitUtils.update should throw an error if folder is not a git repo",
   fn: async () => {
     const testLogger = await TestHelper.setupTestLogger();
 
@@ -225,10 +391,10 @@ Deno.test({
 
     await assertRejects(
       async () => {
-        await gitUtils.pull(folder);
+        await gitUtils.update(folder);
       },
       Error,
-      "Unable to GIT PULL",
+      t("lib.utils.git_utils.unable_to_update", { workingDir: folder }),
     );
 
     const lastMessage = testLogger.messages[testLogger.messages.length - 1];

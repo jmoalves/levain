@@ -241,6 +241,15 @@
       "error_utils": {
         "fileError": "Erro ao tentar {{operation}} {{filePath}}: {{err}}"
       },
+      "git_utils": {
+        "invalid_upstream": "[Git {{workingDir}}] Ramo upstream inválido: {{ upstream }}",
+        "no_current_branch": "[Git {{workingDir}}] Não foi possível determinar o ramo atual e não há upstream configurado.",
+        "no_upstream": "[Git {{workingDir}}] Não há upstream configurado. Usando {{ remoteName }}/{{ branchName }}",
+        "updating": "[Git {{workingDir}}] Atualizando {{ branchName }}: {{ headSha }} -> {{ remoteSha }}",
+        "commits_diverged": "[Git {{workingDir}}] Repositório local possui commits não presentes em {{ remoteName }}/{{ branchName }}. Atualização cancelada.",
+        "branched_diverged": "[Git {{workingDir}}] Repositório local e ${remoteName}/${branchName} divergiram. Atualização cancelada para evitar perder mudanças locais.",
+        "unable_to_update": "Não foi possível atualizar {{workingDir}}."
+      },
       "json_utils": {
         "loadError": "parsear json de"
       }

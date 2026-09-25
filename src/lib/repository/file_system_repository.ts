@@ -146,75 +146,62 @@ export class FileSystemRepository extends AbstractRepository {
     // User feedback
     this.feedback.show();
 
-    if (this.excludeDirs.find((ignoreDir) => dirname.toLowerCase().endsWith(ignoreDir.toLowerCase()))) {
+    if (currentLevel > maxLevels) {
+      log.debug(`skipping ${dirname}, more then ${maxLevels} levels deep`);
+      return [];
+    }
+
+    if (this.excludeDirs.some((ignoreDir) => dirname.toLowerCase().endsWith(ignoreDir.toLowerCase()))) {
       log.debug(`ignoring ${dirname}`);
       return [];
     }
 
     log.debug(`crawlPackages ${dirname}`);
-    if (!FileUtils.canReadSync(dirname)) {
-      log.debug(`not crawling ${dirname} - can't read`);
-      return [];
-    }
 
-    let entries = undefined;
+    let entries: AsyncIterable<Deno.DirEntry>;
     try {
-      entries = Deno.readDirSync(dirname);
+      entries = Deno.readDir(dirname);
     } catch (error) {
+      if (error instanceof Deno.errors.PermissionDenied) {
+        log.debug(`not crawling ${dirname} - permission denied`);
+        return [];
+      }
       log.debug(`error reading ${dirname} - ${error}`);
-    }
-
-    if (!entries) {
-      log.debug(`not crawling ${dirname} - no entries`);
       return [];
     }
+
 
     const promisesDir: Array<Promise<Array<Package>>> = [];
     const promisesFile: Array<Promise<Package | undefined>> = [];
 
-    for (const entry of entries) {
+    for await (const entry of entries) {
       // User feedback
       this.feedback.show();
-
-      if (entry.isFile && !this.isPackageFile(entry.name)) {
+      const fullUri = path.resolve(dirname, entry.name);
+      if (entry.isFile) {
+        if (this.isPackageFile(entry.name)) {
+          promisesFile.push(this.readPackage(fullUri));
+        }
         // An attempt to optmize search in a crowded directory without packages
         // Perhaps it would be better to read entries with a pattern
         continue;
       }
-
-      const fullUri = path.resolve(dirname, entry.name);
-      if (!FileUtils.canReadSync(fullUri)) {
-        log.debug(`not crawling ${fullUri} - can't read`);
+      if (!entry.isDirectory || rootDirOnly) {
         continue;
       }
-
-      if (entry.isDirectory && !rootDirOnly) {
-        if (currentLevel > maxLevels) {
-          log.debug(`skipping ${fullUri}, more then ${maxLevels} levels deep`);
-        } else {
-          promisesDir.push(this.crawlPackages(fullUri, options, false, nextLevel));
-        }
-      } else if (entry.isFile && this.isPackageFile(fullUri)) {
-        promisesFile.push(this.readPackage(fullUri));
-      }
+      promisesDir.push(this.crawlPackages(fullUri, options, false, nextLevel));
     }
 
     const packages: Array<Package> = [];
-
-    if (promisesFile.length > 0) {
-      const pkgsFile = await Promise.all(promisesFile);
-      for (const pkg of pkgsFile) {
-        if (pkg) {
-          packages.push(pkg);
-        }
-      }
-    }
-
-    if (promisesDir.length > 0) {
-      const pkgsDir = await Promise.all(promisesDir);
-      for (const pkgArr of pkgsDir) {
-        Array.prototype.push.apply(packages, pkgArr);
-      }
+    const filePackages = await Promise.all(promisesFile);
+    packages.push(
+      ...filePackages.filter(
+        (pkg): pkg is Package => pkg !== undefined,
+      ),
+    );
+    const childPackages = await Promise.all(promisesDir);
+    for (const child of childPackages) {
+      packages.push(...child);
     }
 
     return packages;
@@ -225,18 +212,9 @@ export class FileSystemRepository extends AbstractRepository {
   }
 
   private async readPackage(yamlFile: string): Promise<Package | undefined> {
-    if (!this.isPackageFile(yamlFile)) {
-      return undefined;
-    }
-
-    let fileinfo = undefined;
     let yamlStr: string | undefined = undefined;
     try {
-      fileinfo = Deno.lstatSync(yamlFile);
       yamlStr = FileUtils.readTextFileSync(yamlFile);
-      if (!fileinfo || !fileinfo.isFile) {
-        return undefined;
-      }
     } catch (error) {
       log.error(`!!! error loading package ${yamlFile}: ${error}`);
       return undefined;

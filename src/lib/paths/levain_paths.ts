@@ -12,7 +12,7 @@ export default class LevainPaths {
     }
     // Considering src\lib\paths\levain_paths.ts
     const projectRoot = new URL("../../", import.meta.url);
-    return path.fromFileUrl(projectRoot);
+    return path.resolve(path.join(path.fromFileUrl(projectRoot), "..", "levain.ts"));
   }
 
   static get levainRootDir(): string {

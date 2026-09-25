@@ -241,6 +241,15 @@
       "error_utils": {
         "fileError": "Error while trying to {{operation}} {{filePath}}: {{err}}"
       },
+      "git_utils": {
+        "invalid_upstream": "[Git {{workingDir}}] Invalid upstream branch: {{ upstream }}",
+        "no_current_branch": "[Git {{workingDir}}] Unable to determine current branch and no upstream is configured.",
+        "no_upstream": "[Git {{workingDir}}] No upstream configured. Falling back to {{ remoteName }}/{{ branchName }}",
+        "updating": "[Git {{workingDir}}] Updating {{ branchName }}: {{ headSha }} -> {{ remoteSha }}",
+        "commits_diverged": "[Git {{workingDir}}] Local repository contains commits not present on {{ remoteName }}/{{ branchName }}. Update aborted.",
+        "branched_diverged": "[Git {{workingDir}}] Local branch and ${remoteName}/${branchName} have diverged. Update aborted to avoid losing local changes.",
+        "unable_to_update": "Unable to update {{workingDir}}."
+      },
       "json_utils": {
         "loadError": "parse json of"
       }

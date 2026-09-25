@@ -6,6 +6,7 @@ import OsUtils from "../os/os_utils.ts";
 import { Timer } from "../timer.ts";
 
 import ConsoleFeedback from "./console_feedback.ts";
+import t from "../i18n.ts";
 
 export default class GitUtils {
   static readonly GIT_REG_EXP = /(?<url>.*\.git)(:?#(?<branch>.+))?$/;
@@ -87,47 +88,161 @@ export default class GitUtils {
     this.feedback.reset(`# GIT - CLONE - ${JSON.stringify(gitPath)} => ${dst} (${timer.humanize()})`);
   }
 
-  async pull(workingDir: string) {
-    log.debug(`# GIT - PULL - ${workingDir}`);
+  private async updateIfNeeded(workingDir: string): Promise<boolean> {
+    let remoteName: string;
+    let branchName: string;
 
-    const timer = new Timer();
-    this.feedback.start(`# GIT - PULL - ${workingDir}`);
-    const tick = setInterval(() => this.feedback.show(), 300);
+    try {
+      const upstream = (
+        await OsUtils.runAndLog(
+          [this.gitCmd, "rev-parse", "--abbrev-ref", "@{u}"],
+          workingDir,
+        )
+      ).trim();
 
-    let gitCommand: string | string[] =
-      `${this.gitCmd} pull --force -q --progress --no-tags --depth=1 --update-shallow --allow-unrelated-histories --no-commit --rebase`;
+      const slashIndex = upstream.indexOf("/");
 
-    // Config to ignore advices :-(
-    gitCommand = `${this.gitCmd} config advice.diverging false && ${gitCommand}`;
+      if (slashIndex < 0) {
+        throw new NonRetryableGitError(t("lib.utils.git_utils.invalid_upstream", { workingDir, upstream }));
+      }
 
-    if (OsUtils.isWindows()) {
-      gitCommand = `cmd /u /c pushd ${workingDir} && ${gitCommand} && popd`;
+      remoteName = upstream.substring(0, slashIndex);
+      branchName = upstream.substring(slashIndex + 1);
+    } catch {
+      branchName = (
+        await OsUtils.runAndLog(
+          [this.gitCmd, "branch", "--show-current"],
+          workingDir,
+        )
+      ).trim();
+
+      if (!branchName) {
+        throw new NonRetryableGitError(t("lib.utils.git_utils.no_current_branch", { workingDir }));
+      }
+
+      remoteName = "origin";
+
+      log.debug(t("lib.utils.git_utils.no_upstream", { workingDir, remoteName, branchName }));
     }
 
+    await OsUtils.runAndLog(
+      [
+        this.gitCmd,
+        "fetch",
+        "--quiet",
+        "--no-tags",
+        remoteName,
+        branchName,
+      ],
+      workingDir,
+    );
+
+    const headSha = (
+      await OsUtils.runAndLog(
+        [this.gitCmd, "rev-parse", "HEAD"],
+        workingDir,
+      )
+    ).trim();
+
+    const remoteSha = (
+      await OsUtils.runAndLog(
+        [this.gitCmd, "rev-parse", "FETCH_HEAD"],
+        workingDir,
+      )
+    ).trim();
+
+    if (headSha === remoteSha) {
+      return false;
+    }
+
+    // Is local behind remote?
+    try {
+      await OsUtils.runAndLog(
+        [this.gitCmd, "merge-base", "--is-ancestor", "HEAD", "FETCH_HEAD"],
+        workingDir,
+      );
+
+      log.debug(t("lib.utils.git_utils.updating", { workingDir, branchName, headSha, remoteSha }));
+
+      // Fast-forward only. Never rewrite or merge.
+      await OsUtils.runAndLog(
+        [this.gitCmd, "merge", "--ff-only", "FETCH_HEAD"],
+        workingDir,
+      );
+
+      return true;
+    } catch {
+      // HEAD is not an ancestor of FETCH_HEAD
+    }
+
+    // Is remote behind local?
+    let message = t("lib.utils.git_utils.commits_diverged", { workingDir, remoteName, branchName });
+    try {
+      await OsUtils.runAndLog(
+        [this.gitCmd, "merge-base", "--is-ancestor", "FETCH_HEAD", "HEAD"],
+        workingDir,
+      );
+
+
+      throw new NonRetryableGitError(message);
+    } catch (error) {
+      if (
+        error instanceof NonRetryableGitError &&
+        error.message.includes(message)
+      ) {
+        throw error;
+      }
+    }
+
+    // Neither side is ancestor of the other => diverged
+    message =  t("lib.utils.git_utils.commits_diverged", { workingDir, remoteName, branchName });
+    throw new NonRetryableGitError(message);
+  }
+
+  async update(workingDir: string) {
+    log.debug(`# GIT - UPDATE - ${workingDir}`);
+
+    const timer = new Timer();
+    this.feedback.start(`# GIT - UPDATE - ${workingDir}`);
+    const tick = setInterval(() => this.feedback.show(), 300);
+    
     let tries = 0;
     do {
       tries++;
       if (tries > 1) {
-        log.debug(`# GIT - PULL - ${workingDir} - RETRY`);
+        log.debug(`# GIT - UPDATE - ${workingDir} - RETRY`);
       }
 
       try {
-        await OsUtils.runAndLog(gitCommand, workingDir);
-
+        const updated = await this.updateIfNeeded(workingDir);
         clearInterval(tick);
+        if (updated) {
+          log.debug(
+            `# GIT - UPDATED - ${workingDir} (${timer.humanize()})`,
+          );
+          this.feedback.reset(
+            `# GIT - UPDATED - ${workingDir} (${timer.humanize()})`,
+          );
+        } else {
+          log.debug(
+            `# GIT - UP TO DATE - ${workingDir} (${timer.humanize()})`,
+          );
+          this.feedback.reset(
+            `# GIT - UP TO DATE - ${workingDir} (${timer.humanize()})`,
+          );
+        }
 
-        log.debug(`# GIT - PULL - ${workingDir} (${timer.humanize()})`);
-        log.debug("");
-
-        this.feedback.reset(`# GIT - PULL - ${workingDir} (${timer.humanize()})`);
         return;
       } catch (error) {
         log.error(`git error - try ${tries} - ${error}`);
+        if (error instanceof NonRetryableGitError) {
+          tries = 3;
+        }
       }
     } while (tries < 3);
 
     clearInterval(tick);
-    throw Error(`Unable to GIT PULL ${workingDir}`);
+    throw Error(t("lib.utils.git_utils.unable_to_update", { workingDir }));
   }
 
   static checkGitPath(url: string) {
@@ -164,5 +279,13 @@ export default class GitUtils {
     } while (dir.length > 0);
 
     return undefined;
+  }
+}
+
+
+class NonRetryableGitError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "NonRetryableGitError";
   }
 }
