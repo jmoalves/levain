@@ -122,7 +122,7 @@ Deno.test("registerAutorun creates AutoRun when none exists", async () => {
       "/t",
       "REG_SZ",
       "/d",
-      '@CALL "C:\\Users\\test\\.levain\\levain-hook.cmd"',
+      '@IF EXIST "C:\\Users\\test\\.levain\\levain-hook.cmd" CALL "C:\\Users\\test\\.levain\\levain-hook.cmd"',
       "/f",
     ]);
   } finally {
@@ -160,7 +160,7 @@ Deno.test("registerAutorun appends to existing AutoRun", async () => {
       "/t",
       "REG_SZ",
       "/d",
-      'echo hello & @CALL "C:\\Users\\test\\.levain\\levain-hook.cmd"',
+      'echo hello & @IF EXIST "C:\\Users\\test\\.levain\\levain-hook.cmd" CALL "C:\\Users\\test\\.levain\\levain-hook.cmd"',
       "/f",
     ]);
   } finally {
@@ -221,7 +221,7 @@ Deno.test("install skips registration when hook already exists", async () => {
   );
 
   const hook =
-    '@CALL "C:\\Users\\test\\.levain\\levain-hook.cmd"';
+    '@IF EXIST "C:\\Users\\test\\.levain\\levain-hook.cmd" CALL "C:\\Users\\test\\.levain\\levain-hook.cmd"';
 
   let registered = false;
 
