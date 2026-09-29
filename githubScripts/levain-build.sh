@@ -28,7 +28,7 @@ levainCompile() {
 
     ${myDeno} compile \
         --reload \
-        --allow-read --allow-write --allow-env --allow-net --allow-run \
+        --allow-all \
         --target ${target} \
         --output ${output} \
         ${levainSrcDir}/levain.ts \

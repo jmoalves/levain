@@ -13,8 +13,7 @@ export default class CmdInitializer {
     private levainCmdPath: string,
     private levainHookPath: string
   ) {
-    this.hookCommand =
-      `@IF EXIST "${this.levainHookPath}" CALL "${this.levainHookPath}"`;
+    this.hookCommand = `@IF EXIST "${this.levainHookPath}" CALL "${this.levainHookPath}"`;
   }
 
   public async install() {

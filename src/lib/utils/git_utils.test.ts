@@ -1,4 +1,6 @@
 import { assert, assertEquals, assertMatch, assertRejects, assertThrows } from "@std/assert";
+import { stub } from "@std/testing/mock";
+import * as path from "@std/path";
 
 import GitUtils from "./git_utils.ts";
 import TestHelper from "../test/test_helper.ts";
@@ -381,6 +383,60 @@ Deno.test({
     assertEquals(retries.length, 0);
   },
 });
+Deno.test("GitUtils.gitRoot returns the closest ancestor containing a .git dir", async () => {
+  const tempFolder = TestHelper.getNewTempDir();
+  const gitRepo = "https://github.com/begin-examples/deno-hello-world.git";
+
+  await new GitUtils().clone(gitRepo, tempFolder);
+
+  const nestedDir = path.resolve(tempFolder, "some", "nested", "dir");
+  await Deno.mkdir(nestedDir, { recursive: true });
+
+  assertEquals(GitUtils.gitRoot(nestedDir), tempFolder);
+});
+
+Deno.test("GitUtils.gitRoot returns undefined when no ancestor has a .git dir", () => {
+  const tempFolder = TestHelper.getNewTempDir();
+
+  assertEquals(GitUtils.gitRoot(tempFolder), undefined);
+});
+
+Deno.test("GitUtils.gitRoot ignores directories it can't access due to permission errors", () => {
+  const tempFolder = TestHelper.getNewTempDir();
+
+  const lstatStub = stub(
+    Deno,
+    "lstatSync",
+    () => {
+      throw new Deno.errors.NotCapable("Requires all access to some UNC path");
+    },
+  );
+
+  try {
+    assertEquals(GitUtils.gitRoot(tempFolder), undefined);
+  } finally {
+    lstatStub.restore();
+  }
+});
+
+Deno.test("GitUtils.gitRoot ignores directories with PermissionDenied errors", () => {
+  const tempFolder = TestHelper.getNewTempDir();
+
+  const lstatStub = stub(
+    Deno,
+    "lstatSync",
+    () => {
+      throw new Deno.errors.PermissionDenied("Permission denied");
+    },
+  );
+
+  try {
+    assertEquals(GitUtils.gitRoot(tempFolder), undefined);
+  } finally {
+    lstatStub.restore();
+  }
+});
+
 Deno.test({
   name: "GitUtils.update should throw an error if folder is not a git repo",
   fn: async () => {
