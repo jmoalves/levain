@@ -1,1 +1,1 @@
-deno compile --allow-read --allow-write --allow-env --allow-net --allow-run levain.ts
+deno compile --allow-all levain.ts

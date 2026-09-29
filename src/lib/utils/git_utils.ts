@@ -255,8 +255,9 @@ export default class GitUtils {
     let dir = startDir;
 
     do {
+      const gitdir = path.resolve(dir, ".git");
+
       try {
-        const gitdir = path.resolve(dir, ".git");
         log.debug(`Looking for .git at ${gitdir}`);
         const fileInfo = Deno.lstatSync(gitdir);
         if (fileInfo.isDirectory) {
@@ -264,9 +265,14 @@ export default class GitUtils {
           return dir;
         }
       } catch (err) {
-        if (!(err instanceof Deno.errors.NotFound)) {
+        if (
+          !(err instanceof Deno.errors.NotFound) &&
+          !(err instanceof Deno.errors.PermissionDenied) &&
+          !(err instanceof Deno.errors.NotCapable)
+        ) {
           throw err;
         }
+        log.debug(`Unable to check ${gitdir} - ${err}`);
       }
 
       const parentDir = path.dirname(dir);
