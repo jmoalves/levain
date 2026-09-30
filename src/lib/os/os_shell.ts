@@ -120,13 +120,12 @@ export class OsShell {
     log.debug(`Deno.command: ${JSON.stringify(opt)}`);
 
     const pcommand = new Deno.Command(opt.exec_cmd, opt);
-    const { success, stdout, code } = await pcommand.output();
-
-    if (!this.ignoreErrors && !success) {
-      throw new Error("CMD terminated with code " + code);
-    }
 
     if (this.saveVar) {
+      const { success, stdout, code } = await pcommand.output();
+      if (!this.ignoreErrors && !success) {
+        throw new Error("CMD terminated with code " + code);
+      }
       //let rawOutput = await pcommand.output();
       let cmdOutput = new TextDecoder().decode(stdout);
       if (this.stripCRLF) {
@@ -136,6 +135,12 @@ export class OsShell {
           .replace(/\n$/, "");
       }
       this.config.setVar(this.saveVar, cmdOutput);
+    } else {
+      const child = pcommand.spawn();
+      const status = await child.status;
+      if (!this.ignoreErrors && !status.success) {
+        throw new Error("CMD terminated with code " + status.code);
+        }
     }
   }
 
@@ -198,6 +203,10 @@ export class OsShell {
 
     if (this.saveVar) {
       opt.stdout = "piped";
+    } else {
+      opt.stdout = "inherit";
+      opt.stderr = "inherit";
+      opt.stdin = "inherit";
     }
 
     // if (detached) {
