@@ -69,7 +69,7 @@ grant_traverse() {
     p="$(readlink -f "$2")"
     while [ "$p" != "/" ]; do
         # Only what we own can take an ACL; anything else is normally
-        # world-traversable already (/home, /storage/home).
+        # world-traversable already (/home and the like).
         [ -O "$p" ] && setfacl -m "u:$user:x" "$p"
         p="$(dirname "$p")"
     done
