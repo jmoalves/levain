@@ -83,18 +83,20 @@ Sizing defaults to 4 vCPU / 8 GB / 80 GB, enough for the unit suite. The e2e
 
 ## Where the files live, and why backups trip over them
 
-The disks go in `~/vms`, a real directory on the NVMe, because that is where the
-test runs need the I/O. The ISO goes in `~/Downloads/ISO` — on this host
-`~/Downloads` is a symlink onto the big disk, so the 7.7 GB file lands there
-without the VM sprawling across two places.
+The disks go in `~/vms` and the ISO in `~/Downloads/ISO`. `VM_DIR` overrides
+the first; put it on a disk that can take the churn: every `reset` throws the
+overlay away, and a test run rewrites tens of gigabytes. A disk you can replace
+cheaply beats a fast system SSD you would rather not wear out. A symlink works:
+`grant_traverse` resolves it and opens the real path to the qemu user.
 
-Both spots are already outside the backups, and for a reason beyond their size.
-While the domain exists, libvirt's DAC driver chowns the disk image *and the
-ISO* to the qemu user (`libvirt-qemu:kvm` here), so your own user can no longer
-read them. A backup tool walking those directories does not merely copy
-gigabytes for nothing — it fails outright with `permission denied`. `~/vms`
-carries its own `.resticignore` and `.kopiaignore` and is listed in the host's
-rsync excludes; `~/Downloads` was already excluded from all three.
+Keep both directories outside your backups, and for a reason beyond their
+size. While the domain exists, libvirt's DAC driver chowns the disk image *and
+the ISO* to the qemu user (`libvirt-qemu:kvm` on Debian and Ubuntu), so your
+own user can no longer read them. A backup tool walking those directories does
+not merely copy gigabytes for nothing — it fails outright with
+`permission denied`. `~/vms` carries a `.resticignore` and a `.kopiaignore`;
+tools without a per-directory marker, such as rsync, need an explicit exclude,
+on the real path if `~/vms` is a symlink.
 
 Two things worth knowing about that ownership dance:
 
