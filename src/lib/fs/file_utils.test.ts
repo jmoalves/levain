@@ -81,8 +81,8 @@ if (OsUtils.isWindows()) {
     assertEquals(canWrite, false);
   });
   Deno.test("FileUtils - should detect a folder without permissions", () => {
-    // FIXME Will not need the folowing line when Deno.statSync.mode is fully implemented for Windows
-    const fileUri = "d:\\Config.Msi";
+    const systemDrive = Deno.env.get("SystemDrive") ?? "C:";
+    const fileUri = `${systemDrive}\\System Volume Information`;
     verifyFileReadWrite(fileUri, false, false);
   });
 }

@@ -44,13 +44,13 @@ Deno.test("CleanCommand --cache --backup should clean cache and backup", () => {
 function verifyClean(parameters: any[], shouldCleanBackupDir: boolean, shouldCleanCacheDir: boolean) {
   const config = TestHelper.getConfig();
 
-  const backupDirCount = MathUtil.randomInt(10);
+  const backupDirCount = 1 + MathUtil.randomInt(9);
   const backupDir = TestHelper.getNewTempDir();
   TestHelper.addRandomFilesToDir(backupDir, backupDirCount);
   config.configPaths.levainBackupDir = backupDir;
   assertDirCount(backupDir, backupDirCount);
 
-  const cacheDirCount = MathUtil.randomInt(10);
+  const cacheDirCount = 1 + MathUtil.randomInt(9);
   const cacheDir = TestHelper.getNewTempDir();
   TestHelper.addRandomFilesToDir(cacheDir, cacheDirCount);
   config.configPaths.levainCacheDir = cacheDir;
