@@ -60,35 +60,42 @@ deno task integrate
 
 - **If any check fails:** STOP IMMEDIATELY. Inspect the failure, correct the code, and re-run. Do NOT proceed to commit.
 
-### Step 2: Formulate Conventional Commit Message
-Once all checks pass (Exit Code 0), inspect the git diff:
+### Step 2: Formulate Commit & PR Details
+Once all checks pass (Exit Code 0), inspect git changes:
 ```bash
 git status -s
 git diff --stat
 ```
-Draft a clear commit message in English following Conventional Commits:
-- Format: `<type>(<scope>): <short imperative subject>`
-- Allowed types: `feat`, `fix`, `test`, `refactor`, `perf`, `chore`, `docs`.
-- Allowed scopes: `action`, `cmd`, `config`, `repo`, `fs`, `os`, `cli`, `i18n`, `deps`, `workflow`.
+1. Draft a clear commit message in English following Conventional Commits:
+   - Format: `<type>(<scope>): <short imperative subject>`
+   - Allowed types: `feat`, `fix`, `test`, `refactor`, `perf`, `chore`, `docs`.
+   - Allowed scopes: `action`, `cmd`, `config`, `repo`, `fs`, `os`, `cli`, `i18n`, `deps`, `workflow`.
+2. Prepare the PR/MR title and summary (including verification checklist of Level 1, 2, and 3).
 
-### Step 3: Present for User Confirmation
-Present the proposed commit to the user:
+### Step 3: Present for User Confirmation (Default: Commit + Push + PR)
+Present the integrated proposal to the user:
 1. List of staged/changed files.
-2. The exact proposed commit message (subject and optional body).
-3. Request explicit confirmation before running `git commit`.
+2. The exact proposed commit message and PR summary.
+3. Inform the user that **Commit + Push + PR creation is the default standard path**.
+   - If the user simply approves (e.g. "pode", "aprovo", "sim"), proceed through Steps 4 and 5.
+   - If the user wants to commit only without push or PR, they will specify it in their response (e.g. "somente commit", "não faça push").
 
-**NEVER run `git commit` or `git push` without user confirmation.**
+**NEVER run `git commit` or `git push` without prior user approval in Step 3.**
 
-### Step 4: Push to Remote (with User Confirmation)
-Once the commit is created, ask the user for confirmation to push:
+### Step 4: Execute Commit
+Once approved, stage the relevant files and create the commit:
 ```bash
-git push -u origin <current-branch>
+git add <files>
+git commit -m "<conventional commit message>"
 ```
-Inspect the output to extract any generated PR/MR URL.
 
-### Step 5: Merge Request / Pull Request (MR/PR)
-1. Provide the direct link to open the MR/PR (e.g., GitHub `https://github.com/<owner>/<repo>/pull/new/<branch>` or GitLab MR URL).
-2. Formulate a structured MR/PR title and summary:
-   - **Title:** Same as the conventional commit message (e.g., `<type>(<scope>): <subject>`).
-   - **Description:** Context, bullet points of changes made, and integration verification results (`Level 1`, `Level 2`, `Level 3` status).
-3. If CLI tools (`gh` or `glab`) are configured, offer to open the MR/PR automatically; otherwise, output the link and pre-filled markdown content for the user.
+### Step 5: Push & Create Pull Request / Merge Request (Default Path)
+Unless the user explicitly opted out in Step 3, complete the integration:
+1. **Push to Remote:**
+   ```bash
+   git push -u origin <current-branch>
+   ```
+2. **Create the Pull Request / Merge Request:**
+   - **Direct REST API (Zero external tool requirement):** The assistant can create the PR directly via GitHub/GitLab REST API (`POST https://api.github.com/repos/{owner}/{repo}/pulls` or GitLab API) using repository credentials/tokens. CLI tools like `gh` are **not** required.
+   - **CLI Tools (Optional):** If `gh` or `glab` is installed and authenticated, `gh pr create` can also be used.
+   - **Interactive Result:** Always return the final PR/MR link (e.g. `https://github.com/<owner>/<repo>/pull/<id>`) to the user.

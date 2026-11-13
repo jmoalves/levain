@@ -38,9 +38,10 @@ Before creating a commit, proposing a Pull Request, or concluding any task:
 4. **Human-in-the-Loop Rule:**
    - **NEVER** run `git commit` or `git push` autonomously.
    - Always present the proposed commit message and list of changed files to the user for explicit approval first.
-5. **Push & Merge Request (MR/PR):**
-   - Once the commit is completed, ask the user for confirmation to push (`git push -u origin <branch>`).
-   - Provide the direct URL to open the Merge Request / Pull Request along with a structured title and description summarizing the changes and integration status.
+   - **Default path:** Approving the proposal implicitly approves `git commit` + `git push` + PR/MR creation. If the user wants to commit only without push or PR, they will specify it during confirmation.
+5. **Push & Pull Request (PR/MR) Creation:**
+   - Push to remote (`git push -u origin <branch>`).
+   - Create the PR/MR automatically (via direct GitHub/GitLab REST API, requiring no `gh` CLI) and provide the live link.
 
 ---
 
