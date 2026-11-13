@@ -43,12 +43,16 @@ export class FileUtils {
   }
 
   private static checkBitwisePermission(filePath: string, bitwisePermission: number) {
-    if (!existsSync(filePath)) {
+    try {
+      if (!existsSync(filePath)) {
+        return false;
+      }
+      const fileInfo = this.getFileInfoSync(filePath);
+      const mode = fileInfo.mode || 0;
+      return !!(mode & bitwisePermission);
+    } catch {
       return false;
     }
-    const fileInfo = this.getFileInfoSync(filePath);
-    const mode = fileInfo.mode || 0;
-    return !!(mode & bitwisePermission);
   }
 
   static isDir(filePath: string) {
