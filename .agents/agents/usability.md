@@ -36,9 +36,10 @@ Read the relevant context first:
 
 ## What to Look For
 
-1. **CLI ergonomics & discoverability:**
-   - Consistent flag naming and `oneLineExample` syntax across all commands (`src/cmd/`).
-   - Helpful failure paths: unknown command/option, missing package (similar-package suggestions), missing `levainHome`, offline/proxy failures, unreadable directories, or `minVersion` mismatch.
+1. **CLI ergonomics, option errors & discoverability:**
+   - Consistent flag naming, option parsing errors (`src/lib/parse_args.ts`), and `oneLineExample` syntax across all commands (`src/cmd/`) and actions (`src/action/`).
+   - **Typo & error suggestions ("did you mean?"):** evaluate `StringUtils.findSimilar`, `CommandFactory`, `list`, `install`, and unknown-option errors — do typos like `stats` → `status` (as in `git`) produce accurate, well-ranked, non-noisy suggestions?
+   - Helpful failure paths: unknown command/option, missing package, missing `levainHome`, offline/proxy failures, unreadable directories, `minVersion` mismatch, or clear messaging when a Windows-only feature is invoked on macOS/Linux.
    - `levain activate` / `_activate-machine` onboarding across `cmd`, PowerShell, Cmder, and Bash — is it obvious how to activate and verify that it worked?
 2. **i18n quality (`en` and `pt-BR`):**
    - No hardcoded user-facing strings bypassing `t("key")`.

@@ -6,9 +6,9 @@ This file is the **single source of truth** for all AI coding assistants (Antigr
 
 ## What This Is
 
-Levain is a Deno/TypeScript CLI that installs and configures development environments on **Windows** from declarative YAML recipes (`*.levain.yaml`). It ships as a single compiled `levain.exe` (target `x86_64-pc-windows-msvc`) wrapped by `levain.cmd`, `levain.ps1`, and `levain.sh`.
+Levain is a Deno/TypeScript CLI that installs and configures development environments from declarative YAML recipes (`*.levain.yaml`). Today it primarily targets **Windows** — shipping as a single compiled `levain.exe` (target `x86_64-pc-windows-msvc`) wrapped by `levain.cmd`, `levain.ps1`, and `levain.sh` — though **macOS and Linux support was part of the original design intent**, so cross-platform code should avoid unnecessary Windows coupling.
 
-**Sibling project:** [`jmoalves/levain-pkgs`](https://github.com/jmoalves/levain-pkgs) holds the actual installation recipes (jdk, git, eclipse, wlp, …). This repository ships only the engine plus the `levain` recipe itself in `recipes/`. `install/install.ps1` defaults to `--addRepo https://github.com/jmoalves/levain-pkgs.git`, and users can point elsewhere with `$levainRepo`. Recipe-format changes made here must stay compatible with what `levain-pkgs` publishes — bump `version` in `recipes/levain.levain.yaml` and use `levain.minVersion` in a recipe when it requires a newer engine.
+**Recipe ecosystem (`levain-pkgs` and external catalogs):** [`jmoalves/levain-pkgs`](https://github.com/jmoalves/levain-pkgs) holds the public base installation recipes (jdk, git, eclipse, wlp, …), while private/enterprise recipe repositories rely on a much wider variety of Levain actions, options, and variable patterns. This repository ships only the engine plus the `levain` recipe itself in `recipes/`. `install/install.ps1` defaults to `--addRepo https://github.com/jmoalves/levain-pkgs.git`, and users can point elsewhere with `$levainRepo`. Never assume an action or option in `ActionFactory` is unused just because it does not appear in `levain-pkgs` — preserve backward compatibility, bump `version` in `recipes/levain.levain.yaml`, and use `levain.minVersion` when a recipe requires a newer engine.
 
 ---
 
@@ -128,7 +128,7 @@ Execution path: `levain.ts` (logging setup, global arg parsing) → `src/levain_
 * Otherwise → `FileSystemRepository`
 Composed via `ChainRepository` across installed (`registry`), regular (`recipes/` + `--addRepo` + `--tempRepo`), and current directory (`currentDir`).
 
-**Paths & extra-bin** (`src/lib/paths/`): `LevainPaths`, `ConfigPaths`, `HomePaths`, `GeneralPaths`, and `ExtraBin` (`src/lib/paths/extra_bin.ts`) centralize path resolution and break circular imports. `ExtraBin` points at bundled Windows tools (`7-Zip`, `git`, `os-utils`) under `extra-bin/windows/`.
+**Paths & extra-bin** (`src/lib/paths/`): `LevainPaths`, `ConfigPaths`, `HomePaths`, `GeneralPaths`, and `ExtraBin` (`src/lib/paths/extra_bin.ts`) centralize path resolution and break circular imports. `ExtraBin` points at bundled Windows tools (`7-Zip`, `git`, `os-utils`) under `extra-bin/windows/`. Long-term direction is to **pragmatically reduce `extra-bin` reliance in favor of pure Deno/TypeScript** (starting with `os-utils` helpers) while keeping external fallbacks (`7-Zip`, `MinGit`) only where clearly justified.
 
 **Config** (`src/lib/config.ts`) is threaded through every command and action, owning base dirs, user credentials, and config persistence (`$HOME/levain.config.json`, with legacy fallback).
 
