@@ -14,7 +14,7 @@ import { NullWriter } from "./null_writer.ts";
 import HomePaths from "../paths/home_paths.ts";
 
 export default class ConsoleAndFileLogger {
-  static config: Config;
+  static config: Config | undefined;
   logFiles: string[] = [];
   handlers: any = {};
 
@@ -22,6 +22,7 @@ export default class ConsoleAndFileLogger {
     const logger = new ConsoleAndFileLogger();
     logger.handlers["console"] = logger.getConsoleHandler(omitLog);
     ConsoleFeedback.OUT = omitLog ? new NullWriter() : Deno.stdout;
+    ConsoleFeedback.sanitize = (msg: string) => LogUtils.hidePassword(ConsoleAndFileLogger.config ?? null, msg);
     logFiles.forEach((it) => logger.addLogFile(it));
 
     const handlerNames = Object.keys(logger.handlers);
@@ -49,7 +50,7 @@ export default class ConsoleAndFileLogger {
   }
 
   getConsoleHandler(omitLog: boolean = false): BaseHandler {
-    const formatter = LogFormatterFactory.getHidePasswordFormatter(ConsoleAndFileLogger.config);
+    const formatter = LogFormatterFactory.getHidePasswordFormatter(() => ConsoleAndFileLogger.config);
     
     if (omitLog) {
       const handler = new StderrConsoleHandler("CRITICAL");
@@ -96,7 +97,7 @@ export default class ConsoleAndFileLogger {
   getLogFileHandler(logFile: string, options = {}): FileHandler {
     const fullOptions = {
       filename: logFile,
-      formatter: LogFormatterFactory.getFormatterWithDatetimeAndLevel(ConsoleAndFileLogger.config),
+      formatter: LogFormatterFactory.getFormatterWithDatetimeAndLevel(() => ConsoleAndFileLogger.config),
       mode: "w",
       ...options,
     };

@@ -128,10 +128,22 @@ export function resolveWindowsSshContract(
     };
   }
 
+  if (!isValidSshHost(host)) {
+    return {
+      ok: false,
+      missing: [],
+      reason: `${SSH_HOST_ENV} contains an invalid SSH host alias.`,
+    };
+  }
+
   return {
     ok: true,
     contract: { sshConfig, host },
   };
+}
+
+export function isValidSshHost(host: string): boolean {
+  return host.length > 0 && !host.startsWith("-") && !/[\s\r\n\0]/.test(host);
 }
 
 export function formatSkipMessage(resolution: Extract<ContractResolution, { ok: false }>): string {
@@ -145,19 +157,27 @@ export function formatSkipMessage(resolution: Extract<ContractResolution, { ok: 
 }
 
 export function buildSshArgs(contract: WindowsSshContract, remoteCommand: string): string[] {
-  return ["-F", contract.sshConfig, contract.host, remoteCommand];
+  if (!isValidSshHost(contract.host)) {
+    throw new Error(`Invalid SSH host alias: ${contract.host}`);
+  }
+  return ["-F", contract.sshConfig, "--", contract.host, remoteCommand];
 }
 
 export function buildScpArgs(contract: WindowsSshContract, localPath: string, remoteTarget: string): string[] {
-  return ["-F", contract.sshConfig, localPath, `${contract.host}:${remoteTarget}`];
+  if (!isValidSshHost(contract.host)) {
+    throw new Error(`Invalid SSH host alias: ${contract.host}`);
+  }
+  return ["-F", contract.sshConfig, "--", localPath, `${contract.host}:${remoteTarget}`];
 }
 
 export function quoteCmdArg(arg: string): string {
+  if (/[\r\n\0"%]/.test(arg)) {
+    throw new Error(`Unsafe character in Windows test argument: ${JSON.stringify(arg)}`);
+  }
   if (/^[a-zA-Z0-9._:=\\/+-]+$/.test(arg)) {
     return arg;
   }
-  const escaped = arg.replace(/"/g, '\\"');
-  return `"${escaped}"`;
+  return `"${arg}"`;
 }
 
 export function buildRemoteCmdScript(params: {

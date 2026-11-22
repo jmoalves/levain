@@ -112,19 +112,54 @@ Deno.test("run-windows-tests - resolveWindowsSshContract", async (t) => {
       contract: { sshConfig: "/path/to/ssh_config", host: "win-test" },
     });
   });
+
+  await t.step("rejects invalid SSH host alias starting with dash or containing whitespace", () => {
+    const dashEnv: Record<string, string> = {
+      [SSH_CONFIG_ENV]: "/path/to/ssh_config",
+      [SSH_HOST_ENV]: "-oProxyCommand=evil",
+    };
+    const dashRes = resolveWindowsSshContract((k) => dashEnv[k], () => true);
+    assertEquals(dashRes.ok, false);
+    if (!dashRes.ok) {
+      assertStringIncludes(dashRes.reason, SSH_HOST_ENV);
+    }
+
+    const spaceEnv: Record<string, string> = {
+      [SSH_CONFIG_ENV]: "/path/to/ssh_config",
+      [SSH_HOST_ENV]: "win host",
+    };
+    const spaceRes = resolveWindowsSshContract((k) => spaceEnv[k], () => true);
+    assertEquals(spaceRes.ok, false);
+  });
 });
 
 Deno.test("run-windows-tests - command builders follow the ssh -F contract strictly", () => {
   const contract = { sshConfig: "/cfg/ssh_config", host: "win-host" };
-  assertEquals(buildSshArgs(contract, "cmd /c run.cmd"), ["-F", "/cfg/ssh_config", "win-host", "cmd /c run.cmd"]);
+  assertEquals(buildSshArgs(contract, "cmd /c run.cmd"), ["-F", "/cfg/ssh_config", "--", "win-host", "cmd /c run.cmd"]);
   assertEquals(buildScpArgs(contract, "/tmp/a.tar.gz", "a.tar.gz"), [
     "-F",
     "/cfg/ssh_config",
+    "--",
     "/tmp/a.tar.gz",
     "win-host:a.tar.gz",
   ]);
+  assertThrows(
+    () => buildSshArgs({ sshConfig: "/cfg/ssh_config", host: "-oProxyCommand=x" }, "cmd"),
+    Error,
+    "Invalid SSH host alias",
+  );
+  assertThrows(
+    () => buildScpArgs({ sshConfig: "/cfg/ssh_config", host: "-oProxyCommand=x" }, "a", "b"),
+    Error,
+    "Invalid SSH host alias",
+  );
+
   assertEquals(quoteCmdArg("--filter"), "--filter");
   assertEquals(quoteCmdArg("should show a text"), '"should show a text"');
+  assertThrows(() => quoteCmdArg('bad"arg'), Error, "Unsafe character");
+  assertThrows(() => quoteCmdArg("%TEMP%"), Error, "Unsafe character");
+  assertThrows(() => quoteCmdArg("line1\nline2"), Error, "Unsafe character");
+  assertThrows(() => quoteCmdArg("line1\rline2"), Error, "Unsafe character");
 
   const script = buildRemoteCmdScript({
     remoteDir: "levain-test-123",
@@ -211,6 +246,7 @@ Deno.test("run-windows-tests - runWindowsTests orchestration", async (t) => {
       "scp",
       "-F",
       "/cfg/win_ssh",
+      "--",
       path.join("/tmp/run-dir", "levain-test-20261121220000.tar.gz"),
       "win-box:levain-test-20261121220000.tar.gz",
     ]);
@@ -218,14 +254,16 @@ Deno.test("run-windows-tests - runWindowsTests orchestration", async (t) => {
       "scp",
       "-F",
       "/cfg/win_ssh",
+      "--",
       path.join("/tmp/run-dir", "levain-test-20261121220000.cmd"),
       "win-box:levain-test-20261121220000.cmd",
     ]);
-    assertEquals(calls[2], ["ssh", "-F", "/cfg/win_ssh", "win-box", 'cmd /c "levain-test-20261121220000.cmd"']);
+    assertEquals(calls[2], ["ssh", "-F", "/cfg/win_ssh", "--", "win-box", 'cmd /c "levain-test-20261121220000.cmd"']);
     assertEquals(calls[3][0], "ssh");
     assertEquals(calls[3][1], "-F");
     assertEquals(calls[3][2], "/cfg/win_ssh");
-    assertEquals(calls[3][3], "win-box");
+    assertEquals(calls[3][3], "--");
+    assertEquals(calls[3][4], "win-box");
     assertEquals(removed, ["/tmp/run-dir"]);
   });
 

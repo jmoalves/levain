@@ -51,6 +51,37 @@ Deno.test("VarResolver.replaceVars should replace multiple vars", async () => {
 
   assertMatch(replacedVars, /home: myValue cache\//);
 });
+
+Deno.test("VarResolver.replaceVars should treat $& and $$ literally in variable values", async () => {
+  const config = new Config({ specialVar: "a$&b$$c" });
+
+  const replaced = await VarResolver.replaceVars("val=${specialVar}", undefined, config);
+  assertEquals(replaced, "val=a$&b$$c");
+});
+
+Deno.test("VarResolver.replaceVars should abort on circular variable references", async () => {
+  const config = new Config({ varA: "${varB}", varB: "${varA}" });
+
+  await assertRejects(
+    async () => {
+      await VarResolver.replaceVars("${varA}", undefined, config);
+    },
+    Error,
+    "Maximum variable expansion depth",
+  );
+});
+
+Deno.test("VarResolver.replaceVars should not re-expand variable syntax inside levain.password", async () => {
+  const config = new Config({ other: "expanded" });
+  config.password = "p@ss${notDefined}$&123";
+
+  const replaced = await VarResolver.replaceVars(
+    "pass=${levain.password} other=${other}",
+    undefined,
+    config,
+  );
+  assertEquals(replaced, "pass=p@ss${notDefined}$&123 other=expanded");
+});
 //
 // findVarsInText
 //

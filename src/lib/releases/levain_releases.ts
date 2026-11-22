@@ -9,9 +9,10 @@ import HttpUtils from "../utils/http_utils.ts";
 import DateUtils from "../utils/date_utils.ts";
 import OsUtils from "../os/os_utils.ts";
 import LevainVersion from "../../levain_version.ts";
-import Loader from "../loader.ts";
 import VersionNumber from "../utils/version_number.ts";
 import GeneralPaths from "../paths/general_paths.ts";
+import FileCache from "../fs/file_cache.ts";
+import { ExtractorFactory } from "../extract/extractor_factory.ts";
 
 const UPDATE_REQUEST = 42;
 
@@ -76,46 +77,43 @@ export default class LevainReleases {
     return `${this.downloadUrl}/${versionPath}/levain-${versionPath}-windows-x86_64.zip`;
   }
 
-  // deno-lint-ignore require-await
+  static resetCache() {
+    LevainReleases.releasesCache = undefined;
+    LevainReleases.latestCache = undefined;
+    LevainReleases.latestNotFound = false;
+  }
+
   async latest(): Promise<any> {
     if (LevainReleases.latestNotFound) {
-      return Promise.resolve(undefined);
+      return undefined;
     }
 
     if (LevainReleases.latestCache) {
-      return Promise.resolve(LevainReleases.latestCache);
+      return LevainReleases.latestCache;
     }
 
-    return new Promise((resolve, reject) => {
-      HttpUtils.get(`${this.apiUrl}/latest`)
-        .then((response) => {
-          if (response.status == 404) {
-            log.debug(`404 at latest release`);
-            LevainReleases.latestNotFound = true;
-            LevainReleases.latestCache = undefined;
-            resolve(undefined);
-          }
+    try {
+      const response = await HttpUtils.get(`${this.apiUrl}/latest`);
+      if (response.status == 404) {
+        log.debug(`404 at latest release`);
+        await response.body?.cancel();
+        LevainReleases.latestNotFound = true;
+        LevainReleases.latestCache = undefined;
+        return undefined;
+      }
 
-          response.json()
-            .then((json) => {
-              LevainReleases.latestCache = json;
-              resolve(json);
-              return;
-            })
-            .catch((error) => {
-              log.debug(`1-Error - ${JSON.stringify(error)}`);
-              log.debug(`Error looking for Levain latest release ${error}`);
-              reject(error);
-              return;
-            });
-        })
-        .catch((error) => {
-          log.debug(`2-Error - ${JSON.stringify(error)}`);
-          log.debug(`Error looking for Levain latest release ${error}`);
-          reject(error);
-          return;
-        });
-    });
+      if (!response.ok) {
+        await response.body?.cancel();
+        throw new Error(`HTTP ${response.status} looking for latest release`);
+      }
+
+      const json = await response.json();
+      LevainReleases.latestCache = json;
+      return json;
+    } catch (error) {
+      log.debug(`Error looking for Levain latest release ${error}`);
+      throw error;
+    }
   }
 
   // deno-lint-ignore require-await
@@ -247,6 +245,40 @@ export default class LevainReleases {
     log.info("");
   }
 
+  static parseSha256(content: string): string {
+    const token = content.trim().split(/\s+/)[0]?.toLowerCase() ?? "";
+    if (!/^[0-9a-f]{64}$/.test(token)) {
+      throw new Error("Invalid SHA-256 checksum content");
+    }
+    return token;
+  }
+
+  static async computeFileSha256(filePath: string): Promise<string> {
+    const fileBytes = await Deno.readFile(filePath);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", fileBytes);
+    return Array.from(new Uint8Array(hashBuffer))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+  }
+
+  static async verifyFileSha256(filePath: string, expectedSha256Content: string): Promise<void> {
+    const expected = LevainReleases.parseSha256(expectedSha256Content);
+    const actual = await LevainReleases.computeFileSha256(filePath);
+    if (actual !== expected) {
+      throw new Error(`SHA-256 checksum mismatch for ${filePath}: expected ${expected}, got ${actual}`);
+    }
+  }
+
+  async fetchExpectedSha256(zipUrl: string): Promise<string> {
+    const shaUrl = `${zipUrl}.sha256`;
+    const response = await HttpUtils.get(shaUrl);
+    if (!response.ok) {
+      await response.body?.cancel();
+      throw new Error(`Unable to fetch SHA-256 checksum from ${shaUrl} (HTTP ${response.status})`);
+    }
+    return await response.text();
+  }
+
   async prepareNewRelease() {
     const releasesDir = GeneralPaths.tempLevainReleasesDir;
     log.debug(`Levain releases dir ${releasesDir}`);
@@ -255,14 +287,24 @@ export default class LevainReleases {
     const newVersionDir = path.resolve(releasesDir, `levain-${await this.latestVersion()}`);
     log.debug(`Checking (1) Levain at ${newVersionDir}`);
     if (!existsSync(newVersionDir)) {
+      let cachedZipPath: string | undefined;
       try {
-        log.debug(`Extracting Levain to ${releasesDir}`);
+        log.debug(`Downloading and verifying Levain release`);
         const url = await this.levainZipUrl();
-        const action = `extract ${url} ${releasesDir}`;
-        const loader = new Loader(this.config);
-        await loader.action(undefined, action);
+        const expectedSha256 = await this.fetchExpectedSha256(url);
+        const fileCache = new FileCache(this.config);
+        cachedZipPath = await fileCache.get(url);
+        await LevainReleases.verifyFileSha256(cachedZipPath, expectedSha256);
+
+        log.debug(`Extracting verified Levain release to ${releasesDir}`);
+        const extractor = new ExtractorFactory().createExtractor(this.config, cachedZipPath);
+        await extractor.extract(false, cachedZipPath, releasesDir);
       } catch (error) {
-        log.error(t("lib.releases.levain_releases.unableToExtract", { error: JSON.stringify(error) }));
+        if (cachedZipPath) {
+          OsUtils.removeFile(cachedZipPath);
+        }
+        const message = error instanceof Error ? error.message : JSON.stringify(error);
+        log.error(t("lib.releases.levain_releases.unableToExtract", { error: message }));
         return;
       }
     }

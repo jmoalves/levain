@@ -16,8 +16,8 @@ const validUrls = [
   "git@github.com:jmoalves/levain.git#some-branch-name",
   "git@github.com:jmoalves/levain.git#some_branch_name",
   "https://github.com/jmoalves/levain.git#develop",
-  "git@gitlab.bndes.net:sist-pme/pme.git",
-  "https://gitlab.bndes.net/sist-pme/pme.git",
+  "git@git.example.org:team-alpha/demo-app.git",
+  "https://git.example.org/team-alpha/demo-app.git",
   "git@gitlab.com:scout-manager/scout-manager-app.git",
   "https://gitlab.com/scout-manager/scout-manager-app.git",
 ];
@@ -53,20 +53,20 @@ Deno.test(`GitUtils - parseGitPath('git@github.com:jmoalves/levain.git')`, () =>
   assertEquals(gitPath.repo, "levain");
 });
 
-Deno.test(`GitUtils - parseGitPath('git@gitlab.bndes.net:sist-pme/pme.git#develop')`, () => {
-  const gitPath = GitUtils.parseGitPath("git@gitlab.bndes.net:sist-pme/pme.git#develop");
-  assertEquals(gitPath.url, "git@gitlab.bndes.net:sist-pme/pme.git");
+Deno.test(`GitUtils - parseGitPath('git@git.example.org:team-alpha/demo-app.git#develop')`, () => {
+  const gitPath = GitUtils.parseGitPath("git@git.example.org:team-alpha/demo-app.git#develop");
+  assertEquals(gitPath.url, "git@git.example.org:team-alpha/demo-app.git");
   assertEquals(gitPath.branch, "develop");
-  assertEquals(gitPath.user, "sist-pme");
-  assertEquals(gitPath.repo, "pme");
+  assertEquals(gitPath.user, "team-alpha");
+  assertEquals(gitPath.repo, "demo-app");
 });
 
-Deno.test(`GitUtils - parseGitPath('git@gitlab.bndes.net:sist-pme/pme.git')`, () => {
-  const gitPath = GitUtils.parseGitPath("git@gitlab.bndes.net:sist-pme/pme.git");
-  assertEquals(gitPath.url, "git@gitlab.bndes.net:sist-pme/pme.git");
+Deno.test(`GitUtils - parseGitPath('git@git.example.org:team-alpha/demo-app.git')`, () => {
+  const gitPath = GitUtils.parseGitPath("git@git.example.org:team-alpha/demo-app.git");
+  assertEquals(gitPath.url, "git@git.example.org:team-alpha/demo-app.git");
   assertEquals(gitPath.branch, undefined);
-  assertEquals(gitPath.user, "sist-pme");
-  assertEquals(gitPath.repo, "pme");
+  assertEquals(gitPath.user, "team-alpha");
+  assertEquals(gitPath.repo, "demo-app");
 });
 
 Deno.test(`GitUtils - parseGitPath('https://github.com/jmoalves/levain.git#develop')`, () => {
@@ -85,20 +85,20 @@ Deno.test(`GitUtils - parseGitPath('https://github.com/jmoalves/levain.git')`, (
   assertEquals(gitPath.repo, "levain");
 });
 
-Deno.test(`GitUtils - parseGitPath('https://gitlab.bndes.net/sist-pme/pme.git#develop')`, () => {
-  const gitPath = GitUtils.parseGitPath("https://gitlab.bndes.net/sist-pme/pme.git#develop");
-  assertEquals(gitPath.url, "https://gitlab.bndes.net/sist-pme/pme.git");
+Deno.test(`GitUtils - parseGitPath('https://git.example.org/team-alpha/demo-app.git#develop')`, () => {
+  const gitPath = GitUtils.parseGitPath("https://git.example.org/team-alpha/demo-app.git#develop");
+  assertEquals(gitPath.url, "https://git.example.org/team-alpha/demo-app.git");
   assertEquals(gitPath.branch, "develop");
-  assertEquals(gitPath.user, "sist-pme");
-  assertEquals(gitPath.repo, "pme");
+  assertEquals(gitPath.user, "team-alpha");
+  assertEquals(gitPath.repo, "demo-app");
 });
 
-Deno.test(`GitUtils - parseGitPath('https://gitlab.bndes.net/sist-pme/pme.git')`, () => {
-  const gitPath = GitUtils.parseGitPath("https://gitlab.bndes.net/sist-pme/pme.git");
-  assertEquals(gitPath.url, "https://gitlab.bndes.net/sist-pme/pme.git");
+Deno.test(`GitUtils - parseGitPath('https://git.example.org/team-alpha/demo-app.git')`, () => {
+  const gitPath = GitUtils.parseGitPath("https://git.example.org/team-alpha/demo-app.git");
+  assertEquals(gitPath.url, "https://git.example.org/team-alpha/demo-app.git");
   assertEquals(gitPath.branch, undefined);
-  assertEquals(gitPath.user, "sist-pme");
-  assertEquals(gitPath.repo, "pme");
+  assertEquals(gitPath.user, "team-alpha");
+  assertEquals(gitPath.repo, "demo-app");
 });
 
 Deno.test(`GitUtils - localBaseDir()`, () => {

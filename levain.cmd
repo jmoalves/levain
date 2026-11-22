@@ -62,26 +62,25 @@ SETLOCAL
 echo.
 echo LEVAIN UPGRADE!
 echo.
-for /d %%l in ( %TEMP%\levain\levain-* ) do (
-    set levainDir=%%l
+set "levainDir="
+for /d %%l in ("%TEMP%\levain\levain-*") do (
+    if exist "%%~fl\levain.cmd" set "levainDir=%%~fl"
 )
 
-if "a%levainDir%" == "a" (
+if not defined levainDir (
     echo.
     echo No new version found
+    ENDLOCAL
     exit /b 1
 )
 
-START /max "Levain Upgrade" CMD /c %levainDir%\levain.cmd --levainHome=%myPath%\.. --levain-upgrade %*
+START /max "Levain Upgrade" CMD /c ""%levainDir%\levain.cmd" "--levainHome=%myPath%\.." --levain-upgrade %*"
 ENDLOCAL
 exit /b 0
 
 
 
 :fnActivate
-for /d %%l in ( %TEMP%\levain\levain-* ) do (
-    set levainDir=%%l
-)
 set "_LEV_TMP=%TEMP%\levain-%RANDOM%%RANDOM%.cmd"
 
 set DENO_NO_UPDATE_CHECK=true

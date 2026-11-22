@@ -34,10 +34,11 @@ jobs:
       - name: Get Deno
         run: |
           rm -rf "$DENO_ROOT_PATH" && mkdir -p "$DENO_ROOT_PATH"
-          bash "$GITHUB_WORKSPACE/githubScripts/get-deno.sh" "$DENO_ROOT_PATH" Linux "${{ github.event.inputs.denoVersion || env.DEFAULT_DENO_VERSION }}"
+          bash "$GITHUB_WORKSPACE/githubScripts/get-deno.sh" "$DENO_ROOT_PATH" Linux "$DENO_VERSION"
           echo "$DENO_ROOT_PATH" >> "$GITHUB_PATH"
         env:
           DENO_ROOT_PATH: ${{ runner.temp }}/deno
+          DENO_VERSION: ${{ github.event.inputs.denoVersion || env.DEFAULT_DENO_VERSION }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Typecheck, lint, i18n, and tooling tests
@@ -61,8 +62,10 @@ jobs:
 
       - name: Set Deno version
         id: set-version
+        env:
+          INPUT_DENO_VERSION: ${{ github.event.inputs.denoVersion || env.DEFAULT_DENO_VERSION }}
         run: |
-          echo "DENO_VERSION=${{ github.event.inputs.denoVersion || env.DEFAULT_DENO_VERSION }}" >> $GITHUB_ENV
+          echo "DENO_VERSION=$INPUT_DENO_VERSION" >> $GITHUB_ENV
 
       - name: Get Deno
         shell: cmd

@@ -68,9 +68,7 @@ export default class Template implements Action {
       }
     }
 
-    log.debug(`- WRITE ${dst}`);
-    log.debug(`- DATA`);
-    log.debug(data);
+    log.debug(`- WRITE ${dst} (${data.length} chars)`);
 
     // Create folder if it does not exist already
     const dir = path.dirname(dst);
