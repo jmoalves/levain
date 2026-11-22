@@ -93,13 +93,11 @@
     "@std/path": "jsr:@std/path@^1.1.6",
     "@std/testing": "jsr:@std/testing@^1.0.19",
     "@std/yaml": "jsr:@std/yaml@^1.1.2",
-    "@webui/deno-webui": "jsr:@webui/deno-webui@^2.5.15",
     "@zip.js/zip.js": "npm:@zip.js/zip.js@^2.8.26",
     "date-fns": "npm:date-fns@^4.4.0",
     "fastest-levenshtein": "npm:fastest-levenshtein@^1.0.16",
     "std/": "jsr:@std/",
     "validator": "npm:validator@^13.15.35"
   },
-  "nodeModulesDir": "auto",
-  "lock": false
+  "nodeModulesDir": "auto"
 }

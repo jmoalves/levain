@@ -1,5 +1,8 @@
 name: Unit tests
 
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
     inputs:
@@ -26,7 +29,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Get Deno
         run: |
@@ -35,14 +38,15 @@ jobs:
           echo "$DENO_ROOT_PATH" >> "$GITHUB_PATH"
         env:
           DENO_ROOT_PATH: ${{ runner.temp }}/deno
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Typecheck, lint, i18n, and tooling tests
         run: |
           deno --version
-          deno check levain.ts
+          deno check --frozen levain.ts
           deno lint
           deno task check:i18n
-          deno test --allow-all scripts/ testing/ levain.test.ts
+          deno test --frozen --allow-all scripts/ testing/ levain.test.ts
 
   unit-win:
     runs-on: windows-latest
@@ -53,7 +57,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Set Deno version
         id: set-version
@@ -100,7 +104,7 @@ jobs:
           GITHUB_WORKSPACE: ${{ github.workspace }}
 
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v4.0.1
+        uses: codecov/codecov-action@e0b68c6749509c5f83f984dd99a76a1c1a231044 # v4.0.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: ${{ github.repository }}

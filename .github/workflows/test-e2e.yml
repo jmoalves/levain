@@ -1,5 +1,8 @@
 name: Test - e2e
 
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
     inputs:
@@ -60,7 +63,7 @@ jobs:
           levain list
 
       - name: Run Microsoft Security DevOps
-        uses: microsoft/security-devops-action@v1
+        uses: microsoft/security-devops-action@cf28f87c67770dbaa208cce3665fafc849f77507 # v1.12.1
         id: msdo-levain
 
       - name: Levian install EVERYTHING
@@ -95,7 +98,7 @@ jobs:
           ENDLOCAL
 
       - name: Run Microsoft Security DevOps
-        uses: microsoft/security-devops-action@v1
+        uses: microsoft/security-devops-action@cf28f87c67770dbaa208cce3665fafc849f77507 # v1.12.1
         id: msdo-install
 
       - name: Levian update
@@ -104,5 +107,5 @@ jobs:
           levain update
 
       - name: Run Microsoft Security DevOps
-        uses: microsoft/security-devops-action@v1
+        uses: microsoft/security-devops-action@cf28f87c67770dbaa208cce3665fafc849f77507 # v1.12.1
         id: msdo-update

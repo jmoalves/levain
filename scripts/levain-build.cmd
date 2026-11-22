@@ -62,10 +62,10 @@ echo.
 echo Building Levain at %levainOutputDir%
 
 if exist %levainOutputDir% rmdir /q/s %levainOutputDir%
-if exist %levainRoot%\deno.lock del /q %levainRoot%\deno.lock
 
 :: COMPILE Levain
 "%myDenoExe%" compile ^
+    --frozen ^
     --reload ^
     --allow-all ^
     --target x86_64-pc-windows-msvc ^

@@ -13,7 +13,7 @@ While v1 is being hardened and validated, `v0.93.1` remains the `Latest` release
 | **Stage 0** | `v0.x`, `master` | Freeze Deno 1 on `v0.x`, promote `deno2_opus` to `master`, keep `deno2_opus` untouched as obsolete | Done |
 | **Phase 1** | `chore/governance-and-agents` | Unified AI/contributor guidelines, generic Windows SSH testing contract, i18n/lint validation | Done |
 | **Phase 2** | `chore/ci-and-build` | Fix `scripts/test.cmd` & coverage reporting, align Deno versions in CI, clean build/release scripts, document all 4 Windows testing scenarios | Done |
-| **Phase 3** | `chore/security-hardening` | Remove `curl -k`, enable `deno.lock`, pin GitHub Actions & permissions, audit embedded binaries and runtime | Planned |
+| **Phase 3** | `chore/security-hardening` | Remove `curl -k`, enable `deno.lock`, pin GitHub Actions & permissions, audit embedded binaries and runtime | Done |
 | **Phase 4** | `test/coverage-and-reliability` | Measure real coverage baseline, close test gaps in `src/cmd/`, core modules, actions, and `src/lib/io/` | Planned |
 | **Phase 5** | `perf/startup-and-repos` | Optimize CI caching, binary startup/size, repository crawling, and complete v1 readiness checklist | Planned |
 
@@ -57,16 +57,16 @@ While v1 is being hardened and validated, `v0.93.1` remains the `Latest` release
 
 ---
 
-## Phase 3 — Security & Supply Chain Hardening
+## Phase 3 — Security & Supply Chain Hardening (Completed)
 
 **Branch:** `chore/security-hardening`
 
-- [ ] Remove insecure `curl -k` flags across `githubScripts/` (especially when downloading release binaries and sending `$GITHUB_TOKEN`), switching to `-fsSL` and `Authorization: Bearer` headers.
-- [ ] Enable and commit `deno.lock` (`--frozen` in CI/release) for reproducible dependency resolution.
-- [ ] Remove unused `@webui/deno-webui` from root `deno.json` (isolate experimental code in `inception/`).
-- [ ] Declare explicit least-privilege `permissions:` blocks in all workflows and pin third-party GitHub Actions to commit SHAs.
-- [ ] Review embedded binary provenance and checksum verification (`MinGit`, `7-Zip`) in `githubScripts/levain-embedded-binaries.sh`.
-- [ ] Audit shell invocation, temporary file handling, and credential/password flows in `src/`.
+- [x] Remove insecure `curl -k` flags across `githubScripts/` (`github-get-release.sh`, `tag-release.sh`, `levain-embedded-binaries.sh`), switching to `-fsSL` and `Authorization: Bearer` headers.
+- [x] Enable and commit `deno.lock` (`--frozen` in CI, checks, and build scripts).
+- [x] Remove unused `@webui/deno-webui` from root `deno.json` (isolated in `inception/webui/deno.json`).
+- [x] Declare explicit least-privilege `permissions:` blocks in all workflows, pin third-party GitHub Actions to commit SHAs, and add `.github/dependabot.yml` for `github-actions`.
+- [x] Verify GitHub Release SHA-256 digests (`assets[].digest`) for all downloaded binaries (`7-Zip` Linux tool, `MinGit`, `7-Zip` Windows) in `githubScripts/levain-embedded-binaries.sh`.
+- [x] Audit runtime credential/shell handling (fixed multi-occurrence password leak in `LogUtils.hidePassword` with unit test) and add `SECURITY.md`.
 
 ---
 
