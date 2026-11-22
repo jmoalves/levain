@@ -1,0 +1,3 @@
+contract-sample-line
+version=4.2.0
+STATUS_OK

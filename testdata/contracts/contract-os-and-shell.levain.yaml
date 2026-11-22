@@ -1,0 +1,30 @@
+version: 1.0.0
+
+cmd.install:
+  # Permanent OS environment / PATH & Windows shortcuts
+  - addPath --permanent ${baseDir}/bin
+  - setEnv --permanent CONTRACT_PERM_VAR perm-value
+  - addToDesktop ${baseDir}/bin/app.exe
+  - addToStartMenu ${baseDir}/bin/app.exe ContractTools
+  - addToStartup ${baseDir}/bin/app.exe
+
+  # Context menu add & remove (all declared flags after 'folders' positional)
+  - contextMenu folders --id=contractShell --name="Contract Shell" --cmd="demo.exe %V" --icon="demo.ico"
+  - contextMenuRemove folders --id=contractShell --name="Contract Shell" --cmd="demo.exe %V"
+
+  # Process & Maven helpers
+  - killProcess demo-contract.exe
+  - mavenCopy com.example:demo-artifact:1.0.0:jar ${baseDir}/libs
+
+  # levainShell (all options + shell operators)
+  - levainShell --saveVar=CONTRACT_SHELL_OUT --stripCRLF --ignoreErrors echo contract && echo done
+
+  # Activate actions (all options)
+  - activateInit --dev --cmd --bash --powershell --powershell-profile=${baseDir}/profile.ps1 --cmder --cmder-config=${baseDir}/cmder.ps1
+  - activatePre contract-os-and-shell
+  - activateCmd --shell=cmd contract-os-and-shell
+  - activateCmd --shell=powershell contract-os-and-shell
+  - activateCmd --shell=bash contract-os-and-shell
+
+  # Unimplemented action pinned by contract (TODO(phase-4.5))
+  - jsonRemove ${baseDir}/settings.json obsoleteKey
