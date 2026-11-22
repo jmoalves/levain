@@ -47,6 +47,18 @@ Before creating a commit, proposing a Pull Request, or concluding any code task:
 
 ---
 
+## Review Subagents (Lenses, Not Gates)
+
+Five read-only review lenses live in `.agents/agents/` (single source of truth, discovered natively by Antigravity) with thin Claude Code wrappers in `.claude/agents/`. Priority order across lenses is **Correctness & Security → Readability & Maintainability → Performance**. Invoke only the lenses relevant to what a PR changes (and periodically run them across the whole repository using `git ls-files`):
+
+* **`business-qa`** — recipe YAML semantics, `levain-pkgs` compatibility, command/repository lifecycle, headless install, and unverified behavioral rules.
+* **`technical-qa`** — readability/handover readiness, architecture (`Loader`, factories, `src/lib/paths/`), test level/fragility/coverage, and Deno/script/workflow hygiene.
+* **`security`** — public-repo privacy leaks, password/secret masking, shell injection, Zip Slip, CI/release supply chain, CVEs, and Windows Defender risk.
+* **`performance`** — CLI startup & binary size, `FileSystemRepository`/`GitRepository` crawling, streaming I/O, Windows subprocess cost, and CI speed (*measured vs. estimated*).
+* **`usability`** — CLI ergonomics, prompts/defaults, actionable error messages, `en`/`pt-BR` i18n quality, progress feedback, and headless behavior.
+
+---
+
 ## Windows Testing Scenarios (CI, SSH, Sandbox & Local)
 
 Almost everything meaningful in Levain is **Windows-only**. `OsUtils.onlyInWindows()` throws on other platforms, and Windows-specific tests are guarded with `if (OsUtils.isWindows())` — so a green test run on Linux/macOS silently skips large parts of the suite.

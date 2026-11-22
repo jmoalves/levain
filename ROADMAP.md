@@ -14,6 +14,7 @@ While v1 is being hardened and validated, `v0.93.1` remains the `Latest` release
 | **Phase 1** | `chore/governance-and-agents` | Unified AI/contributor guidelines, generic Windows SSH testing contract, i18n/lint validation | Done |
 | **Phase 2** | `chore/ci-and-build` | Fix `scripts/test.cmd` & coverage reporting, align Deno versions in CI, clean build/release scripts, document all 4 Windows testing scenarios | Done |
 | **Phase 3** | `chore/security-hardening` | Remove `curl -k`, enable `deno.lock`, pin GitHub Actions & permissions, audit embedded binaries and runtime | Done |
+| **Phase 3.5** | `chore/review-subagents` | Portable read-only review subagents (`business-qa`, `technical-qa`, `security`, `performance`, `usability`) for Antigravity & Claude Code | Done |
 | **Phase 4** | `test/coverage-and-reliability` | Measure real coverage baseline, close test gaps in `src/cmd/`, core modules, actions, and `src/lib/io/` | Planned |
 | **Phase 5** | `perf/startup-and-repos` | Optimize CI caching, binary startup/size, repository crawling, and complete v1 readiness checklist | Planned |
 
@@ -67,6 +68,16 @@ While v1 is being hardened and validated, `v0.93.1` remains the `Latest` release
 - [x] Declare explicit least-privilege `permissions:` blocks in all workflows, pin third-party GitHub Actions to commit SHAs, and add `.github/dependabot.yml` for `github-actions`.
 - [x] Verify GitHub Release SHA-256 digests (`assets[].digest`) for all downloaded binaries (`7-Zip` Linux tool, `MinGit`, `7-Zip` Windows) in `githubScripts/levain-embedded-binaries.sh`.
 - [x] Audit runtime credential/shell handling (fixed multi-occurrence password leak in `LogUtils.hidePassword` with unit test) and add `SECURITY.md`.
+
+---
+
+## Phase 3.5 — Portable Review Subagents (Completed)
+
+**Branch:** `chore/review-subagents`
+
+- [x] Define 5 read-only review lenses (`business-qa`, `technical-qa`, `security`, `performance`, `usability`) in `.agents/agents/` as the single source of truth for Antigravity, with clear boundaries and PR + whole-repo review modes.
+- [x] Add thin read-only Claude Code wrappers in `.claude/agents/` referencing `.agents/agents/`.
+- [x] Document lens boundaries, priority order, and invocation guidance in `AGENTS.md`.
 
 ---
 
