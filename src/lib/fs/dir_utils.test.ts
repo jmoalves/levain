@@ -84,33 +84,3 @@ Deno.test("DirUtils.isDirectory should detect that a file is not a dir", () => {
   const notDir = TestHelper.fileThatExists;
   assertEquals(DirUtils.isDirectory(notDir), false);
 });
-//
-// isDirectory
-//
-Deno.test("DirUtils.isDirectory should detect that a dir exists", () => {
-  const dir = TestHelper.folderThatAlwaysExists;
-  assertEquals(DirUtils.isDirectory(dir), true);
-});
-Deno.test("DirUtils.isDirectory should detect that a dir does not exists", () => {
-  const doesNotExist = TestHelper.folderThatDoesNotExist;
-  assertEquals(DirUtils.isDirectory(doesNotExist), false);
-});
-Deno.test("DirUtils.isDirectory should detect that a file is not a dir", () => {
-  const notDir = TestHelper.fileThatExists;
-  assertEquals(DirUtils.isDirectory(notDir), false);
-});
-//
-// isDirectory
-//
-Deno.test("DirUtils.isDirectory should detect that a dir exists", () => {
-  const dir = TestHelper.folderThatAlwaysExists;
-  assertEquals(DirUtils.isDirectory(dir), true);
-});
-Deno.test("DirUtils.isDirectory should detect that a dir does not exists", () => {
-  const doesNotExist = TestHelper.folderThatDoesNotExist;
-  assertEquals(DirUtils.isDirectory(doesNotExist), false);
-});
-Deno.test("DirUtils.isDirectory should detect that a file is not a dir", () => {
-  const notDir = TestHelper.fileThatExists;
-  assertEquals(DirUtils.isDirectory(notDir), false);
-});

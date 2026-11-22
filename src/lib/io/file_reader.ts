@@ -71,24 +71,20 @@ export default class FileReader implements ProgressReader {
   }
 
   // Deno.Reader
-  // deno-lint-ignore require-await
   async read(p: Uint8Array): Promise<number | null> {
     if (!this.file) {
-      return Promise.resolve(null);
+      return null;
     }
 
-    return new Promise((resolve, _reject) => {
-      this.file?.read(p).then((size: number | null) => {
-        if (size) {
-          this.bytesRead += size;
-          if (this.progressBar) {
-            this.progressBar.render(this.bytesRead);
-          }
-        }
+    const size = await this.file.read(p);
+    if (size) {
+      this.bytesRead += size;
+      if (this.progressBar) {
+        await this.progressBar.render(this.bytesRead);
+      }
+    }
 
-        resolve(size);
-      });
-    });
+    return size;
   }
 
   // deno-lint-ignore require-await

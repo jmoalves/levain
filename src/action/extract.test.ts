@@ -15,8 +15,9 @@ Deno.test("ExtractAction should check if source exists", async () => {
   const pkg = TestHelper.mockPackage();
   try {
     await action.execute(pkg, [src, dst]);
+    fail("Expected ExtractAction.execute to throw for non-existent source");
   } catch (err) {
-    const expectedMsg = t("lib.fs.file_utils.throwIfNotExistsError", { filePath: src })
+    const expectedMsg = t("lib.fs.file_utils.throwIfNotExistsError", { filePath: src });
     if (err instanceof Error) {
       assertEquals(err.message, expectedMsg);
     } else {
@@ -44,8 +45,6 @@ Deno.test({
     ];
     assertFolderIncludes(dst, expectedFiles);
   },
-  sanitizeResources: false,
-  sanitizeOps: false,
 });
 
 Deno.test({
@@ -63,8 +62,6 @@ Deno.test({
 
     assertFolderIncludes(config.configPaths.levainCacheDir, [cachedSrc]);
   },
-  sanitizeResources: false,
-  sanitizeOps: false,
 });
 
 Deno.test({
@@ -86,6 +83,4 @@ Deno.test({
     ];
     assertFolderIncludes(dst, expectedFiles);
   },
-  sanitizeResources: false,
-  sanitizeOps: false,
 });

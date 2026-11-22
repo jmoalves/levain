@@ -155,22 +155,6 @@ Deno.test("JsonSet - should NOT set an inner string property that exists", async
   assertEquals(json.objectProperty.innerProperty, "innerValue");
 });
 
-Deno.test("JsonSet - should NOT set an inner string property that exists", async () => {
-  const tempfile = Deno.makeTempFileSync();
-  Deno.copyFileSync(TestHelper.resolveTestFile("json/test.json"), tempfile);
-
-  const config = TestHelper.getConfig();
-  const action = new JsonSet(config);
-  const params = ["--ifNotExists", tempfile, "[objectProperty][innerProperty]", "newValue"];
-
-  await action.execute(TestHelper.mockPackage(), params);
-
-  const json = JSON.parse(Deno.readTextFileSync(tempfile));
-  Deno.removeSync(tempfile);
-
-  assertEquals(json.objectProperty.innerProperty, "innerValue");
-});
-
 Deno.test("JsonSet - should set an string property with dots", async () => {
   const tempfile = Deno.makeTempFileSync();
   Deno.copyFileSync(TestHelper.resolveTestFile("json/test.json"), tempfile);

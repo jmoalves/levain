@@ -103,11 +103,11 @@ While v1 is being hardened and validated, `v0.93.1` remains the `Latest` release
 
 ## Phase 4 — Test Coverage & Suite Reliability
 
-**Branch:** `test/coverage-and-reliability`
+**Branches:** `test/suite-reliability-and-isolation`, `test/commands-and-core-coverage`, `test/action-contracts-100pct` *(split into 3 incremental PRs)*
 
-- [ ] Establish a real coverage baseline on Windows now that `coverage/levain.lcov` reporting is restored.
-- [ ] Fix resource/timer leaks (`DenoZip` Web Workers, `Extractor` interval, `HttpUtils` timeout, `src/lib/io/*` error handling) and re-enable sanitizers in `extract.test.ts`.
-- [ ] Eliminate host-OS mutation, parallel races, and live GitHub/Maven calls in unit tests (isolate `TestHelper.getConfig()`, use local `git init --bare` fixtures, restore `chmod`/shortcuts/`PATH`, fix cross-platform path assertions).
+- [x] Establish a real coverage baseline on Windows now that `coverage/levain.lcov` reporting is restored (`66.03%` after Phase 3.6; add `.codecov.yml` tolerance against sub-0.5% non-deterministic project drift).
+- [x] Fix resource/timer leaks (`DenoZip` Web Workers, `Extractor` interval, `HttpUtils` timeout, `CheckUrl` body cancel, `src/lib/io/*` error handling) and re-enable sanitizers in `extract.test.ts`.
+- [x] Eliminate host-OS mutation, parallel races, and live GitHub calls in unit tests (isolate `TestHelper.getConfig()`, use local `git init --bare` fixtures, restore `chmod`/shortcuts/`PATH`, fix cross-platform path assertions).
 - [ ] Build a **contract recipe suite** (synthetic test recipes) covering **100% of implemented actions and 100% of their implemented options** — protecting both `levain-pkgs` and richer external/private recipe catalogs.
 - [ ] Add unit tests for **all Levain commands** in `src/cmd/` (`command_factory`, `install`, `update`, `list_command`, `info`, `explain`, `activate`, `activate_machine`, `clone`, `shell`, `actions`, alongside `clean`) and `levain.minVersion` enforcement.
 - [ ] Add unit tests for core runtime modules (`src/levain_cli.ts`, `src/lib/loader.ts`, `src/lib/i18n.ts`, `src/lib/paths/*`) and the `src/lib/io/` layer.

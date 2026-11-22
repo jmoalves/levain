@@ -14,9 +14,6 @@ import TestHelper from "../test/test_helper.ts";
 import DirUtils from "../fs/dir_utils.ts";
 import HomePaths from "../paths/home_paths.ts";
 
-const currentFileDir = path.dirname(import.meta.url);
-const referenceFile = `${currentFileDir}/../../testdata/os_utils/testOsUtils.txt`;
-
 Deno.test("OsUtils should know the users login", () => {
   assertNotEquals(OsUtils.login, undefined);
 });
@@ -63,78 +60,74 @@ if (OsUtils.isWindows()) {
   Deno.test({
     name: "OsUtils.addToDesktop should create a shortcut to a file",
     fn: async () => {
-      // Given that I have a file
-      const aFile = referenceFile;
+      const aFile = TestHelper.getNewTempFile();
       const aFileName = path.basename(aFile);
-      // And the file isn´t in the Desktop
       const dir = HomePaths.desktopDir;
       const shortcut = path.resolve(dir, `${aFileName}.lnk`);
       OsUtils.removeFile(shortcut);
 
-      // When I add the file to the Desktop
-      await OsUtils.addToDesktop(aFile);
-
-      // Then the new symlink should exist
-      assertPathExists(shortcut);
+      try {
+        await OsUtils.addToDesktop(aFile);
+        assertPathExists(shortcut);
+      } finally {
+        OsUtils.removeFile(shortcut);
+      }
     },
   });
 
   Deno.test({
     name: "OsUtils.addToStartup should create a shortcut to a file",
     fn: async () => {
-      // Given that I have a file
-      const aFile = referenceFile;
+      const aFile = TestHelper.getNewTempFile();
       const aFileName = path.basename(aFile);
-      // And the file isn´t in the startup folder
       const dir = HomePaths.startupDir;
       const shortcut = path.resolve(dir, `${aFileName}.lnk`);
       OsUtils.removeFile(shortcut);
 
-      // When I add the file to the Startup folder
-      await OsUtils.addToStartup(aFile);
-
-      // Then the new symlink should exist
-      assertPathExists(shortcut);
+      try {
+        await OsUtils.addToStartup(aFile);
+        assertPathExists(shortcut);
+      } finally {
+        OsUtils.removeFile(shortcut);
+      }
     },
   });
 
   Deno.test({
     name: "OsUtils.addToStartMenu should create a shortcut to a file",
     fn: async () => {
-      // Given that I have a file
-      const aFile = referenceFile;
+      const aFile = TestHelper.getNewTempFile();
       const aFileName = path.basename(aFile);
-      // And the file isn´t in the start menu
       const dir = HomePaths.startMenuDir;
       const shortcut = path.resolve(dir, `${aFileName}.lnk`);
       OsUtils.removeFile(shortcut);
 
-      // When I add the file to the Start Menu
-      await OsUtils.addToStartMenu(aFile);
-
-      // Then the new symlink should exist
-      assertPathExists(shortcut);
+      try {
+        await OsUtils.addToStartMenu(aFile);
+        assertPathExists(shortcut);
+      } finally {
+        OsUtils.removeFile(shortcut);
+      }
     },
   });
 
   Deno.test({
     name: "OsUtils.addToStartMenu should create a shortcut to a file in a group",
     fn: async () => {
-      // Given that I have a file
-      const aFile = referenceFile;
+      const aFile = TestHelper.getNewTempFile();
       const aFileName = path.basename(aFile);
-      // And a group
-      const aGroup = "dev-env-test";
-      // And the file isn´t in the start menu
+      const aGroup = `levain-test-${crypto.randomUUID().slice(0, 8)}`;
       const dir = HomePaths.startMenuDir;
-      const shortcut = path.resolve(dir, aGroup, `${aFileName}.lnk`);
-      OsUtils.removeFile(shortcut);
+      const groupDir = path.resolve(dir, aGroup);
+      const shortcut = path.resolve(groupDir, `${aFileName}.lnk`);
+      OsUtils.removeDir(groupDir);
 
-      // When I add the file to the Start Menu
-      await OsUtils.addToStartMenu(aFile, aGroup);
-
-      // Then the new symlink should exist
-      assertPathExists(shortcut);
+      try {
+        await OsUtils.addToStartMenu(aFile, aGroup);
+        assertPathExists(shortcut);
+      } finally {
+        OsUtils.removeDir(groupDir);
+      }
     },
   });
 }
@@ -194,22 +187,23 @@ if (OsUtils.isWindows()) {
   });
 
   Deno.test("OsUtils.addPathPermanent should set path permanently", async () => {
-    //Given the users folder is not in the path
-    const folder = TestHelper.folderThatAlwaysExists;
-    await OsUtils.removePathPermanent(folder);
-    assert(
-      !await OsUtils.isInUserPath(folder),
-      `Shouldn't have the folder ${folder} in path - ${await OsUtils.getUserPath()}`,
-    );
+    const folder = TestHelper.getNewTempDir();
+    try {
+      await OsUtils.removePathPermanent(folder);
+      assert(
+        !await OsUtils.isInUserPath(folder),
+        `Shouldn't have the folder ${folder} in path - ${await OsUtils.getUserPath()}`,
+      );
 
-    //When I add to the path
-    await OsUtils.addPathPermanent(folder);
+      await OsUtils.addPathPermanent(folder);
 
-    //Then it should be there
-    assert(
-      await OsUtils.isInUserPath(folder),
-      `Should have the folder ${folder} in path - ${await OsUtils.getUserPath()}`,
-    );
+      assert(
+        await OsUtils.isInUserPath(folder),
+        `Should have the folder ${folder} in path - ${await OsUtils.getUserPath()}`,
+      );
+    } finally {
+      await OsUtils.removePathPermanent(folder);
+    }
   });
 }
 //
@@ -224,8 +218,8 @@ Deno.test("OsUtils.runAndLog should not insert unicode zeros in stdout", async (
 Deno.test("OsUtils.runAndLog should execute and return stdout", async () => {
   const stdout = await OsUtils.runAndLog(getCurrentDirCommand);
 
-  const normalizedPath = DirUtils.normalizePath(stdout);
-  assertMatch(normalizedPath, /[\\\/]+levain/);
+  const normalizedPath = DirUtils.normalizePath(stdout.trim());
+  assertEquals(normalizedPath.toLowerCase(), DirUtils.normalizePath(Deno.cwd()).toLowerCase());
 });
 Deno.test({
   name: "OsUtils.runAndLog should accept a workDir",

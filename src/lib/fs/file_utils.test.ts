@@ -1,7 +1,7 @@
 import * as path from "@std/path";
 import { assert, assertEquals, assertNotEquals, assertThrows } from "@std/assert";
 import { stub } from "@std/testing/mock";
-import { ensureDirSync, ensureFileSync, existsSync } from "@std/fs";
+import { existsSync } from "@std/fs";
 
 import OsUtils from "../os/os_utils.ts";
 import TestHelper from "../test/test_helper.ts";
@@ -11,9 +11,7 @@ import DateUtils from "../utils/date_utils.ts";
 import { FileUtils } from "./file_utils.ts";
 import t from "../i18n.ts";
 
-const readOnlyFolder = TestHelper.getTestDataPath("file_utils/read_only_folder");
 const folderThatDoesNotExist = TestHelper.getTestDataPath("file_utils/--does_not_exist--");
-const readOnlyFile = TestHelper.getTestDataPath("file_utils/read_only.txt");
 const readWriteFolder = TestHelper.getTestDataPath("file_utils/");
 const readWriteFile = TestHelper.getTestDataPath("file_utils/can_read_and_write_this_file.txt");
 
@@ -88,16 +86,22 @@ Deno.test("FileUtils - should detect a RW permission on a file", () => {
 });
 if (!OsUtils.isWindows()) {
   Deno.test("FileUtils - should detect read only folder", () => {
-    const path = readOnlyFolder;
-    ensureDirSync(readOnlyFolder);
-    OsUtils.makeReadOnly(path);
-    verifyFileReadWrite(path, true, false);
+    const tempDir = TestHelper.getNewTempDir();
+    try {
+      OsUtils.makeReadOnly(tempDir);
+      verifyFileReadWrite(tempDir, true, false);
+    } finally {
+      Deno.chmodSync(tempDir, 0o755);
+    }
   });
   Deno.test("FileUtils - should detect read only file", () => {
-    const path = readOnlyFile;
-    ensureFileSync(readOnlyFile);
-    OsUtils.makeReadOnly(path);
-    verifyFileReadWrite(path, true, false);
+    const tempFile = TestHelper.getNewTempFile();
+    try {
+      OsUtils.makeReadOnly(tempFile);
+      verifyFileReadWrite(tempFile, true, false);
+    } finally {
+      Deno.chmodSync(tempFile, 0o644);
+    }
   });
 } 
 if (OsUtils.isWindows()) {
@@ -151,14 +155,16 @@ Deno.test("FileUtils - canCreateTempFileInDir should be able to write in a temp 
 });
 if (!OsUtils.isWindows()) {
   Deno.test("FileUtils - canCreateTempFileInDir should not be able to write in a read only dir", () => {
-    // Deno.chmod does not make a folder read-only on Windows. 
+    // Deno.chmod does not make a folder read-only on Windows.
     // Thus, this test does not work on windows
-    ensureDirSync(readOnlyFolder);
-    Deno.chmodSync(readOnlyFolder, 0o000);
-
-    const canWrite = FileUtils.canCreateTempFileInDir(readOnlyFolder);
-
-    assertEquals(canWrite, false);
+    const tempDir = TestHelper.getNewTempDir();
+    try {
+      Deno.chmodSync(tempDir, 0o000);
+      const canWrite = FileUtils.canCreateTempFileInDir(tempDir);
+      assertEquals(canWrite, false);
+    } finally {
+      Deno.chmodSync(tempDir, 0o755);
+    }
   });
 }
 Deno.test("FileUtils - canCreateTempFileInDir should not be able to write in a dir that does not exist", () => {

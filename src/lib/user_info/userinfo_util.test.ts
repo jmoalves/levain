@@ -4,7 +4,6 @@ import { assertStringEndsWith } from "../test/more_asserts.ts";
 
 import UserInfoUtil from "./userinfo_util.ts";
 import TestHelper from "../test/test_helper.ts";
-import Config from "../config.ts";
 import { CliffyTestHelper } from "./cliffy_test_helper.ts";
 import { UserInfo } from "./user_info.ts";
 
@@ -40,7 +39,7 @@ Deno.test("UserInfoUtil should work when user info is not found", async () => {
 Deno.test("UserInfoUtil.askUserInfo should return userInfo", async () => {
   const tempUserInfoFile = TestHelper.getNewTempFile();
   const userInfoUtil = new UserInfoUtil(tempUserInfoFile);
-  const config = new Config();
+  const config = TestHelper.getConfig();
   const defaultUserInfo = new UserInfo();
   defaultUserInfo.fullName = "John Doe";
   userInfoUtil.userInfo = defaultUserInfo;
@@ -58,7 +57,7 @@ Deno.test("UserInfoUtil.askUserInfo should return userInfo", async () => {
 // askFullName
 //
 Deno.test("UserInfoUtil.askFullName should get full name", async () => {
-  const userInfoUtil = new UserInfoUtil();
+  const userInfoUtil = new UserInfoUtil(TestHelper.getNewTempFile());
   const config = TestHelper.getConfig();
   const name = "Walter Elias Disney";
   CliffyTestHelper.inputResponse(name);
@@ -69,7 +68,7 @@ Deno.test("UserInfoUtil.askFullName should get full name", async () => {
   assertEquals(config.fullname, name);
 });
 Deno.test("UserInfoUtil.inputFullName should have a default value", async () => {
-  const userInfoUtil = new UserInfoUtil();
+  const userInfoUtil = new UserInfoUtil(TestHelper.getNewTempFile());
   const defaultFullName = "Steve Jobs";
   CliffyTestHelper.inputResponse("");
   const config = TestHelper.getConfig();
@@ -82,7 +81,7 @@ Deno.test("UserInfoUtil.inputFullName should have a default value", async () => 
 // askLogin
 //
 Deno.test("UserInfoUtil.askLogin should get askLogin login", async () => {
-  const userInfoUtil = new UserInfoUtil();
+  const userInfoUtil = new UserInfoUtil(TestHelper.getNewTempFile());
   const config = TestHelper.getConfig();
   const login = "rfwal";
   CliffyTestHelper.inputResponse(login);
@@ -93,7 +92,7 @@ Deno.test("UserInfoUtil.askLogin should get askLogin login", async () => {
   assertEquals(config.login, login);
 });
 Deno.test("UserInfoUtil.askLogin should have a default value", async () => {
-  const userInfoUtil = new UserInfoUtil();
+  const userInfoUtil = new UserInfoUtil(TestHelper.getNewTempFile());
   const defaultLogin = "jdoe";
   CliffyTestHelper.inputResponse("");
   const config = TestHelper.getConfig();
@@ -106,7 +105,7 @@ Deno.test("UserInfoUtil.askLogin should have a default value", async () => {
 // askEmail
 //
 Deno.test("UserInfoUtil.askEmail should get askLogin email", async () => {
-  const userInfoUtil = new UserInfoUtil();
+  const userInfoUtil = new UserInfoUtil(TestHelper.getNewTempFile());
   const config = TestHelper.getConfig();
   const email = "jdoe@nowhere.com";
   CliffyTestHelper.inputResponse(email);
@@ -117,7 +116,7 @@ Deno.test("UserInfoUtil.askEmail should get askLogin email", async () => {
   assertEquals(config.email, email);
 });
 Deno.test("UserInfoUtil.askEmail should have a default value", async () => {
-  const userInfoUtil = new UserInfoUtil();
+  const userInfoUtil = new UserInfoUtil(TestHelper.getNewTempFile());
   const defaultEmail = "jdoe";
   CliffyTestHelper.inputResponse("");
   const config = TestHelper.getConfig();

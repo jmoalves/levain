@@ -70,8 +70,11 @@ export abstract class Extractor {
     this.feedback.start(`# ${StringUtils.compressText(src, 80)}`);
 
     const tick = setInterval(() => this.feedback.show(), 300);
-    await this.extractImpl(src, tempDir);
-    clearInterval(tick);
+    try {
+      await this.extractImpl(src, tempDir);
+    } finally {
+      clearInterval(tick);
+    }
 
     this.feedback.reset(`# ${StringUtils.compressText(src, 80)} in ${timer.humanize()}`);
     log.debug(`- extracted in ${timer.humanize()}`);
