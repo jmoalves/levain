@@ -16,8 +16,12 @@ else {
 }
 
 
+$isDotSourced = ($MyInvocation.InvocationName -eq '.')
+
 if ($Args.Count -eq 0) {
     & $levainExe
+    $rc = if ($null -ne $LASTEXITCODE) { [int]$LASTEXITCODE } else { 0 }
+    if (-not $isDotSourced) { exit $rc }
     return
 }
 
@@ -29,11 +33,27 @@ switch ($Args[0]) {
             @()
         }
         & $levainExe _activate-machine pre @activateArgs
+        if ($LASTEXITCODE -ne 0) {
+            $rc = [int]$LASTEXITCODE
+            if (-not $isDotSourced) { exit $rc }
+            return
+        }
         $script = & $levainExe _activate-machine cmd --shell powershell @activateArgs
-        Invoke-Expression ($script -join [Environment]::NewLine)
+        if ($LASTEXITCODE -ne 0) {
+            $rc = [int]$LASTEXITCODE
+            if (-not $isDotSourced) { exit $rc }
+            return
+        }
+        if ($script) {
+            Invoke-Expression ($script -join [Environment]::NewLine)
+        }
     }
 
     default {
         & $levainExe @Args
     }
 }
+
+$rc = if ($null -ne $LASTEXITCODE) { [int]$LASTEXITCODE } else { 0 }
+if (-not $isDotSourced) { exit $rc }
+return

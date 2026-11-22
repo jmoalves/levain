@@ -5,6 +5,7 @@ import {
   assertNotEquals,
   assertNotMatch,
 } from "@std/assert";
+import { stub } from "@std/testing/mock";
 import * as path from "@std/path";
 
 import OsUtils from "./os_utils.ts";
@@ -234,4 +235,35 @@ Deno.test({
     const normalizedPath = DirUtils.normalizePath(pathInOutput);
     assertMatch(normalizedPath, /[\\\/]+testdata/);
   },
+});
+
+Deno.test("OsUtils.sanitizeUserPath should skip setUserPath when PATH has no changes", async () => {
+  const isWinStub = stub(OsUtils, "isWindows", () => true);
+  const getStub = stub(OsUtils, "getUserPath", () => Promise.resolve(["C:\\Windows", "C:\\Tools"]));
+  const setStub = stub(OsUtils, "setUserPath", () => Promise.resolve(""));
+
+  try {
+    await OsUtils.sanitizeUserPath();
+    assertEquals(setStub.calls.length, 0);
+  } finally {
+    setStub.restore();
+    getStub.restore();
+    isWinStub.restore();
+  }
+});
+
+Deno.test("OsUtils.sanitizeUserPath should call setUserPath when PATH contains quotes", async () => {
+  const isWinStub = stub(OsUtils, "isWindows", () => true);
+  const getStub = stub(OsUtils, "getUserPath", () => Promise.resolve(['"C:\\Tools"', "C:\\Windows"]));
+  const setStub = stub(OsUtils, "setUserPath", () => Promise.resolve(""));
+
+  try {
+    await OsUtils.sanitizeUserPath();
+    assertEquals(setStub.calls.length, 1);
+    assertEquals(setStub.calls[0].args, [["C:\\Tools", "C:\\Windows"]]);
+  } finally {
+    setStub.restore();
+    getStub.restore();
+    isWinStub.restore();
+  }
 });

@@ -1,9 +1,9 @@
 @echo off
 
 
-set myPath=%~dp0
+set "myPath=%~dp0"
 :: removing the trailing backslash
-set myPath=%myPath:~0,-1%
+set "myPath=%myPath:~0,-1%"
 
 set "levainExe="
 set "levainCall="
@@ -24,36 +24,34 @@ if not defined levainExe (
     set "levainCall=call "
 )
 
-if /I "%~1"=="activate" (
-    call :fnActivate %*
-    exit /b %ERRORLEVEL%
-)
+if /I "%~1"=="activate" goto :fnActivate
 
 call :fnRun %*
 SETLOCAL
-set rc=%ERRORLEVEL%
+set "rc=%ERRORLEVEL%"
 if "%rc%"=="42" (
-    call :fnUpgrade %*
+    call :fnUpgrade
+    if errorlevel 1 (
+        ENDLOCAL & exit /b 1
+    )
     echo.
     echo After Levain upgrade, please re-execute your previous command.
     echo %0 %*
     echo.
-    exit /b 0
+    ENDLOCAL & exit /b 0
 )
-ENDLOCAL
-exit /b %rc%
+ENDLOCAL & exit /b %rc%
 
 
 
 :fnRun
 SETLOCAL
-set DENO_NO_UPDATE_CHECK=true
-set NO_COLOR=true
-set DENO_DIR=%myPath%\build
+set "DENO_NO_UPDATE_CHECK=true"
+set "NO_COLOR=true"
+set "DENO_DIR=%myPath%\build"
 %levainCall%"%levainExe%" %*
-if errorlevel 1 exit /b %ERRORLEVEL%
-ENDLOCAL
-goto:eof
+set "runRc=%ERRORLEVEL%"
+ENDLOCAL & exit /b %runRc%
 
 
 
@@ -63,47 +61,63 @@ echo.
 echo LEVAIN UPGRADE!
 echo.
 set "levainDir="
-for /d %%l in ("%TEMP%\levain\levain-*") do (
-    if exist "%%~fl\levain.cmd" set "levainDir=%%~fl"
+set "upgradeTargetFile=%TEMP%\levain\upgrade-target.txt"
+if exist "%upgradeTargetFile%" (
+    for /f "usebackq delims=" %%v in (`findstr /R /X "levain-[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*" "%upgradeTargetFile%" 2^>nul`) do (
+        if not defined levainDir if exist "%TEMP%\levain\%%v\levain.cmd" (
+            set "levainDir=%TEMP%\levain\%%v"
+        )
+    )
+    del "%upgradeTargetFile%" >nul 2>&1
 )
 
 if not defined levainDir (
     echo.
     echo No new version found
-    ENDLOCAL
-    exit /b 1
+    ENDLOCAL & exit /b 1
 )
 
-START /max "Levain Upgrade" CMD /c ""%levainDir%\levain.cmd" "--levainHome=%myPath%\.." --levain-upgrade %*"
-ENDLOCAL
-exit /b 0
+set "LEVAIN_UPGRADE_CMD=%levainDir%\levain.cmd"
+set "LEVAIN_UPGRADE_HOME=%myPath%\.."
+START /max "Levain Upgrade" CMD /c ""%%LEVAIN_UPGRADE_CMD%%" "--levainHome=%%LEVAIN_UPGRADE_HOME%%" --levain-upgrade"
+ENDLOCAL & exit /b 0
 
 
 
 :fnActivate
 set "_LEV_TMP=%TEMP%\levain-%RANDOM%%RANDOM%.cmd"
-
-set DENO_NO_UPDATE_CHECK=true
-set NO_COLOR=true
-set DENO_DIR=%myPath%\build
-
 set "SKIP_PRE="
-for %%A in (%*) do (
-    if /I "%%~A"=="--skip-pre" set "SKIP_PRE=1"
+set "_LEV_ARGS="
+shift
+:fnActivateArgs
+if "%~1"=="" goto :fnActivateRun
+if /I "%~1"=="--skip-pre" (
+    set "SKIP_PRE=1"
+    shift
+    goto :fnActivateArgs
 )
+set _LEV_ARGS=%_LEV_ARGS% "%~1"
+shift
+goto :fnActivateArgs
 
-if not defined SKIP_PRE (
-    %levainCall%"%levainExe%" _activate-machine pre %2 %3 %4 %5 %6 %7 %8 %9
-)
-%levainCall%"%levainExe%" _activate-machine cmd --shell cmd %2 %3 %4 %5 %6 %7 %8 %9 > "%_LEV_TMP%"
-if errorlevel 1 (
-    del "%_LEV_TMP%" >nul 2>&1
-    exit /b %ERRORLEVEL%
-)
+:fnActivateRun
+if defined SKIP_PRE goto :fnActivateCmd
+call :fnRun _activate-machine pre%_LEV_ARGS%
+if errorlevel 1 goto :fnActivateDone
+
+:fnActivateCmd
+call :fnRun _activate-machine cmd --shell cmd%_LEV_ARGS% > "%_LEV_TMP%"
+if errorlevel 1 goto :fnActivateDone
 
 call "%_LEV_TMP%"
-set rc=%ERRORLEVEL%
 
-del "%_LEV_TMP%" >nul 2>&1
+:fnActivateDone
+call :fnActivateCleanup %ERRORLEVEL%
+exit /b %ERRORLEVEL%
 
-exit /b %rc%
+:fnActivateCleanup
+if exist "%_LEV_TMP%" del "%_LEV_TMP%" >nul 2>&1
+set "SKIP_PRE="
+set "_LEV_ARGS="
+set "_LEV_TMP="
+exit /b %~1

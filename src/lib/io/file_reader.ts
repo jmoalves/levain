@@ -98,9 +98,13 @@ export default class FileReader implements ProgressReader {
     }
 
     log.debug(`Closing ${this.filePath}`);
-    this.file.close();
-
-    this.fileInfo = FileUtils.getFileInfoSync(this.filePath);
+    const file = this.file;
+    this.file = undefined;
+    try {
+      file.close();
+    } finally {
+      this.fileInfo = FileUtils.getFileInfoSync(this.filePath);
+    }
   }
 
   // Timestamps

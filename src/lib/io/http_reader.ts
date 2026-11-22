@@ -50,11 +50,15 @@ export default class HttpReader implements ProgressReader {
 
   // RewindReader
   async rewind() {
-    this.close();
+    await this.close();
     log.debug(`Reading ${this.url}`);
     this.bytesRead = 0;
 
     const response = await HttpUtils.get(this.url);
+    if (!response.ok) {
+      await response.body?.cancel();
+      throw new Error(`HTTP ${response.status} fetching ${this.url}`);
+    }
 
     this.contentLength = Number(response.headers.get("content-length")) || undefined;
     log.debug(`size: ${this.contentLength} - ${this.url}`);
@@ -108,11 +112,14 @@ export default class HttpReader implements ProgressReader {
     }
 
     log.debug(`Closing ${this.url}`);
-    await this.reader.cancel();
-    this.reader.releaseLock();
-
+    const reader = this.reader;
     this.reader = null;
     this.pending = new Uint8Array(0);
+    try {
+      await reader.cancel();
+    } finally {
+      reader.releaseLock();
+    }
   }
 
   // Timestamps

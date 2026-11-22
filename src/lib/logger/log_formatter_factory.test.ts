@@ -56,3 +56,14 @@ Deno.test("should hide password when config provider is populated after formatte
     /\d{8}-\d{6} INFO token=\*\*\*\*\*\*/,
   );
 });
+
+Deno.test("should also hide JSON-escaped passwords containing backslashes or quotes", () => {
+  const config = new Config([]);
+  config.password = 'sec\\ret"pass';
+  const formatter = LogFormatterFactory.getHidePasswordFormatter(config);
+
+  const jsonLogged = JSON.stringify({ args: [config.password] });
+  const logLine = formatter(TestHelper.logRecord(jsonLogged));
+
+  assertEquals(logLine, '{"args":["******"]}');
+});

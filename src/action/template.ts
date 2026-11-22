@@ -14,7 +14,7 @@ export default class Template implements Action {
   }
 
   async execute(pkg: Package | undefined, parameters: string[]) {
-    log.debug(`INI - TEMPLATE ${parameters}`);
+    log.debug(`INI - TEMPLATE (${parameters.length} params)`);
 
     const args = parseArgs(parameters, {
       stringMany: [
@@ -28,7 +28,9 @@ export default class Template implements Action {
 
     this.verifyArgs(args); // throws
 
-    log.debug(`ARG - TEMPLATE ${JSON.stringify(args)}`);
+    log.debug(
+      `ARG - TEMPLATE files=${JSON.stringify(args._)} replacements=${args.replace.length} doubleBackslash=${Boolean(args.doubleBackslash)}`,
+    );
 
     const src = pkg ? path.resolve(pkg.pkgDir, args._[0]) : path.resolve(args._[0]);
     let dst = pkg ? path.resolve(pkg.baseDir, args._[1]) : path.resolve(args._[1]);
@@ -38,7 +40,7 @@ export default class Template implements Action {
     for (let x = 0; x < args.replace.length; x++) {
       let replacement = args.with[x];
       if (args.doubleBackslash) {
-        log.debug(`- ${x}: DOUBLE-BACK ${replacement}`);
+        log.debug(`- ${x}: DOUBLE-BACK`);
         replacement = replacement
           .replace(/\//g, "\\")
           .replace(/\\([^\\])/g, "\\\\$1");
@@ -49,10 +51,10 @@ export default class Template implements Action {
         const regexp = args.replace[x].replace(/^\/(.+)\/([a-z]?)/, "$1");
         const flags = args.replace[x].replace(/^\/(.+)\/([a-z]?)/, "$2");
 
-        log.debug(`- ${x}: REPLACE[rxp] /${regexp}/${flags} => ${replacement}`);
+        log.debug(`- ${x}: REPLACE[rxp] /${regexp}/${flags}`);
         data = data.replace(new RegExp(regexp, flags), replacement);
       } else {
-        log.debug(`- ${x}: REPLACE[str] ${args.replace[x]} => ${replacement}`);
+        log.debug(`- ${x}: REPLACE[str] ${args.replace[x]}`);
         data = data.replace(args.replace[x], replacement);
       }
     }

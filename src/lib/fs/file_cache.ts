@@ -30,21 +30,31 @@ export default class FileCache {
 
     await r.rewind();
 
-    const filePathInCache = this.cachedFilePath(r.name);
-    log.debug(`filePathInCache ${filePathInCache}`);
-    if (this.cacheValid(r, filePathInCache)) {
-      log.debug(`fromCache ${filePathInCache}`);
-      if (r.motificationTime) {
-        Deno.utimeSync(filePathInCache, new Date(), r.motificationTime);
+    try {
+      const filePathInCache = this.cachedFilePath(r.name);
+      log.debug(`filePathInCache ${filePathInCache}`);
+      if (this.cacheValid(r, filePathInCache)) {
+        log.debug(`fromCache ${filePathInCache}`);
+        if (r.motificationTime) {
+          Deno.utimeSync(filePathInCache, new Date(), r.motificationTime);
+        }
+        await r.close();
+        return filePathInCache;
       }
-      return filePathInCache;
-    }
 
-    if (OsUtils.removeDir(filePathInCache)) {
-      log.debug(`Cache - invalidate ${filePathInCache}`);
-    }
+      if (OsUtils.removeDir(filePathInCache)) {
+        log.debug(`Cache - invalidate ${filePathInCache}`);
+      }
 
-    return await this.copyToCache(r);
+      return await this.copyToCache(r, true);
+    } catch (error) {
+      try {
+        await r.close();
+      } catch {
+        // ignore cleanup errors
+      }
+      throw error;
+    }
   }
 
   cachedFilePath(src: string): string {
@@ -82,10 +92,10 @@ export default class FileCache {
     return true;
   }
 
-  async copyToCache(src: ProgressReader): Promise<string> {
+  async copyToCache(src: ProgressReader, alreadyRewound = false): Promise<string> {
     log.debug(`- COPY TO CACHE ${src.name}`);
     const filePathInCache = this.cachedFilePath(src.name);
-    await FileProgress.copyWithProgress(src, filePathInCache);
+    await FileProgress.copyWithProgress(src, filePathInCache, alreadyRewound);
     return filePathInCache;
   }
 }

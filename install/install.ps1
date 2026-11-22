@@ -67,75 +67,83 @@ if (!(Test-Path $TempLevain)) {
   New-Item $TempLevain -ItemType Directory | Out-Null
 }
 
-if (Test-Path $TempLevainZip) {
-  Remove-Item $TempLevainZip -Force
-}
+$installExitCode = 0
+try {
+  if (Test-Path $TempLevainZip) {
+    Remove-Item $TempLevainZip -Force
+  }
 
-if (! $levainHeadless) {
-  Clear-Host
-}
+  if (! $levainHeadless) {
+    Clear-Host
+  }
 
-if ($levainVersion) {
-  Write-Output "=== Installing Levain $levainVersion at $levainHome"
-} else {
-  Write-Output "=== Installing latest Levain release at $levainHome"
-}
+  if ($levainVersion) {
+    Write-Output "=== Installing Levain $levainVersion at $levainHome"
+  } else {
+    Write-Output "=== Installing latest Levain release at $levainHome"
+  }
 
-#######################################################
-# Download
-#
+  #######################################################
+  # Download
+  #
 
-Write-Output ""
-Write-Output ""
-Write-Output ""
-Write-Output ""
-
-Write-Output "Downloading Levain SHA256 from $LevainUriSHA256"
-Invoke-WebRequest $LevainUriSHA256 -OutFile $TempLevainSHA256 -UseBasicParsing
-
-Write-Output "Downloading Levain from $LevainUri"
-Invoke-WebRequest $LevainUri -OutFile $TempLevainZip -UseBasicParsing
-
-$expectedHash=(Get-Content $TempLevainSHA256 -Delimiter ' ' -TotalCount 1).ToUpper().Trim()
-$actualHash=(Get-FileHash $TempLevainZip).Hash.ToUpper().Trim()
-
-if ($actualHash -ne $expectedHash) {
-  Write-Output ""
-  throw 'DOWNLOAD FAILED - Wrong checksum'
-}
-
-#######################################################
-# Extract
-#
-
-if (Test-Path $TempLevainDir) {
-  Remove-Item $TempLevainDir -Recurse -Force
-}
-
-Write-Output ""
-Write-Output "Extracting Levain from $TempLevainZip to $TempLevainDir"
-if (Get-Command Expand-Archive -ErrorAction SilentlyContinue) {
-  Expand-Archive $TempLevainZip -Destination $TempLevainDir -Force
-} else {
-  Add-Type -AssemblyName System.IO.Compression.FileSystem
-  [IO.Compression.ZipFile]::ExtractToDirectory($TempLevainZip, $TempLevainDir)
-}
-
-#######################################################
-# Levain install
-#
-
-Write-Output ""
-Write-Output ""
-& $TempLevainDir\levain.cmd --addRepo "$levainRepo" --levainHome "$levainHome" install levain
-
-#######################################################
-# Cleanup
-#
-
-if (Test-Path $TempLevain) {
   Write-Output ""
   Write-Output ""
-  Write-Output "Removing $TempLevain"
-  Remove-Item $TempLevain -Recurse -Force
+  Write-Output ""
+  Write-Output ""
+
+  Write-Output "Downloading Levain SHA256 from $LevainUriSHA256"
+  Invoke-WebRequest $LevainUriSHA256 -OutFile $TempLevainSHA256 -UseBasicParsing
+
+  Write-Output "Downloading Levain from $LevainUri"
+  Invoke-WebRequest $LevainUri -OutFile $TempLevainZip -UseBasicParsing
+
+  $expectedHash=(Get-Content $TempLevainSHA256 -Delimiter ' ' -TotalCount 1).ToUpper().Trim()
+  $actualHash=(Get-FileHash $TempLevainZip).Hash.ToUpper().Trim()
+
+  if ($actualHash -ne $expectedHash) {
+    Write-Output ""
+    throw 'DOWNLOAD FAILED - Wrong checksum'
+  }
+
+  #######################################################
+  # Extract
+  #
+
+  if (Test-Path $TempLevainDir) {
+    Remove-Item $TempLevainDir -Recurse -Force
+  }
+
+  Write-Output ""
+  Write-Output "Extracting Levain from $TempLevainZip to $TempLevainDir"
+  if (Get-Command Expand-Archive -ErrorAction SilentlyContinue) {
+    Expand-Archive $TempLevainZip -Destination $TempLevainDir -Force
+  } else {
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    [IO.Compression.ZipFile]::ExtractToDirectory($TempLevainZip, $TempLevainDir)
+  }
+
+  #######################################################
+  # Levain install
+  #
+
+  Write-Output ""
+  Write-Output ""
+  & $TempLevainDir\levain.cmd --addRepo "$levainRepo" --levainHome "$levainHome" install levain
+  $installExitCode = $LASTEXITCODE
+} finally {
+  #######################################################
+  # Cleanup
+  #
+
+  if (Test-Path $TempLevain) {
+    Write-Output ""
+    Write-Output ""
+    Write-Output "Removing $TempLevain"
+    Remove-Item $TempLevain -Recurse -Force
+  }
+}
+
+if ($installExitCode -ne 0) {
+  throw "Levain installation failed with exit code $installExitCode"
 }

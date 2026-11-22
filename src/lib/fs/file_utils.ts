@@ -124,11 +124,14 @@ export class FileUtils {
     }
 
     const now = new Date();
-    let bkp = "";
+    const base = `${filename}.${DateUtils.dateTag(now)}.${DateUtils.timeTagWithMillis("", now)}`;
+    let bkp = `${base}.bkp`;
+    let counter = 1;
 
-    do bkp = filename + "." + DateUtils.dateTag(now) + "." + DateUtils.timeTagWithMillis("", now) + ".bkp"; while (
-      existsSync(bkp)
-    );
+    while (existsSync(bkp)) {
+      bkp = `${base}.${counter}.bkp`;
+      counter++;
+    }
 
     try {
       Deno.copyFileSync(filename, bkp);

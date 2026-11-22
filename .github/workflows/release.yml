@@ -65,9 +65,9 @@ jobs:
 
       - name: Echo version
         run: |
-          echo CURRENT ${{ env.CURRENT_VERSION }}
-          echo LEVAIN_VERSION $LEVAIN_VERSION
-          echo NEXT ${{ env.NEXT_VERSION }}
+          echo "CURRENT $CURRENT_VERSION"
+          echo "LEVAIN_VERSION $LEVAIN_VERSION"
+          echo "NEXT $NEXT_VERSION"
         env:
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }}
 

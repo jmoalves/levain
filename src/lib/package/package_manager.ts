@@ -5,6 +5,7 @@ import type Package from "./package.ts";
 import type Repository from "../repository/repository.ts";
 import ConsoleFeedback from "../utils/console_feedback.ts";
 import StringUtils from "../utils/string_utils.ts";
+import type { VarResolutionContext } from "../var_resolver.ts";
 
 export default class PackageManager {
   private knownPackages: Map<string, Package> = new Map();
@@ -92,7 +93,11 @@ export default class PackageManager {
     return this.knownPackages.get(pkgName);
   }
 
-  async getVar(pkgName: string, vName: string): Promise<string | undefined> {
+  async getVar(
+    pkgName: string,
+    vName: string,
+    ctx?: VarResolutionContext,
+  ): Promise<string | undefined> {
     const pkg = this.package(pkgName);
     if (!pkg) {
       return undefined;
@@ -119,7 +124,7 @@ export default class PackageManager {
     }
 
     value = "" + value; // toString
-    return await this.config.replaceVars(value!, pkgName);
+    return await this.config.replaceVars(value!, pkgName, ctx);
   }
 
   getSimilarNames(pkgName: string, installedOnly = false): Set<string> {

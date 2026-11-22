@@ -9,7 +9,7 @@ _Something to help you make your software grow_
 
 ## Installing Levain
 
-We recomend you to use the latest version of `install.ps1` script.\
+We recommend you to use the latest version of `install.ps1` script.\
 You can combine the options below.
 
 ### Install latest release at $HOME/levain
@@ -36,10 +36,10 @@ $levainHome="C:\dev-env";iwr https://github.com/jmoalves/levain/releases/latest/
 $levainUrlBase="http://nexus.local.net/nexus/repository/github-proxy/jmoalves/levain";iwr http://nexus.local.net/nexus/repository/github-proxy/jmoalves/levain/releases/latest/download/install.ps1 | iex
 ```
 
-### Providing you own recipes repository
+### Providing your own recipes repository
 
 ```powershell
-$levainRepo="https://gitlab.local.net/grp-dev/levain-pkgs.git";iwr https://github.com/jmoalves/levain/releases/latest/download/install.ps1 | iex`
+$levainRepo="https://gitlab.local.net/grp-dev/levain-pkgs.git";iwr https://github.com/jmoalves/levain/releases/latest/download/install.ps1 | iex
 ```
 
 ---

@@ -29,6 +29,11 @@ export default class LogUtils {
       return msg;
     }
 
-    return msg.replaceAll(config.password, "******");
+    let masked = msg.replaceAll(config.password, "******");
+    const jsonEscaped = JSON.stringify(config.password).slice(1, -1);
+    if (jsonEscaped && jsonEscaped !== config.password) {
+      masked = masked.replaceAll(jsonEscaped, "******");
+    }
+    return masked;
   }
 }
