@@ -1,4 +1,4 @@
-import { assertFalse, assertRejects, assertThrows } from "@std/assert";
+import { assertEquals, assertFalse, assertRejects, assertThrows } from "@std/assert";
 import * as path from "@std/path";
 import { existsSync } from "@std/fs";
 import * as zip from "@zip.js/zip.js";
@@ -91,11 +91,15 @@ Deno.test("DenoZip should reject Zip Slip traversal entries without writing outs
 Deno.test("DenoZip.resolveSafeEntryPath should reject traversal, absolute, drive, and null-byte paths", () => {
   const dst = TestHelper.getNewTempDir();
   const unsafePaths = [
+    "..",
     "../outside.txt",
+    "a/../..",
     "a/../../outside.txt",
     "..\\outside.txt",
+    "../out-evil/a.txt",
     "/etc/passwd",
     "\\Windows\\win.ini",
+    "C:evil.txt",
     "C:\\Windows\\evil.txt",
     "C:/Windows/evil.txt",
     "bad\0name.txt",
@@ -110,4 +114,21 @@ Deno.test("DenoZip.resolveSafeEntryPath should reject traversal, absolute, drive
       "Unsafe zip entry path",
     );
   }
+
+  assertThrows(
+    () => DenoZip.resolveSafeEntryPath(dst, "../outside/", true),
+    Error,
+    "Unsafe zip entry path",
+  );
+});
+
+Deno.test("DenoZip.resolveSafeEntryPath should accept valid relative, nested, directory, and Windows-separator entries", () => {
+  const dst = TestHelper.getNewTempDir();
+  const dstRoot = path.resolve(dst);
+
+  assertEquals(DenoZip.resolveSafeEntryPath(dst, ".", true), dstRoot);
+  assertEquals(DenoZip.resolveSafeEntryPath(dst, "./", true), dstRoot);
+  assertEquals(DenoZip.resolveSafeEntryPath(dst, "dir\\sub\\file.txt", false), path.resolve(dstRoot, "dir/sub/file.txt"));
+  assertEquals(DenoZip.resolveSafeEntryPath(dst, "..config/a.txt", false), path.resolve(dstRoot, "..config/a.txt"));
+  assertEquals(DenoZip.resolveSafeEntryPath(dst, "a/b/../c.txt", false), path.resolve(dstRoot, "a/c.txt"));
 });

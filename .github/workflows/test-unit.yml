@@ -33,6 +33,10 @@ jobs:
 
       - name: Get Deno
         run: |
+          if [[ ! "$DENO_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid DENO_VERSION: $DENO_VERSION"
+            exit 1
+          fi
           rm -rf "$DENO_ROOT_PATH" && mkdir -p "$DENO_ROOT_PATH"
           bash "$GITHUB_WORKSPACE/githubScripts/get-deno.sh" "$DENO_ROOT_PATH" Linux "$DENO_VERSION"
           echo "$DENO_ROOT_PATH" >> "$GITHUB_PATH"
@@ -60,12 +64,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Set Deno version
-        id: set-version
+      - name: Validate Deno version
+        shell: pwsh
         env:
-          INPUT_DENO_VERSION: ${{ github.event.inputs.denoVersion || env.DEFAULT_DENO_VERSION }}
+          DENO_VERSION: ${{ github.event.inputs.denoVersion || env.DEFAULT_DENO_VERSION }}
         run: |
-          echo "DENO_VERSION=$INPUT_DENO_VERSION" >> $GITHUB_ENV
+          if ($env:DENO_VERSION -notmatch '^[0-9]+\.[0-9]+\.[0-9]+$') {
+            throw "Invalid DENO_VERSION: $env:DENO_VERSION"
+          }
 
       - name: Get Deno
         shell: cmd
@@ -74,9 +80,10 @@ jobs:
           DENO_ROOT_PATH: ${{ runner.temp }}\deno
           GITHUB_WORKSPACE: ${{ github.workspace }}
         run: |
-          if exist %DENO_ROOT_PATH% rmdir /q/s %DENO_ROOT_PATH%
-          if not exist %DENO_ROOT_PATH% mkdir %DENO_ROOT_PATH%
-          call %GITHUB_WORKSPACE%\githubScripts\get-deno.cmd %DENO_ROOT_PATH% %DENO_VERSION%
+          if exist "%DENO_ROOT_PATH%" rmdir /q/s "%DENO_ROOT_PATH%"
+          if not exist "%DENO_ROOT_PATH%" mkdir "%DENO_ROOT_PATH%"
+          call "%GITHUB_WORKSPACE%\githubScripts\get-deno.cmd" %DENO_ROOT_PATH% %DENO_VERSION%
+          if errorlevel 1 exit /b %ERRORLEVEL%
 
       - name: Get extraBin
         shell: cmd

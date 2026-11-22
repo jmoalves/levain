@@ -9,7 +9,11 @@ import ReaderFactory from "./reader_factory.ts";
 import ConsoleFeedback from "../utils/console_feedback.ts";
 
 export class FileProgress {
-  static async copyWithProgress(src: string | ProgressReader, dstFile: string) {
+  static async copyWithProgress(
+    src: string | ProgressReader,
+    dstFile: string,
+    alreadyRewound = false,
+  ) {
     let r: ProgressReader | undefined;
 
     if (typeof src == "string") {
@@ -26,9 +30,12 @@ export class FileProgress {
     while (tries < 3) {
       tries++;
 
+      let dst: FileWriter | undefined;
       try {
-        await r.rewind();
-        const dst = new FileWriter(dstFile);
+        if (!(tries === 1 && alreadyRewound)) {
+          await r.rewind();
+        }
+        dst = new FileWriter(dstFile);
 
         const title = r.title ? StringUtils.compressText(r.title, 50) : undefined;
         const total = r.size;
@@ -70,6 +77,12 @@ export class FileProgress {
 
         return;
       } catch (error) {
+        dst?.abort();
+        try {
+          await r.close();
+        } catch {
+          // ignore cleanup errors before retry
+        }
         log.debug("");
         log.debug(`Error ${error}`);
       }

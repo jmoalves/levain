@@ -3,6 +3,7 @@ import * as log from "@std/log";
 
 import Config from "../config.ts";
 import ConsoleFeedback from "../utils/console_feedback.ts";
+import TestHelper from "../test/test_helper.ts";
 import ConsoleAndFileLogger from "./console_and_file_logger.ts";
 
 Deno.test("should setup logger with logFiles and console", async () => {
@@ -48,13 +49,6 @@ Deno.test("should mask passwords in file logs and ConsoleFeedback even when conf
     ConsoleAndFileLogger.config = undefined;
     logger = await ConsoleAndFileLogger.setup([logFile], true);
 
-    const cfg = new Config([]);
-    cfg.password = "TopSecret#42";
-    ConsoleAndFileLogger.config = cfg;
-
-    log.info(`Connecting with TopSecret#42 and TopSecret#42`);
-    logger.flush();
-
     const writtenChunks: string[] = [];
     const decoder = new TextDecoder();
     ConsoleFeedback.OUT = {
@@ -66,6 +60,25 @@ Deno.test("should mask passwords in file logs and ConsoleFeedback even when conf
     } as typeof Deno.stdout;
 
     const feedback = new ConsoleFeedback();
+    // Exercise sanitize before config is assigned (null fallback)
+    feedback.start("Before config");
+
+    const cfg = new Config([]);
+    cfg.password = "TopSecret#42";
+    ConsoleAndFileLogger.config = cfg;
+
+    log.info(`Connecting with TopSecret#42 and TopSecret#42`);
+    logger.flush();
+
+    // Exercise console handler formatter directly for both omitLog=true and omitLog=false
+    const omittedConsoleLine = logger.handlers["console"].format(TestHelper.logRecord("console TopSecret#42"));
+    assertFalse(omittedConsoleLine.includes("TopSecret#42"));
+    assertStringIncludes(omittedConsoleLine, "console ******");
+    const regularConsoleHandler = logger.getConsoleHandler(false);
+    const regularConsoleLine = regularConsoleHandler.format(TestHelper.logRecord("console TopSecret#42"));
+    assertFalse(regularConsoleLine.includes("TopSecret#42"));
+    assertStringIncludes(regularConsoleLine, "console ******");
+
     feedback.start("Start TopSecret#42");
     feedback.reset("Done TopSecret#42");
 
@@ -75,6 +88,7 @@ Deno.test("should mask passwords in file logs and ConsoleFeedback even when conf
 
     const feedbackOutput = writtenChunks.join("");
     assertFalse(feedbackOutput.includes("TopSecret#42"));
+    assertStringIncludes(feedbackOutput, "Before config");
     assertStringIncludes(feedbackOutput, "Start ******");
     assertStringIncludes(feedbackOutput, "Done ******");
   } finally {

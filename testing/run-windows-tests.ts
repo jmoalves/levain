@@ -143,7 +143,7 @@ export function resolveWindowsSshContract(
 }
 
 export function isValidSshHost(host: string): boolean {
-  return host.length > 0 && !host.startsWith("-") && !/[\s\r\n\0]/.test(host);
+  return /^[a-zA-Z0-9][a-zA-Z0-9._@-]*$/.test(host);
 }
 
 export function formatSkipMessage(resolution: Extract<ContractResolution, { ok: false }>): string {
@@ -177,6 +177,9 @@ export function quoteCmdArg(arg: string): string {
   if (/^[a-zA-Z0-9._:=\\/+-]+$/.test(arg)) {
     return arg;
   }
+  if (arg.endsWith("\\")) {
+    throw new Error(`Unsafe trailing backslash in quoted Windows test argument: ${JSON.stringify(arg)}`);
+  }
   return `"${arg}"`;
 }
 
@@ -190,7 +193,7 @@ export function buildRemoteCmdScript(params: {
   const { remoteDir, remoteArchive, denoVersion, checkOnly, denoTestArgs } = params;
   const lines = [
     "@echo off",
-    "setlocal",
+    "setlocal DisableDelayedExpansion",
     `mkdir "${remoteDir}" || exit /b 1`,
     `tar -xzf "${remoteArchive}" -C "${remoteDir}" || exit /b 1`,
     `cd /d "${remoteDir}" || exit /b 1`,

@@ -24,16 +24,16 @@ jobs:
 
     steps:
       - name: Echo
-        shell: cmd
+        shell: pwsh
         env:
           GITHUB_REF_VALUE: ${{ github.ref }}
-        run: echo REF=%GITHUB_REF_VALUE%
+        run: Write-Output "REF=$env:GITHUB_REF_VALUE"
 
       - name: Install Levain
         env:
           INPUT_LEVAIN_VERSION: ${{ github.event.inputs.levainVersion }}
           RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
-          GITHUB_REPO: ${{ github.repository }}
+          REPOSITORY: ${{ github.repository }}
         run: |
           # Which levain version?
           # The manual input wins. When triggered by a published release, use
@@ -43,14 +43,17 @@ jobs:
           if (! $levainVersion) {
             $levainVersion = $env:RELEASE_TAG_NAME -replace '^v', ''
           }
+          if ($levainVersion -and $levainVersion -notmatch '^[0-9]+\.[0-9]+\.[0-9]+$') {
+            throw "Invalid levainVersion: $levainVersion"
+          }
 
           # Install script - from the release itself when a version is known.
           # Otherwise use the script from master, because the
           # releases/latest URL may not exist for branches/forks running e2e.
           $scriptUrl = if ($levainVersion) {
-            "https://github.com/$($env:GITHUB_REPO)/releases/download/v${levainVersion}/install.ps1"
+            "https://github.com/$($env:REPOSITORY)/releases/download/v${levainVersion}/install.ps1"
           } else {
-            "https://raw.githubusercontent.com/$($env:GITHUB_REPO)/master/install/install.ps1"
+            "https://raw.githubusercontent.com/$($env:REPOSITORY)/master/install/install.ps1"
           }
           Write-Output "=== install.ps1 from $scriptUrl"
 
@@ -96,7 +99,7 @@ jobs:
               :: corrupted file
               if "%%a" == "tomcat-9" set ignore=true
 
-              if not "!ignore!" == "true" set pkgList=!pkgList!%%a
+              if not "!ignore!" == "true" set "pkgList=!pkgList! %%a"
           )
 
           levain install %pkgList%

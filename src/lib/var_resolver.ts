@@ -2,27 +2,44 @@ import UserInfoUtil from "./user_info/userinfo_util.ts";
 import type Config from "./config.ts";
 import HomePaths from "./paths/home_paths.ts";
 
+export interface VarResolutionContext {
+  depth: number;
+  deferredSecrets: Map<string, string>;
+}
+
 export default class VarResolver {
   static readonly MAX_EXPANSION_DEPTH = 20;
 
-  static async replaceVars(text: string, pkgName: string | undefined, config: Config): Promise<string> {
+  static async replaceVars(
+    text: string,
+    pkgName: string | undefined,
+    config: Config,
+    parentCtx?: VarResolutionContext,
+  ): Promise<string> {
+    const isRoot = !parentCtx;
+    const baseDepth = parentCtx?.depth ?? 0;
+    const deferredSecrets = parentCtx?.deferredSecrets ?? new Map<string, string>();
+
     let replacedText: string = text;
-    const deferredSecrets = new Map<string, string>();
     let vars = VarResolver.findVarsInText(replacedText);
-    let depth = 0;
+    let loopDepth = 0;
 
     while (vars.length) {
-      if (depth >= VarResolver.MAX_EXPANSION_DEPTH) {
+      if (baseDepth + loopDepth >= VarResolver.MAX_EXPANSION_DEPTH) {
         throw new Error(
           `Maximum variable expansion depth (${VarResolver.MAX_EXPANSION_DEPTH}) exceeded while resolving: ${text}`,
         );
       }
-      depth++;
+      loopDepth++;
+      const childCtx: VarResolutionContext = {
+        depth: baseDepth + loopDepth,
+        deferredSecrets,
+      };
 
       for (const myVar of vars) {
         const varText = myVar.text;
         const varName = myVar.name;
-        const varValue = await VarResolver.getVarValue(varName, pkgName, config);
+        const varValue = await VarResolver.getVarValue(varName, pkgName, config, childCtx);
 
         if (!varValue) {
           throw new Error(`Var ${varName} not defined`);
@@ -40,8 +57,10 @@ export default class VarResolver {
       vars = VarResolver.findVarsInText(replacedText);
     }
 
-    for (const [sentinel, secretValue] of deferredSecrets.entries()) {
-      replacedText = replacedText.replace(sentinel, () => secretValue);
+    if (isRoot) {
+      for (const [sentinel, secretValue] of deferredSecrets.entries()) {
+        replacedText = replacedText.replace(sentinel, () => secretValue);
+      }
     }
 
     return replacedText;
@@ -61,7 +80,12 @@ export default class VarResolver {
       });
   }
 
-  static async getVarValue(vName: string, pkgName: string | undefined, config: Config): Promise<string | undefined> {
+  static async getVarValue(
+    vName: string,
+    pkgName: string | undefined,
+    config: Config,
+    ctx?: VarResolutionContext,
+  ): Promise<string | undefined> {
     // TODO: Refactor this... Use ChainOfResponsibility Pattern...
 
     // We handle reserved words first
@@ -105,12 +129,15 @@ export default class VarResolver {
     } else if (vName.search(/^pkg\.(.+)\.([^.]*)/) != -1) {
       const pkgVarPkg = vName.replace(/^pkg\.(.+)\.([^.]*)/, "$1");
       const pkgVarName = vName.replace(/^pkg\.(.+)\.([^.]*)/, "$2");
-      return await config.packageManager.getVar(pkgVarPkg, pkgVarName) ?? "";
+      return await config.packageManager.getVar(pkgVarPkg, pkgVarName, ctx) ?? "";
     } else {
       // General items
 
-      if (pkgName && await config.packageManager.getVar(pkgName, vName)) {
-        return await config.packageManager.getVar(pkgName, vName) ?? "";
+      if (pkgName) {
+        const pkgVarValue = await config.packageManager.getVar(pkgName, vName, ctx);
+        if (pkgVarValue) {
+          return pkgVarValue;
+        }
       }
 
       if (config?.getVar(vName)) {

@@ -1,10 +1,12 @@
 import * as path from "@std/path";
 import { assert, assertEquals, assertNotEquals, assertThrows } from "@std/assert";
+import { stub } from "@std/testing/mock";
 import { ensureDirSync, ensureFileSync, existsSync } from "@std/fs";
 
 import OsUtils from "../os/os_utils.ts";
 import TestHelper from "../test/test_helper.ts";
 import { assertNumberEquals } from "../test/more_asserts.ts";
+import DateUtils from "../utils/date_utils.ts";
 
 import { FileUtils } from "./file_utils.ts";
 import t from "../i18n.ts";
@@ -39,6 +41,31 @@ Deno.test("FileUtils - should create a backup for a given file in the same dir",
   Deno.removeSync(src);
   Deno.removeSync(bkp1);
   Deno.removeSync(bkp2);
+});
+
+Deno.test("FileUtils - createBackup handles timestamp collision without infinite loop", () => {
+  const tempDir = TestHelper.getNewTempDir();
+  const src = path.join(tempDir, "config.txt");
+  Deno.writeTextFileSync(src, "v1");
+
+  const dateStub = stub(DateUtils, "dateTag", () => "20260101");
+  const timeStub = stub(DateUtils, "timeTagWithMillis", () => "120000000");
+
+  try {
+    const bkp1 = FileUtils.createBackup(src);
+    const bkp2 = FileUtils.createBackup(src);
+    const bkp3 = FileUtils.createBackup(src);
+
+    assertEquals(bkp1, `${src}.20260101.120000000.bkp`);
+    assertEquals(bkp2, `${src}.20260101.120000000.1.bkp`);
+    assertEquals(bkp3, `${src}.20260101.120000000.2.bkp`);
+    assert(bkp1 && existsSync(bkp1));
+    assert(bkp2 && existsSync(bkp2));
+    assert(bkp3 && existsSync(bkp3));
+  } finally {
+    timeStub.restore();
+    dateStub.restore();
+  }
 });
 
 Deno.test("FileUtils - should NOT create a backup for a given file that does NOT exist", () => {

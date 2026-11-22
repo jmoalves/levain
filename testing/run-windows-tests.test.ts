@@ -130,6 +130,13 @@ Deno.test("run-windows-tests - resolveWindowsSshContract", async (t) => {
     };
     const spaceRes = resolveWindowsSshContract((k) => spaceEnv[k], () => true);
     assertEquals(spaceRes.ok, false);
+
+    const slashEnv: Record<string, string> = {
+      [SSH_CONFIG_ENV]: "/path/to/ssh_config",
+      [SSH_HOST_ENV]: "win/host",
+    };
+    const slashRes = resolveWindowsSshContract((k) => slashEnv[k], () => true);
+    assertEquals(slashRes.ok, false);
   });
 });
 
@@ -160,6 +167,7 @@ Deno.test("run-windows-tests - command builders follow the ssh -F contract stric
   assertThrows(() => quoteCmdArg("%TEMP%"), Error, "Unsafe character");
   assertThrows(() => quoteCmdArg("line1\nline2"), Error, "Unsafe character");
   assertThrows(() => quoteCmdArg("line1\rline2"), Error, "Unsafe character");
+  assertThrows(() => quoteCmdArg("foo bar\\"), Error, "Unsafe trailing backslash");
 
   const script = buildRemoteCmdScript({
     remoteDir: "levain-test-123",
@@ -168,6 +176,7 @@ Deno.test("run-windows-tests - command builders follow the ssh -F contract stric
     checkOnly: false,
     denoTestArgs: ["--filter", "Registry"],
   });
+  assertStringIncludes(script, "setlocal DisableDelayedExpansion");
   assertStringIncludes(script, 'mkdir "levain-test-123"');
   assertStringIncludes(script, 'tar -xzf "levain-test-123.tar.gz" -C "levain-test-123"');
   assertStringIncludes(script, "call scripts\\devLevain.cmd 2.9.8");

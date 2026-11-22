@@ -5,6 +5,7 @@ import t from "./src/lib/i18n.ts";
 import ConsoleAndFileLogger from "./src/lib/logger/console_and_file_logger.ts";
 import { parseArgs } from "./src/lib/parse_args.ts";
 import { Timer } from "./src/lib/timer.ts";
+import CliUtil from "./src/lib/cli_util.ts";
 
 import LevainCli from "./src/levain_cli.ts";
 
@@ -75,7 +76,7 @@ export default class Levain {
         log.debug(t("levain.executionSuccess"));
       }
 
-      if (Deno.stdout.isTerminal()) {
+      if (!CliUtil.testMode && Deno.stdout.isTerminal()) {
         if (this.error || (this.myArgs && this.myArgs["wait-after-end"])) {
           console.log("");
           prompt(t("enterFinish"));
@@ -114,5 +115,9 @@ export default class Levain {
 
 // https://deno.land/manual/tools/script_installer
 if (import.meta.main) {
-  await new Levain().runLevinWithLog(Deno.args.filter((it) => it != "--is_compiled_binary"));
+  const levain = new Levain();
+  await levain.runLevinWithLog(Deno.args.filter((it) => it != "--is_compiled_binary"));
+  if (levain.error) {
+    Deno.exit(1);
+  }
 }

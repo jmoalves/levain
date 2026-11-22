@@ -15,7 +15,7 @@ While v1 is being hardened and validated, `v0.93.1` remains the `Latest` release
 | **Phase 2** | `chore/ci-and-build` | Fix `scripts/test.cmd` & coverage reporting, align Deno versions in CI, clean build/release scripts, document all 4 Windows testing scenarios | Done |
 | **Phase 3** | `chore/security-hardening` | Remove `curl -k`, enable `deno.lock`, pin GitHub Actions & permissions, audit embedded binaries and runtime | Done |
 | **Phase 3.5** | `chore/review-subagents` | Portable read-only review subagents (`business-qa`, `technical-qa`, `security`, `performance`, `usability`) for Antigravity & Claude Code | Done |
-| **Phase 3.6** | `fix/v1-blockers` | Close P0 security, privacy, exit-code, E2E, i18n, and runtime bugs surfaced by the 5-lens whole-repo review | Planned |
+| **Phase 3.6** | `fix/v1-blockers` | Close P0 security, privacy, exit-code, E2E, i18n, and runtime bugs surfaced by the 5-lens whole-repo review | Done |
 | **Phase 4** | `test/coverage-and-reliability` | Real coverage baseline, 100% actions × options contract recipes, unit tests for all commands, core modules, and `src/lib/io/` | Planned |
 | **Phase 4.5** | `refactor/core-cli-and-actions` | Fix incomplete commands, `levain.minVersion`, `levainShell`, `parse_args.ts`, broken actions, "did you mean?", and CLI/activate UX | Planned |
 | **Phase 5** | `perf/startup-and-repos` | Measure & optimize startup/repos/CI, pragmatically reduce `extra-bin` toward pure Deno, macOS/Linux foundation, and v1 production readiness | Planned |
@@ -83,21 +83,21 @@ While v1 is being hardened and validated, `v0.93.1` remains the `Latest` release
 
 ---
 
-## Phase 3.6 — v1 Blockers & High-Risk Security/Correctness Fixes
+## Phase 3.6 — v1 Blockers & High-Risk Security/Correctness Fixes (Completed)
 
-**Branch:** `fix/v1-blockers` *(from the 5-lens whole-repository audit)*
+**Branches:** `fix/security-and-privacy-blockers`, `fix/exit-codes-and-runtime-blockers` *(from the 5-lens whole-repository audit)*
 
-- [ ] Fix runtime password masking in logs (`LogFormatterFactory` capturing `ConsoleAndFileLogger.config` before initialization, `template.ts` logging full rendered content, unmasked `ConsoleFeedback`).
-- [ ] Replace hardcoded internal organization URLs and Maven coordinates in public tests/source (`src/lib/utils/git_utils.test.ts`, `src/action/maven/maven_copy*.ts`) with generic `example.org` / `com.example` fixtures.
-- [ ] Propagate non-zero exit codes on errors across `levain.ts`, `src/levain_cli.ts`, `levain.{cmd,ps1,sh}`, and `install/install.ps1`, and fix the missing space in `.github/workflows/test-e2e.yml` (`set pkgList=!pkgList!%%a`).
-- [ ] Verify release `.sha256` checksums during self-upgrade (`src/lib/releases/levain_releases.ts`) and harden `%TEMP%\levain` extraction/handling in `levain.cmd`.
-- [ ] Fix high-impact runtime and security bugs:
+- [x] Fix runtime password masking in logs (`LogFormatterFactory` capturing `ConsoleAndFileLogger.config` before initialization, `template.ts` logging full rendered content / raw replacements, unmasked `ConsoleFeedback`, JSON-escaped passwords in `LogUtils.hidePassword`).
+- [x] Replace hardcoded internal organization URLs and Maven coordinates in public tests/source (`src/lib/utils/git_utils.test.ts`, `src/action/maven/maven_copy*.ts`, `extra-bin/windows/os-utils/mavenCopy.cmd`) with generic `example.org` / `com.example` fixtures.
+- [x] Propagate non-zero exit codes on errors across `levain.ts`, `src/levain_cli.ts`, `levain.{cmd,ps1,sh}`, and `install/install.ps1`, and fix the missing space in `.github/workflows/test-e2e.yml` (`set "pkgList=!pkgList! %%a"`).
+- [x] Verify release `.sha256` checksums on a private copy during self-upgrade (`src/lib/releases/levain_releases.ts`), write `upgrade-target.txt`, and harden `%TEMP%\levain` extraction/handling in `levain.cmd`.
+- [x] Fix high-impact runtime and security bugs:
   - Disable HTML entity escaping in `src/lib/i18n.ts` (`interpolation: { escapeValue: false }`).
   - Fix array-reference comparison in `OsUtils.sanitizeUserPath()` (avoiding unnecessary `powershell.exe` / Registry writes on every Windows command).
   - Check `response.ok` in `HttpReader` and fix `FileCache` stream leak / double HTTP `GET`.
-  - Add Zip Slip path-containment validation in `DenoZip` (`src/lib/extract/denozip_extractor.ts`).
+  - Add Zip Slip path-containment validation and disable Web Workers in `DenoZip` (`src/lib/extract/denozip_extractor.ts`).
   - Move `${{ github.* }}` expressions out of inline `run:` scripts into step `env:` across `.github/workflows/` and harden `testing/run-windows-tests.ts` argument quoting.
-  - Guard `VarResolver.replaceVars` against recursion cycles and `$&`/`$$` replacement corruption, fix `FileUtils.createBackup` collision loop, fix `LevainReleases` 404 fallthrough, and fix the stray backtick in `README.md`.
+  - Guard `VarResolver.replaceVars` against recursion cycles (including package YAML vars) and `$&`/`$$` replacement corruption, fix `FileUtils.createBackup` collision loop, fix `LevainReleases` 404 fallthrough, and fix the stray backtick in `README.md`.
 
 ---
 

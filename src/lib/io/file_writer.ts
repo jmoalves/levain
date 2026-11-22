@@ -16,6 +16,7 @@ export default class FileWriter implements Writer, Progress, Timestamps, Closer 
   private filePath: string;
   private tempPath: string;
   private file: Deno.FsFile;
+  private closed = false;
   private fileInfo: Deno.FileInfo | undefined;
   private fileSize: number | undefined;
 
@@ -68,31 +69,45 @@ export default class FileWriter implements Writer, Progress, Timestamps, Closer 
   }
 
   // Deno.Writer
-  // deno-lint-ignore require-await
   async write(p: Uint8Array): Promise<number> {
-    return new Promise((resolve, _reject) => {
-      this.file.write(p).then((size: number) => {
-        this.written += size;
-        if (this.progressBar) {
-          this.progressBar.render(this.written);
-        }
-
-        resolve(size);
-      });
-    });
+    const size = await this.file.write(p);
+    this.written += size;
+    if (this.progressBar) {
+      await this.progressBar.render(this.written);
+    }
+    return size;
   }
 
   // deno-lint-ignore require-await
   async close() {
     log.debug(`Closing ${this.tempPath}`);
-    this.file.close()
+    if (!this.closed) {
+      this.closed = true;
+      this.file.close();
+    }
     if (OsUtils.removeFile(this.filePath)) {
       log.debug(`Removing ${this.filePath}`);
     }
     log.debug(`Moving ${this.tempPath} => ${this.filePath}`);
     FileUtils.renameSync(this.tempPath, this.filePath);
-    
+
     this.fileInfo = FileUtils.getFileInfoSync(this.filePath);
+  }
+
+  abort() {
+    if (!this.closed) {
+      this.closed = true;
+      try {
+        this.file.close();
+      } catch {
+        // ignore close error on abort
+      }
+    }
+    try {
+      OsUtils.removeFile(this.tempPath);
+    } catch {
+      // ignore temp cleanup error on abort
+    }
   }
 
   // Timestamps

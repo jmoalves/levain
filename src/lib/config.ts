@@ -8,7 +8,7 @@ import PackageManager from "./package/package_manager.ts";
 import Registry from "./repository/registry.ts";
 import RepositoryManager from "./repository/repository_manager.ts";
 import { FileUtils } from "./fs/file_utils.ts";
-import VarResolver from "./var_resolver.ts";
+import VarResolver, { type VarResolutionContext } from "./var_resolver.ts";
 import ConfigPersistentAttributes from "./config-persistent-attributes.ts";
 import { isNotFoundFileError } from "./utils/error_utils.ts";
 import LevainPaths from "./paths/levain_paths.ts";
@@ -171,8 +171,12 @@ export default class Config {
   }
 
   // deno-lint-ignore require-await
-  async replaceVars(text: string, pkgName?: string | undefined): Promise<string> {
-    return VarResolver.replaceVars(text, pkgName, this);
+  async replaceVars(
+    text: string,
+    pkgName?: string | undefined,
+    ctx?: VarResolutionContext,
+  ): Promise<string> {
+    return VarResolver.replaceVars(text, pkgName, this, ctx);
   }
 
   public saveIfChanged(): void {

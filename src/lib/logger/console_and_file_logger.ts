@@ -51,7 +51,7 @@ export default class ConsoleAndFileLogger {
 
   getConsoleHandler(omitLog: boolean = false): BaseHandler {
     const formatter = LogFormatterFactory.getHidePasswordFormatter(() => ConsoleAndFileLogger.config);
-    
+
     if (omitLog) {
       const handler = new StderrConsoleHandler("CRITICAL");
       handler.formatter = formatter;

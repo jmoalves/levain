@@ -246,7 +246,7 @@ export default class LevainReleases {
   }
 
   static parseSha256(content: string): string {
-    const token = content.trim().split(/\s+/)[0]?.toLowerCase() ?? "";
+    const token = content.trim().split(/\s+/)[0].toLowerCase();
     if (!/^[0-9a-f]{64}$/.test(token)) {
       throw new Error("Invalid SHA-256 checksum content");
     }
@@ -279,42 +279,89 @@ export default class LevainReleases {
     return await response.text();
   }
 
-  async prepareNewRelease() {
-    const releasesDir = GeneralPaths.tempLevainReleasesDir;
-    log.debug(`Levain releases dir ${releasesDir}`);
-    ensureDirSync(releasesDir);
-
-    const newVersionDir = path.resolve(releasesDir, `levain-${await this.latestVersion()}`);
-    log.debug(`Checking (1) Levain at ${newVersionDir}`);
-    if (!existsSync(newVersionDir)) {
-      let cachedZipPath: string | undefined;
-      try {
-        log.debug(`Downloading and verifying Levain release`);
-        const url = await this.levainZipUrl();
-        const expectedSha256 = await this.fetchExpectedSha256(url);
-        const fileCache = new FileCache(this.config);
-        cachedZipPath = await fileCache.get(url);
-        await LevainReleases.verifyFileSha256(cachedZipPath, expectedSha256);
-
-        log.debug(`Extracting verified Levain release to ${releasesDir}`);
-        const extractor = new ExtractorFactory().createExtractor(this.config, cachedZipPath);
-        await extractor.extract(false, cachedZipPath, releasesDir);
-      } catch (error) {
-        if (cachedZipPath) {
-          OsUtils.removeFile(cachedZipPath);
-        }
-        const message = error instanceof Error ? error.message : JSON.stringify(error);
-        log.error(t("lib.releases.levain_releases.unableToExtract", { error: message }));
-        return;
-      }
-    }
-
-    // Double check
-    log.debug(`Checking (2) Levain at ${newVersionDir}`);
-    if (!existsSync(newVersionDir)) {
+  async prepareNewRelease(releasesDir = GeneralPaths.tempLevainReleasesDir) {
+    const latestVer = await this.latestVersion();
+    if (!latestVer) {
       log.error(t("lib.releases.levain_releases.unableToLoad"));
       return;
     }
+
+    log.debug(`Levain releases dir ${releasesDir}`);
+    ensureDirSync(releasesDir);
+
+    const versionDirName = `levain-${latestVer}`;
+    const newVersionDir = path.resolve(releasesDir, versionDirName);
+    const targetFile = path.resolve(releasesDir, "upgrade-target.txt");
+
+    // Clean stale upgrade directories/markers so SHA-256 verification is never
+    // bypassed by a pre-existing directory and levain.cmd cannot pick an older version.
+    try {
+      OsUtils.removeFile(targetFile);
+    } catch (cleanError) {
+      log.debug(`Could not remove stale upgrade marker ${targetFile}: ${cleanError}`);
+    }
+    try {
+      for (const entry of Deno.readDirSync(releasesDir)) {
+        if (entry.isDirectory && entry.name.startsWith("levain-")) {
+          try {
+            OsUtils.removeDir(path.resolve(releasesDir, entry.name));
+          } catch (entryError) {
+            log.debug(`Could not clean previous release directory ${entry.name}: ${entryError}`);
+          }
+        }
+      }
+    } catch (cleanError) {
+      log.debug(`Could not enumerate release directories in ${releasesDir}: ${cleanError}`);
+    }
+
+    let cachedZipPath: string | undefined;
+    let verifiedZipPath: string | undefined;
+    try {
+      log.debug(`Downloading and verifying Levain release`);
+      const url = await this.levainZipUrl(latestVer);
+      const expectedSha256 = await this.fetchExpectedSha256(url);
+      const fileCache = new FileCache(this.config);
+      cachedZipPath = await fileCache.get(url);
+
+      // Copy into releasesDir before verifying and extracting to prevent TOCTOU
+      // when levainCacheDir is shared across users or processes.
+      verifiedZipPath = path.resolve(releasesDir, `levain-verify-${crypto.randomUUID()}.zip`);
+      await Deno.copyFile(cachedZipPath, verifiedZipPath);
+      await LevainReleases.verifyFileSha256(verifiedZipPath, expectedSha256);
+
+      log.debug(`Extracting verified Levain release to ${releasesDir}`);
+      const extractor = new ExtractorFactory().createExtractor(this.config, verifiedZipPath);
+      await extractor.extract(false, verifiedZipPath, releasesDir);
+    } catch (error) {
+      if (cachedZipPath) {
+        try {
+          OsUtils.removeFile(cachedZipPath);
+        } catch (rmError) {
+          log.debug(`Could not remove cached zip ${cachedZipPath}: ${rmError}`);
+        }
+      }
+      const message = error instanceof Error ? error.message : JSON.stringify(error);
+      log.error(t("lib.releases.levain_releases.unableToExtract", { error: message }));
+      return;
+    } finally {
+      if (verifiedZipPath) {
+        try {
+          OsUtils.removeFile(verifiedZipPath);
+        } catch (rmError) {
+          log.debug(`Could not remove temporary zip ${verifiedZipPath}: ${rmError}`);
+        }
+      }
+    }
+
+    // Double check extracted release contains levain.cmd before writing upgrade marker
+    log.debug(`Checking (2) Levain at ${newVersionDir}`);
+    if (!existsSync(newVersionDir) || !existsSync(path.join(newVersionDir, "levain.cmd"))) {
+      log.error(t("lib.releases.levain_releases.unableToLoad"));
+      return;
+    }
+
+    // Use CRLF so Windows `findstr /R /X` in levain.cmd matches reliably.
+    Deno.writeTextFileSync(targetFile, `${versionDirName}\r\n`);
 
     log.info("");
     log.info(t("lib.releases.levain_releases.restarting"));
