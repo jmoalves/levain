@@ -19,3 +19,12 @@ Deno.test("should humanize measures", () => {
 
   assertNotEquals(timer.humanize(), undefined);
 });
+
+Deno.test("should reset startTime when reset is called", () => {
+  const timer = new Timer();
+  timer.startTime = performance.now() - 5000;
+  assert(timer.measure() >= 4900, "measure() should reflect elapsed time since startTime");
+
+  timer.reset();
+  assert(timer.measure() < 1000, "reset() should restart startTime near now");
+});
