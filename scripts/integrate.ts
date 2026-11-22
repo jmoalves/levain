@@ -250,6 +250,19 @@ export async function runCascade(
   const validateI18n = deps.validateI18n ?? defaultValidateI18n;
   const os = deps.os ?? Deno.build.os;
 
+  if (opts.checkI18nOnly) {
+    const i18nRes = validateI18n();
+    if (!i18nRes.valid) {
+      error("❌ i18n Catalog Validation - FAILED");
+      for (const msg of i18nRes.errors) {
+        error(`   - ${msg}`);
+      }
+      return { success: false, failedLevel: 1, message: "Fix i18n catalog errors." };
+    }
+    log("✔ i18n Catalog Validation - PASSED");
+    return { success: true };
+  }
+
   const { allChanged, tsChanged } = await deps.getChangedFiles();
 
   log(`📁 Detected ${allChanged.length} modified/staged file(s) (${tsChanged.length} TypeScript file(s)).`);
@@ -339,21 +352,9 @@ export async function runCascade(
 
 export async function main() {
   const opts = parseArgs(Deno.args);
-
-  if (opts.checkI18nOnly) {
-    const i18nRes = defaultValidateI18n();
-    if (!i18nRes.valid) {
-      console.error("❌ i18n Catalog Validation - FAILED");
-      for (const msg of i18nRes.errors) {
-        console.error(`   - ${msg}`);
-      }
-      Deno.exit(1);
-    }
-    console.log("✔ i18n Catalog Validation - PASSED");
-    return;
+  if (!opts.checkI18nOnly) {
+    console.log("🚀 [levain-integrate] Starting fast-fail integration cascade...\n");
   }
-
-  console.log("🚀 [levain-integrate] Starting fast-fail integration cascade...\n");
 
   const result = await runCascade(opts, {
     getChangedFiles: defaultGetChangedFiles,
