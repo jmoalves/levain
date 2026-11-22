@@ -12,6 +12,7 @@ export const PT_LOCALE_PATH = "src/locales/pt/translation.json";
 export interface Options {
   quick: boolean;
   verbose: boolean;
+  checkI18nOnly: boolean;
 }
 
 export interface I18nValidationResult {
@@ -23,6 +24,7 @@ export function parseArgs(args: string[]): Options {
   return {
     quick: args.includes("--quick"),
     verbose: args.includes("--verbose") || args.includes("-v"),
+    checkI18nOnly: args.includes("--check-i18n"),
   };
 }
 
@@ -248,6 +250,19 @@ export async function runCascade(
   const validateI18n = deps.validateI18n ?? defaultValidateI18n;
   const os = deps.os ?? Deno.build.os;
 
+  if (opts.checkI18nOnly) {
+    const i18nRes = validateI18n();
+    if (!i18nRes.valid) {
+      error("❌ i18n Catalog Validation - FAILED");
+      for (const msg of i18nRes.errors) {
+        error(`   - ${msg}`);
+      }
+      return { success: false, failedLevel: 1, message: "Fix i18n catalog errors." };
+    }
+    log("✔ i18n Catalog Validation - PASSED");
+    return { success: true };
+  }
+
   const { allChanged, tsChanged } = await deps.getChangedFiles();
 
   log(`📁 Detected ${allChanged.length} modified/staged file(s) (${tsChanged.length} TypeScript file(s)).`);
@@ -337,7 +352,9 @@ export async function runCascade(
 
 export async function main() {
   const opts = parseArgs(Deno.args);
-  console.log("🚀 [levain-integrate] Starting fast-fail integration cascade...\n");
+  if (!opts.checkI18nOnly) {
+    console.log("🚀 [levain-integrate] Starting fast-fail integration cascade...\n");
+  }
 
   const result = await runCascade(opts, {
     getChangedFiles: defaultGetChangedFiles,

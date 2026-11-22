@@ -1,111 +1,69 @@
 #!/bin/bash
+set -euo pipefail
 
-getRelease() {
-  debug=false
-
-  while getopts "o:r:dt:" o; do
-    case "${o}" in
-    o)
-      owner="${OPTARG}"
-      ;;
-
-    r)
-      repo="${OPTARG}"
-      ;;
-
-    d)
-      debug=true
-      ;;
-
-    t)
-      timeout="${OPTARG}"
-      ;;
-
-    *)
-      echo Invalid options
-      exit 1
-      ;;
-    esac
-  done
-  shift $((OPTIND - 1))
-
-  version=$1
-  if $debug; then
-    echo getRelease - owner...: $owner
-    echo getRelease - repo....: $repo
-    echo getRelease - timeout.: $timeout
-    echo getRelease - version.: $version
+getLatestRelease() {
+  local owner="$1"
+  local repo="$2"
+  local url="https://api.github.com/repos/${owner}/${repo}/releases/latest"
+  local -a authArgs=()
+  if [ -n "${GITHUB_TOKEN:-}" ]; then
+    authArgs=(-H "Authorization: Bearer ${GITHUB_TOKEN}")
   fi
-  # TODO: Check parameters
-
-  # Release url
-  url="https://api.github.com/repos/$owner/$repo/releases/latest"
-  if [ -n "$version" ]; then
-    url="https://api.github.com/repos/$owner/$repo/releases/tags/v$version"
-  fi
-
-  if $debug; then
-    echo getRelease - URL: ${url}
-  fi
-
-  # Release
-  echo $(curl -ks -X GET ${url})
+  curl -fsSL "${authArgs[@]}" "$url"
 }
 
-dir=$1
+dir=${1:-}
 if [ -z "$dir" ]; then
-  echo You must inform the destination dir
+  echo "You must inform the destination dir" >&2
   exit 1
 fi
 
-denoOS=$2
+denoOS=${2:-}
 if [ -z "$denoOS" ]; then
-  echo No DENO OS informed... Using $RUNNER_OS
-  denoOS=$RUNNER_OS
+  echo "No DENO OS informed... Using ${RUNNER_OS:-Linux}"
+  denoOS=${RUNNER_OS:-Linux}
 fi
 
-denoVersion=$3
+denoVersion=${3:-}
 
-echo === BEG = Deno for $denoOS at $dir 
-
-############
-
-myPath="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
-cd $myPath/..
-
-## Deno Release
-denoRelease=$(getRelease -o denoland -r deno $denoVersion)
-if [ -z "$denoRelease" ]; then
-  echo ERROR getting Deno release
-  exit 1
-fi
-
-denoVersion=$(echo $denoRelease | jq -rc '.tag_name' | sed 's/v//g')
+echo "=== BEG = Deno for $denoOS at $dir"
 
 case "${denoOS}" in
-Windows)
-  denoUrl=$(echo $denoRelease | jq -rc '.assets|.[] | select( .name == "deno-x86_64-pc-windows-msvc.zip" ) | .browser_download_url')
-  ;;
-
-Linux|macOS)
-  denoUrl=$(echo $denoRelease | jq -rc '.assets|.[] | select( .name == "deno-x86_64-unknown-linux-gnu.zip" ) | .browser_download_url')
-  ;;
-
-*)
-  echo Invalid deno OS $denoOS
-  exit 1
-  ;;
+  Windows)
+    assetName="deno-x86_64-pc-windows-msvc.zip"
+    ;;
+  Linux)
+    assetName="deno-x86_64-unknown-linux-gnu.zip"
+    ;;
+  macOS)
+    assetName="deno-x86_64-apple-darwin.zip"
+    ;;
+  *)
+    echo "Invalid deno OS $denoOS" >&2
+    exit 1
+    ;;
 esac
 
-# Deno
-echo Downloading Deno $denoVersion for $denoOS from $denoUrl
+if [ -n "$denoVersion" ]; then
+  denoUrl="https://github.com/denoland/deno/releases/download/v${denoVersion}/${assetName}"
+else
+  denoRelease=$(getLatestRelease denoland deno)
+  denoVersion=$(printf '%s' "$denoRelease" | jq -rc '.tag_name // empty' | sed 's/^v//')
+  denoUrl=$(printf '%s' "$denoRelease" | jq -rc --arg name "$assetName" '.assets[]? | select(.name == $name) | .browser_download_url' | head -n 1)
+fi
 
-mkdir -p ${dir} &&
-tempFile=$( mktemp ) &&
-curl -ks -o ${tempFile} -L $denoUrl &&
-unzip ${tempFile} -d ${dir} >/dev/null &&
-rm -rf ${tempFile} &&
+if [ -z "$denoUrl" ]; then
+  echo "ERROR: Could not resolve Deno download URL for OS=${denoOS} version=${denoVersion:-latest}" >&2
+  exit 1
+fi
 
-echo === END = Deno for $denoOS at $dir/deno
-# We can't run this... unless we downloaded the Deno for our OS.
-# $dir/deno -V info
+echo "Downloading Deno ${denoVersion} for ${denoOS} from ${denoUrl}"
+
+mkdir -p "${dir}"
+tempFile=$(mktemp)
+trap 'rm -f "$tempFile"' EXIT
+
+curl -fsSL -o "${tempFile}" "${denoUrl}"
+unzip -oq "${tempFile}" -d "${dir}"
+
+echo "=== END = Deno for $denoOS at $dir/deno"

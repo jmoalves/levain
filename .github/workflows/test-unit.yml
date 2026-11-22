@@ -6,7 +6,7 @@ on:
       denoVersion:
         description: "Deno version (optional)"
         required: false
-        default: "2.9.6"
+        default: "2.9.8"
 
   push:
 
@@ -17,12 +17,39 @@ on:
     - cron: "0 5 * * SUN"
 
 jobs:
+  static-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    env:
+      DEFAULT_DENO_VERSION: "2.9.8"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get Deno
+        run: |
+          rm -rf "$DENO_ROOT_PATH" && mkdir -p "$DENO_ROOT_PATH"
+          bash "$GITHUB_WORKSPACE/githubScripts/get-deno.sh" "$DENO_ROOT_PATH" Linux "${{ github.event.inputs.denoVersion || env.DEFAULT_DENO_VERSION }}"
+          echo "$DENO_ROOT_PATH" >> "$GITHUB_PATH"
+        env:
+          DENO_ROOT_PATH: ${{ runner.temp }}/deno
+
+      - name: Typecheck, lint, i18n, and tooling tests
+        run: |
+          deno --version
+          deno check levain.ts
+          deno lint
+          deno task check:i18n
+          deno test --allow-all scripts/ testing/ levain.test.ts
+
   unit-win:
     runs-on: windows-latest
     timeout-minutes: 10
 
     env:
-      DEFAULT_DENO_VERSION: 2.9.6
+      DEFAULT_DENO_VERSION: "2.9.8"
 
     steps:
       - name: Checkout
@@ -51,6 +78,17 @@ jobs:
         env:
           GITHUB_WORKSPACE: ${{ github.workspace }}
 
+      - name: Lint and i18n checks
+        shell: cmd
+        run: |
+          set "PATH=%DENO_ROOT_PATH%;%PATH%"
+          deno lint
+          if errorlevel 1 exit /b %ERRORLEVEL%
+          deno task check:i18n
+          if errorlevel 1 exit /b %ERRORLEVEL%
+        env:
+          DENO_ROOT_PATH: ${{ runner.temp }}\deno
+
       - name: Run tests
         shell: cmd
         run: |
@@ -67,26 +105,3 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: ${{ github.repository }}
           files: coverage/levain.lcov
-
-  # unit-nix:
-  #   strategy:
-  #     matrix:
-  #       platform: [ubuntu-latest, macos-latest]
-
-  #   runs-on: ${{ matrix.platform }}
-  #   timeout-minutes: 10
-
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
-
-  #     - name: Run tests
-  #       run: |
-  #         denoTemp=$( mktemp -d )
-
-  #         bash $GITHUB_WORKSPACE/githubScripts/get-deno.sh $denoTemp Linux
-  #         export PATH=${denoTemp}:$PATH
-
-  #         cd $GITHUB_WORKSPACE
-  #         echo bash ./scripts/test.sh
-  #         rm -rf ${denoTemp}

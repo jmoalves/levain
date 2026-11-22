@@ -15,13 +15,16 @@ if not exist %levainRoot%\bin (
     mkdir %levainRoot%\bin
 )
 
+set repoSlug=%GITHUB_REPOSITORY%
+if "a%repoSlug%" == "a" set repoSlug=jmoalves/levain
+
 echo.
-echo === EXTRA-BIN latest
+echo === EXTRA-BIN latest (%repoSlug%)
 set binPath=%TEMP%\levain\extra-bin
 if exist %binPath% rmdir /q /s %binPath%
 mkdir %binPath%
 
-%PWS% Invoke-WebRequest %proxyCfg% https://github.com/jmoalves/levain/releases/latest/download/levain-extra-bin-windows-x86_64.zip -OutFile %binPath%\levain-extra-bin-windows-x86_64.zip
+%PWS% Invoke-WebRequest %proxyCfg% https://github.com/%repoSlug%/releases/latest/download/levain-extra-bin-windows-x86_64.zip -OutFile %binPath%\levain-extra-bin-windows-x86_64.zip
 
 if exist %levainRoot%\extra-bin\windows\7-zip rmdir /q /s %levainRoot%\extra-bin\windows\7-zip
 if exist %levainRoot%\extra-bin\windows\git rmdir /q /s %levainRoot%\extra-bin\windows\git
