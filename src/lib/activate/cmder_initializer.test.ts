@@ -4,6 +4,7 @@ import {
   assertRejects,
 } from "@std/assert";
 import { stub } from "@std/testing/mock";
+import * as path from "@std/path";
 
 import CmderInitializer from "./cmder_initializer.ts";
 import OsUtils from "../os/os_utils.ts";
@@ -46,11 +47,12 @@ Deno.test("findConfigPath uses CMDER_ROOT first", async () => {
     },
   );
 
+  const expectedConfig = path.join("C:\\Cmder", "config");
   const existsStub = stub(
     OsUtils,
     "exists",
     // deno-lint-ignore require-await
-    async (path: string) => path === "C:\\Cmder\\config",
+    async (p: string) => p === expectedConfig,
   );
 
   try {
@@ -59,9 +61,9 @@ Deno.test("findConfigPath uses CMDER_ROOT first", async () => {
       "",
     );
 
-    const path = await initializer.findConfigPath();
+    const foundPath = await initializer.findConfigPath();
 
-    assertEquals(path, "C:\\Cmder\\config");
+    assertEquals(foundPath, expectedConfig);
   } finally {
     existsStub.restore();
     getStub.restore();
@@ -84,12 +86,12 @@ Deno.test("findConfigPath falls back through candidates", async () => {
     },
   );
 
+  const expectedFallback = path.join("C:\\Program Files", "Cmder", "config");
   const existsStub = stub(
     OsUtils,
     "exists",
     // deno-lint-ignore require-await
-    async (path: string) =>
-      path === "C:\\Program Files\\Cmder\\config",
+    async (p: string) => p === expectedFallback,
   );
 
   try {
@@ -98,9 +100,9 @@ Deno.test("findConfigPath falls back through candidates", async () => {
       "",
     );
 
-    const path = await initializer.findConfigPath();
+    const foundPath = await initializer.findConfigPath();
 
-    assertEquals(path, "C:\\Program Files\\Cmder\\config");
+    assertEquals(foundPath, expectedFallback);
   } finally {
     existsStub.restore();
     getStub.restore();

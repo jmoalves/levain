@@ -1,10 +1,12 @@
 import { assertEquals, assertRejects } from "@std/assert";
+import { stub } from "@std/testing/mock";
 import * as path from "@std/path";
 
-import Config from "../config.ts";
 import { ZipRepository } from "./zip_repository.ts";
 import LevainAsserts from "../test/levain_asserts.ts";
 import Repository from "./repository.ts";
+import TestHelper from "../test/test_helper.ts";
+import HttpUtils from "../utils/http_utils.ts";
 
 Deno.test("ZipRepository should have a name", () => {
   const repo = getRepo();
@@ -57,18 +59,30 @@ Deno.test("ZipRepository should list packages from files system zip", async () =
   ]);
 });
 Deno.test("ZipRepository should list packages from a zip url", async () => {
-  // FIXME is this test really working?
-  // ToDo: Maybe delete zipRepo from temp dir since Repository does not extract it twice or use some kind of hash on the zip during extract
-  const repo = await getInitedRepo(
-    "https://github.com/jmoalves/levain/tree/master/testdata/zip_repository/zipRepo.zip",
+  const zipBytes = await Deno.readFile(rootUri);
+  const getStub = stub(
+    HttpUtils,
+    "get",
+    () =>
+      Promise.resolve(
+        new Response(zipBytes, {
+          status: 200,
+          headers: { "content-length": String(zipBytes.length) },
+        }),
+      ),
   );
 
-  const packages = repo.listPackages();
+  try {
+    const repo = await getInitedRepo("https://example.org/repos/zipRepo.zip");
+    const packages = repo.listPackages();
 
-  LevainAsserts.assertPackageNames(packages, [
-    "reciepe-in-a-zip",
-    "reciepe-in-a-folder-in-a-zip",
-  ]);
+    LevainAsserts.assertPackageNames(packages, [
+      "reciepe-in-a-zip",
+      "reciepe-in-a-folder-in-a-zip",
+    ]);
+  } finally {
+    getStub.restore();
+  }
 });
 
 async function getInitedRepo(rootDir: string = "./testdata/zip_repository/zipRepo.zip"): Promise<Repository> {
@@ -78,5 +92,5 @@ async function getInitedRepo(rootDir: string = "./testdata/zip_repository/zipRep
 }
 
 function getRepo(rootDir: string = rootUri) {
-  return new ZipRepository(new Config([]), rootDir);
+  return new ZipRepository(TestHelper.getConfig(), rootDir);
 }

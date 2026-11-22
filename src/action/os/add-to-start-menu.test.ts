@@ -16,45 +16,41 @@ Deno.test("AddToStartMenuAction should be obtainable with action factory", () =>
 
 if (OsUtils.isWindows()) {
   Deno.test("AddToStartMenuAction should create shortcut in the start menu folder", async () => {
-    //Given the shortcut doesn't exist in the start menu already
     const userProfile = Deno.env.get("USERPROFILE");
     const startMenuPath = `${userProfile}/AppData/Roaming/Microsoft/Windows/Start Menu/Programs`;
-    const fileName = "document.txt";
+    const filePath = TestHelper.getNewTempFile();
+    const fileName = path.basename(filePath);
     const shortcutPath = path.resolve(startMenuPath, `${fileName}.lnk`);
     OsUtils.removeFile(shortcutPath);
 
-    const currentFileDir = path.dirname(import.meta.url);
-    const filePath = `${currentFileDir}/../../testdata/add_to_startup/${fileName}`;
-
-    //when I execute the action
-    const action = getStartMenuAction();
-    await action.execute(TestHelper.mockPackage(), [filePath]);
-
-    //Then the shortcut should exist in the start menu folder
-    assertPathExists(shortcutPath);
+    try {
+      const action = getStartMenuAction();
+      await action.execute(TestHelper.mockPackage(), [filePath]);
+      assertPathExists(shortcutPath);
+    } finally {
+      OsUtils.removeFile(shortcutPath);
+    }
   });
 
   Deno.test("AddToStartMenuAction should be able to create folder in the start menu with a file inside", async () => {
-    //Given the folder doesn't exist in the start menu already
     const userProfile = Deno.env.get("USERPROFILE");
     const startMenuPath = `${userProfile}/AppData/Roaming/Microsoft/Windows/Start Menu/Programs`;
-    const folderName = "dev-env-test";
-    const fileName = "document.txt";
+    const folderName = `levain-test-${crypto.randomUUID().slice(0, 8)}`;
+    const filePath = TestHelper.getNewTempFile();
+    const fileName = path.basename(filePath);
     const folderPath = path.resolve(startMenuPath, folderName);
     OsUtils.removeDir(folderPath);
     assertPathDoesNotExist(folderPath);
 
-    //And it should get the file
-    const currentFileDir = path.dirname(import.meta.url);
-    const filePath = path.resolve(currentFileDir, "../../testdata/add_to_startup", fileName);
+    try {
+      const action = getStartMenuAction();
+      await action.execute(TestHelper.mockPackage(), [filePath, folderName]);
 
-    //when I execute the action
-    const action = getStartMenuAction();
-    await action.execute(TestHelper.mockPackage(), [filePath, folderName]);
-
-    //Then the shortcut should exist in the new created folder
-    const shortcutPath = path.resolve(startMenuPath, folderName, `${fileName}.lnk`);
-    assertPathExists(shortcutPath);
+      const shortcutPath = path.resolve(startMenuPath, folderName, `${fileName}.lnk`);
+      assertPathExists(shortcutPath);
+    } finally {
+      OsUtils.removeDir(folderPath);
+    }
   });
 }
 

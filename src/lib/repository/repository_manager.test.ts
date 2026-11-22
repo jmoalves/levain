@@ -1,5 +1,4 @@
 import RepositoryManager from "./repository_manager.ts";
-import Config from "../config.ts";
 import TestHelper from "../test/test_helper.ts";
 import { assert, assertEquals } from "@std/assert";
 import LevainPaths from "../paths/levain_paths.ts";
@@ -21,12 +20,12 @@ Deno.test("RepositoryManager.repoList should list repos without repetition", asy
   const repos = await repositoryManager.repoList(false);
 
   assertEquals(repos.length, 2);
-  assert(repos[0].match(/levain$/), "repos[0] does not end with 'levain'");
+  assertEquals(repos[0], LevainPaths.levainSrcDir);
   assert(repos[1].match(/repository_manager(\/|\\)extraRepo$/), "repos[1] does not contain extraRepo");
 });
 
 async function getInitializedRepositoryManager() {
-  const config = new Config();
+  const config = TestHelper.getConfig();
   const repositoryManager = new RepositoryManager(config);
 
   await repositoryManager.init({
@@ -41,7 +40,7 @@ async function getInitializedRepositoryManager() {
 }
 
 Deno.test("RepositoryManager.createCurrentDirRepo should user currentDir", async () => {
-  const config = new Config();
+  const config = TestHelper.getConfig();
   const repositoryManager = new RepositoryManager(config);
 
   const repo = await repositoryManager.createCurrentDirRepo();
@@ -56,7 +55,7 @@ Deno.test("RepositoryManager.createCurrentDirRepo should user currentDir", async
 });
 
 Deno.test("RepositoryManager.createInstalledRepo should user registryDir", async () => {
-  const config = new Config();
+  const config = TestHelper.getConfig();
   const repositoryManager = new RepositoryManager(config);
 
   const repo = await repositoryManager.createInstalledRepo();
@@ -70,7 +69,7 @@ Deno.test("RepositoryManager.createInstalledRepo should user registryDir", async
 });
 
 Deno.test("RepositoryManager.createRegularRepositories should use levainSrcDir", async () => {
-  const config = new Config();
+  const config = TestHelper.getConfig();
   const repositoryManager = new RepositoryManager(config);
 
   const repo = await repositoryManager.createRegularRepositories();
@@ -84,7 +83,7 @@ Deno.test("RepositoryManager.createRegularRepositories should use levainSrcDir",
 });
 
 Deno.test("RepositoryManager.createRegularRepositories should add tempRepos and extraRepos", async () => {
-  const config = new Config();
+  const config = TestHelper.getConfig();
   const repositoryManager = new RepositoryManager(config);
 
   const tempRepoDir = TestHelper.getTestDataPath("repository_manager/tempRepo");

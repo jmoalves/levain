@@ -30,9 +30,37 @@ export default class TestHelper {
     return factory.get(actionName, config);
   }
 
-  static getConfig(): Config {
-    const myArgs = {};
+  static getConfig(extraArgs: Record<string, unknown> = {}): Config {
+    const tempHome = TestHelper.getNewTempDir();
+    const myArgs = {
+      levainHome: [tempHome],
+      levainCache: path.join(tempHome, ".levainCache"),
+      ...extraArgs,
+    };
     return new Config(myArgs);
+  }
+
+  static async createLocalGitRepo(files: Record<string, string>): Promise<string> {
+    const rootDir = TestHelper.getNewTempDir();
+    const bareRepo = path.join(rootDir, "remote.git");
+    const workDir = path.join(rootDir, "work");
+    const git = "git";
+
+    await OsUtils.runAndLog([git, "init", "--bare", bareRepo]);
+    await OsUtils.runAndLog([git, "clone", bareRepo, workDir]);
+    await OsUtils.runAndLog([git, "config", "user.email", "test@example.org"], workDir);
+    await OsUtils.runAndLog([git, "config", "user.name", "Test"], workDir);
+
+    for (const [relPath, content] of Object.entries(files)) {
+      const fullPath = path.join(workDir, relPath);
+      await Deno.mkdir(path.dirname(fullPath), { recursive: true });
+      await Deno.writeTextFile(fullPath, content);
+    }
+
+    await OsUtils.runAndLog([git, "add", "."], workDir);
+    await OsUtils.runAndLog([git, "commit", "-m", "initial commit"], workDir);
+    await OsUtils.runAndLog([git, "push"], workDir);
+    return bareRepo;
   }
 
   static logRecord(

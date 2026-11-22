@@ -77,9 +77,10 @@ Deno.test("Config should set levainCache", () => {
   assertEquals(config.configPaths.levainCacheDir, newDir);
 });
 Deno.test("Config should config levainCache with cli args", () => {
-  const config = new Config({ levainCache: "cache/" });
+  const cacheDir = path.join(TestHelper.getNewTempDir(), "cache");
+  const config = new Config({ levainCache: cacheDir });
 
-  assertEquals(config.configPaths.levainCacheDir, "cache/");
+  assertEquals(config.configPaths.levainCacheDir, cacheDir);
 });
 Deno.test("Config should replaceVars", async () => {
   const config = new Config({ myVar: "myValue" });

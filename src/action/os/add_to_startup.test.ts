@@ -17,23 +17,22 @@ Deno.test("AddToStartupAction should be obtainable with action factory", () => {
 
 if (OsUtils.isWindows()) {
   Deno.test("AddToStartupAction should create shortcut in the correct folder", async () => {
-    //Given that shortcut is not in the startup folder
     const userProfile = Deno.env.get("USERPROFILE");
     const startupPath = `${userProfile}/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup`;
-    const fileName = "document.txt";
-    const currentFileDir = path.dirname(import.meta.url);
-    const filePath = `${currentFileDir}/../../testdata/add_to_startup/${fileName}`;
+    const filePath = TestHelper.getNewTempFile();
+    const fileName = path.basename(filePath);
     const shortcutPath = path.resolve(startupPath, `${fileName}.lnk`);
     if (existsSync(shortcutPath)) {
       Deno.removeSync(shortcutPath);
     }
 
-    //when I execute the action
-    const action = getStartupAction();
-    await action.execute(TestHelper.mockPackage(), [filePath]);
-
-    //Then the shortcut should exist in the startup folder
-    assertPathExists(shortcutPath);
+    try {
+      const action = getStartupAction();
+      await action.execute(TestHelper.mockPackage(), [filePath]);
+      assertPathExists(shortcutPath);
+    } finally {
+      OsUtils.removeFile(shortcutPath);
+    }
   });
 }
 

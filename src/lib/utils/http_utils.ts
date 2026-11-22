@@ -13,11 +13,10 @@ export default class HttpUtils {
 
     log.debug(`FETCH ${url} - GET`);
     for (let t = 1; t <= tries; t++) {
+      const c = new AbortController();
+      const id = setTimeout(() => c.abort(), 5000);
       try {
-        const c = new AbortController();
-        const id = setTimeout(() => c.abort(), 5000);
         const response = await fetch(url, { signal: c.signal, redirect: "follow" });
-        clearTimeout(id);
 
         if (response) {
           log.debug(`FETCH ${url} - RESP - STATUS ${response.status} - ${response.statusText}`);
@@ -27,7 +26,11 @@ export default class HttpUtils {
       } catch (e) {
         log.debug(`FETCH ${url} - Error ${e} - attempt: ${t}/${tries}`);
         error = e;
-        await sleepRandomAmountOfSeconds(0, Math.max(1, 5));
+        if (t < tries) {
+          await sleepRandomAmountOfSeconds(0, Math.max(1, 5));
+        }
+      } finally {
+        clearTimeout(id);
       }
     }
 

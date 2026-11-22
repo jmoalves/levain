@@ -31,7 +31,11 @@ Deno.test("GitCloneAction.execute should fail when called without params", async
 
 Deno.test("GitCloneAction.execute should clone a repo", async () => {
   const action = new GitCloneAction();
-  const gitRepo = "https://github.com/begin-examples/deno-hello-world.git";
+  const gitRepo = await TestHelper.createLocalGitRepo({
+    "package.json": "{}\n",
+    "readme.md": "# hello\n",
+    "src/index.ts": "export {};\n",
+  });
   const cloneDir = TestHelper.getNewTempDir();
 
   await action.execute(undefined, [
@@ -44,7 +48,11 @@ Deno.test("GitCloneAction.execute should clone a repo", async () => {
 
 Deno.test("GitCloneAction.execute should skip if dir already has content", async () => {
   const action = new GitCloneAction();
-  const gitRepo = "https://github.com/begin-examples/deno-hello-world.git";
+  const gitRepo = await TestHelper.createLocalGitRepo({
+    "package.json": "{}\n",
+    "readme.md": "# hello\n",
+    "src/index.ts": "export {};\n",
+  });
   const dirWithContent = TestHelper.getNewTempDir();
   const fileInDir = path.join(dirWithContent, "abc.txt");
   ensureFileSync(fileInDir);

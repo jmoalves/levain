@@ -18,23 +18,22 @@ Deno.test("AddToDesktopAction should be obtainable with action factory", () => {
 
 if (OsUtils.isWindows()) {
   Deno.test("AddToDesktopAction should create shortcut in the desktop", async () => {
-    //Given that shortcut is not in the desktop already
     const userProfile = Deno.env.get("USERPROFILE");
     const desktopPath = `${userProfile}/Desktop`;
-    const fileName = "document.txt";
-    const currentFileDir = path.dirname(import.meta.url);
-    const filePath = `${currentFileDir}/../../testdata/add_to_startup/${fileName}`;
+    const filePath = TestHelper.getNewTempFile();
+    const fileName = path.basename(filePath);
     const shortcutPath = path.resolve(desktopPath, `${fileName}.lnk`);
     if (existsSync(shortcutPath)) {
       Deno.removeSync(shortcutPath);
     }
 
-    //when I execute the action
-    const action = getDesktopAction();
-    await action.execute(TestHelper.mockPackage(), [filePath]);
-
-    //Then the shortcut should exist in the desktop
-    assertPathExists(shortcutPath);
+    try {
+      const action = getDesktopAction();
+      await action.execute(TestHelper.mockPackage(), [filePath]);
+      assertPathExists(shortcutPath);
+    } finally {
+      OsUtils.removeFile(shortcutPath);
+    }
   });
 }
 

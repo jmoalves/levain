@@ -23,17 +23,18 @@ if (OsUtils.isWindows()) {
     const config = TestHelper.getConfig();
     const action = new AddPathAction(config);
 
-    const folder = TestHelper.folderThatAlwaysExists;
-    //Given the folder is not in the user path
-    await OsUtils.removePathPermanent(folder);
-    let newPath = await OsUtils.getUserPath(); //wait for new Path to be written before asserting
-    assert(!await OsUtils.isInUserPath(folder), `Shouldn't had the folder ${folder} in path - ${newPath}`);
+    const folder = TestHelper.getNewTempDir();
+    try {
+      await OsUtils.removePathPermanent(folder);
+      let newPath = await OsUtils.getUserPath();
+      assert(!await OsUtils.isInUserPath(folder), `Shouldn't had the folder ${folder} in path - ${newPath}`);
 
-    //When I execute the action
-    await action.execute(TestHelper.mockPackage(), ["--permanent", folder]);
+      await action.execute(TestHelper.mockPackage(), ["--permanent", folder]);
 
-    //Then it should be on path
-    newPath = await OsUtils.getUserPath(); //wait for new Path to be written before asserting
-    assert(await OsUtils.isInUserPath(folder), `Should had the folder ${folder} in path - ${newPath}`);
+      newPath = await OsUtils.getUserPath();
+      assert(await OsUtils.isInUserPath(folder), `Should had the folder ${folder} in path - ${newPath}`);
+    } finally {
+      await OsUtils.removePathPermanent(folder);
+    }
   });
 }

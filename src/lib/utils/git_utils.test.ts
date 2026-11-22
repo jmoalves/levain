@@ -144,63 +144,13 @@ Deno.test("GitUtils.clone should throw error if url is invalid", async () => {
     "Invalid git url - thisSourceDoesNotExist",
   );
 });
-Deno.test("GitUtils.checkGitPath should throw error if url is invalid", () => {
-  assertThrows(
-    () => {
-      GitUtils.checkGitPath("thisFolderDoesNotExist");
-    },
-    Error,
-    "Invalid git url - thisFolderDoesNotExist",
-  );
-});
-Deno.test("GitUtils.localBaseDir should throw error if url is invalid", () => {
-  assertThrows(
-    () => {
-      GitUtils.localBaseDir("thisFolderDoesNotExist");
-    },
-    Error,
-    "Invalid git url - thisFolderDoesNotExist",
-  );
-});
-Deno.test("GitUtils.clone should throw error if url is invalid", async () => {
-  await assertRejects(
-    async () => {
-      await new GitUtils().clone("thisSourceDoesNotExist", "thisDstDoesNotExist");
-    },
-    Error,
-    "Invalid git url - thisSourceDoesNotExist",
-  );
-});
-Deno.test("GitUtils.checkGitPath should throw error if url is invalid", () => {
-  assertThrows(
-    () => {
-      GitUtils.checkGitPath("thisFolderDoesNotExist");
-    },
-    Error,
-    "Invalid git url - thisFolderDoesNotExist",
-  );
-});
-Deno.test("GitUtils.localBaseDir should throw error if url is invalid", () => {
-  assertThrows(
-    () => {
-      GitUtils.localBaseDir("thisFolderDoesNotExist");
-    },
-    Error,
-    "Invalid git url - thisFolderDoesNotExist",
-  );
-});
-Deno.test("GitUtils.clone should throw error if url is invalid", async () => {
-  await assertRejects(
-    async () => {
-      await new GitUtils().clone("thisSourceDoesNotExist", "thisDstDoesNotExist");
-    },
-    Error,
-    "Invalid git url - thisSourceDoesNotExist",
-  );
-});
 Deno.test("GitUtils.clone should clone a repo", async () => {
   const tempFolder = TestHelper.getNewTempDir();
-  const gitRepo = "https://github.com/begin-examples/deno-hello-world.git";
+  const gitRepo = await TestHelper.createLocalGitRepo({
+    "a.txt": "a\n",
+    "b.txt": "b\n",
+    "c.txt": "c\n",
+  });
 
   await new GitUtils().clone(gitRepo, tempFolder);
 
@@ -210,7 +160,11 @@ Deno.test({
   name: "GitUtils.update should succeed when repository is already up to date",
   fn: async () => {
     const tempFolder = TestHelper.getNewTempDir();
-    const gitRepo = "https://github.com/begin-examples/deno-hello-world.git";
+    const gitRepo = await TestHelper.createLocalGitRepo({
+      "a.txt": "a\n",
+      "b.txt": "b\n",
+      "c.txt": "c\n",
+    });
 
     const gitUtils = new GitUtils();
 
@@ -226,7 +180,7 @@ Deno.test({
   name: "GitUtils.update should fail when local branch is ahead of remote",
   fn: async () => {
     const tempFolder = TestHelper.getNewTempDir();
-    const gitRepo = "https://github.com/begin-examples/deno-hello-world.git";
+    const gitRepo = await TestHelper.createLocalGitRepo({ "a.txt": "a\n" });
 
     const gitUtils = new GitUtils();
 
@@ -338,7 +292,7 @@ Deno.test({
     const logger = await TestHelper.setupTestLogger();
 
     const tempFolder = TestHelper.getNewTempDir();
-    const gitRepo = "https://github.com/begin-examples/deno-hello-world.git";
+    const gitRepo = await TestHelper.createLocalGitRepo({ "a.txt": "a\n" });
 
     const gitUtils = new GitUtils();
 
@@ -385,7 +339,7 @@ Deno.test({
 });
 Deno.test("GitUtils.gitRoot returns the closest ancestor containing a .git dir", async () => {
   const tempFolder = TestHelper.getNewTempDir();
-  const gitRepo = "https://github.com/begin-examples/deno-hello-world.git";
+  const gitRepo = await TestHelper.createLocalGitRepo({ "a.txt": "a\n" });
 
   await new GitUtils().clone(gitRepo, tempFolder);
 
