@@ -64,24 +64,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Get Deno
+      - name: Validate Deno version
         shell: pwsh
+        env:
+          DENO_VERSION: ${{ github.event.inputs.denoVersion || env.DEFAULT_DENO_VERSION }}
+        run: |
+          if ($env:DENO_VERSION -notmatch '^[0-9]+\.[0-9]+\.[0-9]+$') {
+            throw "Invalid DENO_VERSION: $env:DENO_VERSION"
+          }
+
+      - name: Get Deno
+        shell: cmd
         env:
           DENO_VERSION: ${{ github.event.inputs.denoVersion || env.DEFAULT_DENO_VERSION }}
           DENO_ROOT_PATH: ${{ runner.temp }}\deno
           GITHUB_WORKSPACE: ${{ github.workspace }}
         run: |
-          if ($env:DENO_VERSION -notmatch '^[0-9]+\.[0-9]+\.[0-9]+$') {
-            throw "Invalid DENO_VERSION: $env:DENO_VERSION"
-          }
-          if (Test-Path $env:DENO_ROOT_PATH) {
-            Remove-Item $env:DENO_ROOT_PATH -Recurse -Force
-          }
-          New-Item -ItemType Directory -Path $env:DENO_ROOT_PATH -Force | Out-Null
-          & cmd /c call "$env:GITHUB_WORKSPACE\githubScripts\get-deno.cmd" "$env:DENO_ROOT_PATH" "$env:DENO_VERSION"
-          if ($LASTEXITCODE -ne 0) {
-            exit $LASTEXITCODE
-          }
+          if exist "%DENO_ROOT_PATH%" rmdir /q/s "%DENO_ROOT_PATH%"
+          if not exist "%DENO_ROOT_PATH%" mkdir "%DENO_ROOT_PATH%"
+          call "%GITHUB_WORKSPACE%\githubScripts\get-deno.cmd" %DENO_ROOT_PATH% %DENO_VERSION%
+          if errorlevel 1 exit /b %ERRORLEVEL%
 
       - name: Get extraBin
         shell: cmd
