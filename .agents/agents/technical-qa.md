@@ -37,7 +37,8 @@ Read the relevant context first:
    - Execution flow: `levain.ts` → `src/levain_cli.ts` → `Loader` → `CommandFactory` (`src/cmd/`) / `ActionFactory` (`src/action/`).
    - Path resolution stays centralized in `src/lib/paths/` (`LevainPaths`, `ConfigPaths`, `HomePaths`, `GeneralPaths`, `ExtraBin`) without reintroducing circular imports.
    - Compiled vs. source bootstrap stays in sync across `levain.ts`, `src/lib/paths/levain_paths.ts`, `githubScripts/levain-build.sh`, and `scripts/levain-build.cmd` (`--is_compiled_binary`).
-   - `Config` remains the threaded context; actions parse flags through `src/lib/parse_args.ts`.
+   - `Config` remains the threaded context; inspect `src/lib/parse_args.ts` and action option parsing critically for edge-case bugs, inconsistent option handling, or silent failures.
+   - Watch for **unnecessary Windows coupling** (`OsUtils.onlyInWindows()`, hardcoded backslashes, `cmd.exe`-only assumptions) in modules that could support macOS and Linux, and scrutinize `levainShell` / `os_shell.ts` and incomplete commands in `src/cmd/`.
 3. **Test quality & reliability:**
    - **Right test level:** pure logic tested with `MockPackage`, `MockRepository`, `PackageManagerMock`, and `TestHelper` without hitting the network or mutating the host OS.
    - **Tests actually verify what they claim:** no assertion-free tests, no tautological assertions, no mocks that only test the mock itself.
