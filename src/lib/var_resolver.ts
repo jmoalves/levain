@@ -3,10 +3,22 @@ import type Config from "./config.ts";
 import HomePaths from "./paths/home_paths.ts";
 
 export default class VarResolver {
+  static readonly MAX_EXPANSION_DEPTH = 20;
+
   static async replaceVars(text: string, pkgName: string | undefined, config: Config): Promise<string> {
     let replacedText: string = text;
+    const deferredSecrets = new Map<string, string>();
     let vars = VarResolver.findVarsInText(replacedText);
+    let depth = 0;
+
     while (vars.length) {
+      if (depth >= VarResolver.MAX_EXPANSION_DEPTH) {
+        throw new Error(
+          `Maximum variable expansion depth (${VarResolver.MAX_EXPANSION_DEPTH}) exceeded while resolving: ${text}`,
+        );
+      }
+      depth++;
+
       for (const myVar of vars) {
         const varText = myVar.text;
         const varName = myVar.name;
@@ -16,10 +28,20 @@ export default class VarResolver {
           throw new Error(`Var ${varName} not defined`);
         }
 
-        replacedText = replacedText.replace(varText, varValue);
+        if (varName === "levain.password") {
+          const sentinel = `__LEVAIN_SECRET_${deferredSecrets.size}_${crypto.randomUUID()}__`;
+          deferredSecrets.set(sentinel, varValue);
+          replacedText = replacedText.replace(varText, () => sentinel);
+        } else {
+          replacedText = replacedText.replace(varText, () => varValue);
+        }
       }
 
       vars = VarResolver.findVarsInText(replacedText);
+    }
+
+    for (const [sentinel, secretValue] of deferredSecrets.entries()) {
+      replacedText = replacedText.replace(sentinel, () => secretValue);
     }
 
     return replacedText;

@@ -9,7 +9,7 @@ class MavenCopyAction implements Action {
       throw new Error(
         "Invalid arguments.\n" +
           "  Usage: mavenCopy [coordinates] [destination]\n" +
-          "  Example: mavenCopy mavenCopy.cmd br.gov.bndes.iew.iew-for-liberty:iew-userregistry-liberty-feature:1.7.1:esa c:\\temp",
+          "  Example: mavenCopy com.example:sample-artifact:1.0.0:jar c:\\temp",
       );
     }
 

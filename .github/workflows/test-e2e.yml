@@ -25,26 +25,32 @@ jobs:
     steps:
       - name: Echo
         shell: cmd
-        run: echo REF=${{ github.ref }}
+        env:
+          GITHUB_REF_VALUE: ${{ github.ref }}
+        run: echo REF=%GITHUB_REF_VALUE%
 
       - name: Install Levain
+        env:
+          INPUT_LEVAIN_VERSION: ${{ github.event.inputs.levainVersion }}
+          RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
+          GITHUB_REPO: ${{ github.repository }}
         run: |
           # Which levain version?
           # The manual input wins. When triggered by a published release, use
           # that release - it is still flagged as a pre-release at this point,
           # so the "latest" URL would point to the PREVIOUS release.
-          $levainVersion = "${{ github.event.inputs.levainVersion }}"
+          $levainVersion = $env:INPUT_LEVAIN_VERSION
           if (! $levainVersion) {
-            $levainVersion = "${{ github.event.release.tag_name }}" -replace '^v', ''
+            $levainVersion = $env:RELEASE_TAG_NAME -replace '^v', ''
           }
 
           # Install script - from the release itself when a version is known.
           # Otherwise use the script from master, because the
           # releases/latest URL may not exist for branches/forks running e2e.
           $scriptUrl = if ($levainVersion) {
-            "https://github.com/${{ github.repository }}/releases/download/v${levainVersion}/install.ps1"
+            "https://github.com/$($env:GITHUB_REPO)/releases/download/v${levainVersion}/install.ps1"
           } else {
-            "https://raw.githubusercontent.com/${{ github.repository }}/master/install/install.ps1"
+            "https://raw.githubusercontent.com/$($env:GITHUB_REPO)/master/install/install.ps1"
           }
           Write-Output "=== install.ps1 from $scriptUrl"
 

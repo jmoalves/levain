@@ -36,3 +36,23 @@ Deno.test("should add datetime and level, and hide password", () => {
 
   assertMatch(logLine, /\d{8}-\d{6} INFO My password is \*\*\*\*\*\*./);
 });
+
+Deno.test("should hide password when config provider is populated after formatter creation", () => {
+  let lateConfig: Config | undefined = undefined;
+  const consoleFormatter = LogFormatterFactory.getHidePasswordFormatter(() => lateConfig);
+  const fileFormatter = LogFormatterFactory.getFormatterWithDatetimeAndLevel(() => lateConfig);
+
+  assertEquals(consoleFormatter(TestHelper.logRecord("before config")), "before config");
+
+  lateConfig = new Config([]);
+  lateConfig.password = "late-s3cr3t";
+
+  assertEquals(
+    consoleFormatter(TestHelper.logRecord("token=late-s3cr3t again=late-s3cr3t")),
+    "token=****** again=******",
+  );
+  assertMatch(
+    fileFormatter(TestHelper.logRecord("token=late-s3cr3t")),
+    /\d{8}-\d{6} INFO token=\*\*\*\*\*\*/,
+  );
+});
