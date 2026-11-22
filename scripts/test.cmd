@@ -98,7 +98,7 @@ if not "a%coverOps%" == "a" (
 
 echo Running tests
 @echo on
-"%myDenoExe%" test --allow-all --parallel %coverOps% %allParameters%
+"%myDenoExe%" test --frozen --allow-all --parallel %coverOps% %allParameters%
 @echo off
 set ERRORLEVEL_TESTES=%ERRORLEVEL%
 if not "%ERRORLEVEL_TESTES%"=="0" (

@@ -17,7 +17,7 @@ DENO_DIR=$( mktemp -d )
 export DENO_DIR
 trap 'rm -rf "$DENO_DIR"' EXIT
 
-if ! "${myDeno}" check --reload levain.ts; then
+if ! "${myDeno}" check --frozen --reload levain.ts; then
     echo "ERROR type-checking levain.ts"
     exit 1
 fi

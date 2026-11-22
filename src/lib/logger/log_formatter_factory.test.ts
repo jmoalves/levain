@@ -15,6 +15,17 @@ Deno.test("should hide passwords", () => {
   assertEquals(logLine, "My password is ******.");
 });
 
+Deno.test("should hide all occurrences of password in the same log line", () => {
+  const config = new Config([]);
+  config.password = "s3cr3t";
+  const formatter = LogFormatterFactory.getHidePasswordFormatter(config);
+  const logRecord = TestHelper.logRecord(`cmd=["--pass","${config.password}"], args=["--pass","${config.password}"]`);
+
+  const logLine = formatter(logRecord);
+
+  assertEquals(logLine, `cmd=["--pass","******"], args=["--pass","******"]`);
+});
+
 Deno.test("should add datetime and level, and hide password", () => {
   const config = new Config([]);
   config.password = "123456";

@@ -1,8 +1,7 @@
 name: Create a new release
 
 permissions:
-  contents: write
-  id-token: write
+  contents: read
 
 on:
   # Allows you to run this workflow manually from the Actions tab
@@ -17,6 +16,9 @@ jobs:
   createRelease:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    permissions:
+      contents: write
+      id-token: write
 
     steps:
       - name: Check denoVersion
@@ -49,12 +51,12 @@ jobs:
 
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
 
       - name: Generate versions
-        uses: HardNorth/github-version-generate@v1.3.0
+        uses: HardNorth/github-version-generate@91998704a2b37be20604933d9c989ebade9c5f89 # v1.3.0
         with:
           version-source: file
           version-file: ${{ github.workspace }}/recipes/levain.levain.yaml
@@ -75,6 +77,7 @@ jobs:
           bash $GITHUB_WORKSPACE/githubScripts/get-deno.sh $DENO_ROOT_PATH/linux Linux ${{ github.event.inputs.denoVersion }}
         env:
           DENO_ROOT_PATH: ${{ runner.temp }}/deno
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check sources
         run: |
@@ -117,6 +120,7 @@ jobs:
         run: |
           bash $GITHUB_WORKSPACE/githubScripts/levain-embedded-binaries.sh $LEVAIN_RELEASE_BIN_PATH/build
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }}
           LEVAIN_RELEASE_BIN_PATH: ${{ runner.temp }}/bin/levain-${{ env.RELEASE_VERSION }}
 
@@ -180,7 +184,7 @@ jobs:
 
       - name: Create release
         id: create_release
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3
         with:
           tag_name: v${{ env.RELEASE_VERSION }}
           body_path: ${{ runner.temp }}/changelog.${{ env.RELEASE_VERSION }}.md
@@ -207,6 +211,8 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 5
     needs: createRelease
+    permissions:
+      contents: read
 
     steps:
       - name: Install Levain
@@ -235,5 +241,5 @@ jobs:
           levain list
 
       - name: Run Microsoft Security DevOps
-        uses: microsoft/security-devops-action@v1
+        uses: microsoft/security-devops-action@cf28f87c67770dbaa208cce3665fafc849f77507 # v1.12.1
         id: msdo-levain

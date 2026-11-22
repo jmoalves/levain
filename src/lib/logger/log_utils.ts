@@ -29,6 +29,6 @@ export default class LogUtils {
       return msg;
     }
 
-    return msg.replace(config.password, "******");
+    return msg.replaceAll(config.password, "******");
   }
 }

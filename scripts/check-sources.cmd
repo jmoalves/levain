@@ -35,11 +35,10 @@ mkdir "%tempPath%"
 set DENO_DIR=%tempPath%
 
 pushd "%levainRoot%"
-if exist deno.lock del /q deno.lock
 
 echo.
 echo Levain sources
-"%myDenoExe%" check --reload levain.ts
+"%myDenoExe%" check --frozen --reload levain.ts
 if errorlevel 1 (
     echo Levain sources - ERROR
     rmdir /q/s "%tempPath%"
@@ -50,7 +49,7 @@ echo Levain sources - OK
 
 echo.
 echo Levain TEST sources
-"%myDenoExe%" test --reload --no-run
+"%myDenoExe%" test --frozen --reload --no-run
 if errorlevel 1 (
     echo Levain TEST sources - ERROR
     rmdir /q/s "%tempPath%"

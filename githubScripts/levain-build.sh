@@ -27,6 +27,7 @@ levainCompile() {
     shift $((OPTIND - 1))
 
     ${myDeno} compile \
+        --frozen \
         --reload \
         --allow-all \
         --target ${target} \

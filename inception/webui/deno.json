@@ -1,0 +1,5 @@
+{
+  "imports": {
+    "@webui/deno-webui": "jsr:@webui/deno-webui@^2.5.15"
+  }
+}

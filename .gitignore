@@ -12,7 +12,6 @@ levain.bundle.js
 /extra-bin/windows/7-zip/
 /extra-bin/windows/git/
 /node_modules/
-deno.lock
 testdata/template/result.txt
 levain
 levain.exe
