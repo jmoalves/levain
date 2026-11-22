@@ -1,4 +1,5 @@
 import { assertEquals, assertStringIncludes, assertThrows } from "@std/assert";
+import * as path from "@std/path";
 import {
   buildRemoteCleanupCommand,
   buildRemoteCmdScript,
@@ -206,8 +207,20 @@ Deno.test("run-windows-tests - runWindowsTests orchestration", async (t) => {
     const res = await runWindowsTests(parseArgs(["--", "--filter", "Registry"]), deps);
     assertEquals(res, { status: "passed", exitCode: 0 });
     assertEquals(calls.length, 4);
-    assertEquals(calls[0], ["scp", "-F", "/cfg/win_ssh", "/tmp/run-dir/levain-test-20261121220000.tar.gz", "win-box:levain-test-20261121220000.tar.gz"]);
-    assertEquals(calls[1], ["scp", "-F", "/cfg/win_ssh", "/tmp/run-dir/levain-test-20261121220000.cmd", "win-box:levain-test-20261121220000.cmd"]);
+    assertEquals(calls[0], [
+      "scp",
+      "-F",
+      "/cfg/win_ssh",
+      path.join("/tmp/run-dir", "levain-test-20261121220000.tar.gz"),
+      "win-box:levain-test-20261121220000.tar.gz",
+    ]);
+    assertEquals(calls[1], [
+      "scp",
+      "-F",
+      "/cfg/win_ssh",
+      path.join("/tmp/run-dir", "levain-test-20261121220000.cmd"),
+      "win-box:levain-test-20261121220000.cmd",
+    ]);
     assertEquals(calls[2], ["ssh", "-F", "/cfg/win_ssh", "win-box", 'cmd /c "levain-test-20261121220000.cmd"']);
     assertEquals(calls[3][0], "ssh");
     assertEquals(calls[3][1], "-F");
