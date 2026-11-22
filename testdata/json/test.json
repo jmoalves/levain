@@ -1,17 +1,17 @@
 {
-    "property": "value",
-    "numberProperty": 150.00,
-    "booleanProperty": true,
+  "property": "value",
+  "numberProperty": 150.00,
+  "booleanProperty": true,
 
-    "objectProperty": {
-        "innerProperty": "innerValue"
-    },
+  "objectProperty": {
+    "innerProperty": "innerValue"
+  },
 
-    "arrayProperty": [
-        "first",
-        "second",
-        "third"
-    ],
+  "arrayProperty": [
+    "first",
+    "second",
+    "third"
+  ],
 
-    "property.with.dots": "dotValue"
+  "property.with.dots": "dotValue"
 }

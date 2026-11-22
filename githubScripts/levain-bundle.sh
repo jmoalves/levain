@@ -11,7 +11,7 @@ myDeno=$2
 export DENO_DIR=${levainDir}/bin
 mkdir -p ${DENO_DIR}
 ${myDeno} info
-${myDeno} cache --unstable --reload ${levainDir}/levain.ts
-#${myDeno} bundle --unstable --reload ${levainDir}/levain.ts ${levainDir}/levain.bundle.js
+${myDeno} cache --reload ${levainDir}/levain.ts
+#${myDeno} bundle --reload ${levainDir}/levain.ts ${levainDir}/levain.bundle.js
 # bundle problems - https://github.com/jmoalves/levain/issues/13
 

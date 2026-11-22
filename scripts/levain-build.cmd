@@ -67,7 +67,7 @@ if exist %levainRoot%\deno.lock del /q %levainRoot%\deno.lock
 :: COMPILE Levain
 %levainRoot%\bin\deno.exe compile ^
     --reload ^
-    --allow-read --allow-write --allow-env --allow-net --allow-run ^
+    --allow-all ^
     --target x86_64-pc-windows-msvc ^
     --output %levainOutputDir%\build\levain.exe ^
     %levainRoot%\levain.ts ^
@@ -84,6 +84,8 @@ if errorlevel 1 exit /b 1
 echo.
 echo Copying auxiliary files to %levainOutputDir%
 xcopy /q   %levainRoot%\levain.cmd %levainOutputDir%\ >nul
+xcopy /q   %levainRoot%\levain.ps1 %levainOutputDir%\ >nul
+xcopy /q   %levainRoot%\levain.sh %levainOutputDir%\ >nul
 xcopy /q   %levainRoot%\LICENSE %levainOutputDir%\ >nul
 xcopy /q/s %levainRoot%\recipes\ %levainOutputDir%\build\recipes\ >nul
 xcopy /q/s %levainRoot%\extra-bin\ %levainOutputDir%\build\extra-bin\ >nul

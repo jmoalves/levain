@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       denoVersion:
-        description: 'Deno version (optional)'
+        description: "Deno version (optional)"
         required: false
-        default: '1.46.3'
+        default: "2.9.6"
 
   push:
 
@@ -14,37 +14,35 @@ on:
 
   schedule:
     # * is a special character in YAML so you have to quote this string
-    - cron:  '0 5 * * SUN'
-  
+    - cron: "0 5 * * SUN"
+
 jobs:
   unit-win:
     runs-on: windows-latest
     timeout-minutes: 10
 
     env:
-      DEFAULT_DENO_VERSION: 1.46.3
+      DEFAULT_DENO_VERSION: 2.9.6
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-
       - name: Set Deno version
         id: set-version
         run: |
-            echo "DENO_VERSION=${{ github.event.inputs.denoVersion || env.DEFAULT_DENO_VERSION }}" >> $GITHUB_ENV
+          echo "DENO_VERSION=${{ github.event.inputs.denoVersion || env.DEFAULT_DENO_VERSION }}" >> $GITHUB_ENV
 
       - name: Get Deno
         shell: cmd
         env:
-          DENO_VERSION: ${{ github.event.inputs.denoVersion || env.DEFAULT_DENO_VERSION }}"
+          DENO_VERSION: ${{ github.event.inputs.denoVersion || env.DEFAULT_DENO_VERSION }}
           DENO_ROOT_PATH: ${{ runner.temp }}\deno
           GITHUB_WORKSPACE: ${{ github.workspace }}
         run: |
           if exist %DENO_ROOT_PATH% rmdir /q/s %DENO_ROOT_PATH%
           if not exist %DENO_ROOT_PATH% mkdir %DENO_ROOT_PATH%
           call %GITHUB_WORKSPACE%\githubScripts\get-deno.cmd %DENO_ROOT_PATH% %DENO_VERSION%
-
 
       - name: Get extraBin
         shell: cmd
@@ -53,10 +51,10 @@ jobs:
         env:
           GITHUB_WORKSPACE: ${{ github.workspace }}
 
-
       - name: Run tests
         shell: cmd
         run: |
+          set "PATH=%DENO_ROOT_PATH%;%PATH%"
           call "%GITHUB_WORKSPACE%\scripts\test.cmd" --denoDir %DENO_ROOT_PATH% --coverage --checkSources
           if errorlevel 1 exit /b %ERRORLEVEL%
         env:
@@ -67,9 +65,9 @@ jobs:
         uses: codecov/codecov-action@v4.0.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          slug: jmoalves/levain
+          slug: ${{ github.repository }}
           files: coverage/levain.lcov
-          
+
   # unit-nix:
   #   strategy:
   #     matrix:
@@ -88,7 +86,7 @@ jobs:
 
   #         bash $GITHUB_WORKSPACE/githubScripts/get-deno.sh $denoTemp Linux
   #         export PATH=${denoTemp}:$PATH
-          
+
   #         cd $GITHUB_WORKSPACE
   #         echo bash ./scripts/test.sh
   #         rm -rf ${denoTemp}

@@ -1,1 +1,1 @@
-deno bundle --unstable levain.ts levain.bundle.js
+deno bundle levain.ts levain.bundle.js

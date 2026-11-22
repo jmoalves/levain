@@ -1,34 +1,35 @@
-import Config from "../config.ts";
-import Package from "../package/package.ts";
+import type Config from "../config.ts";
+import type Package from "../package/package.ts";
 
-import AbstractRepository from './abstract_repository.ts';
+import AbstractRepository from "./abstract_repository.ts";
 
 export default class NullRepository extends AbstractRepository {
-    constructor(private config: Config) {
-        super('nullRepo')
-    }
+  constructor(private config: Config) {
+    super("nullRepo");
+  }
 
-    async init(): Promise<void> {
-        this.setInitialized()
-    }
+  // deno-lint-ignore require-await
+  async init(): Promise<void> {
+    this.setInitialized();
+  }
 
-    invalidatePackages() {
-    }
+  invalidatePackages() {
+  }
 
-    resolvePackage(packageName: string): Package | undefined {
-        return undefined;
-    }
+  resolvePackage(_packageName: string): Package | undefined {
+    return undefined;
+  }
 
-    listPackages(): Array<Package> {
-        return []
-    }
+  listPackages(): Array<Package> {
+    return [];
+  }
 
-    async readPackages(): Promise<Array<Package>> {
-        return []
-    }
+  // deno-lint-ignore require-await
+  async readPackages(): Promise<Array<Package>> {
+    return [];
+  }
 
-    reload(): Promise<void> {
-        return Promise.resolve()
-    }
-
+  reload(): Promise<void> {
+    return Promise.resolve();
+  }
 }

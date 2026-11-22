@@ -1,7 +1,7 @@
-import {Input,} from "https://deno.land/x/cliffy/prompt/mod.ts";
+import { Input } from '@cliffy/prompt';
 
 export class CliffyTestHelper {
-    static inputResponse(value: string = '') {
-        Input.inject(value)
-    }
+  static inputResponse(value: string = '') {
+    Input.inject(value)
+  }
 }

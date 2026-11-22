@@ -1,3 +1,5 @@
-export default interface RewindReader extends Deno.Reader {
-    rewind(): void;
+import type { Reader } from "@std/io";
+
+export default interface RewindReader extends Reader {
+  rewind(): void;
 }

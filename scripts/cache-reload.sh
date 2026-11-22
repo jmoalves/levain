@@ -1,1 +1,1 @@
-deno cache --reload --unstable levain.ts
+deno cache --reload levain.ts
