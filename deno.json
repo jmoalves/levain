@@ -54,7 +54,8 @@
     "include": [
       "src/**/*test.ts",
       "test/**/*.ts",
-      "scripts/**/*test.ts"
+      "scripts/**/*test.ts",
+      "testing/**/*test.ts"
     ],
     "exclude": [
       "data/"
@@ -63,6 +64,7 @@
   "tasks": {
     "dev": "deno run --allow-all --watch levain.ts",
     "test": "deno test --allow-all",
+    "test:windows": "deno run --allow-all testing/run-windows-tests.ts",
     "integrate": "deno run --allow-all scripts/integrate.ts",
     "integrate:quick": "deno run --allow-all scripts/integrate.ts --quick",
     "compile": "deno compile --allow-all --output=levain levain.ts",

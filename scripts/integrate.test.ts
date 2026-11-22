@@ -1,19 +1,32 @@
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertStringIncludes } from "@std/assert";
 import {
   getFilesToCheck,
   getTargetedTests,
   IntegrateDeps,
   Logger,
-  Options,
   parseArgs,
   parseGitStatusOutput,
   runCascade,
+  validateI18nCatalogs,
 } from "./integrate.ts";
 
 function createSilentLogger(): Logger {
   return {
     log: () => {},
     error: () => {},
+  };
+}
+
+function createCapturedLogger() {
+  const logs: string[] = [];
+  const errors: string[] = [];
+  return {
+    logs,
+    errors,
+    logger: {
+      log: (...args: unknown[]) => logs.push(args.map(String).join(" ")),
+      error: (...args: unknown[]) => errors.push(args.map(String).join(" ")),
+    },
   };
 }
 
@@ -167,144 +180,256 @@ Deno.test("integrate.ts - getTargetedTests", async (t) => {
   });
 });
 
+Deno.test("integrate.ts - validateI18nCatalogs", async (t) => {
+  await t.step("passes when catalogs have matching keys and placeholders", () => {
+    const en = JSON.stringify({ cmd: { hello: "Hi {{name}}", unescaped: "URL {{- url}}" } });
+    const pt = JSON.stringify({ cmd: { hello: "Olá {{ name }}", unescaped: "URL {{- url}}" } });
+    const res = validateI18nCatalogs(en, pt);
+    assertEquals(res, { valid: true, errors: [] });
+  });
+
+  await t.step("detects missing keys in either catalog", () => {
+    const en = JSON.stringify({ a: "1", b: "2" });
+    const pt = JSON.stringify({ a: "1", c: "3" });
+    const res = validateI18nCatalogs(en, pt);
+    assertEquals(res.valid, false);
+    assertEquals(res.errors.length, 2);
+  });
+
+  await t.step("detects malformed placeholders, JS template syntax, and dotted key names", () => {
+    const en = JSON.stringify({
+      clean: { "cmd.clean.cleaned": "Cleaned {{amount}}" },
+      bad: "rename {{old} to ${target}",
+    });
+    const pt = JSON.stringify({
+      clean: { "cmd.clean.cleaned": "Limpo {{amount}}" },
+      bad: "renomear {{old}} para {{target}}",
+    });
+    const res = validateI18nCatalogs(en, pt);
+    assertEquals(res.valid, false);
+    const joined = res.errors.join("\n");
+    assertStringIncludes(joined, "contains a literal '.'");
+    assertStringIncludes(joined, "malformed '{{...}}'");
+    assertStringIncludes(joined, "JS template syntax");
+  });
+
+  await t.step("detects placeholder mismatches between en and pt", () => {
+    const en = JSON.stringify({ greeting: "Hello {{user}}" });
+    const pt = JSON.stringify({ greeting: "Olá {{nome}}" });
+    const res = validateI18nCatalogs(en, pt);
+    assertEquals(res.valid, false);
+    assertStringIncludes(res.errors[0], "Placeholder mismatch");
+  });
+});
+
 Deno.test("integrate.ts - runCascade with mocked dependencies", async (t) => {
-  await t.step("should skip Level 1 and 2 if no TS files changed, and run Level 3", async () => {
+  await t.step("should skip typecheck/lint/targeted if no TS files changed, validate i18n, and run Level 3", async () => {
     const executedCommands: string[][] = [];
     const deps: IntegrateDeps = {
-      getChangedFiles: async () => ({
-        allChanged: ["README.md", "recipes/app.yaml"],
-        tsChanged: [],
-      }),
-      runDenoCommand: async (_title, args) => {
+      getChangedFiles: () =>
+        Promise.resolve({
+          allChanged: ["README.md", "recipes/app.yaml"],
+          tsChanged: [],
+        }),
+      runDenoCommand: (_title, args) => {
         executedCommands.push(args);
-        return { success: true, durationMs: 10 };
+        return Promise.resolve({ success: true, durationMs: 10 });
       },
+      validateI18n: () => ({ valid: true, errors: [] }),
       fileExists: () => true,
+      os: "windows",
       logger: createSilentLogger(),
     };
 
     const res = await runCascade({ quick: false, verbose: false }, deps);
     assertEquals(res.success, true);
-    // Only Level 3 command was executed
-    assertEquals(executedCommands.length, 1);
-    assertEquals(executedCommands[0], ["test", "--allow-all", "--parallel", "--fail-fast"]);
+    assertEquals(executedCommands, [["test", "--allow-all", "--parallel", "--fail-fast"]]);
   });
 
   await t.step("should skip Level 3 when quick mode is enabled", async () => {
     const executedCommands: string[][] = [];
     const deps: IntegrateDeps = {
-      getChangedFiles: async () => ({
-        allChanged: ["src/action/copy.ts"],
-        tsChanged: ["src/action/copy.ts"],
-      }),
-      runDenoCommand: async (_title, args) => {
+      getChangedFiles: () =>
+        Promise.resolve({
+          allChanged: ["src/action/copy.ts"],
+          tsChanged: ["src/action/copy.ts"],
+        }),
+      runDenoCommand: (_title, args) => {
         executedCommands.push(args);
-        return { success: true, durationMs: 10 };
+        return Promise.resolve({ success: true, durationMs: 10 });
       },
-      fileExists: (p) => p === "src/action/copy.test.ts",
+      validateI18n: () => ({ valid: true, errors: [] }),
+      fileExists: (p) => p === "src/action/copy.ts" || p === "src/action/copy.test.ts",
+      os: "windows",
       logger: createSilentLogger(),
     };
 
     const res = await runCascade({ quick: true, verbose: false }, deps);
     assertEquals(res.success, true);
-    // Level 1 (check) and Level 2 (targeted test) ran, but Level 3 was skipped
-    assertEquals(executedCommands.length, 2);
-    assertEquals(executedCommands[0], ["check", "src/action/copy.ts"]);
-    assertEquals(executedCommands[1], ["test", "--allow-all", "src/action/copy.test.ts"]);
+    assertEquals(executedCommands, [
+      ["check", "src/action/copy.ts"],
+      ["lint", "src/action/copy.ts"],
+      ["test", "--allow-all", "src/action/copy.test.ts"],
+    ]);
   });
 
-  await t.step("should fast-fail at Level 1 and abort before Level 2 and 3", async () => {
+  await t.step("should fast-fail at Level 1a (typecheck) before lint and tests", async () => {
     const executedCommands: string[][] = [];
     const deps: IntegrateDeps = {
-      getChangedFiles: async () => ({
-        allChanged: ["src/action/copy.ts"],
-        tsChanged: ["src/action/copy.ts"],
-      }),
-      runDenoCommand: async (_title, args) => {
+      getChangedFiles: () =>
+        Promise.resolve({
+          allChanged: ["src/action/copy.ts"],
+          tsChanged: ["src/action/copy.ts"],
+        }),
+      runDenoCommand: (_title, args) => {
         executedCommands.push(args);
         if (args[0] === "check") {
-          return { success: false, durationMs: 15 };
+          return Promise.resolve({ success: false, durationMs: 15 });
         }
-        return { success: true, durationMs: 10 };
+        return Promise.resolve({ success: true, durationMs: 10 });
       },
+      validateI18n: () => ({ valid: true, errors: [] }),
       fileExists: () => true,
+      os: "windows",
       logger: createSilentLogger(),
     };
 
     const res = await runCascade({ quick: false, verbose: false }, deps);
     assertEquals(res.success, false);
     assertEquals(res.failedLevel, 1);
-    assertEquals(executedCommands.length, 1);
-    assertEquals(executedCommands[0], ["check", "src/action/copy.ts"]);
+    assertEquals(executedCommands, [["check", "src/action/copy.ts"]]);
+  });
+
+  await t.step("should fast-fail at Level 1b (lint) before tests", async () => {
+    const executedCommands: string[][] = [];
+    const deps: IntegrateDeps = {
+      getChangedFiles: () =>
+        Promise.resolve({
+          allChanged: ["src/action/copy.ts"],
+          tsChanged: ["src/action/copy.ts"],
+        }),
+      runDenoCommand: (_title, args) => {
+        executedCommands.push(args);
+        if (args[0] === "lint") {
+          return Promise.resolve({ success: false, durationMs: 12 });
+        }
+        return Promise.resolve({ success: true, durationMs: 10 });
+      },
+      validateI18n: () => ({ valid: true, errors: [] }),
+      fileExists: () => true,
+      os: "windows",
+      logger: createSilentLogger(),
+    };
+
+    const res = await runCascade({ quick: false, verbose: false }, deps);
+    assertEquals(res.success, false);
+    assertEquals(res.failedLevel, 1);
+    assertEquals(executedCommands, [
+      ["check", "src/action/copy.ts"],
+      ["lint", "src/action/copy.ts"],
+    ]);
+  });
+
+  await t.step("should fast-fail at Level 1c (i18n) before running tests", async () => {
+    const executedCommands: string[][] = [];
+    const deps: IntegrateDeps = {
+      getChangedFiles: () =>
+        Promise.resolve({
+          allChanged: ["src/locales/en/translation.json"],
+          tsChanged: [],
+        }),
+      runDenoCommand: (_title, args) => {
+        executedCommands.push(args);
+        return Promise.resolve({ success: true, durationMs: 10 });
+      },
+      validateI18n: () => ({ valid: false, errors: ["[pt] Missing translation key 'foo'"] }),
+      fileExists: () => true,
+      os: "windows",
+      logger: createSilentLogger(),
+    };
+
+    const res = await runCascade({ quick: false, verbose: false }, deps);
+    assertEquals(res.success, false);
+    assertEquals(res.failedLevel, 1);
+    assertEquals(executedCommands, []);
   });
 
   await t.step("should fast-fail at Level 2 and abort before Level 3", async () => {
     const executedCommands: string[][] = [];
     const deps: IntegrateDeps = {
-      getChangedFiles: async () => ({
-        allChanged: ["src/action/copy.ts"],
-        tsChanged: ["src/action/copy.ts"],
-      }),
-      runDenoCommand: async (_title, args) => {
+      getChangedFiles: () =>
+        Promise.resolve({
+          allChanged: ["src/action/copy.ts"],
+          tsChanged: ["src/action/copy.ts"],
+        }),
+      runDenoCommand: (_title, args) => {
         executedCommands.push(args);
         if (args[0] === "test" && args.includes("src/action/copy.test.ts")) {
-          return { success: false, durationMs: 25 };
+          return Promise.resolve({ success: false, durationMs: 25 });
         }
-        return { success: true, durationMs: 10 };
+        return Promise.resolve({ success: true, durationMs: 10 });
       },
-      fileExists: (p) => p === "src/action/copy.test.ts",
+      validateI18n: () => ({ valid: true, errors: [] }),
+      fileExists: (p) => p === "src/action/copy.ts" || p === "src/action/copy.test.ts",
+      os: "windows",
       logger: createSilentLogger(),
     };
 
     const res = await runCascade({ quick: false, verbose: false }, deps);
     assertEquals(res.success, false);
     assertEquals(res.failedLevel, 2);
-    assertEquals(executedCommands.length, 2);
-    assertEquals(executedCommands[0], ["check", "src/action/copy.ts"]);
-    assertEquals(executedCommands[1], ["test", "--allow-all", "src/action/copy.test.ts"]);
+    assertEquals(executedCommands, [
+      ["check", "src/action/copy.ts"],
+      ["lint", "src/action/copy.ts"],
+      ["test", "--allow-all", "src/action/copy.test.ts"],
+    ]);
   });
 
   await t.step("should fail when Level 3 fails", async () => {
     const executedCommands: string[][] = [];
     const deps: IntegrateDeps = {
-      getChangedFiles: async () => ({
-        allChanged: ["src/action/copy.ts"],
-        tsChanged: ["src/action/copy.ts"],
-      }),
-      runDenoCommand: async (_title, args) => {
+      getChangedFiles: () =>
+        Promise.resolve({
+          allChanged: ["src/action/copy.ts"],
+          tsChanged: ["src/action/copy.ts"],
+        }),
+      runDenoCommand: (_title, args) => {
         executedCommands.push(args);
         if (args.includes("--parallel")) {
-          return { success: false, durationMs: 100 };
+          return Promise.resolve({ success: false, durationMs: 100 });
         }
-        return { success: true, durationMs: 10 };
+        return Promise.resolve({ success: true, durationMs: 10 });
       },
-      fileExists: (p) => p === "src/action/copy.test.ts",
+      validateI18n: () => ({ valid: true, errors: [] }),
+      fileExists: (p) => p === "src/action/copy.ts" || p === "src/action/copy.test.ts",
+      os: "windows",
       logger: createSilentLogger(),
     };
 
     const res = await runCascade({ quick: false, verbose: false }, deps);
     assertEquals(res.success, false);
     assertEquals(res.failedLevel, 3);
-    assertEquals(executedCommands.length, 3);
+    assertEquals(executedCommands.length, 4);
   });
 
-  await t.step("should pass all levels when all checks succeed", async () => {
-    const executedCommands: string[][] = [];
+  await t.step("should print a non-Windows platform notice on Linux/macOS", async () => {
+    const captured = createCapturedLogger();
     const deps: IntegrateDeps = {
-      getChangedFiles: async () => ({
-        allChanged: ["src/action/copy.ts"],
-        tsChanged: ["src/action/copy.ts"],
-      }),
-      runDenoCommand: async (_title, args) => {
-        executedCommands.push(args);
-        return { success: true, durationMs: 10 };
-      },
-      fileExists: (p) => p === "src/action/copy.test.ts",
-      logger: createSilentLogger(),
+      getChangedFiles: () =>
+        Promise.resolve({
+          allChanged: ["src/action/copy.ts"],
+          tsChanged: ["src/action/copy.ts"],
+        }),
+      runDenoCommand: () => Promise.resolve({ success: true, durationMs: 10 }),
+      validateI18n: () => ({ valid: true, errors: [] }),
+      fileExists: (p) => p === "src/action/copy.ts" || p === "src/action/copy.test.ts",
+      os: "linux",
+      logger: captured.logger,
     };
 
     const res = await runCascade({ quick: false, verbose: false }, deps);
     assertEquals(res.success, true);
-    assertEquals(executedCommands.length, 3);
+    assertStringIncludes(captured.logs.join("\n"), "Platform notice");
+    assertStringIncludes(captured.logs.join("\n"), "deno task test:windows");
   });
 });

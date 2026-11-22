@@ -64,9 +64,14 @@ $levainRepo="https://gitlab.local.net/grp-dev/levain-pkgs.git";iwr https://githu
 
 `levain activate`
 
+## Branches & Roadmap
+
+* **`master`** — Active **Levain v1 (Deno 2)** codebase, currently stabilizing through pre-releases (`v1.0.x`). See [`ROADMAP.md`](ROADMAP.md) for the current housekeeping and stabilization plan.
+* **`v0.x`** — Maintenance branch for **Levain v0 (Deno 1.46.3)** hotfixes while `v0.93.1` remains the `Latest` release.
+
 ## Development Installation
 
-To set up Levain for development, use the provided helper scripts.
+To set up Levain for development, use the provided helper scripts (and see [`AGENTS.md`](AGENTS.md) and [`testing/WINDOWS.md`](testing/WINDOWS.md) for contributor and Windows testing guidelines).
 
 ### Install dependencies
 
