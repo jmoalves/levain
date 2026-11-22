@@ -1,0 +1,26 @@
+version: 1.0.0
+dependencies:
+  - contract-dep
+
+levain.pkg.skipInstallDir: true
+levain.pkg.skipRegistry: true
+levain.preserveBaseDirOnUpdate: true
+levain.config.noBaseDir: true
+levain.var.default.sampleKey: default-sample
+
+cmd.install:
+  # Multiline folded YAML string with --flag=value and double quotes
+  - >-
+    assertContains
+    --message="folded multiline contract failed"
+    "dep-attr-value"
+    "attr=${pkg.contract-dep.customAttr} login=${levain.login} email=${levain.email} full=${levain.fullname}"
+  - setVar CONTRACT_DEP_BASE ${pkg.contract-dep.baseDir}
+  - setVar CONTRACT_SECRET_ECHO ${levain.password}
+  - setEnv CONTRACT_FLAG_VAL --flag-value=123
+
+cmd.shell:
+  - echo contract-shell-hook
+
+cmd.env:
+  - setEnv CONTRACT_YAML_PATTERNS ok

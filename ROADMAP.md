@@ -16,7 +16,7 @@ While v1 is being hardened and validated, `v0.93.1` remains the `Latest` release
 | **Phase 3** | `chore/security-hardening` | Remove `curl -k`, enable `deno.lock`, pin GitHub Actions & permissions, audit embedded binaries and runtime | Done |
 | **Phase 3.5** | `chore/review-subagents` | Portable read-only review subagents (`business-qa`, `technical-qa`, `security`, `performance`, `usability`) for Antigravity & Claude Code | Done |
 | **Phase 3.6** | `fix/v1-blockers` | Close P0 security, privacy, exit-code, E2E, i18n, and runtime bugs surfaced by the 5-lens whole-repo review | Done |
-| **Phase 4** | `test/coverage-and-reliability` | Real coverage baseline, 100% actions × options contract recipes, unit tests for all commands, core modules, and `src/lib/io/` | In Progress |
+| **Phase 4** | `test/coverage-and-reliability` | Real coverage baseline, 100% actions × options contract recipes, unit tests for all commands, core modules, and `src/lib/io/` | Done |
 | **Phase 4.5** | `refactor/core-cli-and-actions` | Fix incomplete commands, `levain.minVersion`, `levainShell`, `parse_args.ts`, broken actions, "did you mean?", and CLI/activate UX | Planned |
 | **Phase 5** | `perf/startup-and-repos` | Measure & optimize startup/repos/CI, pragmatically reduce `extra-bin` toward pure Deno, macOS/Linux foundation, and v1 production readiness | Planned |
 
@@ -101,17 +101,17 @@ While v1 is being hardened and validated, `v0.93.1` remains the `Latest` release
 
 ---
 
-## Phase 4 — Test Coverage & Suite Reliability
+## Phase 4 — Test Coverage & Suite Reliability (Completed)
 
 **Branches:** `test/suite-reliability-and-isolation`, `test/commands-and-core-coverage`, `test/action-contracts-100pct` *(split into 3 incremental PRs)*
 
 - [x] Establish a real coverage baseline on Windows now that `coverage/levain.lcov` reporting is restored (`66.03%` after Phase 3.6; add `.codecov.yml` tolerance against sub-0.5% non-deterministic project drift).
 - [x] Fix resource/timer leaks (`DenoZip` Web Workers, `Extractor` interval, `HttpUtils` timeout, `CheckUrl` body cancel, `src/lib/io/*` error handling) and re-enable sanitizers in `extract.test.ts`.
 - [x] Eliminate host-OS mutation, parallel races, and live GitHub calls in unit tests (isolate `TestHelper.getConfig()`, use local `git init --bare` fixtures, restore `chmod`/shortcuts/`PATH`, fix cross-platform path assertions).
-- [ ] Build a **contract recipe suite** (synthetic test recipes) covering **100% of implemented actions and 100% of their implemented options** — protecting both `levain-pkgs` and richer external/private recipe catalogs.
+- [x] Build a **contract recipe suite** (`testdata/contracts/*.levain.yaml` + `test/action_contracts.test.ts`) covering **100% of implemented actions and 100% of their implemented options** with an automatic completeness guard — protecting both `levain-pkgs` and richer external/private recipe catalogs.
 - [x] Add unit tests for **all Levain commands** in `src/cmd/` (`command_factory`, `install`, `update`, `list_command`, `info`, `explain`, `activate`, `activate_machine`, `clone`, `shell`, `actions`, alongside `clean`) and `levain.minVersion` enforcement.
 - [x] Add unit tests for core runtime modules (`src/levain_cli.ts`, `src/lib/loader.ts`, `src/lib/i18n.ts`, `src/lib/paths/*`, `src/lib/cli_util.ts`, `src/lib/timer.ts`, `src/lib/utils/error_utils.ts`, `src/lib/extract/extractor_factory.ts`) and the `src/lib/io/` layer.
-- [ ] Add unit tests for uncovered actions (`backup_file`, `os/mkdir`, `json_remove`, `levainShell`, `activate/*`, `check_port`, `check_url`, `inspect`, `context_menu*`, `killProcess`).
+- [x] Add unit tests for uncovered actions (`backup_file`, `os/mkdir`, `json_remove`, `levainShell`, `activate/*`, `check_port`, `check_url`, `inspect`, `context_menu*`, `killProcess`, `defaultPackage`, `noop`, `shell_path`).
 
 ---
 

@@ -1,0 +1,8 @@
+version: 1.5.0
+customAttr: dep-attr-value
+
+cmd.install:
+  - echo contract-dep installed
+
+cmd.env:
+  - setEnv CONTRACT_DEP_HOME ${baseDir}

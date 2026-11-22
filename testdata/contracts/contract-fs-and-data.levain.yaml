@@ -1,0 +1,65 @@
+version: 1.0.0
+
+cmd.install:
+  # mkdir (default + --compact)
+  - mkdir ${baseDir}/work
+  - mkdir --compact ${baseDir}/compacted
+  - mkdir ${baseDir}/extracted
+  - mkdir ${baseDir}/extracted-stripped
+  - mkdir ${baseDir}/stripped-copy
+
+  # copy (default, --verbose, --ifNotExists, --strip)
+  - copy sample.txt ${baseDir}/work/copied.txt
+  - copy --verbose sample.txt ${baseDir}/work/copied-verbose.txt
+  - copy --ifNotExists sample.txt ${baseDir}/work/copied.txt
+  - copy --strip strip-src ${baseDir}/stripped-copy
+
+  # backupFile
+  - backupFile ${baseDir}/work/copied.txt
+
+  # extract (default + --strip + --type)
+  - extract ../extract/test.zip ${baseDir}/extracted
+  - extract --strip --type=zip ../extract/zip_file_without_extension ${baseDir}/extracted-stripped
+
+  # template (--replace, --with, --doubleBackslash)
+  - template --replace=/@@GREETING@@/g --with="hello contract" --replace=/@@WIN_PATH@@/g --with="C:\tools\app" --doubleBackslash sample.tmpl ${baseDir}/work/rendered.txt
+
+  # inspect (--regExp, --saveVar)
+  - inspect --regExp=/version=([0-9.]+)/ --saveVar=CONTRACT_VER --regExp=/status_ok/i --saveVar=CONTRACT_STATUS ${baseDir}/work/copied.txt
+
+  # jsonSet (default + --ifNotExists) and jsonGet (--setVar, --default)
+  - jsonSet ${baseDir}/work/settings.json app.name levain-contract
+  - jsonSet --ifNotExists ${baseDir}/work/settings.json app.name should-not-overwrite
+  - jsonGet --setVar=CONTRACT_JSON_NAME ${baseDir}/work/settings.json app.name
+  - jsonGet --setVar=CONTRACT_JSON_FALLBACK --default=fallback-json ${baseDir}/work/settings.json app.missing
+
+  # propertySet (default + --ifNotExists) and propertyGet (--setVar, --default)
+  - propertySet ${baseDir}/work/app.properties service.host localhost
+  - propertySet --ifNotExists ${baseDir}/work/app.properties service.host ignored-host
+  - propertyGet --setVar=CONTRACT_PROP_HOST --default=fallback-prop ${baseDir}/work/app.properties service.host
+
+  # setVar, setEnv (including --flag-like value), addPath, defaultPackage, shellPath
+  - setVar CONTRACT_CUSTOM_VAR custom-value
+  - setEnv CONTRACT_NODE_OPTS --max_old_space_size=4096
+  - addPath ${baseDir}/work
+  - defaultPackage contract-fs-and-data
+  - shellPath ${CONTRACT_SHELL_FILE}
+
+  # checks & assertions
+  - assertContains --message="contract version mismatch" 4.2.0 "version=${CONTRACT_VER}"
+  - checkFileExists ${baseDir}/work/copied.txt
+  - checkChainDirExists --saveVar=CONTRACT_FOUND_DIR --default=none ${baseDir}/missing-dir ${baseDir}/work
+  - checkChainDirExists --saveVar=CONTRACT_DEFAULT_DIR --default=fallback-dir ${baseDir}/missing-dir-only
+  - checkPort --port=0 --transport=tcp --address=127.0.0.1
+  - checkUrl https://example.org/health
+
+  # git clone (offline local bare repo injected via CONTRACT_GIT_REPO)
+  - clone ${CONTRACT_GIT_REPO} ${baseDir}/cloned
+
+  # registry & misc actions
+  - removeFromRegistry contract-dummy-installed
+  - echo contract fs-and-data finished
+  - saveConfig
+
+cmd.env:
+  - setEnv CONTRACT_FS_READY true
