@@ -26,7 +26,7 @@
     "clean": {
       "startFeedback": "# CLEAN...",
       "logs": "limpando logs",
-      "cmd.clean.cleaned": "Limpo {{amount}}",
+      "cleaned": "Limpo {{amount}}",
       "endFeedback": "# CLEAN - {{amount}}",
       "errorIgnoringEntryPath": "Erro {{error}} - Ignorando {{entryPath}}",
       "entryPathIgnoringError": "{{entryPath}} - Ignorando {{error}}",
@@ -154,7 +154,7 @@
       },
       "file_writer": {
         "constructorError": "criar arquivo temporário para escrita em",
-        "closeRenameError": "renomear {{old} para"
+        "closeRenameError": "renomear {{old}} para"
       }
     },
     "repository": {
@@ -247,7 +247,7 @@
         "no_upstream": "[Git {{workingDir}}] Não há upstream configurado. Usando {{ remoteName }}/{{ branchName }}",
         "updating": "[Git {{workingDir}}] Atualizando {{ branchName }}: {{ headSha }} -> {{ remoteSha }}",
         "commits_diverged": "[Git {{workingDir}}] Repositório local possui commits não presentes em {{ remoteName }}/{{ branchName }}. Atualização cancelada.",
-        "branched_diverged": "[Git {{workingDir}}] Repositório local e ${remoteName}/${branchName} divergiram. Atualização cancelada para evitar perder mudanças locais.",
+        "branched_diverged": "[Git {{workingDir}}] Repositório local e {{ remoteName }}/{{ branchName }} divergiram. Atualização cancelada para evitar perder mudanças locais.",
         "unable_to_update": "Não foi possível atualizar {{workingDir}}."
       },
       "json_utils": {

@@ -1,121 +1,151 @@
-# AGENTS.md - Repository Guidelines for AI Assistants
+# AGENTS.md — Repository Guidelines for AI Assistants
 
-This file provides unified guidance for all AI coding assistants (Claude Code, GitHub Copilot, OpenAI Codex, Cursor, Antigravity) and contributors working in this repository.
-
----
-
-## 🎯 What this is
-
-Levain is a Deno/TypeScript CLI that installs and configures development environments on **Windows** from declarative YAML "recipes" (`*.levain.yaml`). It ships as a single compiled `levain.exe` (target `x86_64-pc-windows-msvc`) wrapped by `levain.cmd`.
-
-**Sibling project:** [`jmoalves/levain-pkgs`](https://github.com/jmoalves/levain-pkgs) holds the actual installation recipes (jdk, git, eclipse, wlp, …). This repo only ships the engine plus the `levain` recipe itself in `recipes/`. `install/install.ps1` defaults to `--addRepo https://github.com/jmoalves/levain-pkgs.git`, and users can point elsewhere with `$levainRepo`. Recipe-format changes made here must stay compatible with what levain-pkgs publishes — bump `version` in `recipes/levain.levain.yaml` and use `levain.minVersion` in a recipe when a recipe needs a newer engine.
+This file is the **single source of truth** for all AI coding assistants (Antigravity, Claude Code, GitHub Copilot, OpenAI Codex, Cursor) and contributors working in this repository. (`CLAUDE.md` imports this file via `@AGENTS.md`.)
 
 ---
 
-## 🚀 Deno 1 → Deno 2 Migration Status
+## What This Is
 
-* `master` is **Deno 1** (pinned 1.46.3): remote `https://deno.land/std/...` imports remapped by `import_map.json`.
-* The migration lives on branch **`deno2_opus`**: moves dependencies to JSR/npm specifiers in `deno.json`, drops `import_map.json`, adds `deno task` entries (`test`, `compile:windows`, `integrate`, etc.).
+Levain is a Deno/TypeScript CLI that installs and configures development environments on **Windows** from declarative YAML recipes (`*.levain.yaml`). It ships as a single compiled `levain.exe` (target `x86_64-pc-windows-msvc`) wrapped by `levain.cmd`, `levain.ps1`, and `levain.sh`.
+
+**Sibling project:** [`jmoalves/levain-pkgs`](https://github.com/jmoalves/levain-pkgs) holds the actual installation recipes (jdk, git, eclipse, wlp, …). This repository ships only the engine plus the `levain` recipe itself in `recipes/`. `install/install.ps1` defaults to `--addRepo https://github.com/jmoalves/levain-pkgs.git`, and users can point elsewhere with `$levainRepo`. Recipe-format changes made here must stay compatible with what `levain-pkgs` publishes — bump `version` in `recipes/levain.levain.yaml` and use `levain.minVersion` in a recipe when it requires a newer engine.
 
 ---
 
-## ⚙️ Pre-Commit & Integration Protocol
+## Branching & Release Model
 
-This protocol is encapsulated as an agent skill located at [`.agents/skills/levain-integrate/SKILL.md`](.agents/skills/levain-integrate/SKILL.md).
-All AI assistants should consult this skill when verifying changes, integrating code, or preparing commits.
+* **`master`** is the active **v1 / Deno 2** codebase (JSR/npm specifiers in `deno.json`, no `import_map.json`). v1 is currently stabilizing through pre-releases (`v1.0.x`) before replacing v0 as `Latest`.
+* **`v0.x`** is the maintenance branch for legacy **v0 / Deno 1.46.3** hotfixes while `v0.93.1` remains the `Latest` release.
+* **`deno2_opus`** is obsolete (kept temporarily on `origin` so in-flight contributor forks are not broken). **All new work and PRs must target `master`** from short-lived thematic branches (`chore/...`, `feat/...`, `fix/...`, `test/...`, `perf/...`).
+* See [`ROADMAP.md`](ROADMAP.md) for the active housekeeping and stabilization plan.
 
-Before creating a commit, proposing a Pull Request, or concluding any task:
-1. **Run the local integration checks:**
+---
+
+## Pre-Commit & Integration Protocol
+
+This protocol is also encapsulated as an agent skill at [`.agents/skills/levain-integrate/SKILL.md`](.agents/skills/levain-integrate/SKILL.md).
+
+Before creating a commit, proposing a Pull Request, or concluding any code task:
+
+1. **Run local integration checks:**
    ```bash
    deno task integrate
    ```
-   *(Or `deno task integrate:quick` for rapid static typing and targeted unit tests).*
-2. **Never commit if checks fail:** Stop immediately and address any failing test or type error.
+   *(Or `deno task integrate:quick` during fast iteration to run Level 1 checks and targeted unit tests only.)*
+2. **Never commit if checks fail:** fix any type, lint, i18n, or test failure first.
 3. **Formulate a Conventional Commit message in English:**
-   - Format: `<type>(<scope>): <subject>`
-   - Allowed types: `feat`, `fix`, `test`, `refactor`, `perf`, `chore`, `docs`.
-   - Allowed scopes: `action`, `cmd`, `config`, `repo`, `fs`, `os`, `cli`, `i18n`, `deps`, `workflow`.
+   * Format: `<type>(<scope>): <short imperative subject>`
+   * Allowed types: `feat`, `fix`, `test`, `refactor`, `perf`, `chore`, `docs`.
+   * Allowed scopes: `action`, `cmd`, `config`, `repo`, `fs`, `os`, `cli`, `i18n`, `deps`, `workflow`, `testing`.
 4. **Human-in-the-Loop Rule:**
-   - **NEVER** run `git commit` or `git push` autonomously.
-   - Always present the proposed commit message and list of changed files to the user for explicit approval first.
-   - **Default path:** Approving the proposal implicitly approves `git commit` + `git push` + PR/MR creation. If the user wants to commit only without push or PR, they will specify it during confirmation.
-5. **Push & Pull Request (PR/MR) Creation:**
-   - Push to remote (`git push -u origin <branch>`).
-   - Create the PR/MR automatically targeting the upstream repository (`jmoalves/levain`, via direct GitHub/GitLab REST API, requiring no `gh` CLI) and provide the live link.
+   * **NEVER** run `git commit` or `git push` without explicit user approval.
+   * Present the changed files, validation summary, and proposed commit message/PR summary to the user first.
+   * **Default path:** approving the proposal authorizes `git commit` + `git push` + PR creation targeting `master` (unless the user explicitly opts for commit-only).
+5. **Push & Pull Request:**
+   * Push to `origin` (`git push -u origin <branch>`).
+   * Open the PR targeting `master` on the upstream repository (using `gh` or the GitHub REST API) and return the live PR URL.
 
 ---
 
-## 💻 Primary Development Commands
+## Windows Testing Contract (SSH & Local)
 
-Windows `.cmd` scripts in `scripts/` are primary dev entry points on Windows:
-```cmd
-scripts\devLevain.cmd            :: one-time dev setup: bin\deno.exe + extra-bin + cache
-scripts\test.cmd                 :: all tests (deno test --allow-all --parallel)
-scripts\test.cmd --coverage --checkSources
-scripts\test.cmd -- --fail-fast  :: everything after `--` is passed to deno test
-scripts\check-sources.cmd        :: deno check levain.ts + deno test --no-run, clean DENO_DIR
-scripts\levain-deno.cmd list     :: run Levain from source (deno run --allow-all levain.ts ...)
-scripts\testWatch.cmd            :: watch mode
-```
+Almost everything meaningful in Levain is **Windows-only**. `OsUtils.onlyInWindows()` throws on other platforms, and Windows-specific tests are guarded with `if (OsUtils.isWindows())` — so a green test run on Linux/macOS silently skips large parts of the suite. CI runs on `windows-latest`.
+
+There are two supported ways to run the real Windows test suite (full details in [`testing/WINDOWS.md`](testing/WINDOWS.md)):
+
+### 1. Preferred — Remote Windows Machine Over SSH (`deno task test:windows`)
+
+Tests that require a real Windows machine (clean installation, Windows Defender enabled, `pt-BR`) reach it through a **generic two-variable contract**, usable identically by Claude Code, Antigravity, or a developer in a terminal:
+
+* **`LEVAIN_TEST_SSH_CONFIG`**: path to an `ssh_config` file that knows how to reach the Windows machine.
+* **`LEVAIN_TEST_HOST`**: host name defined inside that `ssh_config`.
+
+Contract rules:
+
+* **Transport:** use **only** `ssh -F "$LEVAIN_TEST_SSH_CONFIG" "$LEVAIN_TEST_HOST" ...`, and pass the same `-F "$LEVAIN_TEST_SSH_CONFIG"` to `scp` (or `rsync -e "ssh -F \"$LEVAIN_TEST_SSH_CONFIG\""`).
+* **Remote environment:** the SSH shell is **`cmd.exe`** (not PowerShell or bash), the user is an **administrator**, and nothing from Levain is pre-installed. Bootstrapping `Deno`, `extra-bin` (which bundles `git` and `7-Zip`), and transferring/cloning the repository is the test runner's responsibility.
+* **Lifecycle:** the preferred target is a **disposable clean machine** per run, though an existing Windows machine also works because the runner isolates each run in its own temporary directory. Provisioning, starting, stopping, and supplying the environment variables live **outside this repository**.
+* **Missing-contract behavior:** if either `LEVAIN_TEST_SSH_CONFIG` or `LEVAIN_TEST_HOST` is unset (or the config file does not exist), `deno task test:windows` **must skip explicitly (exit 0)** with a clear message explaining what is missing and where the contract is documented — it must never fail or try to discover a machine on its own.
+* **Public repository rule:** never commit machine names, cloud accounts, local paths, or network addresses. Refer only generically to "a Windows machine reachable over SSH".
+
+### 2. Local Windows Machine
+
+When already on a Windows machine, run the suite directly with `deno task integrate`, `deno task test`, `deno task test:windows -- --local`, or `scripts\test.cmd`. Keep in mind that the suite mutates HKCU, user `PATH`, Desktop, and Start Menu.
+
+---
+
+## Primary Development Commands
 
 Deno tasks and commands (work anywhere):
+
 ```bash
-deno task integrate                                    # fast-fail cascaded checks (types -> targeted -> full)
-deno task integrate:quick                              # fast-fail targeted checks only
-deno test --allow-all --parallel                       # all tests
-deno test --allow-all src/action/os/copy.test.ts       # a single test file
-deno test --allow-all --filter "should show a text"    # a single test by name
+deno task integrate                                    # cascaded checks: typecheck + lint + i18n -> targeted -> full suite
+deno task integrate:quick                              # fast iteration: skips full suite
+deno task test:windows                                 # run suite on remote Windows host via SSH contract (skips if unset)
+deno task test:windows -- --filter "Registry"          # pass extra deno test flags to remote Windows run
+deno task test                                         # deno test --allow-all
+deno test --allow-all --parallel                       # all tests in parallel
+deno test --allow-all src/action/os/copy.test.ts       # single test file
+deno test --allow-all --filter "should show a text"    # single test by name
 deno check levain.ts                                   # typecheck
 deno lint                                              # lint (config in deno.json)
 ```
 
-> **Warning:** **Do not run `deno fmt`.** The `fmt` block in `deno.json` does not match the actual repository source style (4 spaces, double quotes in most files); running it would rewrite the whole tree.
+Windows `.cmd` scripts in `scripts/` (use `<repo>/bin/deno.exe` set up by `scripts\devLevain.cmd`):
+
+```cmd
+scripts\devLevain.cmd            :: one-time dev setup: bin\deno.exe + extra-bin + cache
+scripts\test.cmd                 :: run tests on Windows
+scripts\check-sources.cmd        :: deno check levain.ts + deno test --no-run with clean DENO_DIR
+scripts\levain-deno.cmd list     :: run Levain from source
+scripts\testWatch.cmd            :: watch mode
+```
+
+**Formatting:** `deno.json` specifies 2-space indentation, double quotes, semicolons, and 120-char line width (matching the v1 codebase). Avoid running repo-wide `deno fmt` inside unrelated PRs so diffs stay focused on the files you changed.
 
 ---
 
-## 🪟 Platform Reality
-
-Almost everything meaningful in Levain is **Windows-only**. `OsUtils.onlyInWindows()` throws on other platforms, and many test files are wrapped in `if (OsUtils.isWindows()) { ... }` — so a green test run on Linux silently skips large parts of the suite. CI only runs `windows-latest`. Always verify Windows-affecting changes on Windows.
-
----
-
-## 🏗️ Architecture
+## Architecture
 
 Execution path: `levain.ts` (logging setup, global arg parsing) → `src/levain_cli.ts` (version check, `Config`, repository init, self-upgrade) → `Loader` → command or action.
 
-**Two pluggable extension points, both registry-map factories:**
-- **Commands** (`src/cmd/`, `CommandFactory`): user-facing verbs — `install`, `shell`, `list`, `clean`, `actions`, `info`, `explain`, `clone`, `update`. Implement `Command` (`oneLineExample` + `execute(args)`).
-- **Actions** (`src/action/`, `ActionFactory`): verbs recipes use in `cmd.install` / `cmd.env` lines — `copy`, `addPath`, `setEnv`, `extract`, `template`, `contextMenu`, `jsonSet`, `mavenCopy`, etc. Implement `Action` (`execute(pkg, parameters)`).
+**Two pluggable extension points (registry-map factories):**
+
+* **Commands** (`src/cmd/`, `CommandFactory`): user-facing verbs — `install`, `shell`, `activate`, `_activate-machine`, `list`, `clean`, `actions`, `info`, `explain`, `clone`, `update`. Implement `Command` (`oneLineExample` + `execute(args)`).
+* **Actions** (`src/action/`, `ActionFactory`): verbs recipes use in `cmd.install` / `cmd.env` lines — `copy`, `addPath`, `setEnv`, `extract`, `template`, `contextMenu`, `jsonSet`, `mavenCopy`, `activateInit`, etc. Implement `Action` (`execute(pkg, parameters)`).
 
 `Loader.action()` splits a recipe line into action name + args, applies `handleQuotes`, then resolves `${...}` variables through `Config.replaceVars` → `VarResolver` **before** handing args to the action. Actions parse flags with `parseArgs` from `src/lib/parse_args.ts`.
 
 **Repositories** (`src/lib/repository/`) resolve recipe names to packages:
-- Git URL → `GitRepository`
-- `*.zip` → `ZipRepository`
-- Otherwise → `FileSystemRepository`
-Composed via `ChainRepository` across installed (registry), regular (`recipes/` + `--addRepo`), and current directory (`currentDir`).
+* Git URL → `GitRepository`
+* `*.zip` → `ZipRepository`
+* Otherwise → `FileSystemRepository`
+Composed via `ChainRepository` across installed (`registry`), regular (`recipes/` + `--addRepo` + `--tempRepo`), and current directory (`currentDir`).
 
-**Config** (`src/lib/config.ts`) is threaded through every command and action, owning base dirs, user credentials, and config persistence (`$HOME/levain.config.json`).
+**Paths & extra-bin** (`src/lib/paths/`): `LevainPaths`, `ConfigPaths`, `HomePaths`, `GeneralPaths`, and `ExtraBin` (`src/lib/paths/extra_bin.ts`) centralize path resolution and break circular imports. `ExtraBin` points at bundled Windows tools (`7-Zip`, `git`, `os-utils`) under `extra-bin/windows/`.
+
+**Config** (`src/lib/config.ts`) is threaded through every command and action, owning base dirs, user credentials, and config persistence (`$HOME/levain.config.json`, with legacy fallback).
 
 **Version** is read at runtime from `recipes/levain.levain.yaml` (`LevainVersion.levainVersion`).
 
-**extra-bin** (`src/lib/extra_bin.ts`) points at bundled Windows tools (7-Zip, git, os-utils) under `extra-bin/windows/`.
+**Compiled vs. source:** `LevainPaths.levainRootFile` branches on `--is_compiled_binary`, baked into the binary by `githubScripts/levain-build.sh` and `scripts/levain-build.cmd`. Keep those in sync when changing bootstrap/path resolution.
 
 ---
 
-## 🌐 i18n
+## Language & i18n Policy
 
-All user-facing strings go through `t("key")` from `src/lib/i18n.ts`, backed by `src/locales/{en,pt}/translation.json`; the locale comes from the system. Adding a message means adding the key to **both** JSON files.
-
-The translation catalogs are the *only* bilingual content: code, identifiers, comments, documentation, and commit messages are written in **English**.
+* Everything in this repository — code, identifiers, comments, documentation, and commit messages — is written in **English**.
+* All user-facing strings must go through `t("key")` from `src/lib/i18n.ts`, backed by **both** `src/locales/en/translation.json` and `src/locales/pt/translation.json`.
+* Adding or updating a user-facing message requires updating **both** JSON catalogs with identical keys and `{{placeholder}}` names (verified automatically by `deno task integrate`).
 
 ---
 
-## 🧪 Testing Conventions
+## Testing Conventions
 
-Tests live next to the code as `*.test.ts` and use `Deno.test` with std `assert`. Shared helpers in `src/lib/test/`:
-- `TestHelper` — `getConfig()`, `mockPackage()`, `getTestDataPath(...)`, `getNewTempDir()`, `setupTestLogger()`.
-- `more_asserts.ts` — `assertFind`, `assertFolderIncludes`, `assertPathEndsWith`, `assertDirCount`.
-- `levain_asserts.ts` — package-list assertions.
-- `MockPackage`, `MockRepository`, `PackageManagerMock` for test doubles.
-- Fixtures live in `testdata/<feature>/`.
+Tests live next to the code as `*.test.ts` and use `Deno.test` with `@std/assert`. Shared helpers in `src/lib/test/`:
+
+* `TestHelper` — `getConfig()`, `mockPackage()`, `getTestDataPath(...)`, `getNewTempDir()`, `setupTestLogger()`.
+* `more_asserts.ts` — `assertFind`, `assertFolderIncludes`, `assertPathEndsWith`, `assertDirCount`.
+* `levain_asserts.ts` — package-list assertions.
+* `MockPackage`, `MockRepository`, `PackageManagerMock` for test doubles.
+* Fixtures live in `testdata/<feature>/`.

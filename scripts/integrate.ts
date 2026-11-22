@@ -6,9 +6,17 @@
  */
 import { existsSync } from "@std/fs";
 
+export const EN_LOCALE_PATH = "src/locales/en/translation.json";
+export const PT_LOCALE_PATH = "src/locales/pt/translation.json";
+
 export interface Options {
   quick: boolean;
   verbose: boolean;
+}
+
+export interface I18nValidationResult {
+  valid: boolean;
+  errors: string[];
 }
 
 export function parseArgs(args: string[]): Options {
@@ -39,7 +47,7 @@ export function parseGitStatusOutput(output: string): { allChanged: string[]; ts
 
 export async function defaultGetChangedFiles(): Promise<{ allChanged: string[]; tsChanged: string[] }> {
   const cmd = new Deno.Command("git", {
-    args: ["status", "--porcelain"],
+    args: ["status", "--porcelain", "-uall"],
     stdout: "piped",
     stderr: "piped",
   });
@@ -75,6 +83,110 @@ export function getTargetedTests(
     }
   }
   return Array.from(targetedTests);
+}
+
+function flattenCatalog(
+  node: unknown,
+  prefix: string,
+  entries: Map<string, string>,
+  errors: string[],
+  localeLabel: string,
+): void {
+  if (typeof node !== "object" || node === null || Array.isArray(node)) {
+    errors.push(`[${localeLabel}] Expected object at '${prefix || "<root>"}'.`);
+    return;
+  }
+
+  for (const [key, value] of Object.entries(node as Record<string, unknown>)) {
+    if (key.includes(".")) {
+      errors.push(`[${localeLabel}] Key '${key}' under '${prefix || "<root>"}' contains a literal '.' (likely mis-nested).`);
+    }
+    const fullKey = prefix ? `${prefix}.${key}` : key;
+    if (typeof value === "string") {
+      entries.set(fullKey, value);
+    } else if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+      flattenCatalog(value, fullKey, entries, errors, localeLabel);
+    } else {
+      errors.push(`[${localeLabel}] Unsupported value type at '${fullKey}'.`);
+    }
+  }
+}
+
+function extractPlaceholders(value: string, fullKey: string, localeLabel: string, errors: string[]): string[] {
+  if (/\$\{[^}]+\}/.test(value)) {
+    errors.push(`[${localeLabel}] Key '${fullKey}' uses JS template syntax '\${...}' instead of i18next '{{...}}'.`);
+  }
+
+  const stripped = value.replace(/\{\{\s*-?\s*([a-zA-Z0-9_]+)\s*\}\}/g, "");
+  if (stripped.includes("{{") || stripped.includes("}}")) {
+    errors.push(`[${localeLabel}] Key '${fullKey}' contains malformed '{{...}}' placeholder syntax.`);
+  }
+
+  const vars = new Set<string>();
+  for (const match of value.matchAll(/\{\{\s*-?\s*([a-zA-Z0-9_]+)\s*\}\}/g)) {
+    vars.add(match[1]);
+  }
+  return Array.from(vars).sort();
+}
+
+export function validateI18nCatalogs(enJsonText: string, ptJsonText: string): I18nValidationResult {
+  const errors: string[] = [];
+
+  let enObj: unknown;
+  let ptObj: unknown;
+
+  try {
+    enObj = JSON.parse(enJsonText);
+  } catch (err) {
+    errors.push(`[en] Invalid JSON: ${err instanceof Error ? err.message : String(err)}`);
+  }
+
+  try {
+    ptObj = JSON.parse(ptJsonText);
+  } catch (err) {
+    errors.push(`[pt] Invalid JSON: ${err instanceof Error ? err.message : String(err)}`);
+  }
+
+  if (errors.length > 0) {
+    return { valid: false, errors };
+  }
+
+  const enEntries = new Map<string, string>();
+  const ptEntries = new Map<string, string>();
+  flattenCatalog(enObj, "", enEntries, errors, "en");
+  flattenCatalog(ptObj, "", ptEntries, errors, "pt");
+
+  for (const key of enEntries.keys()) {
+    if (!ptEntries.has(key)) {
+      errors.push(`[pt] Missing translation key '${key}' (present in en).`);
+    }
+  }
+  for (const key of ptEntries.keys()) {
+    if (!enEntries.has(key)) {
+      errors.push(`[en] Missing translation key '${key}' (present in pt).`);
+    }
+  }
+
+  for (const [key, enVal] of enEntries.entries()) {
+    const enVars = extractPlaceholders(enVal, key, "en", errors);
+    const ptVal = ptEntries.get(key);
+    if (ptVal === undefined) continue;
+
+    const ptVars = extractPlaceholders(ptVal, key, "pt", errors);
+    if (enVars.join(",") !== ptVars.join(",")) {
+      errors.push(
+        `[i18n] Placeholder mismatch at '${key}': en=[${enVars.join(", ")}] vs pt=[${ptVars.join(", ")}].`,
+      );
+    }
+  }
+
+  return { valid: errors.length === 0, errors };
+}
+
+export function defaultValidateI18n(): I18nValidationResult {
+  const enText = Deno.readTextFileSync(EN_LOCALE_PATH);
+  const ptText = Deno.readTextFileSync(PT_LOCALE_PATH);
+  return validateI18nCatalogs(enText, ptText);
 }
 
 // 2. Helper to run a Deno command and display clean feedback
@@ -120,7 +232,9 @@ export interface IntegrateDeps {
     title: string,
     commandArgs: string[],
   ) => Promise<{ success: boolean; durationMs: number }>;
+  validateI18n?: () => I18nValidationResult;
   fileExists?: (path: string) => boolean;
+  os?: string;
   logger?: Logger;
 }
 
@@ -131,17 +245,21 @@ export async function runCascade(
   const log = deps.logger?.log ?? console.log;
   const error = deps.logger?.error ?? console.error;
   const fileExists = deps.fileExists ?? existsSync;
+  const validateI18n = deps.validateI18n ?? defaultValidateI18n;
+  const os = deps.os ?? Deno.build.os;
 
   const { allChanged, tsChanged } = await deps.getChangedFiles();
 
   log(`📁 Detected ${allChanged.length} modified/staged file(s) (${tsChanged.length} TypeScript file(s)).`);
 
-  // LEVEL 1: Static Type Checking
-  if (tsChanged.length > 0) {
-    const filesToCheck = getFilesToCheck(tsChanged);
+  // LEVEL 1: Static Checks (Type Checking + Lint + i18n Catalog Validation)
+  const existingTsChanged = tsChanged.filter((file) => fileExists(file));
+
+  if (existingTsChanged.length > 0) {
+    const filesToCheck = getFilesToCheck(existingTsChanged);
 
     const checkRes = await deps.runDenoCommand(
-      `Level 1: Type Checking (${filesToCheck.length} file(s))`,
+      `Level 1a: Type Checking (${filesToCheck.length} file(s))`,
       ["check", ...filesToCheck],
     );
 
@@ -149,12 +267,33 @@ export async function runCascade(
       error("💥 Aborting: Fix TypeScript errors before running tests.");
       return { success: false, failedLevel: 1, message: "Fix TypeScript errors before running tests." };
     }
+
+    const lintRes = await deps.runDenoCommand(
+      `Level 1b: Lint (${existingTsChanged.length} file(s))`,
+      ["lint", ...existingTsChanged],
+    );
+
+    if (!lintRes.success) {
+      error("💥 Aborting: Fix lint issues before running tests.");
+      return { success: false, failedLevel: 1, message: "Fix lint issues before running tests." };
+    }
   } else {
-    log("⏩ Level 1: Skipped (no TypeScript changes detected).");
+    log("⏩ Level 1a/1b: Skipped typecheck & lint (no existing modified TypeScript files detected).");
   }
 
+  const i18nRes = validateI18n();
+  if (!i18nRes.valid) {
+    error("❌ Level 1c: i18n Catalog Validation - FAILED");
+    for (const msg of i18nRes.errors) {
+      error(`   - ${msg}`);
+    }
+    error("💥 Aborting: Fix i18n catalog errors before running tests.");
+    return { success: false, failedLevel: 1, message: "Fix i18n catalog errors before running tests." };
+  }
+  log("✔ Level 1c: i18n Catalog Validation - PASSED");
+
   // LEVEL 2: Targeted Tests (Affected tests only)
-  const targetedTests = getTargetedTests(tsChanged, fileExists);
+  const targetedTests = getTargetedTests(existingTsChanged, fileExists);
 
   if (targetedTests.length > 0) {
     const testRes = await deps.runDenoCommand(
@@ -185,6 +324,13 @@ export async function runCascade(
     }
   }
 
+  if (os !== "windows") {
+    log(
+      `\n⚠️  Platform notice: running on '${os}' skips Windows-only tests. ` +
+        `Validate Windows changes with 'deno task test:windows' (see AGENTS.md and testing/WINDOWS.md).`,
+    );
+  }
+
   log("\n✨ [levain-integrate] All checks passed successfully! Ready for commit.");
   return { success: true };
 }
@@ -196,7 +342,9 @@ export async function main() {
   const result = await runCascade(opts, {
     getChangedFiles: defaultGetChangedFiles,
     runDenoCommand: defaultRunDenoCommand,
+    validateI18n: defaultValidateI18n,
     fileExists: existsSync,
+    os: Deno.build.os,
     logger: console,
   });
 
@@ -207,7 +355,7 @@ export async function main() {
 
 if (import.meta.main) {
   main().catch((err) => {
-    console.error("Unexpected error:", err.message);
+    console.error("Unexpected error:", err instanceof Error ? err.message : String(err));
     Deno.exit(1);
   });
 }

@@ -26,7 +26,7 @@
     "clean": {
       "startFeedback": "# CLEAN...",
       "logs": "cleaning logs",
-      "cmd.clean.cleaned": "Cleaned {{amount}}",
+      "cleaned": "Cleaned {{amount}}",
       "endFeedback": "# CLEAN - {{amount}}",
       "errorIgnoringEntryPath": "Error {{error}} - Ignoring {{entryPath}}",
       "entryPathIgnoringError": "{{entryPath}} - Ignoring {{error}}",
@@ -154,7 +154,7 @@
       },
       "file_writer": {
         "constructorError": "create temp file for writing on",
-        "closeRenameError": "rename {{old} to"
+        "closeRenameError": "rename {{old}} to"
       }
     },
     "repository": {
@@ -247,7 +247,7 @@
         "no_upstream": "[Git {{workingDir}}] No upstream configured. Falling back to {{ remoteName }}/{{ branchName }}",
         "updating": "[Git {{workingDir}}] Updating {{ branchName }}: {{ headSha }} -> {{ remoteSha }}",
         "commits_diverged": "[Git {{workingDir}}] Local repository contains commits not present on {{ remoteName }}/{{ branchName }}. Update aborted.",
-        "branched_diverged": "[Git {{workingDir}}] Local branch and ${remoteName}/${branchName} have diverged. Update aborted to avoid losing local changes.",
+        "branched_diverged": "[Git {{workingDir}}] Local branch and {{ remoteName }}/{{ branchName }} have diverged. Update aborted to avoid losing local changes.",
         "unable_to_update": "Unable to update {{workingDir}}."
       },
       "json_utils": {
