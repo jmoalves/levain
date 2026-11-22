@@ -29,9 +29,11 @@ if [ -n "$tagExists" ]; then
   exit 1
 fi
 
+repoSlug="${GITHUB_REPOSITORY:-jmoalves/levain}"
+
 # Check release
 releases=$(curl -ks -X GET \
-  https://api.github.com/repos/jmoalves/levain/releases |
+  "https://api.github.com/repos/${repoSlug}/releases" |
   jq -r .[].tag_name |
   sed 's/ //g')
 
@@ -50,7 +52,7 @@ cat recipes/levain.levain.yaml.bkp |
 rm recipes/levain.levain.yaml.bkp
 
 # Commit version
-git add src/levain_cli.ts recipes/levain.levain.yaml
+git add recipes/levain.levain.yaml
 git commit -m "skip: $tag"
 git tag $tag
 

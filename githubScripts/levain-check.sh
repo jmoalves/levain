@@ -1,33 +1,36 @@
 #!/bin/bash
+set -euo pipefail
 
-scriptPath="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd && cd - >/dev/null 2>&1 )"
-
-########
-
-myDeno=$1
+myDeno=${1:-}
 
 if [ -z "$myDeno" ]; then
-    echo You must inform the deno executable full path
+    echo "You must inform the deno executable full path"
     exit 1
 fi
 
 if [ ! -x "$myDeno" ]; then
-    echo We can\'t run $myDeno
+    echo "We can't run $myDeno"
     exit 1
 fi
 
-########
+DENO_DIR=$( mktemp -d )
+export DENO_DIR
+trap 'rm -rf "$DENO_DIR"' EXIT
 
-export DENO_DIR=$( mktemp -d )
-if ! ${myDeno} check --reload levain.ts; then
-    echo ERROR compiling levain
-    rm -rf ${DENO_DIR}
+if ! "${myDeno}" check --reload levain.ts; then
+    echo "ERROR type-checking levain.ts"
     exit 1
 fi
 
-#FIXME: Run Tests!
+if ! "${myDeno}" lint; then
+    echo "ERROR linting sources"
+    exit 1
+fi
 
-rm -rf ${DENO_DIR}
+if ! "${myDeno}" run --allow-all scripts/integrate.ts --check-i18n; then
+    echo "ERROR validating i18n catalogs"
+    exit 1
+fi
 
 echo
-echo CHECK - Levain sources - OK
+echo "CHECK - Levain sources, lint & i18n - OK"

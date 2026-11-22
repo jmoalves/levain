@@ -11,6 +11,8 @@
   "lint": {
     "include": [
       "src/",
+      "scripts/",
+      "testing/",
       "*.ts"
     ],
     "exclude": [
@@ -30,28 +32,27 @@
     }
   },
   "fmt": {
-    "files": {
-      "include": [
-        "src/",
-        "*.ts",
-        "*.js"
-      ],
-      "exclude": [
-        "src/testdata/",
-        "data/"
-      ]
-    },
-    "options": {
-      "useTabs": false,
-      "lineWidth": 120,
-      "indentWidth": 2,
-      "semiColons": true,
-      "singleQuote": false,
-      "proseWrap": "preserve"
-    }
+    "include": [
+      "src/",
+      "scripts/",
+      "testing/",
+      "*.ts",
+      "*.js"
+    ],
+    "exclude": [
+      "src/testdata/",
+      "data/"
+    ],
+    "useTabs": false,
+    "lineWidth": 120,
+    "indentWidth": 2,
+    "semiColons": true,
+    "singleQuote": false,
+    "proseWrap": "preserve"
   },
   "test": {
     "include": [
+      "levain.test.ts",
       "src/**/*test.ts",
       "test/**/*.ts",
       "scripts/**/*test.ts",
@@ -65,12 +66,13 @@
     "dev": "deno run --allow-all --watch levain.ts",
     "test": "deno test --allow-all",
     "test:windows": "deno run --allow-all testing/run-windows-tests.ts",
+    "check:i18n": "deno run --allow-all scripts/integrate.ts --check-i18n",
     "integrate": "deno run --allow-all scripts/integrate.ts",
     "integrate:quick": "deno run --allow-all scripts/integrate.ts --quick",
-    "compile": "deno compile --allow-all --output=levain levain.ts",
-    "compile:windows": "deno compile --allow-all --target x86_64-pc-windows-msvc --output=levain.exe levain.ts",
-    "compile:linux": "deno compile --allow-all --target x86_64-unknown-linux-gnu --output=levain levain.ts",
-    "compile:mac": "deno compile --allow-all --target x86_64-apple-darwin --output=levain levain.ts",
+    "compile": "deno compile --allow-all --output=levain levain.ts --is_compiled_binary",
+    "compile:windows": "deno compile --allow-all --target x86_64-pc-windows-msvc --output=levain.exe levain.ts --is_compiled_binary",
+    "compile:linux": "deno compile --allow-all --target x86_64-unknown-linux-gnu --output=levain levain.ts --is_compiled_binary",
+    "compile:mac": "deno compile --allow-all --target x86_64-apple-darwin --output=levain levain.ts --is_compiled_binary",
     "fmt": "deno fmt",
     "lint": "deno lint",
     "cache": "deno cache levain.ts",

@@ -47,30 +47,23 @@ Before creating a commit, proposing a Pull Request, or concluding any code task:
 
 ---
 
-## Windows Testing Contract (SSH & Local)
+## Windows Testing Scenarios (CI, SSH, Sandbox & Local)
 
-Almost everything meaningful in Levain is **Windows-only**. `OsUtils.onlyInWindows()` throws on other platforms, and Windows-specific tests are guarded with `if (OsUtils.isWindows())` — so a green test run on Linux/macOS silently skips large parts of the suite. CI runs on `windows-latest`.
+Almost everything meaningful in Levain is **Windows-only**. `OsUtils.onlyInWindows()` throws on other platforms, and Windows-specific tests are guarded with `if (OsUtils.isWindows())` — so a green test run on Linux/macOS silently skips large parts of the suite.
 
-There are two supported ways to run the real Windows test suite (full details in [`testing/WINDOWS.md`](testing/WINDOWS.md)):
+Four distinct scenarios exist — they are **not equivalent** (see the full comparison matrix and workflow in [`testing/WINDOWS.md`](testing/WINDOWS.md)):
 
-### 1. Preferred — Remote Windows Machine Over SSH (`deno task test:windows`)
-
-Tests that require a real Windows machine (clean installation, Windows Defender enabled, `pt-BR`) reach it through a **generic two-variable contract**, usable identically by Claude Code, Antigravity, or a developer in a terminal:
-
-* **`LEVAIN_TEST_SSH_CONFIG`**: path to an `ssh_config` file that knows how to reach the Windows machine.
-* **`LEVAIN_TEST_HOST`**: host name defined inside that `ssh_config`.
-
-Contract rules:
-
-* **Transport:** use **only** `ssh -F "$LEVAIN_TEST_SSH_CONFIG" "$LEVAIN_TEST_HOST" ...`, and pass the same `-F "$LEVAIN_TEST_SSH_CONFIG"` to `scp` (or `rsync -e "ssh -F \"$LEVAIN_TEST_SSH_CONFIG\""`).
-* **Remote environment:** the SSH shell is **`cmd.exe`** (not PowerShell or bash), the user is an **administrator**, and nothing from Levain is pre-installed. Bootstrapping `Deno`, `extra-bin` (which bundles `git` and `7-Zip`), and transferring/cloning the repository is the test runner's responsibility.
-* **Lifecycle:** the preferred target is a **disposable clean machine** per run, though an existing Windows machine also works because the runner isolates each run in its own temporary directory. Provisioning, starting, stopping, and supplying the environment variables live **outside this repository**.
-* **Missing-contract behavior:** if either `LEVAIN_TEST_SSH_CONFIG` or `LEVAIN_TEST_HOST` is unset (or the config file does not exist), `deno task test:windows` **must skip explicitly (exit 0)** with a clear message explaining what is missing and where the contract is documented — it must never fail or try to discover a machine on its own.
-* **Public repository rule:** never commit machine names, cloud accounts, local paths, or network addresses. Refer only generically to "a Windows machine reachable over SSH".
-
-### 2. Local Windows Machine
-
-When already on a Windows machine, run the suite directly with `deno task integrate`, `deno task test`, `deno task test:windows -- --local`, or `scripts\test.cmd`. Keep in mind that the suite mutates HKCU, user `PATH`, Desktop, and Start Menu.
+1. **GitHub Actions (`windows-latest`):** authoritative CI gate (`test-unit.yml`, `checkSources.yml`, `test-e2e.yml`), clean Windows Server (`en-US`), runs Codecov and full `levain-pkgs` E2E.
+2. **Preferred for real client validation & agents — Remote Windows Machine Over SSH (`deno task test:windows`):**
+   * Contract: two environment variables supplied externally (outside this repository):
+     * **`LEVAIN_TEST_SSH_CONFIG`**: path to an `ssh_config` file that knows how to reach the Windows machine.
+     * **`LEVAIN_TEST_HOST`**: host name defined inside that `ssh_config`.
+   * **Transport:** use **only** `ssh -F "$LEVAIN_TEST_SSH_CONFIG" "$LEVAIN_TEST_HOST" ...`, and pass the same `-F "$LEVAIN_TEST_SSH_CONFIG"` to `scp` (or `rsync -e "ssh -F \"$LEVAIN_TEST_SSH_CONFIG\""`).
+   * **Remote environment:** **`cmd.exe`** login shell (not PowerShell or bash), **administrator** user, Windows Defender enabled, `pt-BR` recommended, nothing from Levain pre-installed (bootstrapping `Deno`, `extra-bin`/bundled `git`, and source transfer are handled by the runner). Preferred target is a **disposable clean machine** per run, though an existing Windows machine also works via isolated temporary directories.
+   * **Missing-contract behavior:** if either variable is unset (or the config file does not exist), `deno task test:windows` **must skip explicitly (exit 0)** with a clear message explaining what is missing and where the contract is documented — never fail or try to discover a machine on its own.
+   * **Public repository rule:** provisioning, starting/stopping, and hosting live outside this repository. Never commit machine names, cloud accounts, local paths, or network addresses — refer only generically to "a Windows machine reachable over SSH".
+3. **Windows Sandbox (`WindowsSandbox.exe`, Windows 10/11 Pro/Enterprise only):** fast zero-state isolation for Registry/`PATH`/profile without managing a VM, but does **not** reproduce real host Windows Defender behavior.
+4. **Local Windows Machine:** fast inner-loop development (`deno task integrate`, `deno task test`, `deno task test:windows -- --local`, `scripts\test.cmd`). Mutates `HKCU`, user `PATH`, Desktop, and Start Menu (using a disposable local user account isolates `HKCU` but still shares `HKLM`, global tools, and Defender exclusions).
 
 ---
 
@@ -81,6 +74,7 @@ Deno tasks and commands (work anywhere):
 ```bash
 deno task integrate                                    # cascaded checks: typecheck + lint + i18n -> targeted -> full suite
 deno task integrate:quick                              # fast iteration: skips full suite
+deno task check:i18n                                   # validate en/pt i18n catalog parity & placeholders
 deno task test:windows                                 # run suite on remote Windows host via SSH contract (skips if unset)
 deno task test:windows -- --filter "Registry"          # pass extra deno test flags to remote Windows run
 deno task test                                         # deno test --allow-all

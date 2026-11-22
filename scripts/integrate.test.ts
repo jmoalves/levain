@@ -35,30 +35,40 @@ Deno.test("integrate.ts - parseArgs", async (t) => {
     const opts = parseArgs([]);
     assertEquals(opts.quick, false);
     assertEquals(opts.verbose, false);
+    assertEquals(opts.checkI18nOnly, false);
   });
 
   await t.step("should detect --quick flag", () => {
     const opts = parseArgs(["--quick"]);
     assertEquals(opts.quick, true);
     assertEquals(opts.verbose, false);
+    assertEquals(opts.checkI18nOnly, false);
   });
 
   await t.step("should detect --verbose flag", () => {
     const opts = parseArgs(["--verbose"]);
     assertEquals(opts.quick, false);
     assertEquals(opts.verbose, true);
+    assertEquals(opts.checkI18nOnly, false);
   });
 
   await t.step("should detect -v flag", () => {
     const opts = parseArgs(["-v"]);
     assertEquals(opts.quick, false);
     assertEquals(opts.verbose, true);
+    assertEquals(opts.checkI18nOnly, false);
+  });
+
+  await t.step("should detect --check-i18n flag", () => {
+    const opts = parseArgs(["--check-i18n"]);
+    assertEquals(opts.checkI18nOnly, true);
   });
 
   await t.step("should detect multiple flags together", () => {
     const opts = parseArgs(["--quick", "-v"]);
     assertEquals(opts.quick, true);
     assertEquals(opts.verbose, true);
+    assertEquals(opts.checkI18nOnly, false);
   });
 });
 
@@ -241,7 +251,7 @@ Deno.test("integrate.ts - runCascade with mocked dependencies", async (t) => {
       logger: createSilentLogger(),
     };
 
-    const res = await runCascade({ quick: false, verbose: false }, deps);
+    const res = await runCascade({ quick: false, verbose: false, checkI18nOnly: false }, deps);
     assertEquals(res.success, true);
     assertEquals(executedCommands, [["test", "--allow-all", "--parallel", "--fail-fast"]]);
   });
@@ -264,7 +274,7 @@ Deno.test("integrate.ts - runCascade with mocked dependencies", async (t) => {
       logger: createSilentLogger(),
     };
 
-    const res = await runCascade({ quick: true, verbose: false }, deps);
+    const res = await runCascade({ quick: true, verbose: false, checkI18nOnly: false }, deps);
     assertEquals(res.success, true);
     assertEquals(executedCommands, [
       ["check", "src/action/copy.ts"],
@@ -294,7 +304,7 @@ Deno.test("integrate.ts - runCascade with mocked dependencies", async (t) => {
       logger: createSilentLogger(),
     };
 
-    const res = await runCascade({ quick: false, verbose: false }, deps);
+    const res = await runCascade({ quick: false, verbose: false, checkI18nOnly: false }, deps);
     assertEquals(res.success, false);
     assertEquals(res.failedLevel, 1);
     assertEquals(executedCommands, [["check", "src/action/copy.ts"]]);
@@ -321,7 +331,7 @@ Deno.test("integrate.ts - runCascade with mocked dependencies", async (t) => {
       logger: createSilentLogger(),
     };
 
-    const res = await runCascade({ quick: false, verbose: false }, deps);
+    const res = await runCascade({ quick: false, verbose: false, checkI18nOnly: false }, deps);
     assertEquals(res.success, false);
     assertEquals(res.failedLevel, 1);
     assertEquals(executedCommands, [
@@ -348,7 +358,7 @@ Deno.test("integrate.ts - runCascade with mocked dependencies", async (t) => {
       logger: createSilentLogger(),
     };
 
-    const res = await runCascade({ quick: false, verbose: false }, deps);
+    const res = await runCascade({ quick: false, verbose: false, checkI18nOnly: false }, deps);
     assertEquals(res.success, false);
     assertEquals(res.failedLevel, 1);
     assertEquals(executedCommands, []);
@@ -375,7 +385,7 @@ Deno.test("integrate.ts - runCascade with mocked dependencies", async (t) => {
       logger: createSilentLogger(),
     };
 
-    const res = await runCascade({ quick: false, verbose: false }, deps);
+    const res = await runCascade({ quick: false, verbose: false, checkI18nOnly: false }, deps);
     assertEquals(res.success, false);
     assertEquals(res.failedLevel, 2);
     assertEquals(executedCommands, [
@@ -406,7 +416,7 @@ Deno.test("integrate.ts - runCascade with mocked dependencies", async (t) => {
       logger: createSilentLogger(),
     };
 
-    const res = await runCascade({ quick: false, verbose: false }, deps);
+    const res = await runCascade({ quick: false, verbose: false, checkI18nOnly: false }, deps);
     assertEquals(res.success, false);
     assertEquals(res.failedLevel, 3);
     assertEquals(executedCommands.length, 4);
@@ -427,7 +437,7 @@ Deno.test("integrate.ts - runCascade with mocked dependencies", async (t) => {
       logger: captured.logger,
     };
 
-    const res = await runCascade({ quick: false, verbose: false }, deps);
+    const res = await runCascade({ quick: false, verbose: false, checkI18nOnly: false }, deps);
     assertEquals(res.success, true);
     assertStringIncludes(captured.logs.join("\n"), "Platform notice");
     assertStringIncludes(captured.logs.join("\n"), "deno task test:windows");

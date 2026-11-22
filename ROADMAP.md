@@ -12,7 +12,7 @@ While v1 is being hardened and validated, `v0.93.1` remains the `Latest` release
 | :--- | :--- | :--- | :--- |
 | **Stage 0** | `v0.x`, `master` | Freeze Deno 1 on `v0.x`, promote `deno2_opus` to `master`, keep `deno2_opus` untouched as obsolete | Done |
 | **Phase 1** | `chore/governance-and-agents` | Unified AI/contributor guidelines, generic Windows SSH testing contract, i18n/lint validation | Done |
-| **Phase 2** | `chore/ci-and-build` | Fix `scripts/test.cmd` & coverage reporting, align Deno versions in CI, clean build/release scripts | Planned |
+| **Phase 2** | `chore/ci-and-build` | Fix `scripts/test.cmd` & coverage reporting, align Deno versions in CI, clean build/release scripts, document all 4 Windows testing scenarios | Done |
 | **Phase 3** | `chore/security-hardening` | Remove `curl -k`, enable `deno.lock`, pin GitHub Actions & permissions, audit embedded binaries and runtime | Planned |
 | **Phase 4** | `test/coverage-and-reliability` | Measure real coverage baseline, close test gaps in `src/cmd/`, core modules, actions, and `src/lib/io/` | Planned |
 | **Phase 5** | `perf/startup-and-repos` | Optimize CI caching, binary startup/size, repository crawling, and complete v1 readiness checklist | Planned |
@@ -42,17 +42,18 @@ While v1 is being hardened and validated, `v0.93.1` remains the `Latest` release
 
 ---
 
-## Phase 2 — GitHub Actions, Build & Release Process
+## Phase 2 — GitHub Actions, Build & Release Process (Completed)
 
 **Branch:** `chore/ci-and-build`
 
-- [ ] Restore full functionality in `scripts/test.cmd` (`--denoDir`, `--coverage` generating `coverage/levain.lcov` for Codecov, `--checkSources`, `--parallel`, argument pass-through).
-- [ ] Align default Deno version across `.github/workflows/test-unit.yml`, `checkSources.yml`, and `release.yml`.
-- [ ] Add `deno lint` and i18n catalog checks to CI.
-- [ ] Fix `scripts/levain-build.cmd` (`--denoDir` currently ignored during `deno compile`) and align `compile:windows`, `test.include` (include root `levain.test.ts`), and Deno 2 `fmt` format in `deno.json`.
-- [ ] Parameterize repository owner/name (`GITHUB_REPOSITORY`) in `githubScripts/` instead of hardcoding `jmoalves/levain`, and remove dead/broken legacy scripts (`asset-upload.sh`, `clean-levain-release.sh`, `scripts/antigos/`).
-- [ ] Standardize the `-SNAPSHOT` version convention in `recipes/levain.levain.yaml` and release scripts.
-- [ ] Evaluate a lightweight Linux CI job for `check` + `lint` + cross-platform tests alongside `windows-latest`.
+- [x] Restore full functionality in `scripts/test.cmd` (`--denoDir`, `--coverage` generating `coverage/levain.lcov` for Codecov, `--checkSources`, `--parallel`, argument pass-through).
+- [x] Align default Deno version (`2.9.8`) across `.github/workflows/test-unit.yml`, `checkSources.yml` (fixing missing default on `schedule`), and `release.yml`.
+- [x] Add `deno lint` and `deno task check:i18n` checks to CI (`test-unit.yml` and `githubScripts/levain-check.sh`).
+- [x] Fix `scripts/levain-build.cmd` (`--denoDir` now honored during `deno compile`) and align `compile*` (`--is_compiled_binary`), `test.include` (include root `levain.test.ts`), `lint.include`, and Deno 2 `fmt` format in `deno.json`.
+- [x] Parameterize repository owner/name (`GITHUB_REPOSITORY` / `LEVAIN_REPOSITORY`) in `githubScripts/` and `scripts/devLevain.cmd`, and remove dead/broken legacy scripts (`asset-upload.sh`, `clean-levain-release.sh`, `get-levain-release.sh`, `levain-bundle.sh`, `scripts/antigos/testAll.cmd`, `scripts/bundle.*`).
+- [x] Standardize the `-SNAPSHOT` version convention in `recipes/levain.levain.yaml` (`1.0.2-SNAPSHOT`).
+- [x] Add a lightweight `static-checks` Linux CI job in `test-unit.yml` alongside `unit-win`.
+- [x] Consolidate all 4 Windows testing scenarios (GitHub Actions, SSH contract, Windows Sandbox, local Windows) in `testing/WINDOWS.md` and `AGENTS.md`.
 
 ---
 

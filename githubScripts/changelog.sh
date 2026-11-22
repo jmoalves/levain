@@ -13,9 +13,13 @@ vEnd=$2
 denoDir=$3
 levainDir=$4
 
+repoSlug="${GITHUB_REPOSITORY:-jmoalves/levain}"
+repoOwner="${repoSlug%%/*}"
+repoName="${repoSlug#*/}"
+
 if [ "$vStart" == "LATEST" -o "$vStart" == "latest" ]; then
     # Levain latest
-    levainRelease=$( bash $scriptPath/github-get-release.sh -o jmoalves -r levain latest )
+    levainRelease=$( bash $scriptPath/github-get-release.sh -o "$repoOwner" -r "$repoName" latest )
     if [ -z "$levainRelease" ]; then
         echoErr ERROR getting levain release latest
         exit 1

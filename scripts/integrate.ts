@@ -12,6 +12,7 @@ export const PT_LOCALE_PATH = "src/locales/pt/translation.json";
 export interface Options {
   quick: boolean;
   verbose: boolean;
+  checkI18nOnly: boolean;
 }
 
 export interface I18nValidationResult {
@@ -23,6 +24,7 @@ export function parseArgs(args: string[]): Options {
   return {
     quick: args.includes("--quick"),
     verbose: args.includes("--verbose") || args.includes("-v"),
+    checkI18nOnly: args.includes("--check-i18n"),
   };
 }
 
@@ -337,6 +339,20 @@ export async function runCascade(
 
 export async function main() {
   const opts = parseArgs(Deno.args);
+
+  if (opts.checkI18nOnly) {
+    const i18nRes = defaultValidateI18n();
+    if (!i18nRes.valid) {
+      console.error("❌ i18n Catalog Validation - FAILED");
+      for (const msg of i18nRes.errors) {
+        console.error(`   - ${msg}`);
+      }
+      Deno.exit(1);
+    }
+    console.log("✔ i18n Catalog Validation - PASSED");
+    return;
+  }
+
   console.log("🚀 [levain-integrate] Starting fast-fail integration cascade...\n");
 
   const result = await runCascade(opts, {
