@@ -56,7 +56,7 @@ jobs:
           fetch-depth: 0
 
       - name: Generate versions
-        uses: HardNorth/github-version-generate@91998704a2b37be20604933d9c989ebade9c5f89 # v1.3.0
+        uses: HardNorth/github-version-generate@daf138e2557c0bb49affe49bd7d79671dc8bfb3f # v1.4.1
         with:
           version-source: file
           version-file: ${{ github.workspace }}/recipes/levain.levain.yaml
