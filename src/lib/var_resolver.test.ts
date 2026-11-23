@@ -237,6 +237,33 @@ Deno.test("VarResolver.replaceVars should apply urlEncode filter with and withou
     Error,
     "Unknown filter 'noSuchFilter'",
   );
+  await assertRejects(
+    async () => await VarResolver.replaceVars("${levain.login | toString}", undefined, config),
+    Error,
+    "Unknown filter 'toString'",
+  );
+  await assertRejects(
+    async () => await VarResolver.replaceVars("${levain.password | }", undefined, config),
+    Error,
+    "Empty filter",
+  );
+
+  // Indirect YAML variable wrapping ${levain.password} piped through | urlEncode must encode the real secret
+  const indirectPkg = new MockPackage("indirect-secret-pkg");
+  indirectPkg.yamlItem = (key: string) => (key === "wrappedPw" ? "${levain.password}" : undefined);
+  const pkgStub = stub(config.packageManager, "package", (name: string) =>
+    name === "indirect-secret-pkg" ? indirectPkg : undefined
+  );
+  try {
+    const resolvedIndirect = await VarResolver.replaceVars(
+      "${wrappedPw | urlEncode}",
+      "indirect-secret-pkg",
+      config,
+    );
+    assertEquals(resolvedIndirect, expectedPassword);
+  } finally {
+    pkgStub.restore();
+  }
 });
 
 async function verifyVarValueEquals(varName: string, expectedValue: string | undefined, configArgs: any = {}) {

@@ -204,6 +204,10 @@ Deno.test("tokenizeArgs should split unquoted whitespace, preserve quotes, and k
     tokenizeArgs("levainShell curl https://${levain.login | urlEncode}:${levain.password | urlEncode}@proxy"),
     ["levainShell", "curl", "https://${levain.login | urlEncode}:${levain.password | urlEncode}@proxy"],
   );
+  assertEquals(
+    tokenizeArgs("echo ${url_${env} | urlEncode}"),
+    ["echo", "${url_${env} | urlEncode}"],
+  );
   assertEquals(tokenizeArgs("   \t\n  "), []);
 });
 

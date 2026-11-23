@@ -30,18 +30,21 @@ export default class LogUtils {
       return msg;
     }
 
-    const candidates = new Set<string>([
-      config.password,
-      JSON.stringify(config.password).slice(1, -1),
-      StringUtils.encodeUrlComponent(config.password),
-      encodeURIComponent(config.password),
-    ]);
+    const candidates = [
+      ...new Set<string>([
+        config.password,
+        JSON.stringify(config.password).slice(1, -1),
+        StringUtils.encodeUrlComponent(config.password),
+        encodeURIComponent(config.password),
+      ]),
+    ]
+      .filter((c) => c.length > 0)
+      // Replace longer encoded variants first so raw substrings (e.g. leading `\`) don't leave fragments behind
+      .sort((a, b) => b.length - a.length);
 
     let masked = msg;
     for (const candidate of candidates) {
-      if (candidate) {
-        masked = masked.replaceAll(candidate, "******");
-      }
+      masked = masked.replaceAll(candidate, "******");
     }
     return masked;
   }

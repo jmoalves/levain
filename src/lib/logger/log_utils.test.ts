@@ -17,6 +17,11 @@ Deno.test("LogUtils.hidePassword should mask raw, JSON-escaped, and URL-encoded 
   const masked = LogUtils.hidePassword(config, msg);
 
   assertEquals(masked, "raw=****** raw2=****** json=****** strict=****** std=******");
+
+  // Leading/trailing backslashes must not leave residual backslash fragments in JSON-escaped strings
+  config.password = "\\leadTrail\\";
+  const jsonLeadTrail = JSON.stringify(config.password).slice(1, -1);
+  assertEquals(LogUtils.hidePassword(config, `json=${jsonLeadTrail}`), "json=******");
 });
 
 Deno.test("LogUtils.hidePassword should return message unchanged when config or password is absent", () => {

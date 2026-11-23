@@ -112,7 +112,9 @@ export class OsShell {
     OsUtils.onlyInWindows();
     const opt = await this.prepareShellOptions(args);
 
-    log.debug(`Deno.command: ${JSON.stringify(OsShell.redactShellOptionsForLog(opt))}`);
+    log.debug(
+      `Deno.command: ${JSON.stringify(OsShell.redactShellOptionsForLog(opt, this.collectSecretCandidates()))}`,
+    );
 
     const pcommand = new Deno.Command(opt.exec_cmd, opt);
 
@@ -176,6 +178,8 @@ export class OsShell {
       args: [],
     };
 
+    await this.prepareEnv(opt.env);
+
     let cmd: string[];
     if (this.interactive) {
       if (this.config.shellPath) {
@@ -185,22 +189,34 @@ export class OsShell {
         cmd = ["cmd", "/c", "start", "cmd", "/k", "prompt", "[%LEVAIN_CURRENT%]", "%_LEVAIN_OLD_PROMPT%"];
       }
     } else {
+      for (const arg of args) {
+        if (/[\r\n\0]/.test(arg)) {
+          throw new Error("Shell command arguments must not contain CR, LF, or NUL characters");
+        }
+      }
+
       const secretCandidates = this.collectSecretCandidates();
       const hasSecret = secretCandidates.length > 0 &&
         args.some((arg) => secretCandidates.some((secret) => arg.includes(secret)));
 
       if (hasSecret) {
+        const target = args[0] ?? "";
+        const isBatchTarget = /\.(?:cmd|bat)$/i.test(target);
+
         let secretIndex = 0;
         const escapedTokens = args.map((arg) => {
           if (secretCandidates.some((secret) => arg.includes(secret))) {
+            if (isBatchTarget && arg.includes('"')) {
+              throw new Error(
+                "Cannot safely pass a secret containing double quotes to a .cmd/.bat script; use ${levain.password | urlEncode} instead",
+              );
+            }
             const envVar = `${SECRET_ENV_PREFIX}${secretIndex++}`;
-            opt.env[envVar] = arg;
+            // Escape embedded `"` and trailing `\` for MSVCRT CommandLineToArgvW inside `"!VAR!"`
+            opt.env[envVar] = OsShell.escapeForWindowsQuotedArg(arg);
             return `"!${envVar}!"`;
           }
-          if (arg.includes(" ")) {
-            return `"${arg.replaceAll("!", "^!")}"`;
-          }
-          return arg.replaceAll("!", "^^!");
+          return OsShell.escapeNonSecretForDelayedCmd(arg);
         });
 
         // `/s` unconditionally strips the outer quotes; `/d` disables AutoRun; `/v:on` expands
@@ -218,7 +234,6 @@ export class OsShell {
 
     opt.cmd = cmd;
     [opt.exec_cmd, ...opt.args] = cmd;
-    await this.prepareEnv(opt.env);
 
     if (this.saveVar) {
       opt.stdout = "piped";
@@ -230,6 +245,27 @@ export class OsShell {
     }
 
     return opt;
+  }
+
+  private static escapeForWindowsQuotedArg(value: string): string {
+    return value
+      .replace(/(\\*)"/g, '$1$1\\"')
+      .replace(/(\\+)$/, "$1$1");
+  }
+
+  private static escapeNonSecretForDelayedCmd(arg: string): string {
+    if (arg === "") {
+      return '""';
+    }
+    if (/\s/.test(arg) || arg.includes('"')) {
+      // Under `/v:on` with `!` present on the line, cmd.exe interprets `^` even inside double quotes
+      const escaped = OsShell.escapeForWindowsQuotedArg(arg)
+        .replaceAll("^", "^^")
+        .replaceAll("!", "^!");
+      return `"${escaped}"`;
+    }
+    // Unquoted under `/v:on`: phase 1 halves carets before `!` and phase 5 consumes one `^` before `!`
+    return arg.replace(/(\^*)!/g, (_m, carets: string) => "^".repeat(carets.length * 4 + 2) + "!");
   }
 
   private collectSecretCandidates(): string[] {
@@ -245,10 +281,22 @@ export class OsShell {
     return [...candidates].filter((c) => c.length > 0);
   }
 
-  static redactShellOptionsForLog(opt: IShellOptions): IShellOptions {
+  static redactShellOptionsForLog(opt: IShellOptions, secretCandidates: string[] = []): IShellOptions {
+    const sortedSecrets = [...secretCandidates]
+      .filter((s) => s.length > 0)
+      .sort((a, b) => b.length - a.length);
+
     const redactedEnv: Record<string, string> = {};
     for (const [key, value] of Object.entries(opt.env)) {
-      redactedEnv[key] = key.startsWith(SECRET_ENV_PREFIX) ? "******" : value;
+      if (key.startsWith(SECRET_ENV_PREFIX)) {
+        redactedEnv[key] = "******";
+      } else {
+        let masked = value;
+        for (const secret of sortedSecrets) {
+          masked = masked.replaceAll(secret, "******");
+        }
+        redactedEnv[key] = masked;
+      }
     }
     return {
       ...opt,

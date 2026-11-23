@@ -98,7 +98,7 @@ export function tokenizeArgs(cmdline: string): string[] {
   const tokens: string[] = [];
   let current = "";
   let inQuotes = false;
-  let inVarExpr = false;
+  let varExprDepth = 0;
   let hasToken = false;
 
   for (let i = 0; i < cmdline.length; i++) {
@@ -110,23 +110,23 @@ export function tokenizeArgs(cmdline: string): string[] {
       continue;
     }
 
-    // Keep spaces inside `${var | filter}` expressions intact even when unquoted
-    if (!inQuotes && !inVarExpr && ch === "$" && cmdline[i + 1] === "{" && cmdline.indexOf("}", i + 2) !== -1) {
-      inVarExpr = true;
+    // Keep spaces inside `${var | filter}` (including nested `${a_${b} | urlEncode}`) intact when unquoted
+    if (!inQuotes && ch === "$" && cmdline[i + 1] === "{" && cmdline.indexOf("}", i + 2) !== -1) {
+      varExprDepth++;
       current += "${";
       hasToken = true;
       i++;
       continue;
     }
 
-    if (inVarExpr && ch === "}") {
-      inVarExpr = false;
+    if (!inQuotes && varExprDepth > 0 && ch === "}") {
+      varExprDepth--;
       current += ch;
       hasToken = true;
       continue;
     }
 
-    if (!inQuotes && !inVarExpr && /\s/.test(ch)) {
+    if (!inQuotes && varExprDepth === 0 && /\s/.test(ch)) {
       if (hasToken) {
         tokens.push(current);
         current = "";

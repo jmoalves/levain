@@ -1,4 +1,4 @@
-import { assert, assertEquals } from "@std/assert";
+import { assert, assertEquals, assertRejects } from "@std/assert";
 import { stub } from "@std/testing/mock";
 import { OsShell } from "./os_shell.ts";
 import OsUtils from "./os_utils.ts";
@@ -127,20 +127,64 @@ Deno.test("OsShell.prepareShellOptions should pass secrets via ephemeral env var
   assertEquals(opt.args[4].includes(secret), false, "raw secret must not appear in cmd args");
   assertEquals(opt.args[4].includes(urlEncoded), false, "url-encoded secret must not appear in cmd args");
 
-  const redacted = OsShell.redactShellOptionsForLog(opt);
+  const redacted = OsShell.redactShellOptionsForLog(opt, [secret, urlEncoded]);
   assertEquals(redacted.env["__LEVAIN_SECRET_0"], "******");
   assertEquals(redacted.env["__LEVAIN_SECRET_1"], "******");
+});
+
+Deno.test("OsShell.prepareShellOptions should reject CR/LF/NUL, guard .cmd/.bat quotes, and escape carets/quotes", async () => {
+  const config = TestHelper.getConfig();
+  const secretWithQuoteAndSlash = 'p^a"s\\';
+  config.password = secretWithQuoteAndSlash;
+  config.context.action = {
+    setEnv: {
+      env: {
+        __LEVAIN_SECRET_0: "should-be-overwritten",
+        HTTP_PROXY: `http://u:${secretWithQuoteAndSlash}@proxy`,
+      },
+    },
+  };
+  config.packageManager = new PackageManagerMock(config);
+  const osShell = new OsShell(config, ["abc"], true);
+
+  await assertRejects(
+    async () => await osShell.prepareShellOptions(["echo", "line1\nline2"]),
+    Error,
+    "CR, LF, or NUL",
+  );
+  await assertRejects(
+    async () => await osShell.prepareShellOptions(["mvn.cmd", secretWithQuoteAndSlash]),
+    Error,
+    ".cmd/.bat",
+  );
+
+  const opt = await osShell.prepareShellOptions([
+    "tool.exe",
+    "",
+    "a ^!__LEVAIN_SECRET_0^!",
+    "^^!bang",
+    secretWithQuoteAndSlash,
+  ]);
+  // MSVCRT-escaped embedded quote and trailing backslash, overwriting any pre-existing setEnv collision
+  assertEquals(opt.env["__LEVAIN_SECRET_0"], 'p^a\\"s\\\\');
+  assert(opt.args[4].includes('""'));
+  assert(opt.args[4].includes('"a ^^^!__LEVAIN_SECRET_0^^^!"'));
+  assert(opt.args[4].includes("^^^^^^^^^^!bang"));
+
+  const redacted = OsShell.redactShellOptionsForLog(opt, [secretWithQuoteAndSlash]);
+  assertEquals(redacted.env["__LEVAIN_SECRET_0"], "******");
+  assertEquals(redacted.env["HTTP_PROXY"], "http://u:******@proxy");
 });
 
 if (OsUtils.isWindows()) {
   Deno.test("OsShell.openShell on Windows should deliver raw and URL-encoded special-character passwords verbatim", async () => {
     const config = TestHelper.getConfig();
-    const specialPassword = "p^a&s$s$$w%o!r|d<1>2 (3)";
+    const specialPassword = 'p^a&s$s$$w%o!r|d<1>2 (3)"\\';
     const urlToken = `http://user:${StringUtils.encodeUrlComponent(specialPassword)}@proxy:8080`;
     config.password = specialPassword;
     config.packageManager = new PackageManagerMock(config);
 
-    // Raw special-character password through real cmd.exe
+    // Raw special-character password (including embedded quote & trailing backslash) through real cmd.exe
     const osShell1 = new OsShell(config, ["abc"], true);
     osShell1.saveVar = "RAW_OUT";
     osShell1.stripCRLF = true;
@@ -153,5 +197,18 @@ if (OsUtils.isWindows()) {
     osShell2.stripCRLF = true;
     await osShell2.openShell([Deno.execPath(), "eval", "console.log(Deno.args[0])", urlToken]);
     assertEquals(config.getVar("URL_OUT"), urlToken);
+
+    // Non-secret argument containing ^!__LEVAIN_SECRET_0^! must not expand the secret
+    const osShell3 = new OsShell(config, ["abc"], true);
+    osShell3.saveVar = "NO_LEAK_OUT";
+    osShell3.stripCRLF = true;
+    await osShell3.openShell([
+      Deno.execPath(),
+      "eval",
+      "console.log(Deno.args[0])",
+      "safe ^!__LEVAIN_SECRET_0^!",
+      specialPassword,
+    ]);
+    assertEquals(config.getVar("NO_LEAK_OUT"), "safe ^!__LEVAIN_SECRET_0^!");
   });
 }
