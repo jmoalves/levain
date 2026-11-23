@@ -1,14 +1,40 @@
-import { parse } from "@std/flags";
+import { parseArgs as stdParseArgs, type ParseOptions } from "@std/cli/parse-args";
 
-interface Opts {
+export interface ParseArgsOptions {
   stringOnce?: string[];
   stringMany?: string[];
   boolean?: string[];
+  /**
+   * When true (default), stops parsing options at the first non-option positional argument.
+   * Preserve `true` for wrappers/actions whose positional values may begin with `-` (e.g.
+   * global CLI dispatch, `levainShell`, `setEnv`, `assertContains`, `jsonSet`, `propertySet`).
+   * Pass `false` for commands/actions that accept flags after positional arguments.
+   */
+  stopEarly?: boolean;
 }
 
-export function parseArgs(pArgs: string[], optsDef?: Opts): any {
-  const opts: any = {
-    stopEarly: true,
+export function parseArgs(pArgs: string[], optsDef?: ParseArgsOptions): any {
+  const stringOpts: string[] = [];
+  const collectOpts: string[] = [];
+
+  if (optsDef?.stringOnce) {
+    for (const v of optsDef.stringOnce) {
+      stringOpts.push(v);
+      // Collecting stringOnce options delegates duplicate detection (--opt a --opt=b,
+      // stopEarly, and `--` handling) directly to @std/cli/parse-args.
+      collectOpts.push(v);
+    }
+  }
+
+  if (optsDef?.stringMany) {
+    for (const v of optsDef.stringMany) {
+      stringOpts.push(v);
+      collectOpts.push(v);
+    }
+  }
+
+  const opts: ParseOptions = {
+    stopEarly: optsDef?.stopEarly ?? true,
     unknown: (v: string) => {
       if (v.startsWith("-")) {
         throw new Error("ERROR: Unknown option " + v);
@@ -18,141 +44,106 @@ export function parseArgs(pArgs: string[], optsDef?: Opts): any {
     },
   };
 
-  if (optsDef?.stringOnce || optsDef?.stringMany) {
-    opts.string = [];
-    if (optsDef?.stringOnce) {
-      optsDef.stringOnce.forEach((v) => {
-        opts.string.push(v);
-      });
-    }
-
-    // Handling BREAKING changes
-    // https://github.com/denoland/deno_std/commit/6a95e2954dd58b68dbbb246cc362a8906a01ec04
-    if (optsDef?.stringMany) {
-      opts.collect = [];
-      optsDef.stringMany.forEach((v) => {
-        opts.string.push(v);
-        opts.collect.push(v);
-      });
-    }
+  if (stringOpts.length > 0) {
+    opts.string = stringOpts;
+    opts.collect = collectOpts;
   }
 
   if (optsDef?.boolean) {
-    opts.boolean = optsDef?.boolean;
+    opts.boolean = optsDef.boolean;
   }
 
   const args = normalizeArgs(pArgs);
+  const myArgs: Record<string, any> = stdParseArgs(args, opts);
 
-  checkStringOnce(args, optsDef?.stringOnce);
-
-  const myArgs = parse(args, opts);
+  if (optsDef?.stringOnce) {
+    for (const key of optsDef.stringOnce) {
+      const value = myArgs[key];
+      if (Array.isArray(value)) {
+        if (value.length > 1) {
+          throw new Error(`Use option --${key} only once`);
+        }
+        if (value.length === 1) {
+          myArgs[key] = value[0];
+        } else {
+          delete myArgs[key];
+        }
+      }
+    }
+  }
 
   if (optsDef?.stringMany) {
-    optsDef.stringMany.forEach((key) => {
-      if (typeof (myArgs[key]) == "string") {
-        myArgs[key] = [myArgs[key]];
-      }
-
-      if (myArgs[key] && myArgs[key].length == 0) {
+    for (const key of optsDef.stringMany) {
+      const value = myArgs[key];
+      if (typeof value === "string") {
+        myArgs[key] = [value];
+      } else if (Array.isArray(value) && value.length === 0) {
         delete myArgs[key];
       }
-    });
+    }
   }
 
   return myArgs;
 }
 
+/**
+ * Single-pass tokenizer for declarative YAML action lines.
+ *
+ * Splits on unquoted whitespace and strips surrounding double quotes while
+ * keeping backslashes literal (required for Windows file paths such as `"C:\tools\app"`
+ * and regexes in recipes). Preserves intentional whitespace and explicit empty quotes
+ * (`--with=""`).
+ */
+export function tokenizeArgs(cmdline: string): string[] {
+  const tokens: string[] = [];
+  let current = "";
+  let inQuotes = false;
+  let hasToken = false;
+
+  for (let i = 0; i < cmdline.length; i++) {
+    const ch = cmdline[i];
+
+    if (ch === '"') {
+      inQuotes = !inQuotes;
+      hasToken = true;
+      continue;
+    }
+
+    if (!inQuotes && /\s/.test(ch)) {
+      if (hasToken) {
+        tokens.push(current);
+        current = "";
+        hasToken = false;
+      }
+      continue;
+    }
+
+    current += ch;
+    hasToken = true;
+  }
+
+  if (inQuotes) {
+    throw new Error(`Quote mismatch - ${cmdline}`);
+  }
+
+  if (hasToken) {
+    tokens.push(current);
+  }
+
+  return tokens;
+}
+
+/**
+ * Backward-compatible wrapper for callers passing pre-split whitespace tokens.
+ */
 export function handleQuotes(args: string[]): string[] {
-  if (!args || args.length < 2) {
+  if (!args || args.length === 0) {
     return args;
   }
 
-  const newArgs: string[] = [];
-  let previous: string[] | undefined = undefined;
-  for (const element of args) {
-    const count = countQuotes(element);
-    if (count > 2) {
-      throw `Too many quotes - ${args}`;
-    }
-
-    if (count == 0 && !previous) { // Regular arg
-      addArg(newArgs, element);
-      continue;
-    }
-
-    if (count == 0 && previous) { // element to join
-      previous.push(element);
-      continue;
-    }
-
-    if (count == 1 && !previous) { // Quote begin
-      previous = [element];
-      continue;
-    }
-
-    if (count == 1 && previous) { // Quote end
-      addArg(newArgs, previous.join(" ") + " " + element);
-      previous = undefined;
-      continue;
-    }
-
-    if (count == 2 && !previous) { // Regular arg with quotes
-      addArg(newArgs, element);
-      continue;
-    }
-
-    // Oops... quote mismatch
-    throw `Quote mismatch - ${args.join(" ")}`;
-  }
-
-  if (previous) {
-    throw `Quote mismatch - ${args.join(" ")}`;
-  }
-
-  return newArgs;
-}
-
-function countQuotes(text: string): number {
-  let count = 0;
-  let index = 0;
-  do {
-    index = text.indexOf('"', index);
-    if (index != -1) {
-      count++;
-      index++;
-    }
-  } while (index >= 0);
-
-  return count;
-}
-
-function addArg(args: string[], text: string): void {
-  args.push(text.replace(/"/g, ""));
+  return tokenizeArgs(args.join(" "));
 }
 
 function normalizeArgs(args: string[]): string[] {
-  return args
-    .filter((item) => item)
-    .map((item) => item.trim())
-    .filter((item) => item.length > 0);
-}
-
-function checkStringOnce(args: string[], stringOnce: string[] | undefined) {
-  if (!stringOnce || !args || args.length == 0) {
-    return;
-  }
-
-  const knownKeys = new Set();
-  const stringOnceSet = new Set(stringOnce);
-
-  args
-    .filter((element) => element?.startsWith("-"))
-    .filter((element) => stringOnceSet.has(element.replace(/^-{1,2}/, "")))
-    .forEach((option) => {
-      if (knownKeys.has(option)) {
-        throw new Error(`Use option ${option} only once`);
-      }
-
-      knownKeys.add(option);
-    });
+  return args.filter((item) => item !== undefined && item !== null && item.length > 0);
 }

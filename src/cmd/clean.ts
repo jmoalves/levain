@@ -38,6 +38,7 @@ export default class CleanCommand implements Command {
         "all",
         "deep",
       ],
+      stopEarly: false,
     });
 
     const noArgs = !parameters.length;

@@ -19,6 +19,7 @@ export default class Mkdir implements Action {
       boolean: [
         "compact",
       ],
+      stopEarly: false,
     });
 
     if (args._.length != 1) {

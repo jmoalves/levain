@@ -24,6 +24,7 @@ export default class PropertyGetAction implements Action {
       ],
       stringMany: [],
       boolean: [],
+      stopEarly: false,
     });
 
     const filePath = myArgs._[0];

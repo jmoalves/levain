@@ -19,6 +19,7 @@ export default class Inspect implements Action {
         "regExp",
         "saveVar",
       ],
+      stopEarly: false,
     });
 
     this.verifyArgs(args); // throws

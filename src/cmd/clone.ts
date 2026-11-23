@@ -20,6 +20,7 @@ export default class Clone implements Command {
       boolean: [
         "dirs",
       ],
+      stopEarly: false,
     });
 
     const urls: string[] = myArgs._;

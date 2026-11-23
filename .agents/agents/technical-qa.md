@@ -46,7 +46,7 @@ Read the relevant context first:
    - **Coverage gaps:** point out important untested branches and uncovered modules (`src/cmd/`, `src/lib/io/`, core runtime) rather than chasing vanity percentages.
 4. **Tooling, scripts & version alignment:**
    - Consistent Deno version across `.github/workflows/*.yml`, `testing/run-windows-tests.ts`, and docs.
-   - `deno.json` and `deno.lock` stay aligned (`--frozen` clean); no dead dependencies in root `deno.json`.
+   - `deno.json` and `deno.lock` stay aligned (`--frozen` clean); check dependency freshness (`deno outdated`) periodically, replace deprecated packages, and remove dead entries from root `deno.json`.
    - Shell scripts (`githubScripts/*.sh`): `set -euo pipefail`, proper quoting, `bash -n` (and `shellcheck` if installed).
    - Windows batch scripts (`scripts/*.cmd`, `githubScripts/*.cmd`): `exit /b` (not bare `exit`), safe `%~1` unquoting, delayed expansion pitfalls (`%CD%` inside single-line `&&` chains), errorlevel checks.
 

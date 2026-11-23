@@ -22,6 +22,7 @@ export default class CopyAction implements Action {
         "strip",
         "ifNotExists",
       ],
+      stopEarly: false,
     });
 
     if (!pkg) {

@@ -21,6 +21,7 @@ export default class JsonGet implements Action {
       ],
       stringMany: [],
       boolean: [],
+      stopEarly: false,
     });
 
     if (myArgs?._?.length < 2) {

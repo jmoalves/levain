@@ -24,6 +24,7 @@ export default class Extract implements Action {
       stringOnce: [
         "type",
       ],
+      stopEarly: false,
     });
 
     log.debug(`Args: ${JSON.stringify(args)}`);
