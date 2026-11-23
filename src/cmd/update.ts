@@ -32,6 +32,7 @@ export default class Update implements Command {
       boolean: [
         "force",
       ],
+      stopEarly: false,
     });
 
     let pkgNames: string[] = myArgs._;

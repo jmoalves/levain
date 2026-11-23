@@ -18,6 +18,7 @@ export default class InfoCommand implements Command {
       boolean: [
         "verbose",
       ],
+      stopEarly: false,
     });
 
     let pkgs: Package[] | null = null;

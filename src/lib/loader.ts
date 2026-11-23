@@ -8,7 +8,7 @@ import type Action from "../action/action.ts";
 import type Package from "./package/package.ts"; 
 
 import type Config from "./config.ts";
-import { handleQuotes } from "./parse_args.ts";
+import { tokenizeArgs } from "./parse_args.ts";
 
 export default class Loader {
   private commandFactory: CommandFactory | null = null;
@@ -49,16 +49,15 @@ export default class Loader {
     log.debug("");
     log.debug(`+ ACTION: ${JSON.stringify(cmdline)}`);
 
-    let args = cmdline.split(" ");
-    const action = args.shift();
+    const tokens = tokenizeArgs(cmdline);
+    const action = tokens.shift();
 
-    if (action == undefined) {
-      throw "No action to perform";
+    if (!action) {
+      throw new Error("No action to perform");
     }
 
-    log.debug(`- ARG-ORIG ${args}`);
-    args = handleQuotes(args);
-    log.debug(`- ARG-QUOT ${args}`);
+    const args = tokens;
+    log.debug(`- ARG-TOKENS ${args}`);
     const actionFactory = await this.loadActionFactory();
     const handler: Action = actionFactory.get(action, this.config);
 

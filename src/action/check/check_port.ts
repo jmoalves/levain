@@ -18,6 +18,7 @@ export default class CheckPort implements Action {
         "transport",
         "address",
       ],
+      stopEarly: false,
     });
 
     if (!args.port) {

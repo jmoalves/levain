@@ -17,6 +17,7 @@ export default class AddPathAction implements Action {
       boolean: [
         "permanent",
       ],
+      stopEarly: false,
     });
 
     if (myArgs?._?.length !== 1) {

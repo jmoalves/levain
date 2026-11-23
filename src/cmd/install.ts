@@ -34,6 +34,7 @@ export default class Install implements Command {
         "force",
         "noUpdate",
       ],
+      stopEarly: false,
     });
 
     let pkgNames: string[] = myArgs._;

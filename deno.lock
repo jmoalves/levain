@@ -4,15 +4,15 @@
     "jsr:@cliffy/ansi@^1.3.1": "1.3.1",
     "jsr:@cliffy/internal@^1.3.1": "1.3.1",
     "jsr:@cliffy/keycode@^1.3.1": "1.3.1",
-    "jsr:@cliffy/prompt@^1.2.1": "1.3.1",
+    "jsr:@cliffy/prompt@^1.3.1": "1.3.1",
     "jsr:@deno-library/progress@^1.5.1": "1.5.1",
-    "jsr:@i18next/i18next@^26.3.4": "26.7.2",
-    "jsr:@std/assert@0.224": "0.224.0",
+    "jsr:@i18next/i18next@^27.2.4": "27.2.4",
     "jsr:@std/assert@^1.0.19": "1.0.19",
-    "jsr:@std/async@^1.5.0": "1.5.1",
+    "jsr:@std/async@^1.5.1": "1.5.1",
     "jsr:@std/bytes@^1.0.6": "1.0.6",
+    "jsr:@std/cli@^1.0.32": "1.0.32",
+    "jsr:@std/data-structures@^1.1.3": "1.1.3",
     "jsr:@std/encoding@^1.0.11": "1.0.11",
-    "jsr:@std/flags@0.224": "0.224.0",
     "jsr:@std/fmt@1.0.3": "1.0.3",
     "jsr:@std/fmt@^1.0.10": "1.0.10",
     "jsr:@std/fmt@^1.0.5": "1.0.10",
@@ -26,10 +26,10 @@
     "jsr:@std/log@~0.224.14": "0.224.14",
     "jsr:@std/path@^1.1.5": "1.1.6",
     "jsr:@std/path@^1.1.6": "1.1.6",
-    "jsr:@std/testing@^1.0.19": "1.0.21",
+    "jsr:@std/testing@^1.0.21": "1.0.21",
     "jsr:@std/text@^1.0.19": "1.1.0",
-    "jsr:@std/yaml@^1.1.2": "1.3.0",
-    "npm:@zip.js/zip.js@^2.8.26": "2.25.0",
+    "jsr:@std/yaml@^1.3.0": "1.3.0",
+    "npm:@zip.js/zip.js@^2.25.0": "2.25.0",
     "npm:date-fns@^4.4.0": "4.4.0",
     "npm:fastest-levenshtein@^1.0.16": "1.0.16",
     "npm:validator@^13.15.35": "13.15.35"
@@ -55,7 +55,7 @@
         "jsr:@cliffy/ansi",
         "jsr:@cliffy/internal",
         "jsr:@cliffy/keycode",
-        "jsr:@std/assert@^1.0.19",
+        "jsr:@std/assert",
         "jsr:@std/fmt@^1.0.10",
         "jsr:@std/io@~0.225.3",
         "jsr:@std/path@^1.1.6",
@@ -69,11 +69,8 @@
         "jsr:@std/io@0.225.0"
       ]
     },
-    "@i18next/i18next@26.7.2": {
-      "integrity": "96e2598f940a510a4e7cd72b301fe3c451bca4bd3d4ce382dc734ebe0a9b2a49"
-    },
-    "@std/assert@0.224.0": {
-      "integrity": "8643233ec7aec38a940a8264a6e3eed9bfa44e7a71cc6b3c8874213ff401967f"
+    "@i18next/i18next@27.2.4": {
+      "integrity": "bda5e3bedf9efe8ac65fd1162721630964a461b3b24c75396b5486ac858381c5"
     },
     "@std/assert@1.0.19": {
       "integrity": "eaada96ee120cb980bc47e040f82814d786fe8162ecc53c91d8df60b8755991e",
@@ -82,19 +79,26 @@
       ]
     },
     "@std/async@1.5.1": {
-      "integrity": "c82455dc70cab29a0adf3ac8075db934785bffdd3902af5afcf25d21a74cfd86"
+      "integrity": "c82455dc70cab29a0adf3ac8075db934785bffdd3902af5afcf25d21a74cfd86",
+      "dependencies": [
+        "jsr:@std/data-structures"
+      ]
     },
     "@std/bytes@1.0.6": {
       "integrity": "f6ac6adbd8ccd99314045f5703e23af0a68d7f7e58364b47d2c7f408aeb5820a"
     },
+    "@std/cli@1.0.32": {
+      "integrity": "188b3a100d6202d64e3f5bd3d799c7fa4f6d77f92cc65eb7f641c1fa0aa92a66",
+      "dependencies": [
+        "jsr:@std/fmt@^1.0.10",
+        "jsr:@std/internal@^1.0.14"
+      ]
+    },
+    "@std/data-structures@1.1.3": {
+      "integrity": "a5ec67199e79ee5b29123474d93fa9a47701ec08a4ef3bd1b623a36476306c5b"
+    },
     "@std/encoding@1.0.11": {
       "integrity": "e7cef2f0b3153bccc17431e7c864a1de03a4b6d9647389c43e08aaa775d37385"
-    },
-    "@std/flags@0.224.0": {
-      "integrity": "d40eaf58c356b2e1313c6d4e62dc28b614aad2ddae6f5ff72a969e0b1f5ad689",
-      "dependencies": [
-        "jsr:@std/assert@0.224"
-      ]
     },
     "@std/fmt@1.0.3": {
       "integrity": "97765c16aa32245ff4e2204ecf7d8562496a3cb8592340a80e7e554e0bb9149f"
@@ -138,7 +142,12 @@
     "@std/testing@1.0.21": {
       "integrity": "a0d14b2519005242821565091127c7d6fa96ca1b330e84e9249afcd602ee764f",
       "dependencies": [
-        "jsr:@std/assert@^1.0.19"
+        "jsr:@std/assert",
+        "jsr:@std/async",
+        "jsr:@std/data-structures",
+        "jsr:@std/fs@^1.0.24",
+        "jsr:@std/internal@^1.0.14",
+        "jsr:@std/path@^1.1.6"
       ]
     },
     "@std/text@1.1.0": {
@@ -164,20 +173,20 @@
   },
   "workspace": {
     "dependencies": [
-      "jsr:@cliffy/prompt@^1.2.1",
+      "jsr:@cliffy/prompt@^1.3.1",
       "jsr:@deno-library/progress@^1.5.1",
-      "jsr:@i18next/i18next@^26.3.4",
+      "jsr:@i18next/i18next@^27.2.4",
       "jsr:@std/assert@^1.0.19",
-      "jsr:@std/async@^1.5.0",
-      "jsr:@std/flags@0.224",
+      "jsr:@std/async@^1.5.1",
+      "jsr:@std/cli@^1.0.32",
       "jsr:@std/fmt@^1.0.10",
       "jsr:@std/fs@^1.0.24",
       "jsr:@std/io@~0.225.3",
       "jsr:@std/log@~0.224.14",
       "jsr:@std/path@^1.1.6",
-      "jsr:@std/testing@^1.0.19",
-      "jsr:@std/yaml@^1.1.2",
-      "npm:@zip.js/zip.js@^2.8.26",
+      "jsr:@std/testing@^1.0.21",
+      "jsr:@std/yaml@^1.3.0",
+      "npm:@zip.js/zip.js@^2.25.0",
       "npm:date-fns@^4.4.0",
       "npm:fastest-levenshtein@^1.0.16",
       "npm:validator@^13.15.35"

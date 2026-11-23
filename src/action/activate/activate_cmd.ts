@@ -14,6 +14,7 @@ export default class ActivateCmd implements Action {
       stringOnce: [
         "shell",
       ],
+      stopEarly: false,
     });
     const shell = new Shell(this.config);
     const { pkgNames, pkgActions, curDirPkg } = await shell.readPackages(myArgs?._);

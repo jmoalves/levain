@@ -21,6 +21,7 @@ export default class CheckChainDirExists implements Action {
         "saveVar",
         "default",
       ],
+      stopEarly: false,
     });
 
     this.verifyArgs(args); // throws

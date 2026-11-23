@@ -25,6 +25,7 @@ export default class ContextMenuRemoveAction implements Action {
         "name",
         "cmd",
       ],
+      stopEarly: false,
     });
 
     log.debug(`- ARGS: ${JSON.stringify(args)}`);

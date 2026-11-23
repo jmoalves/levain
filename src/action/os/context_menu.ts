@@ -26,6 +26,7 @@ export default class ContextMenuAction implements Action {
         "cmd",
         "icon",
       ],
+      stopEarly: false,
     });
 
     log.debug(`- ARGS: ${JSON.stringify(args)}`);

@@ -25,7 +25,8 @@ export default class ActivateInit implements Action {
       stringOnce: [
         "powershell-profile",
         "cmder-config",
-      ]
+      ],
+      stopEarly: false,
     });
     const levainCmdPath = myArgs.dev ? Deno.cwd() : this.config.configPaths.levainBaseDir;
     if (myArgs["cmd"]) {
