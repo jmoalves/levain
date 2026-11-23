@@ -17,6 +17,7 @@ cmd.install:
     "attr=${pkg.contract-dep.customAttr} login=${levain.login} email=${levain.email} full=${levain.fullname}"
   - setVar CONTRACT_DEP_BASE ${pkg.contract-dep.baseDir}
   - setVar CONTRACT_SECRET_ECHO ${levain.password}
+  - setVar CONTRACT_SECRET_URL https://${levain.login | urlEncode}:${levain.password | urlEncode}@proxy.example.org
   - setEnv CONTRACT_FLAG_VAL --flag-value=123
 
 cmd.shell:

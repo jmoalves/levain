@@ -1,14 +1,59 @@
 import UserInfoUtil from "./user_info/userinfo_util.ts";
 import type Config from "./config.ts";
 import HomePaths from "./paths/home_paths.ts";
+import StringUtils from "./utils/string_utils.ts";
 
 export interface VarResolutionContext {
   depth: number;
   deferredSecrets: Map<string, string>;
 }
 
+const VAR_FILTERS = new Map<string, (value: string) => string>([
+  ["urlEncode", (value: string) => StringUtils.encodeUrlComponent(value)],
+]);
+
 export default class VarResolver {
   static readonly MAX_EXPANSION_DEPTH = 20;
+
+  private static parseVarExpression(expr: string): { varName: string; filters: string[] } {
+    const parts = expr.split("|");
+    const varName = (parts.shift() ?? "").trim();
+    const filters = parts.map((f) => {
+      const trimmed = f.trim();
+      if (trimmed.length === 0) {
+        throw new Error(`Empty filter in variable \${${expr}}`);
+      }
+      return trimmed;
+    });
+    return { varName, filters };
+  }
+
+  private static applyFilters(value: string, filters: string[], rawExpr: string): string {
+    let result = value;
+    for (const filterName of filters) {
+      const fn = VAR_FILTERS.get(filterName);
+      if (!fn) {
+        throw new Error(`Unknown filter '${filterName}' in variable \${${rawExpr}}`);
+      }
+      result = fn(result);
+    }
+    return result;
+  }
+
+  private static materializeSentinels(
+    value: string,
+    deferredSecrets: Map<string, string>,
+  ): { text: string; hadSecret: boolean } {
+    let text = value;
+    let hadSecret = false;
+    for (const [sentinel, secretValue] of deferredSecrets.entries()) {
+      if (text.includes(sentinel)) {
+        hadSecret = true;
+        text = text.replaceAll(sentinel, () => secretValue);
+      }
+    }
+    return { text, hadSecret };
+  }
 
   static async replaceVars(
     text: string,
@@ -38,14 +83,22 @@ export default class VarResolver {
 
       for (const myVar of vars) {
         const varText = myVar.text;
-        const varName = myVar.name;
-        const varValue = await VarResolver.getVarValue(varName, pkgName, config, childCtx);
+        const { varName, filters } = VarResolver.parseVarExpression(myVar.name);
+        const rawValue = await VarResolver.getVarValue(varName, pkgName, config, childCtx);
 
-        if (!varValue) {
+        if (!rawValue) {
           throw new Error(`Var ${varName} not defined`);
         }
 
-        if (varName === "levain.password") {
+        // If rawValue carries an indirect secret sentinel (e.g. YAML var wrapping ${levain.password}),
+        // materialize before applying filters so filters run on the actual secret and re-wrap in a new sentinel.
+        const { text: resolvedInput, hadSecret } = filters.length > 0
+          ? VarResolver.materializeSentinels(rawValue, deferredSecrets)
+          : { text: rawValue, hadSecret: false };
+
+        const varValue = VarResolver.applyFilters(resolvedInput, filters, myVar.name);
+
+        if (varName === "levain.password" || hadSecret) {
           const sentinel = `__LEVAIN_SECRET_${deferredSecrets.size}_${crypto.randomUUID()}__`;
           deferredSecrets.set(sentinel, varValue);
           replacedText = replacedText.replace(varText, () => sentinel);
@@ -59,7 +112,7 @@ export default class VarResolver {
 
     if (isRoot) {
       for (const [sentinel, secretValue] of deferredSecrets.entries()) {
-        replacedText = replacedText.replace(sentinel, () => secretValue);
+        replacedText = replacedText.replaceAll(sentinel, () => secretValue);
       }
     }
 

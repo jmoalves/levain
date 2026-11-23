@@ -7,6 +7,7 @@ import TestHelper from "./test/test_helper.ts";
 import { MockPackage } from "./package/mock_package.ts";
 
 import HomePaths from "./paths/home_paths.ts";
+import StringUtils from "./utils/string_utils.ts";
 
 //
 // replaceVars
@@ -211,6 +212,58 @@ Deno.test("VarResolver.getVarValue should get levainCache ", async () => {
 });
 Deno.test("VarResolver.getVarValue should get levain.cacheDir", async () => {
   await verifyVarValueMatches("levain.cacheDir", /.*\.levainCache/);
+});
+
+Deno.test("VarResolver.replaceVars should apply urlEncode filter with and without spaces and protect secrets", async () => {
+  const config = TestHelper.getConfig();
+  config.login = "CORP\\john doe";
+  config.password = "p^a&s$$w!o(r)*'${HOME}ç";
+
+  const expectedLogin = StringUtils.encodeUrlComponent(config.login);
+  const expectedPassword = StringUtils.encodeUrlComponent(config.password);
+
+  const withSpaces = await VarResolver.replaceVars(
+    "https://${levain.login | urlEncode}:${levain.password | urlEncode}@proxy.example.org",
+    undefined,
+    config,
+  );
+  assertEquals(withSpaces, `https://${expectedLogin}:${expectedPassword}@proxy.example.org`);
+
+  const compact = await VarResolver.replaceVars("${levain.password|urlEncode}", undefined, config);
+  assertEquals(compact, expectedPassword);
+
+  await assertRejects(
+    async () => await VarResolver.replaceVars("${levain.login | noSuchFilter}", undefined, config),
+    Error,
+    "Unknown filter 'noSuchFilter'",
+  );
+  await assertRejects(
+    async () => await VarResolver.replaceVars("${levain.login | toString}", undefined, config),
+    Error,
+    "Unknown filter 'toString'",
+  );
+  await assertRejects(
+    async () => await VarResolver.replaceVars("${levain.password | }", undefined, config),
+    Error,
+    "Empty filter",
+  );
+
+  // Indirect YAML variable wrapping ${levain.password} piped through | urlEncode must encode the real secret
+  const indirectPkg = new MockPackage("indirect-secret-pkg");
+  indirectPkg.yamlItem = (key: string) => (key === "wrappedPw" ? "${levain.password}" : undefined);
+  const pkgStub = stub(config.packageManager, "package", (name: string) =>
+    name === "indirect-secret-pkg" ? indirectPkg : undefined
+  );
+  try {
+    const resolvedIndirect = await VarResolver.replaceVars(
+      "${wrappedPw | urlEncode}",
+      "indirect-secret-pkg",
+      config,
+    );
+    assertEquals(resolvedIndirect, expectedPassword);
+  } finally {
+    pkgStub.restore();
+  }
 });
 
 async function verifyVarValueEquals(varName: string, expectedValue: string | undefined, configArgs: any = {}) {

@@ -180,16 +180,10 @@
         "noEmailDomain": "Sem emailDomain para defaultEmail",
         "unableEmail": "Não consegui saber qual o email",
         "askingPassword": "Perguntando pela senha, tentativa {{try}}",
-        "passwordWarning": {
-          "1": " === ATENÇÃO! Os caracteres abaixo são conhecidos por causarem problemas na senha",
-          "2": " === Se vcê usa algum deles, por favor, ALTERE sua senha e volte aqui depois.",
-          "3": " === NÃO USE:"
-        },
         "passwordSize": "* A senha precisa ter ao menos {{min}} caracteres *",
         "attempt": "Tentativa: {{try}}",
         "passwordPrompt": "Por favor, informe a sua senha do Windows: ",
         "confirmPassword": "Confirme a sua senha: ",
-        "invalidChar": "****** Caracter INVÁLIDO na senha. Por favor, ALTERE a sua senha e tente novamente.",
         "match": "Show, você digitou duas vezes a mesma senha.",
         "mismatch": "As senhas não batem... Por favor, informe novamente.",
         "unablePasswordAttempts": "Não consegui coletar a senha após {{tries}} tentativas",
