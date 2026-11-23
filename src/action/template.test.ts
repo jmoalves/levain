@@ -40,3 +40,29 @@ Deno.test("Template should replace vars without logging secrets or rendered cont
   assertFalse(allLogs.includes("MySecret\\\\Value\\\\123"));
   assertFalse(allLogs.includes("END OF FILE"));
 });
+
+Deno.test("Template should preserve $$, $&, $1 literally in replacements and support multi-flag regexes", async () => {
+  const dir = TestHelper.getNewTempDir();
+  const srcFile = path.join(dir, "in.txt");
+  const dstFile = path.join(dir, "out.txt");
+  await Deno.writeTextFile(srcFile, "pw=TOKEN token=TOKEN raw=LITERAL");
+
+  const config = TestHelper.getConfig();
+  const action = new Template(config);
+  const specialPw = "a$$b$&c$1d$`e$'f^&";
+
+  await action.execute(undefined, [
+    "--replace=/token/gi",
+    `--with=${specialPw}`,
+    "--replace=LITERAL",
+    `--with=${specialPw}`,
+    srcFile,
+    dstFile,
+  ]);
+
+  const rendered = Deno.readTextFileSync(dstFile);
+  assert(
+    rendered === `pw=${specialPw} ${specialPw}=${specialPw} raw=${specialPw}`,
+    `unexpected rendered output: ${rendered}`,
+  );
+});

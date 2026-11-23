@@ -80,6 +80,16 @@ export default class StringUtils {
       .replace(/[\u0300-\u036f]/g, "");
   }
 
+  /**
+   * RFC 3986 percent-encoding (stricter than encodeURIComponent, also encoding ! ' ( ) *).
+   */
+  static encodeUrlComponent(text: string): string {
+    return encodeURIComponent(text).replace(
+      /[!'()*]/g,
+      (ch) => "%" + ch.charCodeAt(0).toString(16).toUpperCase(),
+    );
+  }
+
   static surround(text: string, border: string): string {
     return border + text + border;
   }

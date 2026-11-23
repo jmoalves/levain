@@ -1,12 +1,11 @@
 import * as log from "@std/log";
 import { existsSync } from "@std/fs";
-import { ValidateResult } from "@cliffy/prompt";
+import { Secret, type ValidateResult } from "@cliffy/prompt";
 
 import t from "../i18n.ts";
 
-import { envChain, promptSecret } from "../utils/utils.ts";
+import { envChain } from "../utils/utils.ts";
 import type Config from "../config.ts";
-import StringUtils from "../utils/string_utils.ts";
 import OsUtils from "../os/os_utils.ts";
 import YamlFileUtils from "../utils/yaml_file_utils.ts";
 
@@ -171,26 +170,12 @@ export default class UserInfoUtil {
     return newValue;
   }
 
-  // deno-lint-ignore require-await
   async askPassword(config: Config): Promise<string> {
-    // const allowedAndTestedPasswordChars = '#!@$'
-    const forbiddenPasswordChars = "^&";
-    const forbiddenPasswordSequences = ["$$"].concat(forbiddenPasswordChars.split(""));
-
     let tries = 0;
     let alertPasswordSize = false;
     do {
       tries++;
       log.debug(t("lib.user_info.userinfo_util.askingPassword", { try: tries }));
-
-      console.log("");
-      console.log(" ========================================================================================");
-      console.log(t("lib.user_info.userinfo_util.passwordWarning.1"));
-      console.log(t("lib.user_info.userinfo_util.passwordWarning.2"));
-      console.log(t("lib.user_info.userinfo_util.passwordWarning.3"));
-      console.log(` === ${forbiddenPasswordSequences.join(" ")}`);
-      console.log(" ========================================================================================");
-      console.log("");
 
       if (alertPasswordSize) {
         console.log(t("lib.user_info.userinfo_util.passwordSize", { min: passwordSizeMin }));
@@ -202,9 +187,10 @@ export default class UserInfoUtil {
         console.log(t("lib.user_info.userinfo_util.attempt", { try: tries }));
       }
 
-      // const password: string = await Secret.prompt(t("lib.user_info.userinfo_util.passwordPrompt"));
-      const password: string | undefined = promptSecret(t("lib.user_info.userinfo_util.passwordPrompt"));
-      console.log("");
+      const password = await Secret.prompt({
+        message: t("lib.user_info.userinfo_util.passwordPrompt"),
+        minLength: 0,
+      });
 
       if (!password) {
         continue;
@@ -215,15 +201,12 @@ export default class UserInfoUtil {
         continue;
       }
 
-      // const pw2 = await Secret.prompt(t("lib.user_info.userinfo_util.confirmPassword"));
-      const pw2 = promptSecret(t("lib.user_info.userinfo_util.confirmPassword"));
-      console.log("");
+      const pw2 = await Secret.prompt({
+        message: t("lib.user_info.userinfo_util.confirmPassword"),
+        minLength: 0,
+      });
 
-      if (password == pw2) {
-        if (StringUtils.textContainsAtLeastOneSequence(password || "", forbiddenPasswordSequences)) {
-          throw t("lib.user_info.userinfo_util.invalidChar");
-        }
-
+      if (password === pw2) {
         console.log("");
         console.log(t("lib.user_info.userinfo_util.match"));
         console.log("");

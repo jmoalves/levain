@@ -394,6 +394,11 @@ Deno.test("Contract recipe: contract-yaml-patterns covers folded YAML strings, m
     "s3cr3t${HOME}value",
     "levain.password must not be re-expanded by VarResolver",
   );
+  assertEquals(
+    config.getVar("CONTRACT_SECRET_URL"),
+    "https://demo-user:s3cr3t%24%7BHOME%7Dvalue@proxy.example.org",
+    "urlEncode filter should RFC 3986 encode password without re-expanding ${...}",
+  );
   assertEquals(config.getVar("CONTRACT_FLAG_VAL"), "--flag-value=123");
   assertEquals(config.getVar("CONTRACT_YAML_PATTERNS"), "ok");
 

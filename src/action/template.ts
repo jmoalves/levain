@@ -46,16 +46,16 @@ export default class Template implements Action {
           .replace(/\\([^\\])/g, "\\\\$1");
       }
 
-      if (args.replace[x].search(/^\/(.+)\/([a-z]?)/) != -1) {
-        // É regexp
-        const regexp = args.replace[x].replace(/^\/(.+)\/([a-z]?)/, "$1");
-        const flags = args.replace[x].replace(/^\/(.+)\/([a-z]?)/, "$2");
+      if (args.replace[x].search(/^\/(.+)\/([a-z]*)$/) != -1) {
+        // RegExp replacement
+        const regexp = args.replace[x].replace(/^\/(.+)\/([a-z]*)$/, "$1");
+        const flags = args.replace[x].replace(/^\/(.+)\/([a-z]*)$/, "$2");
 
         log.debug(`- ${x}: REPLACE[rxp] /${regexp}/${flags}`);
-        data = data.replace(new RegExp(regexp, flags), replacement);
+        data = data.replace(new RegExp(regexp, flags), () => replacement);
       } else {
         log.debug(`- ${x}: REPLACE[str] ${args.replace[x]}`);
-        data = data.replace(args.replace[x], replacement);
+        data = data.replace(args.replace[x], () => replacement);
       }
     }
 

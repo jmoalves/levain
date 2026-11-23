@@ -180,16 +180,10 @@
         "noEmailDomain": "No emailDomain for defaultEmail",
         "unableEmail": "Unable to collect email",
         "askingPassword": "Asking for password, try {{try}}",
-        "passwordWarning": {
-          "1": " === ATTENTION PLEASE! The characters below are known to cause problems with passwords",
-          "2": " === If you use one of them, please change your password and come back.",
-          "3": " === Do not use:"
-        },
         "passwordSize": "* Password must have at least {{min}} characters *",
         "attempt": "Attempt: {{try}}",
         "passwordPrompt": "Please, inform your network password: ",
         "confirmPassword": "Confirm your password: ",
-        "invalidChar": "****** INVALID CHAR IN PASSWORD. Please change your password and try again.",
         "match": "Perfect, the typed passwords are the same.",
         "mismatch": "Password mismatch... Please, inform again.",
         "unablePasswordAttempts": "Unable to collect password after {{tries}} attempts",

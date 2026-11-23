@@ -1,14 +1,38 @@
 import UserInfoUtil from "./user_info/userinfo_util.ts";
 import type Config from "./config.ts";
 import HomePaths from "./paths/home_paths.ts";
+import StringUtils from "./utils/string_utils.ts";
 
 export interface VarResolutionContext {
   depth: number;
   deferredSecrets: Map<string, string>;
 }
 
+const VAR_FILTERS: Record<string, (value: string) => string> = {
+  urlEncode: (value: string) => StringUtils.encodeUrlComponent(value),
+};
+
 export default class VarResolver {
   static readonly MAX_EXPANSION_DEPTH = 20;
+
+  private static parseVarExpression(expr: string): { varName: string; filters: string[] } {
+    const parts = expr.split("|").map((p) => p.trim());
+    const varName = parts.shift() ?? "";
+    const filters = parts.filter((f) => f.length > 0);
+    return { varName, filters };
+  }
+
+  private static applyFilters(value: string, filters: string[], rawExpr: string): string {
+    let result = value;
+    for (const filterName of filters) {
+      const fn = VAR_FILTERS[filterName];
+      if (!fn) {
+        throw new Error(`Unknown filter '${filterName}' in variable \${${rawExpr}}`);
+      }
+      result = fn(result);
+    }
+    return result;
+  }
 
   static async replaceVars(
     text: string,
@@ -38,12 +62,14 @@ export default class VarResolver {
 
       for (const myVar of vars) {
         const varText = myVar.text;
-        const varName = myVar.name;
-        const varValue = await VarResolver.getVarValue(varName, pkgName, config, childCtx);
+        const { varName, filters } = VarResolver.parseVarExpression(myVar.name);
+        const rawValue = await VarResolver.getVarValue(varName, pkgName, config, childCtx);
 
-        if (!varValue) {
+        if (!rawValue) {
           throw new Error(`Var ${varName} not defined`);
         }
+
+        const varValue = VarResolver.applyFilters(rawValue, filters, myVar.name);
 
         if (varName === "levain.password") {
           const sentinel = `__LEVAIN_SECRET_${deferredSecrets.size}_${crypto.randomUUID()}__`;

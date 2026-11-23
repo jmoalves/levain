@@ -1,4 +1,6 @@
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertRejects } from "@std/assert";
+import { Secret } from "@cliffy/prompt";
+import { stub } from "@std/testing/mock";
 
 import { assertStringEndsWith } from "../test/more_asserts.ts";
 
@@ -125,4 +127,36 @@ Deno.test("UserInfoUtil.askEmail should have a default value", async () => {
   const input = await userInfoUtil.askEmail(config, emailDomain, defaultEmail);
 
   assertEquals(input, defaultEmail);
+});
+
+Deno.test("UserInfoUtil.askPassword should accept passwords with special characters (^, &, $$, UTF-8)", async () => {
+  const userInfoUtil = new UserInfoUtil(TestHelper.getNewTempFile());
+  const config = TestHelper.getConfig();
+  const specialPw = "p^a&s$$w%o!r|d çã";
+
+  const responses = [specialPw, specialPw];
+  const secretStub = stub(Secret, "prompt", () => Promise.resolve(responses.shift() ?? ""));
+
+  try {
+    const result = await userInfoUtil.askPassword(config);
+    assertEquals(result, specialPw);
+    assertEquals(config.password, specialPw);
+  } finally {
+    secretStub.restore();
+  }
+});
+
+Deno.test("UserInfoUtil.askPassword should retry short/mismatched passwords and fail after 3 attempts", async () => {
+  const userInfoUtil = new UserInfoUtil(TestHelper.getNewTempFile());
+  const config = TestHelper.getConfig();
+
+  const responses = ["ab", "abc1", "abc2", "xyz1", "xyz2"];
+  const secretStub = stub(Secret, "prompt", () => Promise.resolve(responses.shift() ?? ""));
+
+  try {
+    await assertRejects(async () => await userInfoUtil.askPassword(config), Error);
+    assertEquals(config.password, undefined);
+  } finally {
+    secretStub.restore();
+  }
 });

@@ -98,6 +98,7 @@ export function tokenizeArgs(cmdline: string): string[] {
   const tokens: string[] = [];
   let current = "";
   let inQuotes = false;
+  let inVarExpr = false;
   let hasToken = false;
 
   for (let i = 0; i < cmdline.length; i++) {
@@ -109,7 +110,23 @@ export function tokenizeArgs(cmdline: string): string[] {
       continue;
     }
 
-    if (!inQuotes && /\s/.test(ch)) {
+    // Keep spaces inside `${var | filter}` expressions intact even when unquoted
+    if (!inQuotes && !inVarExpr && ch === "$" && cmdline[i + 1] === "{" && cmdline.indexOf("}", i + 2) !== -1) {
+      inVarExpr = true;
+      current += "${";
+      hasToken = true;
+      i++;
+      continue;
+    }
+
+    if (inVarExpr && ch === "}") {
+      inVarExpr = false;
+      current += ch;
+      hasToken = true;
+      continue;
+    }
+
+    if (!inQuotes && !inVarExpr && /\s/.test(ch)) {
       if (hasToken) {
         tokens.push(current);
         current = "";

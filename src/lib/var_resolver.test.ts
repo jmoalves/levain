@@ -7,6 +7,7 @@ import TestHelper from "./test/test_helper.ts";
 import { MockPackage } from "./package/mock_package.ts";
 
 import HomePaths from "./paths/home_paths.ts";
+import StringUtils from "./utils/string_utils.ts";
 
 //
 // replaceVars
@@ -211,6 +212,31 @@ Deno.test("VarResolver.getVarValue should get levainCache ", async () => {
 });
 Deno.test("VarResolver.getVarValue should get levain.cacheDir", async () => {
   await verifyVarValueMatches("levain.cacheDir", /.*\.levainCache/);
+});
+
+Deno.test("VarResolver.replaceVars should apply urlEncode filter with and without spaces and protect secrets", async () => {
+  const config = TestHelper.getConfig();
+  config.login = "CORP\\john doe";
+  config.password = "p^a&s$$w!o(r)*'${HOME}ç";
+
+  const expectedLogin = StringUtils.encodeUrlComponent(config.login);
+  const expectedPassword = StringUtils.encodeUrlComponent(config.password);
+
+  const withSpaces = await VarResolver.replaceVars(
+    "https://${levain.login | urlEncode}:${levain.password | urlEncode}@proxy.example.org",
+    undefined,
+    config,
+  );
+  assertEquals(withSpaces, `https://${expectedLogin}:${expectedPassword}@proxy.example.org`);
+
+  const compact = await VarResolver.replaceVars("${levain.password|urlEncode}", undefined, config);
+  assertEquals(compact, expectedPassword);
+
+  await assertRejects(
+    async () => await VarResolver.replaceVars("${levain.login | noSuchFilter}", undefined, config),
+    Error,
+    "Unknown filter 'noSuchFilter'",
+  );
 });
 
 async function verifyVarValueEquals(varName: string, expectedValue: string | undefined, configArgs: any = {}) {

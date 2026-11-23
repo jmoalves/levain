@@ -6,42 +6,48 @@ import { delay } from "@std/async/delay";
 export function promptSecret(message: string): string | undefined {
   Deno.stdout.writeSync(new TextEncoder().encode(message));
 
-  Deno.stdin.setRaw(true);
-
-  let input = "";
-  while (true) {
-    const data = new Uint8Array(1);
-    const nread = Deno.stdin.readSync(data);
-    if (!nread) {
-      break;
-    }
-
-    const string = new TextDecoder().decode(data.slice(0, nread));
-
-    for (const char of string) {
-      switch (char) {
-        case "\u0003":
-        case "\u0004":
-          Deno.stdin.setRaw(false);
-          return undefined;
-
-        case "\r":
-        case "\n":
-          Deno.stdin.setRaw(false);
-          return input;
-
-        case "\u0008":
-          input = input.slice(0, input.length - 1);
-          break;
-
-        default:
-          input += char;
-          break;
-      }
-    }
+  const isTty = Deno.stdin.isTerminal();
+  if (isTty) {
+    Deno.stdin.setRaw(true);
   }
 
-  return undefined;
+  const decoder = new TextDecoder();
+  let input = "";
+  try {
+    while (true) {
+      const data = new Uint8Array(1);
+      const nread = Deno.stdin.readSync(data);
+      if (!nread) {
+        return input.length > 0 ? input : undefined;
+      }
+
+      const decoded = decoder.decode(data.subarray(0, nread), { stream: true });
+      for (const char of decoded) {
+        switch (char) {
+          case "\u0003":
+          case "\u0004":
+            return undefined;
+
+          case "\r":
+          case "\n":
+            return input + decoder.decode();
+
+          case "\u0008":
+          case "\u007f":
+            input = [...input].slice(0, -1).join("");
+            break;
+
+          default:
+            input += char;
+            break;
+        }
+      }
+    }
+  } finally {
+    if (isTty) {
+      Deno.stdin.setRaw(false);
+    }
+  }
 }
 
 export function envChain(...names: string[]): string | undefined {

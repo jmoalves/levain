@@ -1,6 +1,7 @@
 import * as log from "@std/log";
 import type Config from "../config.ts";
 import DateUtils from "../utils/date_utils.ts";
+import StringUtils from "../utils/string_utils.ts";
 
 export default class LogUtils {
   // deno-lint-ignore require-await
@@ -29,10 +30,18 @@ export default class LogUtils {
       return msg;
     }
 
-    let masked = msg.replaceAll(config.password, "******");
-    const jsonEscaped = JSON.stringify(config.password).slice(1, -1);
-    if (jsonEscaped && jsonEscaped !== config.password) {
-      masked = masked.replaceAll(jsonEscaped, "******");
+    const candidates = new Set<string>([
+      config.password,
+      JSON.stringify(config.password).slice(1, -1),
+      StringUtils.encodeUrlComponent(config.password),
+      encodeURIComponent(config.password),
+    ]);
+
+    let masked = msg;
+    for (const candidate of candidates) {
+      if (candidate) {
+        masked = masked.replaceAll(candidate, "******");
+      }
     }
     return masked;
   }
