@@ -69,16 +69,20 @@ export default class GitUtils {
     this.feedback.start(`# GIT - CLONE - ${JSON.stringify(gitPath)} => ${dst}`);
     const tick = setInterval(() => this.feedback.show(), 300);
 
-    const branchOption = gitPath.branch ? `--branch ${gitPath.branch} ` : "";
-    const shallowOption = shallow ? `--single-branch --no-tags --depth 1 ` : "";
-    // We must have NO spaces after ${branchOption} in the command below
-    let gitCommand =
-      `${this.gitCmd} clone --progress --config core.autocrlf=true ${branchOption}${shallowOption}${gitPath.url} ${dst}`;
-    if (OsUtils.isWindows()) {
-      gitCommand = `cmd /u /c ${gitCommand}`;
-    }
+    const gitArgs = [
+      this.gitCmd,
+      "clone",
+      "--progress",
+      "--config",
+      "core.autocrlf=true",
+      ...(gitPath.branch ? [`--branch=${gitPath.branch}`] : []),
+      ...(shallow ? ["--single-branch", "--no-tags", "--depth", "1"] : []),
+      "--",
+      gitPath.url,
+      dst,
+    ];
     try {
-      await OsUtils.runAndLog(gitCommand);
+      await OsUtils.runAndLog(gitArgs);
     } catch (err) {
       clearInterval(tick);
       throw err;

@@ -15,6 +15,7 @@ cmd.install:
   # Process & Maven helpers
   - killProcess demo-contract.exe
   - mavenCopy com.example:demo-artifact:1.0.0:jar ${baseDir}/libs
+  - mavenCopy --ifNotExists com.example:demo-artifact:1.0.0:jar ${baseDir}/libs
 
   # levainShell (all options + shell operators)
   - levainShell --saveVar=CONTRACT_SHELL_OUT --stripCRLF --ignoreErrors echo contract && echo done
@@ -26,5 +27,5 @@ cmd.install:
   - activateCmd --shell=powershell contract-os-and-shell
   - activateCmd --shell=bash contract-os-and-shell
 
-  # Unimplemented action pinned by contract (TODO(phase-4.5))
+  # JSON property removal
   - jsonRemove ${baseDir}/settings.json obsoleteKey

@@ -1,5 +1,7 @@
+import * as path from "@std/path";
 import { assertEquals, assertRejects } from "@std/assert";
 
+import FileSystemPackage from "../../lib/package/file_system_package.ts";
 import TestHelper from "../../lib/test/test_helper.ts";
 import { MockPackage } from "../../lib/package/mock_package.ts";
 
@@ -30,12 +32,21 @@ Deno.test("RemoveFromRegistry should throw when no package was passed as paramet
 });
 Deno.test("RemoveFromRegistry should remove multiple packages", async () => {
   const registry = await TestHelper.getNewInitedTempRegistry();
-  const pkg = TestHelper.getTestFilePackage();
-  await registry.add(pkg);
-  assertEquals(registry.size(), 1);
-  const action = new RemoveFromRegistry(registry);
+  const tempRepo = TestHelper.getNewTempDir();
+  const fileA = path.join(tempRepo, "pkgA.levain.yaml");
+  const fileB = path.join(tempRepo, "pkgB.levain.yaml");
+  await Deno.writeTextFile(fileA, "version: 1.0.0\n");
+  await Deno.writeTextFile(fileB, "version: 1.0.0\n");
 
-  await action.execute(new MockPackage(), [pkg.name, "package not found"]);
+  const config = TestHelper.getConfig();
+  const pkgA = new FileSystemPackage(config, "pkgA", tempRepo, "pkgA.levain.yaml", "version: 1.0.0\n");
+  const pkgB = new FileSystemPackage(config, "pkgB", tempRepo, "pkgB.levain.yaml", "version: 1.0.0\n");
+  await registry.add(pkgA);
+  await registry.add(pkgB);
+  assertEquals(registry.size(), 2);
+
+  const action = new RemoveFromRegistry(registry);
+  await action.execute(new MockPackage(), ["pkgA", "package not found", "pkgB"]);
 
   assertEquals(registry.size(), 0);
 });

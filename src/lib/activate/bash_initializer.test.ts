@@ -1,6 +1,7 @@
 import {
   assertEquals,
   assertStringIncludes,
+  assertThrows,
 } from "@std/assert";
 import { stub } from "@std/testing/mock";
 import * as path from "@std/path";
@@ -156,9 +157,21 @@ Deno.test("install inserts template into discovered profile", async () => {
 
     assertEquals(insertedProfile, "C:\\Users\\test\\.bashrc");
     assertStringIncludes(insertedText, "PS1");
-    assertStringIncludes(insertedText, "source /c/levain/levain.sh");
+    assertStringIncludes(insertedText, "source '/c/levain/levain.sh'");
   } finally {
     insertStub.restore();
     existsStub.restore();
   }
+});
+
+Deno.test("profileTemplate single-quotes paths with spaces, $, !, and single quotes, and rejects control chars", () => {
+  const initializer = new BashInitializer("C:\\Program Files\\O'Neil\\$levain!");
+  const template = initializer.profileTemplate();
+  assertStringIncludes(template, "source '/c/Program Files/O'\\''Neil/$levain!/levain.sh'");
+
+  assertThrows(
+    () => new BashInitializer("C:\\Bad\nPath").profileTemplate(),
+    Error,
+    "CR, LF, or NUL",
+  );
 });

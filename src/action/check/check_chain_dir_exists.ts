@@ -46,7 +46,9 @@ export default class CheckChainDirExists implements Action {
     }
 
     log.debug(`found ${found}`);
-    this.config.setVar(args.saveVar, found);
+    if (args.saveVar) {
+      this.config.setVar(args.saveVar, found);
+    }
   }
 
   verifyArgs(args: any) {

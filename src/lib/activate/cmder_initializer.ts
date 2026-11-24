@@ -27,7 +27,7 @@ export default class CmderInitializer {
     await editor.insertBlock(levainPromptPath, this.profileTemplate());
     const cmderUserProfile = join(configPath, "user_profile.ps1");
     const powershellInitializer = new PowershellInitializer(this.levainCmdPath, cmderUserProfile);
-    powershellInitializer.install();
+    await powershellInitializer.install();
     log.info(t("lib.activate.cmder_initializer.installEnd"));
   }
 

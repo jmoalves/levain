@@ -4,21 +4,25 @@ export default class PropertiesUtils {
   static load(filePath: any): Map<string, string> {
     const propertiesMap = new Map<string, string>();
     const text = FileUtils.readTextFileSync(filePath);
-    const lines = text.split("\n");
-    lines
-      .map((line) => line?.toString()?.trim())
-      .filter((line) => line)
-      .map((line) => line.split("="))
-      .forEach((kv) => {
-        const kvString = kv as Array<string | undefined>;
-        const key = kvString[0]?.trim() as string;
-        const value = kvString[1]?.trim() || "";
-        if (value === undefined) {
-          propertiesMap.delete(key);
-        } else {
-          propertiesMap.set(key, value || "");
+    const lines = text.split(/\r?\n/);
+
+    for (const rawLine of lines) {
+      const line = rawLine?.toString()?.trim();
+      if (!line || line.startsWith("#") || line.startsWith("!")) {
+        continue;
+      }
+
+      const eqIndex = line.indexOf("=");
+      if (eqIndex === -1) {
+        propertiesMap.set(line, "");
+      } else {
+        const key = line.slice(0, eqIndex).trim();
+        const value = line.slice(eqIndex + 1).trim();
+        if (key) {
+          propertiesMap.set(key, value);
         }
-      });
+      }
+    }
 
     return propertiesMap;
   }
@@ -31,7 +35,8 @@ export default class PropertiesUtils {
 
   static get(filePath: string, attribute: string, defaultValue: string | undefined = undefined): string | undefined {
     const propertiesMap = PropertiesUtils.load(filePath);
-    return propertiesMap.get(attribute) || defaultValue;
+    const val = propertiesMap.get(attribute);
+    return val !== undefined ? val : defaultValue;
   }
 
   static set(filePath: string, attribute: string, value: string, ifNotExists: boolean = false): void {

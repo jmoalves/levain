@@ -1,6 +1,5 @@
 import * as log from "@std/log";
-import { copySync } from "@std/fs";
-import { existsSync, walkSync } from "@std/fs";
+import { copySync, ensureDirSync, existsSync } from "@std/fs";
 import * as path from "@std/path";
 
 import type Config from "../../lib/config.ts";
@@ -43,10 +42,6 @@ export default class CopyAction implements Action {
     let copyToDir = false;
     try {
       const fileInfo = FileUtils.getFileInfoSync(dst);
-      if (args.ifNotExists && existsSync(dst)) {
-        return;
-      }
-
       if (fileInfo.isDirectory) {
         copyToDir = true;
       }
@@ -88,13 +83,11 @@ export default class CopyAction implements Action {
   private copySrcFromFileSystem(item: string, dst: string, copyToDir: boolean, args: any) {
     const fileInfo = FileUtils.getFileInfoSync(item);
     if (args.strip && fileInfo.isDirectory) {
-      for (const entry of walkSync(item)) {
-        if (entry.path == item) {
-          continue;
-        }
-
+      ensureDirSync(dst);
+      for (const entry of Deno.readDirSync(item)) {
+        const entrySrc = path.join(item, entry.name);
         const writeTo = path.resolve(dst, entry.name);
-        this.doCopy(args, entry.path, writeTo);
+        this.doCopy(args, entrySrc, writeTo);
       }
     } else {
       let realDst = dst;
@@ -106,16 +99,37 @@ export default class CopyAction implements Action {
     }
   }
 
-  private async copySrcFromUrl(url: string, dst: string, copyToDir: boolean, _args: any) {
+  private async copySrcFromUrl(url: string, dst: string, copyToDir: boolean, args: any) {
     let realDst = dst;
     if (copyToDir) {
-      realDst = path.resolve(dst, path.basename(url));
+      const parsed = new URL(url);
+      if (parsed.pathname.endsWith("/")) {
+        throw new Error(`Invalid filename in URL: ${url}`);
+      }
+      const fileName = parsed.pathname.slice(parsed.pathname.lastIndexOf("/") + 1);
+      if (!fileName || fileName === "." || fileName === ".." || fileName.includes("/") || fileName.includes("\\")) {
+        throw new Error(`Invalid filename in URL: ${url}`);
+      }
+      const resolvedDst = path.resolve(dst);
+      realDst = path.resolve(resolvedDst, fileName);
+      const rel = path.relative(resolvedDst, realDst);
+      if (!rel || rel.startsWith("..") || path.isAbsolute(rel)) {
+        throw new Error(`Refusing to write URL download outside destination directory: ${url}`);
+      }
+    }
+
+    if (args.ifNotExists && existsSync(realDst)) {
+      return;
     }
 
     await FileProgress.copyWithProgress(url, realDst);
   }
 
   private doCopy(args: any, src: string, dst: string) {
+    if (args.ifNotExists && existsSync(dst)) {
+      return;
+    }
+
     if (args.verbose) {
       log.debug(`- COPY ${src} => ${dst}`);
     }

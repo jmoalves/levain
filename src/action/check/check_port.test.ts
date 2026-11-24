@@ -19,17 +19,49 @@ Deno.test("CheckPort should require --port and validate --transport", async () =
   );
 
   await assertRejects(
+    async () => await action.execute(undefined, ["--port=notanumber"]),
+    Error,
+    "Invalid port number: notanumber",
+  );
+
+  await assertRejects(
+    async () => await action.execute(undefined, ["--port=   "]),
+    Error,
+    "Invalid port number",
+  );
+
+  await assertRejects(
+    async () => await action.execute(undefined, ["--port=0x50"]),
+    Error,
+    "Invalid port number: 0x50",
+  );
+
+  await assertRejects(
+    async () => await action.execute(undefined, ["--port=70000"]),
+    Error,
+    "Invalid port number: 70000",
+  );
+
+  await assertRejects(
     async () => await action.execute(undefined, ["--port=8080", "--transport=sctp"]),
     Error,
     "Transport should be udp or tcp",
   );
+});
 
-  // TODO(phase-4.5): CheckPort has a typo (`args.transport != "upd"`) causing valid "udp" to be rejected.
-  await assertRejects(
-    async () => await action.execute(undefined, ["--port=8080", "--transport=udp"]),
-    Error,
-    "Transport should be udp or tcp",
-  );
+Deno.test("CheckPort should handle --transport=udp without rejecting transport name", async () => {
+  const action = new CheckPort(TestHelper.getConfig());
+  const hasListenDatagram = typeof (Deno as unknown as { listenDatagram?: unknown }).listenDatagram === "function";
+
+  if (hasListenDatagram) {
+    await action.execute(undefined, ["--port=0", "--transport=udp", "--address=127.0.0.1"]);
+  } else {
+    await assertRejects(
+      async () => await action.execute(undefined, ["--port=0", "--transport=udp", "--address=127.0.0.1"]),
+      Error,
+      "UDP port checking requires Deno unstable-net",
+    );
+  }
 });
 
 Deno.test("CheckPort should succeed for a free port and reject when port is in use", async () => {

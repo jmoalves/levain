@@ -35,27 +35,65 @@ export default class ActivateCmd implements Action {
     }
     const env: Record<string, string> = {};
     await osShell.prepareEnv(env);
-    const shellTool = myArgs["shell"] || "cmd"
+    const shellTool = myArgs["shell"] || "cmd";
     this.emitEnv(env, shellTool);
     if (shellTool == "cmd" && (Deno.env.get("LEVAIN_LUA_LOADED") == undefined)) {
-      console.log(`set "PROMPT=[%LEVAIN_CURRENT%] %_LEVAIN_OLD_PROMPT%"`);
+      const current = env["LEVAIN_CURRENT"] ?? "";
+      const oldPrompt = Deno.env.get("_LEVAIN_OLD_PROMPT") ?? "$P$G";
+      this.emitEnv({ PROMPT: `[${current}] ${oldPrompt}` }, "cmd");
     }
   }
 
   emitEnv(env: Record<string, string>, shell: string) {
     for (const [key, value] of Object.entries(env)) {
+      if (/[\r\n\0]/.test(key) || /[\r\n\0]/.test(value)) {
+        throw new Error(`Environment variable "${key}" must not contain CR, LF, or NUL characters`);
+      }
+
       switch (shell) {
-        case "powershell":
-          console.log(`$env:${key} = "${(value as string).replace(/"/g, '`"')}"`);
+        case "powershell": {
+          if (!/^[A-Za-z_][A-Za-z0-9_.-]*$/.test(key)) {
+            throw new Error(`Invalid environment variable name for powershell: ${key}`);
+          }
+          const target = /^[A-Za-z_][A-Za-z0-9_]*$/.test(key) ? `$env:${key}` : `\${env:${key}}`;
+          // PowerShell treats ASCII ' and Unicode single quotes U+2018-U+201B as single-quote delimiters
+          const escaped = value.replace(/['\u2018\u2019\u201a\u201b]/g, "$&$&");
+          console.log(`${target} = '${escaped}'`);
           break;
+        }
 
-        case "cmd":
-          console.log(`set ${key}=${value}`);
+        case "cmd": {
+          if (!/^[A-Za-z_][A-Za-z0-9_.-]*$/.test(key)) {
+            throw new Error(`Invalid environment variable name for cmd: ${key}`);
+          }
+          if (!value.includes('"')) {
+            console.log(`set "${key}=${value.replaceAll("%", "%%")}"`);
+          } else {
+            const escaped = value
+              .replaceAll("%", "%%")
+              .replaceAll("^", "^^")
+              .replaceAll("&", "^&")
+              .replaceAll("|", "^|")
+              .replaceAll("<", "^<")
+              .replaceAll(">", "^>")
+              .replaceAll("(", "^(")
+              .replaceAll(")", "^)")
+              .replaceAll('"', '^"');
+            console.log(`set ${key}=${escaped}`);
+          }
           break;
+        }
 
-        case "bash":
-          console.log(`export ${key}=${JSON.stringify(value)}`);
+        case "bash": {
+          if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(key)) {
+            throw new Error(`Invalid environment variable name for bash: ${key}`);
+          }
+          console.log(`export ${key}='${value.replaceAll("'", "'\\''")}'`);
           break;
+        }
+
+        default:
+          throw new Error(`Unsupported shell: ${shell}`);
       }
     }
   }

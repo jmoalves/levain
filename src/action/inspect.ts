@@ -32,8 +32,8 @@ export default class Inspect implements Action {
       const regexp = args.regExp[index];
       const varName = args.saveVar[index];
 
-      const pattern = regexp.replace(/^\/(.+)\/([a-z]?)/, "$1");
-      const flags = regexp.replace(/^\/(.+)\/([a-z]?)/, "$2");
+      const pattern = regexp.replace(/^\/(.+)\/([a-z]*)$/, "$1");
+      const flags = regexp.replace(/^\/(.+)\/([a-z]*)$/, "$2");
 
       log.debug(`- INSPECT[rxp] /${pattern}/${flags} => ${varName}`);
       const matchArray = data.match(new RegExp(pattern, flags));
@@ -67,7 +67,7 @@ export default class Inspect implements Action {
     }
 
     for (const x in args.regExp) {
-      if (args.regExp[x].search(/^\/(.+)\/([a-z]?)/) == -1) {
+      if (args.regExp[x].search(/^\/(.+)\/([a-z]*)$/) == -1) {
         throw "You must use regExps - " + args.regExp[x];
       }
     }

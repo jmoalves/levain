@@ -286,3 +286,39 @@ Deno.test("JsonUtils - should set inner properties", () => {
   assertEquals(json.property.numberProperty, 25.00);
   assertEquals(json.property.booleanProperty, true);
 });
+
+Deno.test("JsonUtils.remove should remove top-level, nested, and array properties safely", () => {
+  const json: any = {
+    topKey: "bye",
+    keep: true,
+    nested: {
+      removeMe: 123,
+      stay: "ok",
+      items: ["a", "b", "c"],
+    },
+  };
+
+  assertEquals(JsonUtils.remove(json, "topKey"), true);
+  assertEquals("topKey" in json, false);
+  assertEquals(JsonUtils.remove(json, "missingKey"), false);
+
+  assertEquals(JsonUtils.remove(json, "[nested][removeMe]"), true);
+  assertEquals("removeMe" in json.nested, false);
+  assertEquals(json.nested.stay, "ok");
+
+  assertEquals(JsonUtils.remove(json, "[nested][items][1]"), true);
+  assertEquals(json.nested.items, ["a", "c"]);
+
+  assertEquals(JsonUtils.remove(json, "[nested][items][:last:]"), true);
+  assertEquals(json.nested.items, ["a"]);
+
+  assertEquals(JsonUtils.remove(json, "[nested][items][99]"), false);
+  assertEquals(JsonUtils.remove(json, "[nested][items]['']"), false);
+  assertEquals(JsonUtils.remove(json, "[nested][items][   ]"), false);
+  assertEquals(json.nested.items, ["a"]);
+  assertEquals(JsonUtils.remove(json, "[missing][deep]"), false);
+  assertEquals(JsonUtils.remove(json, "__proto__"), false);
+  assertEquals(JsonUtils.remove(json, "[nested][constructor]"), false);
+  assertEquals(JsonUtils.set(json, "[__proto__][polluted]", "yes"), false);
+  assertEquals(({} as any).polluted, undefined);
+});

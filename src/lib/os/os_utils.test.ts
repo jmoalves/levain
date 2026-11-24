@@ -4,6 +4,7 @@ import {
   assertMatch,
   assertNotEquals,
   assertNotMatch,
+  assertRejects,
 } from "@std/assert";
 import { stub } from "@std/testing/mock";
 import * as path from "@std/path";
@@ -259,5 +260,39 @@ Deno.test("OsUtils.sanitizeUserPath should call setUserPath when PATH contains q
     setStub.restore();
     getStub.restore();
     isWinStub.restore();
+  }
+});
+
+Deno.test("OsUtils.setEnvPermanent should pass argv array to setx and validate variable names", async () => {
+  const onlyWinStub = stub(OsUtils, "onlyInWindows", () => {});
+  const setEnvStub = stub(OsUtils, "setEnv", () => {});
+  const runStub = stub(OsUtils, "runAndLog", () => Promise.resolve(""));
+
+  try {
+    await OsUtils.setEnvPermanent("MY_APP_DIR", "C:\\Program Files\\My App");
+    assertEquals(setEnvStub.calls.length, 1);
+    assertEquals(setEnvStub.calls[0].args, ["MY_APP_DIR", "C:\\Program Files\\My App"]);
+    assertEquals(runStub.calls.length, 1);
+    assertEquals(runStub.calls[0].args, [["setx", "MY_APP_DIR", "C:\\Program Files\\My App"]]);
+
+    await assertRejects(
+      async () => await OsUtils.setEnvPermanent("/M", "evil"),
+      Error,
+      "Invalid environment variable name",
+    );
+    await assertRejects(
+      async () => await OsUtils.setEnvPermanent("BAD=KEY", "val"),
+      Error,
+      "Invalid environment variable name",
+    );
+    await assertRejects(
+      async () => await OsUtils.setEnvPermanent("GOOD_KEY", "bad\0val"),
+      Error,
+      "must not contain NUL",
+    );
+  } finally {
+    runStub.restore();
+    setEnvStub.restore();
+    onlyWinStub.restore();
   }
 });

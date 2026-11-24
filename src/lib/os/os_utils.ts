@@ -93,9 +93,47 @@ export default class OsUtils {
 
   static async setEnvPermanent(key: string, value: string) {
     OsUtils.onlyInWindows();
+
+    if (!key || /[=\r\n\0]/.test(key) || key.startsWith("-") || key.startsWith("/")) {
+      throw new Error(`Invalid environment variable name: ${key}`);
+    }
+    if (value.includes("\0")) {
+      throw new Error(`Environment variable "${key}" must not contain NUL characters`);
+    }
+
     this.setEnv(key, value);
 
-    await this.runAndLog(`setx ${key} ${value}`);
+    // setx.exe parses any arg starting with '-' or '/' as a flag (no '--' delimiter)
+    // and silently truncates values longer than 1024 characters.
+    const safeForSetx = value.length <= 1024 &&
+      !value.startsWith("-") &&
+      !value.startsWith("/") &&
+      !/[\r\n]/.test(value);
+
+    if (safeForSetx) {
+      await this.runAndLog(["setx", key, value]);
+      return;
+    }
+
+    const psCmd = new Deno.Command("powershell", {
+      args: [
+        "-NoProfile",
+        "-NonInteractive",
+        "-Command",
+        "[Environment]::SetEnvironmentVariable($env:__LEVAIN_SETENV_KEY, $env:__LEVAIN_SETENV_VAL, 'User')",
+      ],
+      env: {
+        __LEVAIN_SETENV_KEY: key,
+        __LEVAIN_SETENV_VAL: value,
+      },
+      stdout: "piped",
+      stderr: "piped",
+    });
+    const { success, stderr, code } = await psCmd.output();
+    if (!success) {
+      const errText = OsUtils.decodeOutput(stderr).trim();
+      throw new Error(`Error ${code} setting permanent environment variable "${key}": ${errText}`);
+    }
   }
 
   static setEnv(key: string, value: string) {

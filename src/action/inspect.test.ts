@@ -33,6 +33,10 @@ Deno.test("Inspect should validate required flags, counts, file argument, and re
     async () => await action.execute(undefined, ["--regExp=plainText", "--saveVar=V1", "file.txt"]),
     "You must use regExps - plainText",
   );
+  await assertRejects(
+    async () => await action.execute(undefined, ["--regExp=/foo/bar123", "--saveVar=V1", "file.txt"]),
+    "You must use regExps - /foo/bar123",
+  );
 });
 
 Deno.test("Inspect should extract capture groups and full matches into config vars", async () => {
@@ -46,7 +50,7 @@ Deno.test("Inspect should extract capture groups and full matches into config va
   await action.execute(undefined, [
     "--regExp=/version=([0-9.]+)/",
     "--saveVar=APP_VER",
-    "--regExp=/status_ready/i",
+    "--regExp=/status_ready/gi",
     "--saveVar=APP_STATUS",
     srcFile,
   ]);

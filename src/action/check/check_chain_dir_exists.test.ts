@@ -72,3 +72,11 @@ Deno.test("should find dir even with a default value", async () => {
 
   assertEquals(foundFolder, TestHelper.folderThatAlwaysExists);
 });
+Deno.test("should not set undefined var when --saveVar is omitted", async () => {
+  const config = TestHelper.getConfig();
+  const action = new CheckChainDirExists(config);
+
+  await action.execute(TestHelper.mockPackage(), [TestHelper.folderThatAlwaysExists]);
+
+  assertEquals(config.getVar("undefined"), undefined);
+});

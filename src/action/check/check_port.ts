@@ -25,30 +25,62 @@ export default class CheckPort implements Action {
       throw new Error("You must inform the port to check");
     }
 
-    const options: any = {};
-    options.port = +args.port;
-
-    if (args.transport) {
-      args.transport = args.transport.toLowerCase();
-      if (args.transport != "upd" && args.transport != "tcp") {
-        throw new Error("Transport should be udp or tcp");
-      }
-    } else {
-      args.transport = "tcp";
+    if (!/^\d+$/.test(args.port)) {
+      throw new Error(`Invalid port number: ${args.port}`);
+    }
+    const port = Number(args.port);
+    if (!Number.isInteger(port) || port < 0 || port > 65535) {
+      throw new Error(`Invalid port number: ${args.port}`);
     }
 
-    options.transport = args.transport;
-
-    if (args.address) {
-      options.hostname = args.address;
+    const transport = args.transport ? args.transport.toLowerCase() : "tcp";
+    if (transport !== "udp" && transport !== "tcp") {
+      throw new Error("Transport should be udp or tcp");
     }
+
+    const options: { port: number; transport: "tcp" | "udp"; hostname?: string } = {
+      port,
+      transport,
+      ...(args.address ? { hostname: args.address } : {}),
+    };
 
     log.debug(`CHECK-PORT ${JSON.stringify(options)}`);
+
+    if (transport === "udp") {
+      const listenDatagram = (Deno as unknown as {
+        listenDatagram?: (opts: { port: number; transport: "udp"; hostname?: string }) => { close(): void };
+      }).listenDatagram;
+      if (typeof listenDatagram !== "function") {
+        throw new Error("UDP port checking requires Deno unstable-net (Deno.listenDatagram); use --transport=tcp");
+      }
+      try {
+        const listener = listenDatagram({
+          port: options.port,
+          transport: "udp",
+          ...(options.hostname ? { hostname: options.hostname } : {}),
+        });
+        listener.close();
+      } catch (error) {
+        if (error instanceof Deno.errors.AddrInUse) {
+          throw new Error(`Port already in use ${JSON.stringify(options)}`);
+        }
+        throw error;
+      }
+      return;
+    }
+
     try {
-      const listener = Deno.listen(options);
-      listener.close()
-    } catch (_error) {
-      throw Error(`Port already in use ${JSON.stringify(options)}`);
+      const listener = Deno.listen({
+        port: options.port,
+        transport: "tcp",
+        ...(options.hostname ? { hostname: options.hostname } : {}),
+      });
+      listener.close();
+    } catch (error) {
+      if (error instanceof Deno.errors.AddrInUse) {
+        throw new Error(`Port already in use ${JSON.stringify(options)}`);
+      }
+      throw error;
     }
   }
 }

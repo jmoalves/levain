@@ -174,3 +174,19 @@ Deno.test("install throws when config directory cannot be found", async () => {
     findStub.restore();
   }
 });
+
+Deno.test("install writes levain_prompt.lua and awaits PowershellInitializer for user_profile.ps1", async () => {
+  const dir = await Deno.makeTempDir();
+  try {
+    const initializer = new CmderInitializer("C:\\Levain", dir);
+    await initializer.install();
+
+    const luaText = await Deno.readTextFile(path.join(dir, "levain_prompt.lua"));
+    const psText = await Deno.readTextFile(path.join(dir, "user_profile.ps1"));
+
+    assertStringIncludes(luaText, "clink.promptfilter");
+    assertStringIncludes(psText, ". 'C:\\Levain\\levain.ps1' @Args");
+  } finally {
+    await Deno.remove(dir, { recursive: true });
+  }
+});

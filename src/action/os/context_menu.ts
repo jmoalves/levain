@@ -1,11 +1,18 @@
 import * as log from "@std/log";
 
 import type Config from "../../lib/config.ts";
+import { FileUtils } from "../../lib/fs/file_utils.ts";
+import OsUtils from "../../lib/os/os_utils.ts";
 import type Package from "../../lib/package/package.ts";
 import { parseArgs } from "../../lib/parse_args.ts";
-import Loader from "../../lib/loader.ts";
 
 import type Action from "../action.ts";
+
+const VALID_ID_REGEX = /^[A-Za-z0-9._-]+$/;
+
+function escapeRegString(value: string): string {
+  return value.replaceAll("\\", "\\\\").replaceAll('"', '\\"');
+}
 
 export default class ContextMenuAction implements Action {
   constructor(private config: Config) {
@@ -47,32 +54,43 @@ export default class ContextMenuAction implements Action {
       throw "contextMenu - The 'id' option must NOT contain spaces";
     }
 
+    if (!VALID_ID_REGEX.test(args.id)) {
+      throw new Error(`contextMenu - Invalid characters in 'id' option: ${args.id}`);
+    }
+
+    const icon = args.icon ?? "";
+    for (const [label, value] of [["name", args.name], ["cmd", args.cmd], ["icon", icon]]) {
+      if (/[\r\n\0]/.test(value)) {
+        throw new Error(`contextMenu - The '${label}' option must not contain CR, LF, or NUL characters`);
+      }
+    }
+
     if (!pkg) {
       throw Error("No package for action contextMenu");
     }
 
-    const tempFilename = await this.templateRegistry(pkg, args);
-    await this.regImport(pkg, args, tempFilename);
+    const tempFilename = Deno.makeTempFileSync({ prefix: "levain-temp-", suffix: ".reg" });
+    try {
+      await this.templateRegistry(pkg, { ...args, icon }, tempFilename);
+      await this.regImport(tempFilename);
+    } finally {
+      OsUtils.removeFile(tempFilename);
+    }
   }
 
-  private async templateRegistry(pkg: Package, args: any) {
-    const tempFilename = Deno.makeTempFileSync({ prefix: "levain-temp-" });
+  private async templateRegistry(pkg: Package, args: { id: string; name: string; cmd: string; icon: string }, tempFilename: string) {
     log.debug(`- tempReg - ${tempFilename}`);
-    // const backgroundCmd = args.cmd;
-    // const dirCmd = backgroundCmd.replace("%V", "%1");
-    const action =
-      `template --replace=/@@shellID@@/g --with="${args.id}" --replace=/@@shellName@@/g --with="${args.name}" --replace=/@@shellCmd@@/g --with="${args.cmd}" --replace=/@@shellIcon@@/g --with="${args.icon}" --doubleBackslash \${pkg.levain.recipesDir}/levain-shell.reg ${tempFilename}`;
-    const loader = new Loader(this.config);
-    await loader.action(pkg, action);
-
-    return tempFilename;
+    const templatePath = await this.config.replaceVars("${pkg.levain.recipesDir}/levain-shell.reg", pkg.name);
+    let data = FileUtils.readTextFileSync(templatePath);
+    data = data
+      .replace(/@@shellID@@/g, () => args.id)
+      .replace(/@@shellName@@/g, () => escapeRegString(args.name))
+      .replace(/@@shellCmd@@/g, () => escapeRegString(args.cmd))
+      .replace(/@@shellIcon@@/g, () => escapeRegString(args.icon));
+    FileUtils.writeTextFileSync(tempFilename, data);
   }
 
-  private async regImport(pkg: Package, _args: any, tempFilename: string) {
-    const action = `levainShell reg import ${tempFilename}`;
-    const loader = new Loader(this.config);
-    await loader.action(pkg, action);
-
-    //FileUtils.removeSync(tempFilename);
+  private async regImport(tempFilename: string) {
+    await OsUtils.runAndLog(["reg", "import", tempFilename]);
   }
 }

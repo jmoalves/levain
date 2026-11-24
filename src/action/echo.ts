@@ -11,6 +11,6 @@ export default class Echo implements Action {
 
   // deno-lint-ignore require-await
   async execute(_pkg: Package | undefined, parameters: string[]) {
-    log.debug(`ECHO ${parameters.join(" ")}`);
+    log.info(parameters.join(" "));
   }
 }

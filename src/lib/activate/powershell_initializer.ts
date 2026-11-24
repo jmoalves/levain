@@ -35,6 +35,10 @@ export default class PowershellInitializer {
 
   
   profileTemplate(): string {
+    if (/[\r\n\0]/.test(this.levainCmdPath)) {
+      throw new Error("levainCmdPath must not contain CR, LF, or NUL characters");
+    }
+    const escapedPath = this.levainCmdPath.replace(/['\u2018\u2019\u201a\u201b]/g, "$&$&");
     return `${ProfileEditor.BEGIN}
       if (Get-Variable PrePrompt -Scope Global -ErrorAction SilentlyContinue) {
         # Running under Cmder: prepend our prompt fragment.
@@ -65,7 +69,7 @@ export default class PowershellInitializer {
       }
 
       function global:levain {
-        . "${this.levainCmdPath}\\levain.ps1" @Args
+        . '${escapedPath}\\levain.ps1' @Args
       }
     ${ProfileEditor.END}`
   }
