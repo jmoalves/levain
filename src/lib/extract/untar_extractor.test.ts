@@ -38,4 +38,37 @@ if (OsUtils.isWindows()) {
 
     assertEquals(await Deno.readTextFile(path.join(dstDir, "nested", "hello.txt")), "hello-untar");
   });
+
+  Deno.test("UnTar.extractImpl should fail cleanly when source archive cannot be decompressed", async () => {
+    const baseDir = TestHelper.getNewTempDir();
+    const missingArchive = path.join(baseDir, "missing.tar.gz");
+    const dstDir = path.join(baseDir, "out");
+    await Deno.mkdir(dstDir, { recursive: true });
+
+    const extractor = new UnTar(TestHelper.getConfig());
+    await assertRejects(
+      async () => await extractor.extractImpl(missingArchive, dstDir),
+      Error,
+      "7z decompress terminated with code",
+    );
+  });
+
+  Deno.test("UnTar.extractImpl should fail cleanly when decompressed stream is not a valid tar archive", async () => {
+    const baseDir = TestHelper.getNewTempDir();
+    const badTarGz = path.join(baseDir, "not-a-tar.tar.gz");
+    const dstDir = path.join(baseDir, "out");
+    await Deno.mkdir(dstDir, { recursive: true });
+
+    const compressed = new Response("this is definitely not a valid tar archive").body!
+      .pipeThrough(new CompressionStream("gzip"));
+    const gzBytes = new Uint8Array(await new Response(compressed).arrayBuffer());
+    await Deno.writeFile(badTarGz, gzBytes);
+
+    const extractor = new UnTar(TestHelper.getConfig());
+    await assertRejects(
+      async () => await extractor.extractImpl(badTarGz, dstDir),
+      Error,
+      "7z tar extract terminated with code",
+    );
+  });
 }

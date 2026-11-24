@@ -296,3 +296,33 @@ Deno.test("OsUtils.setEnvPermanent should pass argv array to setx and validate v
     onlyWinStub.restore();
   }
 });
+
+if (OsUtils.isWindows()) {
+  Deno.test("OsUtils.setEnvPermanent should persist dash-prefixed values via PowerShell fallback", async () => {
+    const varName = `LEVAIN_TEST_PS_ENV_${crypto.randomUUID().replaceAll("-", "").slice(0, 8)}`;
+    const expectedVal = "-Xmx2g -Dflag=/c/tools";
+
+    try {
+      await OsUtils.setEnvPermanent(varName, expectedVal);
+      assertEquals(Deno.env.get(varName), expectedVal);
+
+      const readBack = await OsUtils.runAndLog([
+        "powershell",
+        "-NoProfile",
+        "-NonInteractive",
+        "-Command",
+        `[Environment]::GetEnvironmentVariable('${varName}', 'User')`,
+      ]);
+      assertEquals(readBack.trim(), expectedVal);
+    } finally {
+      Deno.env.delete(varName);
+      await OsUtils.runAndLog([
+        "powershell",
+        "-NoProfile",
+        "-NonInteractive",
+        "-Command",
+        `[Environment]::SetEnvironmentVariable('${varName}', $null, 'User')`,
+      ]).catch(() => {});
+    }
+  });
+}

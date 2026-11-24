@@ -122,6 +122,15 @@ Deno.test("CopyAction URL download into directory should strip query strings and
       dst: path.resolve(dstDir, "tool.zip"),
     }]);
 
+    // When target file already exists inside dstDir, --ifNotExists should skip downloading
+    await Deno.writeTextFile(path.resolve(dstDir, "tool.zip"), "already-here");
+    await action.execute(TestHelper.mockPackage(), [
+      "--ifNotExists",
+      "https://example.org/files/tool.zip?token=secret123",
+      dstDir,
+    ]);
+    assertEquals(downloads.length, 1);
+
     await assertRejects(
       async () => await action.execute(TestHelper.mockPackage(), ["https://example.org/", dstDir]),
       Error,

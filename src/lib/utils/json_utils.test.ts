@@ -316,6 +316,8 @@ Deno.test("JsonUtils.remove should remove top-level, nested, and array propertie
   assertEquals(JsonUtils.remove(json, "[nested][items]['']"), false);
   assertEquals(JsonUtils.remove(json, "[nested][items][   ]"), false);
   assertEquals(json.nested.items, ["a"]);
+  assertEquals(JsonUtils.remove(null, "topKey"), false);
+  assertEquals(JsonUtils.remove({ a: "primitive" }, "[a][b]"), false);
   assertEquals(JsonUtils.remove(json, "[missing][deep]"), false);
   assertEquals(JsonUtils.remove(json, "__proto__"), false);
   assertEquals(JsonUtils.remove(json, "[nested][constructor]"), false);
