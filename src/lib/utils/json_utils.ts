@@ -64,6 +64,9 @@ export default class JsonUtils {
     let obj: any = json;
     for (let item of jsonPath) {
       level++;
+      if (this.isForbiddenKey(item)) {
+        return false;
+      }
 
       // log.debug(`level: ${level} item: ${item} obj: ${JSON.stringify(obj)} - length ${jsonPath.length}`);
 
@@ -107,6 +110,56 @@ export default class JsonUtils {
     }
 
     throw Error(`We must not arrive here...`);
+  }
+
+  static remove(json: any, property: string): boolean {
+    if (!json || typeof json !== "object") {
+      return false;
+    }
+
+    const jsonPath = this.translatePath(property);
+    let obj: any = json;
+
+    for (let i = 0; i < jsonPath.length; i++) {
+      let item = jsonPath[i];
+      if (this.isForbiddenKey(item)) {
+        return false;
+      }
+
+      if (this.isArrayTask(item)) {
+        item = this.itemForArrayTask(obj, item);
+      }
+
+      if (i === jsonPath.length - 1) {
+        if (Array.isArray(obj)) {
+          if (!/^(0|[1-9]\d*)$/.test(item)) {
+            return false;
+          }
+          const idx = Number(item);
+          if (idx >= obj.length) {
+            return false;
+          }
+          obj.splice(idx, 1);
+          return true;
+        }
+        if (Object.hasOwn(obj, item)) {
+          delete obj[item];
+          return true;
+        }
+        return false;
+      }
+
+      if (!Object.hasOwn(obj, item) || obj[item] === undefined || obj[item] === null || typeof obj[item] !== "object") {
+        return false;
+      }
+      obj = obj[item];
+    }
+
+    return false;
+  }
+
+  private static isForbiddenKey(key: string): boolean {
+    return key === "__proto__" || key === "constructor" || key === "prototype";
   }
 
   // https://stackoverflow.com/questions/175739/built-in-way-in-javascript-to-check-if-a-string-is-a-valid-number

@@ -23,7 +23,7 @@ export default class ProfileEditor {
       /# >>> levain initialize >>>[\s\S]*?# <<< levain initialize <<</gm;
 
     if (regex.test(content)) {
-      content = content.replace(regex, block);
+      content = content.replace(regex, () => block);
       log.info(t("lib.activate.profile_editor.replaceBlock"));
     } else {
       log.info(t("lib.activate.profile_editor.newBlock"));

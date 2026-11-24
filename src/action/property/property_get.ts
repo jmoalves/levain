@@ -14,7 +14,7 @@ export default class PropertyGetAction implements Action {
   }
 
   // deno-lint-ignore require-await
-  async execute(_pkg: Package, parameters: string[]) {
+  async execute(_pkg: Package | undefined, parameters: string[]) {
     log.debug(`PROPERTY-GET ${parameters.join(" ")}`);
 
     const myArgs = parseArgs(parameters, {
@@ -27,10 +27,15 @@ export default class PropertyGetAction implements Action {
       stopEarly: false,
     });
 
+    if (!myArgs?.setVar || !myArgs?._ || myArgs._.length < 2) {
+      throw new Error("Missing parameters. propertyGet --setVar=VAR [--default=DEFAULT] filename property");
+    }
+
     const filePath = myArgs._[0];
     const propertyName = myArgs._[1];
     const properties = PropertiesUtils.load(filePath);
     const value = properties.get(propertyName);
-    this.config.setVar(myArgs.setVar, value || "");
+    const resolved = value !== undefined && value !== "" ? value : (myArgs.default ?? "");
+    this.config.setVar(myArgs.setVar, resolved);
   }
 }

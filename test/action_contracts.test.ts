@@ -1,7 +1,7 @@
 import * as path from "@std/path";
 import * as yaml from "@std/yaml";
 import { existsSync } from "@std/fs";
-import { assert, assertEquals, assertRejects } from "@std/assert";
+import { assert, assertEquals } from "@std/assert";
 import { stub } from "@std/testing/mock";
 
 import ActionFactory from "../src/action/action_factory.ts";
@@ -263,7 +263,11 @@ Deno.test("Contract recipe: contract-os-and-shell executes all OS, shell, activa
   const startupStub = stub(OsUtils, "addToStartup", () => Promise.resolve());
   const onlyWinStub = stub(OsUtils, "onlyInWindows", () => {});
   const runAndLogStub = stub(OsUtils, "runAndLog", (cmd: string | string[]) => {
-    runAndLogCalls.push(Array.isArray(cmd) ? cmd : [cmd]);
+    const argv = Array.isArray(cmd) ? cmd : [cmd];
+    runAndLogCalls.push(argv);
+    if (argv[0] === "reg" && argv[1] === "import" && argv[2]) {
+      createdTempFiles.push(argv[2]);
+    }
     return Promise.resolve("");
   });
   const mvnCliStub = stub(GeneralPaths, "mvnCliPath", () => "/mock/mvn");
@@ -274,9 +278,6 @@ Deno.test("Contract recipe: contract-os-and-shell executes all OS, shell, activa
       stripCRLF: this.stripCRLF,
       ignoreErrors: this.ignoreErrors,
     });
-    if (args[0] === "reg" && args[1] === "import" && args[2]) {
-      createdTempFiles.push(args[2]);
-    }
     return Promise.resolve();
   });
   const osShellPrepEnvStub = stub(OsShell.prototype, "prepareEnv", (env: Record<string, string>) => {
@@ -294,21 +295,18 @@ Deno.test("Contract recipe: contract-os-and-shell executes all OS, shell, activa
   const shellRunStub = stub(Shell.prototype, "runShell", () => Promise.resolve());
   const resolveStub = stub(PackageManager.prototype, "resolvePackages", () => [pkg]);
 
+  // Seed settings.json so jsonRemove executes end-to-end
+  const settingsFile = path.join(pkg.baseDir, "settings.json");
+  await Deno.mkdir(pkg.baseDir, { recursive: true });
+  await Deno.writeTextFile(settingsFile, JSON.stringify({ obsoleteKey: "old", keep: "yes" }));
+
   try {
     console.log = () => {};
     const loader = new Loader(config);
     const installActions: string[] = pkg.yamlItem("cmd.install") || [];
 
     for (const actionLine of installActions) {
-      if (actionLine.startsWith("jsonRemove ")) {
-        // TODO(phase-4.5): jsonRemove currently throws "not implemented yet"
-        await assertRejects(
-          async () => await loader.action(pkg, actionLine),
-          "not implemented yet",
-        );
-      } else {
-        await loader.action(pkg, actionLine);
-      }
+      await loader.action(pkg, actionLine);
     }
 
     assertEquals(addPathPermStub.calls.length, 1);
@@ -326,8 +324,14 @@ Deno.test("Contract recipe: contract-os-and-shell executes all OS, shell, activa
     assert(runAndLogCalls.some((cmd) => cmd.includes("taskkill") && cmd.includes("demo-contract.exe")));
     assert(runAndLogCalls.some((cmd) => cmd.includes("dependency:copy") && cmd.includes("-Dartifact=com.example:demo-artifact:1.0.0:jar")));
 
-    // Verify contextMenu, contextMenuRemove, and direct levainShell calls reached OsShell
+    // Verify jsonRemove removed obsoleteKey and kept other keys
+    assertEquals(JSON.parse(await Deno.readTextFile(settingsFile)), { keep: "yes" });
+
+    // Verify contextMenu, contextMenuRemove, and direct levainShell calls reached OsShell and cleaned up temp files
     assertEquals(createdTempFiles.length, 2, "contextMenu and contextMenuRemove should each render a .reg temp file");
+    for (const tempRegFile of createdTempFiles) {
+      assertEquals(existsSync(tempRegFile), false, `contextMenu temp file should be cleaned up: ${tempRegFile}`);
+    }
     const directShellCall = osShellCalls.find((c) => c.saveVar === "CONTRACT_SHELL_OUT");
     assert(directShellCall, "direct levainShell contract call should propagate --saveVar");
     assertEquals(directShellCall.stripCRLF, true);
@@ -353,9 +357,6 @@ Deno.test("Contract recipe: contract-os-and-shell executes all OS, shell, activa
     desktopStub.restore();
     setEnvPermStub.restore();
     addPathPermStub.restore();
-    for (const f of createdTempFiles) {
-      OsUtils.removeFile(f);
-    }
   }
 });
 

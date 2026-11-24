@@ -38,6 +38,11 @@ export default class BashInitializer {
   }
 
   profileTemplate(): string {
+    if (/[\r\n\0]/.test(this.levainCmdPath)) {
+      throw new Error("levainCmdPath must not contain CR, LF, or NUL characters");
+    }
+    const escapedLevainSh = `${OsUtils.windowsToBashPath(this.levainCmdPath)}/levain.sh`
+      .replaceAll("'", "'\\''");
     return `${ProfileEditor.BEGIN}
       # The prompt without the Levain prefix.
       _LEVAIN_BASE_PS1=""
@@ -87,7 +92,7 @@ export default class BashInitializer {
       _LEVAIN_BASE_PS1="$(__levain_strip_prefix "$PS1")"
 
       levain() {
-        source ${OsUtils.windowsToBashPath(this.levainCmdPath)}/levain.sh
+        source '${escapedLevainSh}'
       }
     ${ProfileEditor.END}`
   }

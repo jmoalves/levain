@@ -1,8 +1,10 @@
 import * as path from "@std/path";
-import { assert } from "@std/assert";
+import { assert, assertEquals, assertRejects } from "@std/assert";
+import { stub } from "@std/testing/mock";
 
+import { FileProgress } from "../../lib/io/file_progress.ts";
 import TestHelper from "../../lib/test/test_helper.ts";
-import { assertFileSizeAprox, assertPathDoesNotExist } from "../../lib/test/more_asserts.ts";
+import { assertFileSizeAprox, assertPathDoesNotExist, assertPathExists } from "../../lib/test/more_asserts.ts";
 
 import ActionFactory from "../action_factory.ts";
 import CopyAction from "./copy.ts";
@@ -54,6 +56,89 @@ Deno.test("CopyAction --ifNotExists should not copy file if it already exists", 
   ]);
 
   assertFileSizeAprox(dstFile, 0);
+});
+Deno.test("CopyAction --ifNotExists into existing directory should copy missing files and preserve existing ones", async () => {
+  const tempDir = TestHelper.getNewTempDir();
+  const existingFile = path.resolve(tempDir, path.basename(TestHelper.fileWithContent));
+  assertPathDoesNotExist(existingFile);
+
+  const action = getCopyAction();
+  // Destination directory exists, but target file inside it does not -> should copy!
+  await action.execute(TestHelper.mockPackage(), [
+    "--ifNotExists",
+    TestHelper.fileWithContent,
+    tempDir,
+  ]);
+  assertFileSizeAprox(existingFile, 576);
+
+  // Overwrite with empty content and re-run --ifNotExists -> should NOT overwrite existing file!
+  Deno.copyFileSync(TestHelper.emptyFile, existingFile);
+  assertFileSizeAprox(existingFile, 0);
+
+  await action.execute(TestHelper.mockPackage(), [
+    "--ifNotExists",
+    TestHelper.fileWithContent,
+    tempDir,
+  ]);
+  assertFileSizeAprox(existingFile, 0);
+});
+Deno.test("CopyAction --strip should copy directory contents preserving nested subdirectories", async () => {
+  const srcRoot = TestHelper.getNewTempDir();
+  await Deno.mkdir(path.join(srcRoot, "sub", "deep"), { recursive: true });
+  await Deno.writeTextFile(path.join(srcRoot, "top.txt"), "top");
+  await Deno.writeTextFile(path.join(srcRoot, "sub", "mid.txt"), "mid");
+  await Deno.writeTextFile(path.join(srcRoot, "sub", "deep", "leaf.txt"), "leaf");
+
+  const dstRoot = path.join(TestHelper.getNewTempDir(), "stripped-out");
+  const action = getCopyAction();
+  await action.execute(TestHelper.mockPackage(), [
+    "--strip",
+    srcRoot,
+    dstRoot,
+  ]);
+
+  assertPathExists(path.join(dstRoot, "top.txt"));
+  assertPathExists(path.join(dstRoot, "sub", "mid.txt"));
+  assertPathExists(path.join(dstRoot, "sub", "deep", "leaf.txt"));
+  assertEquals(await Deno.readTextFile(path.join(dstRoot, "sub", "deep", "leaf.txt")), "leaf");
+  assertPathDoesNotExist(path.join(dstRoot, "leaf.txt"));
+});
+Deno.test("CopyAction URL download into directory should strip query strings and reject traversal", async () => {
+  const dstDir = TestHelper.getNewTempDir();
+  const downloads: Array<{ src: string; dst: string }> = [];
+  const progressStub = stub(FileProgress, "copyWithProgress", (src, dst) => {
+    downloads.push({ src: String(src), dst });
+    return Promise.resolve();
+  });
+
+  try {
+    const action = getCopyAction();
+    await action.execute(TestHelper.mockPackage(), [
+      "https://example.org/files/tool.zip?token=secret123",
+      dstDir,
+    ]);
+    assertEquals(downloads, [{
+      src: "https://example.org/files/tool.zip?token=secret123",
+      dst: path.resolve(dstDir, "tool.zip"),
+    }]);
+
+    // When target file already exists inside dstDir, --ifNotExists should skip downloading
+    await Deno.writeTextFile(path.resolve(dstDir, "tool.zip"), "already-here");
+    await action.execute(TestHelper.mockPackage(), [
+      "--ifNotExists",
+      "https://example.org/files/tool.zip?token=secret123",
+      dstDir,
+    ]);
+    assertEquals(downloads.length, 1);
+
+    await assertRejects(
+      async () => await action.execute(TestHelper.mockPackage(), ["https://example.org/", dstDir]),
+      Error,
+      "Invalid filename in URL",
+    );
+  } finally {
+    progressStub.restore();
+  }
 });
 
 function getCopyAction() {

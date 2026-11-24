@@ -1,4 +1,5 @@
 import * as log from "@std/log";
+import * as path from "@std/path";
 
 import type Config from "../config.ts";
 import OsUtils from "../os/os_utils.ts";
@@ -16,7 +17,7 @@ export class SevenZip extends Extractor {
     log.debug(`-- 7z ${src} => ${dst}`);
     OsUtils.onlyInWindows();
 
-    const command = `${ExtraBin.sevenZipDir}\\7z.exe x -bsp2 -aoa -o${dst} ${src}`;
-    await OsUtils.runAndLog(command);
+    const sevenZipExe = path.join(ExtraBin.sevenZipDir, "7z.exe");
+    await OsUtils.runAndLog([sevenZipExe, "x", "-bsp2", "-aoa", `-o${dst}`, "--", src]);
   }
 }

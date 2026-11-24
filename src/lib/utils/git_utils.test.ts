@@ -156,6 +156,45 @@ Deno.test("GitUtils.clone should clone a repo", async () => {
 
   assertDirCountGreaterOrEqualTo(tempFolder, 3);
 });
+Deno.test("GitUtils.clone should pass argv array directly without shell wrapper and support spaces in destination", async () => {
+  const calls: (string | string[])[] = [];
+  const runStub = stub(OsUtils, "runAndLog", (cmd: string | string[]) => {
+    calls.push(cmd);
+    return Promise.resolve("");
+  });
+
+  try {
+    const gitUtils = new GitUtils();
+    await gitUtils.clone("https://github.com/jmoalves/levain.git#develop", "/tmp/my dest dir", true);
+
+    assertEquals(calls, [[
+      gitUtils.gitCmd,
+      "clone",
+      "--progress",
+      "--config",
+      "core.autocrlf=true",
+      "--branch=develop",
+      "--single-branch",
+      "--no-tags",
+      "--depth",
+      "1",
+      "--",
+      "https://github.com/jmoalves/levain.git",
+      "/tmp/my dest dir",
+    ]]);
+  } finally {
+    runStub.restore();
+  }
+});
+Deno.test("GitUtils.clone should clone into a destination path containing spaces", async () => {
+  const parent = TestHelper.getNewTempDir();
+  const dstWithSpaces = path.join(parent, "cloned repo dir");
+  const gitRepo = await TestHelper.createLocalGitRepo({ "hello.txt": "hi\n" });
+
+  await new GitUtils().clone(gitRepo, dstWithSpaces, true);
+
+  assertEquals((await Deno.readTextFile(path.join(dstWithSpaces, "hello.txt"))).trim(), "hi");
+});
 Deno.test({
   name: "GitUtils.update should succeed when repository is already up to date",
   fn: async () => {

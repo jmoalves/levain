@@ -37,6 +37,30 @@ Deno.test("PropertiesUtils should work with empty values", () => {
 
   assertEquals(PropertiesUtils.stringify(propertiesFile), "key_1=\r\nkey_2=");
 });
+Deno.test("PropertiesUtils should preserve '=' in values and ignore # and ! comments", () => {
+  const tempFile = TestHelper.getNewTempFile();
+  try {
+    Deno.writeTextFileSync(
+      tempFile,
+      [
+        "# hash comment",
+        "! bang comment",
+        "jdbc.url = jdbc:postgresql://localhost:5432/app?ssl=true&user=admin",
+        "token = abc===",
+        "empty_key =",
+      ].join("\n"),
+    );
+
+    const props = PropertiesUtils.load(tempFile);
+    assertEquals(props.size, 3);
+    assertEquals(props.get("jdbc.url"), "jdbc:postgresql://localhost:5432/app?ssl=true&user=admin");
+    assertEquals(props.get("token"), "abc===");
+    assertEquals(props.get("empty_key"), "");
+    assertEquals(PropertiesUtils.get(tempFile, "empty_key", "fallback"), "");
+  } finally {
+    TestHelper.remove(tempFile);
+  }
+});
 //
 // get
 //

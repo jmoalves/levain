@@ -1,6 +1,7 @@
 import {
   assertEquals,
   assertStringIncludes,
+  assertThrows,
 } from "@std/assert";
 import { stub } from "@std/testing/mock";
 
@@ -48,7 +49,25 @@ Deno.test("profileTemplate contains prompt wrapper", () => {
   assertStringIncludes(template, "function global:levain");
   assertStringIncludes(
     template,
-    '. "C:\\Levain\\levain.ps1" @Args',
+    ". 'C:\\Levain\\levain.ps1' @Args",
+  );
+});
+
+Deno.test("profileTemplate safely escapes ASCII and Unicode single quotes and rejects control chars", () => {
+  const initializer = new PowershellInitializer(
+    "C:\\Users\\O'Neil\\O\u2019Brien\\$Levain",
+    undefined,
+  );
+  const template = initializer.profileTemplate();
+  assertStringIncludes(
+    template,
+    ". 'C:\\Users\\O''Neil\\O\u2019\u2019Brien\\$Levain\\levain.ps1' @Args",
+  );
+
+  assertThrows(
+    () => new PowershellInitializer("C:\\Bad\nPath", undefined).profileTemplate(),
+    Error,
+    "CR, LF, or NUL",
   );
 });
 
@@ -71,7 +90,7 @@ Deno.test("install uses supplied profile", async () => {
     assertStringIncludes(text, "function global:levain");
     assertStringIncludes(
       text,
-      '. "C:\\Levain\\levain.ps1" @Args',
+      ". 'C:\\Levain\\levain.ps1' @Args",
     );
   } finally {
     await Deno.remove(dir, { recursive: true });

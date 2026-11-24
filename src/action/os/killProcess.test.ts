@@ -40,7 +40,7 @@ Deno.test("KillProcessAction should invoke taskkill via OsUtils.runAndLog on Win
 
     assertEquals(winStub.calls.length, 1);
     assertEquals(commands, [
-      ["start", "/wait", "taskkill", "/f", "/im", "demo-app.exe"],
+      ["taskkill", "/f", "/im", "demo-app.exe"],
     ]);
   } finally {
     runStub.restore();

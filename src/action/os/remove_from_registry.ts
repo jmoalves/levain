@@ -14,7 +14,8 @@ export default class RemoveFromRegistry implements Action {
       throw new Error("Action - removeFromRegistry - You should inform at least one package to be removed");
     }
 
-    const pkgName = parameters[0];
-    await this.registry.remove(pkgName);
+    for (const pkgName of parameters) {
+      await this.registry.remove(pkgName);
+    }
   }
 }

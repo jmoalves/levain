@@ -4,6 +4,7 @@ import {
   assertMatch,
   assertNotEquals,
   assertNotMatch,
+  assertRejects,
 } from "@std/assert";
 import { stub } from "@std/testing/mock";
 import * as path from "@std/path";
@@ -261,3 +262,67 @@ Deno.test("OsUtils.sanitizeUserPath should call setUserPath when PATH contains q
     isWinStub.restore();
   }
 });
+
+Deno.test("OsUtils.setEnvPermanent should pass argv array to setx and validate variable names", async () => {
+  const onlyWinStub = stub(OsUtils, "onlyInWindows", () => {});
+  const setEnvStub = stub(OsUtils, "setEnv", () => {});
+  const runStub = stub(OsUtils, "runAndLog", () => Promise.resolve(""));
+
+  try {
+    await OsUtils.setEnvPermanent("MY_APP_DIR", "C:\\Program Files\\My App");
+    assertEquals(setEnvStub.calls.length, 1);
+    assertEquals(setEnvStub.calls[0].args, ["MY_APP_DIR", "C:\\Program Files\\My App"]);
+    assertEquals(runStub.calls.length, 1);
+    assertEquals(runStub.calls[0].args, [["setx", "MY_APP_DIR", "C:\\Program Files\\My App"]]);
+
+    await assertRejects(
+      async () => await OsUtils.setEnvPermanent("/M", "evil"),
+      Error,
+      "Invalid environment variable name",
+    );
+    await assertRejects(
+      async () => await OsUtils.setEnvPermanent("BAD=KEY", "val"),
+      Error,
+      "Invalid environment variable name",
+    );
+    await assertRejects(
+      async () => await OsUtils.setEnvPermanent("GOOD_KEY", "bad\0val"),
+      Error,
+      "must not contain NUL",
+    );
+  } finally {
+    runStub.restore();
+    setEnvStub.restore();
+    onlyWinStub.restore();
+  }
+});
+
+if (OsUtils.isWindows()) {
+  Deno.test("OsUtils.setEnvPermanent should persist dash-prefixed values via PowerShell fallback", async () => {
+    const varName = `LEVAIN_TEST_PS_ENV_${crypto.randomUUID().replaceAll("-", "").slice(0, 8)}`;
+    const expectedVal = "-Xmx2g -Dflag=/c/tools";
+
+    try {
+      await OsUtils.setEnvPermanent(varName, expectedVal);
+      assertEquals(Deno.env.get(varName), expectedVal);
+
+      const readBack = await OsUtils.runAndLog([
+        "powershell",
+        "-NoProfile",
+        "-NonInteractive",
+        "-Command",
+        `[Environment]::GetEnvironmentVariable('${varName}', 'User')`,
+      ]);
+      assertEquals(readBack.trim(), expectedVal);
+    } finally {
+      Deno.env.delete(varName);
+      await OsUtils.runAndLog([
+        "powershell",
+        "-NoProfile",
+        "-NonInteractive",
+        "-Command",
+        `[Environment]::SetEnvironmentVariable('${varName}', $null, 'User')`,
+      ]).catch(() => {});
+    }
+  });
+}

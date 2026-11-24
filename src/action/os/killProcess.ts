@@ -14,8 +14,6 @@ export default class KillProcessAction implements Action {
 
     OsUtils.onlyInWindows();
     const cmd = [
-      "start",
-      "/wait",
       "taskkill",
       "/f",
       "/im",

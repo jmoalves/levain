@@ -110,3 +110,24 @@ Deno.test("insertBlock creates parent directories", async () => {
     await Deno.remove(dir, { recursive: true });
   }
 });
+
+Deno.test("insertBlock preserves literal JS $ replacement patterns when replacing an existing block", async () => {
+  const dir = await Deno.makeTempDir();
+
+  try {
+    const profile = `${dir}/.bashrc`;
+    await Deno.writeTextFile(
+      profile,
+      `before\n${ProfileEditor.BEGIN}\nold\n${ProfileEditor.END}\nafter`,
+    );
+
+    const editor = new ProfileEditor();
+    const blockWithDollars = `${ProfileEditor.BEGIN}\npath="$'$$$&"\n${ProfileEditor.END}`;
+    await editor.insertBlock(profile, blockWithDollars);
+
+    const content = await Deno.readTextFile(profile);
+    assertEquals(content, `before\n${blockWithDollars}\nafter`);
+  } finally {
+    await Deno.remove(dir, { recursive: true });
+  }
+});
