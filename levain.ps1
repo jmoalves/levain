@@ -76,6 +76,10 @@ switch ($Args[0]) {
         } else {
             @()
         }
+        if ($rawActivateArgs -contains "--help" -or $rawActivateArgs -contains "-h") {
+            & $levainExe @Args
+            break
+        }
         $skipPre = $false
         $activateArgs = @()
         foreach ($arg in $rawActivateArgs) {

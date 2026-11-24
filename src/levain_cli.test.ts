@@ -5,7 +5,6 @@ import { CommandNotFoundError } from "./cmd/command_factory.ts";
 import LevainCli from "./levain_cli.ts";
 import CliUtil from "./lib/cli_util.ts";
 import Config from "./lib/config.ts";
-import t from "./lib/i18n.ts";
 import Loader from "./lib/loader.ts";
 import ConsoleAndFileLogger from "./lib/logger/console_and_file_logger.ts";
 import OsUtils from "./lib/os/os_utils.ts";
@@ -27,7 +26,7 @@ Deno.test("LevainCli with no command should print CLI help and not save config",
     const cli = new LevainCli();
     await cli.execute({ _: [] });
 
-    assertFind(logger.messages, (msg) => msg.includes(t("levain_cli.availableCommands")));
+    assertFind(logger.messages, (msg) => msg.includes("Usage:") && msg.includes("levain") && msg.includes("install"));
     assertEquals(saveStub.calls.length, 0);
     assertEquals(repoInitStub.calls.length, 0);
   } finally {
@@ -284,7 +283,7 @@ Deno.test("LevainCli should show CLI help and rethrow CommandNotFoundError on un
       CommandNotFoundError,
     );
 
-    assertFind(logger.messages, (msg) => msg.includes(t("levain_cli.availableCommands")));
+    assertFind(logger.messages, (msg) => msg.includes("Usage:") && msg.includes("levain") && msg.includes("install"));
     assertEquals(saveStub.calls.length, 0);
   } finally {
     saveStub.restore();
@@ -307,5 +306,43 @@ Deno.test("LevainCli should call CliUtil.askToContinue when --wait-to-begin is p
     assert(asked, "askToContinue should have been called");
   } finally {
     askStub.restore();
+  }
+});
+
+Deno.test("LevainCli --levain-upgrade should skip update check, reinstall levain, save config, and return cleanly", async () => {
+  const prevTestMode = CliUtil.testMode;
+  const prevConfig = ConsoleAndFileLogger.config;
+  const tempHome = TestHelper.getNewTempDir();
+  const commandCalls: Array<{ cmd: string; args: string[] }> = [];
+
+  const sanitizeStub = stub(OsUtils, "sanitizeUserPath", () => Promise.resolve());
+  const repoInitStub = stub(RepositoryManager.prototype, "init", () => Promise.resolve([]));
+  const saveStub = stub(Config.prototype, "save", () => {});
+  const releaseStub = stub(LevainReleases.prototype, "checkLevainUpdate", () => Promise.resolve());
+  const loaderCmdStub = stub(Loader.prototype, "command", (cmd: string, args: string[]) => {
+    commandCalls.push({ cmd, args });
+    return Promise.resolve();
+  });
+
+  try {
+    CliUtil.testMode = true;
+    const cli = new LevainCli();
+    await cli.execute({
+      _: [],
+      levainHome: [tempHome],
+      "levain-upgrade": true,
+    });
+
+    assertEquals(releaseStub.calls.length, 0, "--levain-upgrade must not re-check for updates");
+    assertEquals(commandCalls, [{ cmd: "install", args: ["--force", "levain"] }]);
+    assertEquals(saveStub.calls.length, 1);
+  } finally {
+    loaderCmdStub.restore();
+    releaseStub.restore();
+    saveStub.restore();
+    repoInitStub.restore();
+    sanitizeStub.restore();
+    ConsoleAndFileLogger.config = prevConfig;
+    CliUtil.testMode = prevTestMode;
   }
 });

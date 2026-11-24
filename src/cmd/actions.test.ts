@@ -1,6 +1,7 @@
 import { assert, assertEquals } from "@std/assert";
 
 import ActionFactory from "../action/action_factory.ts";
+import t from "../lib/i18n.ts";
 import TestHelper from "../lib/test/test_helper.ts";
 import { assertFind } from "../lib/test/more_asserts.ts";
 
@@ -47,6 +48,7 @@ Deno.test("ActionsCommand should suggest similar actions on typo and list nothin
   const cmd = new ActionsCommand(TestHelper.getConfig());
 
   cmd.execute(["jsonSt"]);
+  assertFind(logger.messages, (msg) => msg.includes(t("cmd.actions.didYouMean")));
   assertFind(logger.messages, (msg) => msg.includes("jsonSet"));
 
   logger.messages.length = 0;

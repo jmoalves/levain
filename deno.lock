@@ -2,9 +2,13 @@
   "version": "5",
   "specifiers": {
     "jsr:@cliffy/ansi@^1.3.1": "1.3.1",
+    "jsr:@cliffy/command@^1.3.1": "1.3.1",
+    "jsr:@cliffy/flags@^1.3.1": "1.3.1",
     "jsr:@cliffy/internal@^1.3.1": "1.3.1",
     "jsr:@cliffy/keycode@^1.3.1": "1.3.1",
     "jsr:@cliffy/prompt@^1.3.1": "1.3.1",
+    "jsr:@cliffy/table@^1.3.1": "1.3.1",
+    "jsr:@cliffy/upgrade@^1.3.1": "1.3.1",
     "jsr:@deno-library/progress@^1.5.1": "1.5.1",
     "jsr:@i18next/i18next@^27.2.4": "27.2.4",
     "jsr:@std/assert@^1.0.19": "1.0.19",
@@ -26,12 +30,14 @@
     "jsr:@std/log@~0.224.14": "0.224.14",
     "jsr:@std/path@^1.1.5": "1.1.6",
     "jsr:@std/path@^1.1.6": "1.1.6",
+    "jsr:@std/semver@^1.0.8": "1.0.8",
+    "jsr:@std/streams@^1.0.17": "1.2.0",
+    "jsr:@std/tar@~0.1.10": "0.1.10",
     "jsr:@std/testing@^1.0.21": "1.0.21",
     "jsr:@std/text@^1.0.19": "1.1.0",
     "jsr:@std/yaml@^1.3.0": "1.3.0",
     "npm:@zip.js/zip.js@^2.25.0": "2.25.0",
     "npm:date-fns@^4.4.0": "4.4.0",
-    "npm:fastest-levenshtein@^1.0.16": "1.0.16",
     "npm:validator@^13.15.35": "13.15.35"
   },
   "jsr": {
@@ -41,6 +47,24 @@
         "jsr:@cliffy/internal",
         "jsr:@std/encoding",
         "jsr:@std/io@~0.225.3"
+      ]
+    },
+    "@cliffy/command@1.3.1": {
+      "integrity": "366ab6d5f68abe3ded22c09f65c151cfba600fa26690a4763f390c2f1e07ca4d",
+      "dependencies": [
+        "jsr:@cliffy/flags",
+        "jsr:@cliffy/internal",
+        "jsr:@cliffy/table",
+        "jsr:@cliffy/upgrade",
+        "jsr:@std/fmt@^1.0.10",
+        "jsr:@std/text"
+      ]
+    },
+    "@cliffy/flags@1.3.1": {
+      "integrity": "12f38efa0c8c2531c09f1b9a70bae4c4dcfbe01793bac11ac8ac92dddedaa294",
+      "dependencies": [
+        "jsr:@cliffy/internal",
+        "jsr:@std/text"
       ]
     },
     "@cliffy/internal@1.3.1": {
@@ -60,6 +84,23 @@
         "jsr:@std/io@~0.225.3",
         "jsr:@std/path@^1.1.6",
         "jsr:@std/text"
+      ]
+    },
+    "@cliffy/table@1.3.1": {
+      "integrity": "483c43936b9be148cbedd8bd39e5c0d098c9c87c4667fe2ad9b8acff77f79b8b",
+      "dependencies": [
+        "jsr:@std/fmt@^1.0.10"
+      ]
+    },
+    "@cliffy/upgrade@1.3.1": {
+      "integrity": "9407061b092de52533d291e2488df24ec0718e28e024ac208603c0e16ae6407a",
+      "dependencies": [
+        "jsr:@cliffy/internal",
+        "jsr:@cliffy/table",
+        "jsr:@std/fmt@^1.0.10",
+        "jsr:@std/path@^1.1.6",
+        "jsr:@std/semver",
+        "jsr:@std/tar"
       ]
     },
     "@deno-library/progress@1.5.1": {
@@ -139,6 +180,18 @@
         "jsr:@std/internal@^1.0.14"
       ]
     },
+    "@std/semver@1.0.8": {
+      "integrity": "dc830e8b8b6a380c895d53fbfd1258dc253704ca57bbe1629ac65fd7830179b7"
+    },
+    "@std/streams@1.2.0": {
+      "integrity": "256b934254778f2bf45f5713b934209ff29e9b4b7fd4ec095219966813758c5f"
+    },
+    "@std/tar@0.1.10": {
+      "integrity": "6bf907f3a4bc8bfef42973ba132d946756a6161ef6b914a9e1c06debe664db17",
+      "dependencies": [
+        "jsr:@std/streams"
+      ]
+    },
     "@std/testing@1.0.21": {
       "integrity": "a0d14b2519005242821565091127c7d6fa96ca1b330e84e9249afcd602ee764f",
       "dependencies": [
@@ -164,15 +217,13 @@
     "date-fns@4.4.0": {
       "integrity": "sha512-+1UMbeh68lH1SegH83CGWwpb6OHHbpSgr3+s5Eww5M4CAgswBpoWS0AjTOfEJ33HiYKz1hdj/KTFprzXHmq/6w=="
     },
-    "fastest-levenshtein@1.0.16": {
-      "integrity": "sha512-eRnCtTTtGZFpQCwhJiUOuxPQWRXVKYDn0b2PeHfXL6/Zi53SLAzAHfVhVWK2AryC/WH05kGfxhFIPvTF0SXQzg=="
-    },
     "validator@13.15.35": {
       "integrity": "sha512-TQ5pAGhd5whStmqWvYF4OjQROlmv9SMFVt37qoCBdqRffuuklWYQlCNnEs2ZaIBD1kZRNnikiZOS1eqgkar0iw=="
     }
   },
   "workspace": {
     "dependencies": [
+      "jsr:@cliffy/command@^1.3.1",
       "jsr:@cliffy/prompt@^1.3.1",
       "jsr:@deno-library/progress@^1.5.1",
       "jsr:@i18next/i18next@^27.2.4",
@@ -188,7 +239,6 @@
       "jsr:@std/yaml@^1.3.0",
       "npm:@zip.js/zip.js@^2.25.0",
       "npm:date-fns@^4.4.0",
-      "npm:fastest-levenshtein@^1.0.16",
       "npm:validator@^13.15.35"
     ]
   }

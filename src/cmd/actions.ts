@@ -33,10 +33,10 @@ export default class ActionsCommand implements Command {
     });
 
     if (lowerSearch && actions.length === 0) {
-      const similar = [...StringUtils.findSimilar(searchText, allActions)];
+      const similar = [...StringUtils.findSimilar(searchText, allActions, 5)];
       if (similar.length > 0) {
         log.info("");
-        log.info(t("cmd.command_factory.didYouMean"));
+        log.info(t("cmd.actions.didYouMean"));
         similar.forEach((name) => {
           log.info(`  ${name}`);
         });

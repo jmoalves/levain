@@ -221,7 +221,7 @@ Deno.test("StringUtils.findSimilar should find similar names", () => {
   );
 });
 
-Deno.test("StringUtils.findSimilar should find similar names", () => {
+Deno.test("StringUtils.findSimilar should find and rank similar names with Damerau-Levenshtein", () => {
   assertEquals(
     [...StringUtils.findSimilar(
       "jdk",
@@ -242,15 +242,33 @@ Deno.test("StringUtils.findSimilar should find similar names", () => {
       ],
     )],
     [
+      "jdk-17-ibm",
       "openjdk-11",
       "openjdk-12",
       "openjdk-13",
       "openjdk-14",
       "openjdk-15",
       "openjdk-16",
-      "jdk-17-ibm",
     ],
   );
+
+  // Adjacent transposition costs 1 in Damerau-Levenshtein ("insatll" -> "install")
+  assertEquals(StringUtils.damerauLevenshtein("insatll", "install"), 1);
+  assertEquals(StringUtils.damerauLevenshtein("maevn", "maven"), 1);
+  assertEquals([...StringUtils.findSimilar("insatll", ["install", "list", "clean"])], ["install"]);
+  assertEquals([...StringUtils.findSimilar("mven", ["eclipse-maven", "jdk-17"])], ["eclipse-maven"]);
+  assertEquals([...StringUtils.findSimilar("   ", ["install", "list"])], []);
+
+  // Optional maxResults cap returns top-ranked candidates only
+  assertEquals(
+    [...StringUtils.findSimilar("jdk", ["openjdk-11", "openjdk-12", "jdk-17", "openjdk-13"], 2)],
+    ["jdk-17", "openjdk-11"],
+  );
+
+  // 1- and 2-char inputs must not explode with false positives
+  assertEquals([...StringUtils.findSimilar("x", ["git", "maven", "explain"])], ["explain"]);
+  assertEquals([...StringUtils.findSimilar("cp", ["copy", "mkdir", "setEnv", "mcp"])], ["mcp"]);
+  assertEquals([...StringUtils.findSimilar("-z", ["--force", "--cache", "--help"])], []);
 });
 
 Deno.test("StringUtils.compressText should shrink strings", () => {

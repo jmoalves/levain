@@ -73,7 +73,9 @@ try {
     Remove-Item $TempLevainZip -Force
   }
 
-  if (! $levainHeadless) {
+  $isHeadless = ($levainHeadless -eq $true) -or ($levainHeadless -is [string] -and $levainHeadless -match '^(true|1|yes)$')
+
+  if (-not $isHeadless) {
     Clear-Host
   }
 
@@ -129,7 +131,13 @@ try {
 
   Write-Output ""
   Write-Output ""
-  & $TempLevainDir\levain.cmd --addRepo "$levainRepo" --levainHome "$levainHome" install levain
+  $levainInstallArgs = @("--addRepo", "$levainRepo", "--levainHome", "$levainHome")
+  if ($isHeadless) {
+    $levainInstallArgs += @("--skip-levain-updates", "--skip-auto-clean", "install", "--force", "levain")
+  } else {
+    $levainInstallArgs += @("install", "levain")
+  }
+  & $TempLevainDir\levain.cmd @levainInstallArgs
   $installExitCode = $LASTEXITCODE
 } finally {
   #######################################################

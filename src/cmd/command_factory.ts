@@ -43,7 +43,8 @@ export default class CommandFactory {
       log.error("");
 
       log.error(t("cmd.command_factory.notFound", { cmd: cmd }));
-      const similar = StringUtils.findSimilar(cmd, this.list());
+      const publicCommands = this.list().filter((name) => !name.startsWith("_"));
+      const similar = StringUtils.findSimilar(cmd, publicCommands, 5);
       if (similar.size > 0) {
         log.error("");
         log.error(t("cmd.command_factory.didYouMean"));

@@ -1,6 +1,7 @@
 import { assert, assertThrows } from "@std/assert";
 
 import TestHelper from "../lib/test/test_helper.ts";
+import t from "../lib/i18n.ts";
 import { assertArrayEqualsInAnyOrder } from "../lib/test/more_asserts.ts";
 
 import ActionFactory from "./action_factory.ts";
@@ -58,7 +59,7 @@ Deno.test("ActionFactory should know the assertContains action", () => {
 
   assert(action instanceof AssertContainsAction);
 });
-Deno.test("ActionFactory should throw exception when Action does not exist", () => {
+Deno.test("ActionFactory should throw exception when Action does not exist and suggest similar actions on typos", () => {
   const factory = getActionFactory();
   const config = TestHelper.getConfig();
 
@@ -67,7 +68,15 @@ Deno.test("ActionFactory should throw exception when Action does not exist", () 
       factory.get("thisActionDoesNotExist", config);
     },
     Error,
-    "Action thisActionDoesNotExist not found - Aborting...",
+    t("action.action_factory.notFound", { action: "thisActionDoesNotExist" }),
+  );
+
+  assertThrows(
+    () => {
+      factory.get("setEnb", config);
+    },
+    Error,
+    t("action.action_factory.didYouMean", { suggestions: "setEnv" }),
   );
 });
 

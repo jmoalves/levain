@@ -136,7 +136,7 @@ export default class PackageManager {
     repo?.listPackages().forEach((element) => {
       names.push(element.name);
     });
-    return StringUtils.findSimilar(pkgName, names);
+    return StringUtils.findSimilar(pkgName, names, 5);
   }
 
   private resolveInRepo(

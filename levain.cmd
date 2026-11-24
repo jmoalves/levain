@@ -88,9 +88,12 @@ ENDLOCAL & exit /b 0
 set "_LEV_TMP=%TEMP%\levain-%RANDOM%%RANDOM%.cmd"
 set "SKIP_PRE="
 set "_LEV_ARGS="
+set "_LEV_HELP="
 shift
 :fnActivateArgs
 if "%~1"=="" goto :fnActivateRun
+if /I "%~1"=="--help" set "_LEV_HELP=1"
+if /I "%~1"=="-h" set "_LEV_HELP=1"
 if /I "%~1"=="--skip-pre" (
     set "SKIP_PRE=1"
     shift
@@ -101,6 +104,10 @@ shift
 goto :fnActivateArgs
 
 :fnActivateRun
+if defined _LEV_HELP (
+    call :fnRun activate%_LEV_ARGS%
+    goto :fnActivateDone
+)
 if defined SKIP_PRE goto :fnActivateCmd
 call :fnRun _activate-machine pre%_LEV_ARGS%
 if errorlevel 1 goto :fnActivateDone
@@ -119,5 +126,6 @@ exit /b %ERRORLEVEL%
 if exist "%_LEV_TMP%" del "%_LEV_TMP%" >nul 2>&1
 set "SKIP_PRE="
 set "_LEV_ARGS="
+set "_LEV_HELP="
 set "_LEV_TMP="
 exit /b %~1
