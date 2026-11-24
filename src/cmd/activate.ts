@@ -11,9 +11,10 @@ export default class Activate implements Command {
 
   // deno-lint-ignore require-await
   async execute(_args: string[]) {
-    log.error(t("cmd.activate.installMissing"));
+    const installMissing = t("cmd.activate.installMissing");
+    log.error(installMissing);
     log.error("levain _activate-machine init");
-    Deno.exit(1);
+    throw new Error(`${installMissing}\nlevain _activate-machine init`);
   }
   
   readonly oneLineExample = t("cmd.activate.example");

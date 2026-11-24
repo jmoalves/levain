@@ -25,3 +25,16 @@ Deno.test("RepositoryFactory.getOrCreate should handout initialized repos", asyn
   const repo1 = await RepositoryFactory.getOrCreate(config, repoPath1);
   assert(repo1.initialized());
 });
+
+Deno.test("RepositoryFactory.getOrCreate should isolate cache per Config and rootOnly flag", async () => {
+  const config1 = TestHelper.getConfig();
+  const config2 = TestHelper.getConfig();
+  const repoPath = TestHelper.getTestDataPath("repository_factory/repo");
+
+  const repoCfg1Full = await RepositoryFactory.getOrCreate(config1, repoPath, false);
+  const repoCfg1Root = await RepositoryFactory.getOrCreate(config1, repoPath, true);
+  const repoCfg2Full = await RepositoryFactory.getOrCreate(config2, repoPath, false);
+
+  assertNotEquals(repoCfg1Full, repoCfg1Root);
+  assertNotEquals(repoCfg1Full, repoCfg2Full);
+});

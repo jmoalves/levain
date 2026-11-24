@@ -1,5 +1,4 @@
-import { assert, assertEquals } from "@std/assert";
-import { stub } from "@std/testing/mock";
+import { assert, assertRejects } from "@std/assert";
 
 import t from "../lib/i18n.ts";
 import TestHelper from "../lib/test/test_helper.ts";
@@ -14,22 +13,16 @@ Deno.test("Activate should be registered in CommandFactory", () => {
   assert(cmd instanceof Activate);
 });
 
-Deno.test("Activate.execute should log instructions and exit with status 1", async () => {
+Deno.test("Activate.execute should log instructions and throw an Error instead of calling Deno.exit", async () => {
   const logger = await TestHelper.setupTestLogger();
-  const exitCodes: (number | undefined)[] = [];
-  const exitStub = stub(Deno, "exit", (code?: number): never => {
-    exitCodes.push(code);
-    return undefined as never;
-  });
+  const cmd = new Activate(TestHelper.getConfig());
 
-  try {
-    const cmd = new Activate(TestHelper.getConfig());
-    await cmd.execute([]);
+  await assertRejects(
+    async () => await cmd.execute([]),
+    Error,
+    "levain _activate-machine init",
+  );
 
-    assertFind(logger.messages, (msg) => msg.includes(t("cmd.activate.installMissing")));
-    assertFind(logger.messages, (msg) => msg.includes("levain _activate-machine init"));
-    assertEquals(exitCodes, [1]);
-  } finally {
-    exitStub.restore();
-  }
+  assertFind(logger.messages, (msg) => msg.includes(t("cmd.activate.installMissing")));
+  assertFind(logger.messages, (msg) => msg.includes("levain _activate-machine init"));
 });

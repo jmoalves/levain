@@ -43,7 +43,7 @@ Deno.test("ListCommand should list all packages when no filter is given", async 
   assertFind(logger.messages, (msg) => msg.includes("beta"));
 });
 
-Deno.test("ListCommand should filter packages by search text", async () => {
+Deno.test("ListCommand should filter packages case-insensitively by search text", async () => {
   const logger = await TestHelper.setupTestLogger();
   const config = TestHelper.getConfig();
   config.repositoryManager.repository = new MockRepository("TestMock", [
@@ -52,7 +52,7 @@ Deno.test("ListCommand should filter packages by search text", async () => {
   ]);
 
   const cmd = new ListCommand(config);
-  cmd.execute(["jdk"]);
+  cmd.execute(["JDK"]);
 
   assertFind(logger.messages, (msg) => msg.includes(t("cmd.list_command.packagesFound", { pkg: 1, count: 2 })));
   assertFind(logger.messages, (msg) => msg.includes("jdk-21"));
@@ -87,14 +87,4 @@ Deno.test("ListCommand should report no similar packages when search is unrelate
 
   assertFind(logger.messages, (msg) => msg.includes(t("cmd.list_command.unableToList")));
   assertFind(logger.messages, (msg) => msg.includes(t("cmd.list_command.unableToSimilar")));
-});
-
-Deno.test("ListCommand.similarNames should match substrings and Levenshtein distance <= 2", () => {
-  const cmd = new ListCommand(TestHelper.getConfig());
-
-  assertEquals(cmd.similarNames("jdk-21", "JDK"), true);
-  assertEquals(cmd.similarNames("git", "git-bash"), true);
-  assertEquals(cmd.similarNames("maven", "mavin"), true);
-  assertEquals(cmd.similarNames("maven", "maevn"), true);
-  assertEquals(cmd.similarNames("maven", "zzzzz"), false);
 });

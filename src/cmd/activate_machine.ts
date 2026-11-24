@@ -12,7 +12,7 @@ export default class ActivateMachine implements Command {
   constructor(private config: Config) {
   }
 
-  // For cmder, install it with .\levain.ps1 _activate-machine init --dev --skip-cmd --skip-bash --powershell-profile C:\dev-env\cmder\config\user_profile.ps1
+  // For cmder, install it with .\levain.ps1 _activate-machine init --dev --cmder --cmder-config C:\dev-env\cmder\config
   async execute(args: string[]) {
     let action = undefined;
     if (args[0] == "init") {
@@ -27,5 +27,5 @@ export default class ActivateMachine implements Command {
     await action.execute(undefined, args.slice(1))
   }
   
-  readonly oneLineExample = t("cmd.shell.example");
+  readonly oneLineExample = t("cmd._activate-machine.example");
 }

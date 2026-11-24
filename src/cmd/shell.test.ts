@@ -53,6 +53,8 @@ Deno.test("Shell.readPackages should use currentDirPackage dependencies and comb
     assertEquals(result.pkgNames, ["levain", "jdk", "maven"]);
     assertEquals(result.pkgActions, ["echo entering shell", "setEnv PROJECT_MODE dev"]);
     assertEquals(result.curDirPkg, curPkg);
+    // Ensure original cmd.shell array on package is not mutated in place
+    assertEquals(curPkg.yamlItem("cmd.shell"), ["echo entering shell"]);
   } finally {
     curDirStub.restore();
   }

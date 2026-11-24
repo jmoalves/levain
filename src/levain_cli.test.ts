@@ -9,12 +9,14 @@ import t from "./lib/i18n.ts";
 import Loader from "./lib/loader.ts";
 import ConsoleAndFileLogger from "./lib/logger/console_and_file_logger.ts";
 import OsUtils from "./lib/os/os_utils.ts";
+import HomePaths from "./lib/paths/home_paths.ts";
 import LevainReleases from "./lib/releases/levain_releases.ts";
 import RepositoryManager from "./lib/repository/repository_manager.ts";
 import TestHelper from "./lib/test/test_helper.ts";
 import { assertFind } from "./lib/test/more_asserts.ts";
 import { UserInfo } from "./lib/user_info/user_info.ts";
 import UserInfoUtil from "./lib/user_info/userinfo_util.ts";
+import DateUtils from "./lib/utils/date_utils.ts";
 
 Deno.test("LevainCli with no command should print CLI help and not save config", async () => {
   const logger = await TestHelper.setupTestLogger();
@@ -143,15 +145,16 @@ Deno.test("LevainCli should invoke UserInfoUtil.askUserInfo for install command"
   }
 });
 
-Deno.test("LevainCli should trigger random clean before non-clean commands when Math.random() > 0.75", async () => {
+Deno.test("LevainCli should run deterministic daily auto-clean only on mutating commands and respect --skip-auto-clean", async () => {
   const prevConfig = ConsoleAndFileLogger.config;
   const tempHome = TestHelper.getNewTempDir();
   const commandCalls: Array<{ cmd: string; args: string[] }> = [];
 
-  const randomStub = stub(Math, "random", () => 0.99);
+  const homedirStub = stub(HomePaths, "homedir", () => tempHome);
   const sanitizeStub = stub(OsUtils, "sanitizeUserPath", () => Promise.resolve());
   const repoInitStub = stub(RepositoryManager.prototype, "init", () => Promise.resolve([]));
   const saveStub = stub(Config.prototype, "save", () => {});
+  const askUserStub = stub(UserInfoUtil.prototype, "askUserInfo", () => Promise.resolve(new UserInfo()));
   const loaderCmdStub = stub(Loader.prototype, "command", (cmd: string, args: string[]) => {
     commandCalls.push({ cmd, args });
     return Promise.resolve();
@@ -159,32 +162,102 @@ Deno.test("LevainCli should trigger random clean before non-clean commands when 
 
   try {
     const cli = new LevainCli();
-    // TODO(phase-4.5): Remove random auto-clean side-effect from read-only/helper commands.
+
+    // Read-only & helper commands must NEVER trigger auto-clean
+    for (const readOnlyCmd of ["actions", "list", "info", "explain", "_activate-machine", "clean"]) {
+      commandCalls.length = 0;
+      await cli.execute({
+        _: [readOnlyCmd],
+        levainHome: [tempHome],
+        "skip-levain-updates": true,
+      });
+      assertEquals(commandCalls, [{ cmd: readOnlyCmd, args: [] }]);
+    }
+
+    // Mutating command with --skip-auto-clean skips clean
+    commandCalls.length = 0;
     await cli.execute({
-      _: ["actions"],
+      _: ["update", "git"],
+      levainHome: [tempHome],
+      "skip-levain-updates": true,
+      "skip-auto-clean": true,
+    });
+    assertEquals(commandCalls, [{ cmd: "update", args: ["git"] }]);
+
+    // Mutating command when lastAutoClean != today triggers clean once and sets lastAutoClean
+    commandCalls.length = 0;
+    await cli.execute({
+      _: ["install", "git"],
+      levainHome: [tempHome],
+      "skip-levain-updates": true,
+    });
+    assertEquals(commandCalls, [
+      { cmd: "clean", args: [] },
+      { cmd: "install", args: ["git"] },
+    ]);
+    assertEquals(ConsoleAndFileLogger.config?.lastAutoClean, DateUtils.dateTag());
+
+    // Persist today's lastAutoClean in isolated levain.config.json -> auto-clean does NOT run again today
+    await Deno.writeTextFile(
+      HomePaths.levainConfigFile,
+      JSON.stringify({ lastAutoClean: DateUtils.dateTag(), levainHome: tempHome }),
+    );
+    commandCalls.length = 0;
+    await cli.execute({
+      _: ["shell", "git"],
+      levainHome: [tempHome],
+      "skip-levain-updates": true,
+    });
+    assertEquals(commandCalls, [{ cmd: "shell", args: ["git"] }]);
+  } finally {
+    loaderCmdStub.restore();
+    askUserStub.restore();
+    saveStub.restore();
+    repoInitStub.restore();
+    sanitizeStub.restore();
+    homedirStub.restore();
+    ConsoleAndFileLogger.config = prevConfig;
+  }
+});
+
+Deno.test("LevainCli should warn and continue executing main command if auto-clean throws", async () => {
+  const logger = await TestHelper.setupTestLogger();
+  const prevConfig = ConsoleAndFileLogger.config;
+  const tempHome = TestHelper.getNewTempDir();
+  const commandCalls: Array<{ cmd: string; args: string[] }> = [];
+
+  const homedirStub = stub(HomePaths, "homedir", () => tempHome);
+  const sanitizeStub = stub(OsUtils, "sanitizeUserPath", () => Promise.resolve());
+  const repoInitStub = stub(RepositoryManager.prototype, "init", () => Promise.resolve([]));
+  const saveStub = stub(Config.prototype, "save", () => {});
+  const loaderCmdStub = stub(Loader.prototype, "command", (cmd: string, args: string[]) => {
+    commandCalls.push({ cmd, args });
+    if (cmd === "clean") {
+      return Promise.reject(new Error("locked temp file"));
+    }
+    return Promise.resolve();
+  });
+
+  try {
+    const cli = new LevainCli();
+    await cli.execute({
+      _: ["update", "git"],
       levainHome: [tempHome],
       "skip-levain-updates": true,
     });
 
     assertEquals(commandCalls, [
       { cmd: "clean", args: [] },
-      { cmd: "actions", args: [] },
+      { cmd: "update", args: ["git"] },
     ]);
-
-    // When command is already "clean", do not invoke clean twice
-    commandCalls.length = 0;
-    await cli.execute({
-      _: ["clean"],
-      levainHome: [tempHome],
-      "skip-levain-updates": true,
-    });
-    assertEquals(commandCalls, [{ cmd: "clean", args: [] }]);
+    assertFind(logger.messages, (msg) => msg.includes("Auto-clean skipped due to error"));
+    assertEquals(ConsoleAndFileLogger.config?.lastAutoClean, undefined);
   } finally {
     loaderCmdStub.restore();
     saveStub.restore();
     repoInitStub.restore();
     sanitizeStub.restore();
-    randomStub.restore();
+    homedirStub.restore();
     ConsoleAndFileLogger.config = prevConfig;
   }
 });

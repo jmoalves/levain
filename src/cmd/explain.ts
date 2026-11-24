@@ -18,7 +18,7 @@ export default class ExplainCommand implements Command {
   }
 
   async execute(args: string[]): Promise<void> {
-    const myArgs = parseArgs(args, {});
+    const myArgs = parseArgs(args, { stopEarly: false });
     const pkgNames: string[] = myArgs._;
 
     if (pkgNames.length == 0) {
@@ -27,6 +27,17 @@ export default class ExplainCommand implements Command {
 
     const pkgs: Package[] | null = this.config.packageManager.resolvePackages(pkgNames);
     if (!pkgs) {
+      const missing = pkgNames.filter((name) => !this.config.packageManager.getSimilarNames(name).has(name));
+      const reportMissing = missing.length > 0 ? missing : pkgNames;
+
+      log.info("");
+      log.info(t("cmd.install.unableToFind", { pkgNames: reportMissing }));
+      log.info("");
+      log.info(t("cmd.install.similar"));
+      for (const name of reportMissing) {
+        log.info(`${name} => ${[...this.config.packageManager.getSimilarNames(name)]}`);
+      }
+      log.info("");
       throw new Error(t("cmd.explain.nothing"));
     }
 
@@ -40,6 +51,7 @@ export default class ExplainCommand implements Command {
     for (const pkg of pkgs) {
       log.info(`## levain install ${pkg.name}`);
       await this.listActions(pkg, "cmd.install");
+      await this.listActions(pkg, "cmd.shell");
       await this.listActions(pkg, "cmd.env");
       log.info("");
       log.info("");

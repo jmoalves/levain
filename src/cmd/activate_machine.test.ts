@@ -14,8 +14,7 @@ Deno.test("ActivateMachine should be registered in CommandFactory", () => {
   const factory = new CommandFactory();
   const cmd = factory.get("_activate-machine", TestHelper.getConfig());
   assert(cmd instanceof ActivateMachine);
-  // TODO(phase-4.5): ActivateMachine currently reuses cmd.shell.example instead of its own example string.
-  assertEquals(cmd.oneLineExample, t("cmd.shell.example"));
+  assertEquals(cmd.oneLineExample, t("cmd._activate-machine.example"));
 });
 
 Deno.test("ActivateMachine should dispatch init, pre, and cmd subcommands with remaining args", async () => {

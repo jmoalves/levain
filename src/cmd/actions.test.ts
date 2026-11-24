@@ -28,26 +28,29 @@ Deno.test("ActionsCommand should list all registered actions sorted alphabetical
   assertEquals(listedActions, expectedActions);
 });
 
-Deno.test("ActionsCommand should filter actions by search text", async () => {
+Deno.test("ActionsCommand should filter actions case-insensitively by search text", async () => {
   const logger = await TestHelper.setupTestLogger();
   const cmd = new ActionsCommand(TestHelper.getConfig());
 
-  cmd.execute(["json"]);
+  cmd.execute(["JSON"]);
 
   const listedActions = logger.messages
     .filter((msg) => msg.startsWith("INFO   "))
     .map((msg) => msg.slice("INFO   ".length));
 
-  assertFind(logger.messages, (msg) => msg.includes('actions "json"'));
+  assertFind(logger.messages, (msg) => msg.includes('actions "JSON"'));
   assertEquals(listedActions, ["jsonGet", "jsonRemove", "jsonSet"]);
 });
 
-Deno.test("ActionsCommand should list nothing when search text matches no action", async () => {
+Deno.test("ActionsCommand should suggest similar actions on typo and list nothing for unrelated search", async () => {
   const logger = await TestHelper.setupTestLogger();
   const cmd = new ActionsCommand(TestHelper.getConfig());
 
-  cmd.execute(["definitely-no-action-matches"]);
+  cmd.execute(["jsonSt"]);
+  assertFind(logger.messages, (msg) => msg.includes("jsonSet"));
 
+  logger.messages.length = 0;
+  cmd.execute(["definitely-no-action-matches"]);
   const listedActions = logger.messages.filter((msg) => msg.startsWith("INFO   "));
   assertEquals(listedActions, []);
 });

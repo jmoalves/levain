@@ -72,12 +72,19 @@ Deno.test("Update with no args should throw when no packages are installed", asy
   );
 });
 
-Deno.test("Update currently returns silently when given an unknown package", async () => {
-  const { config } = await setupConfigWithRecipes({});
+Deno.test("Update should throw errorNotFound and suggest similar packages when given an unknown package", async () => {
+  const logger = await TestHelper.setupTestLogger();
+  const { config } = await setupConfigWithRecipes({
+    "my-updater.levain.yaml": "version: 1.0.0\n",
+  });
   const cmd = new Update(config);
 
-  // TODO(phase-4.5): Update.execute returns early (`if (!pkgs) return;`) instead of reporting missing packages.
-  await cmd.execute(["does-not-exist"]);
+  await assertRejects(
+    async () => await cmd.execute(["my-updatr"]),
+    Error,
+    t("cmd.install.errorNotFound", { pkgNames: ["my-updatr"] }),
+  );
+  assertFind(logger.messages, (msg) => msg.includes("my-updater"));
 });
 
 Deno.test("Update with no args should discover installed packages and upgrade outdated ones", async () => {
@@ -154,21 +161,36 @@ Deno.test("Update should preserve baseDir files when levain.preserveBaseDirOnUpd
   assert(existsSync(customFile), "preserveBaseDirOnUpdate should keep existing files");
 });
 
-Deno.test("Update should skip install when levain.minVersion is newer than current Levain", async () => {
+Deno.test("Update should fail with error when levain.minVersion is newer than current Levain", async () => {
   const logger = await TestHelper.setupTestLogger();
-  const { config, levainHome } = await setupConfigWithRecipes({
+  const { config, repoDir, levainHome } = await setupConfigWithRecipes({
     "future-update.levain.yaml": [
       "version: 1.0.0",
+      "cmd.install:",
+      "  - mkdir ${baseDir}/v1",
+    ].join("\n"),
+  });
+
+  await new Install(config).execute(["future-update"]);
+
+  await Deno.writeTextFile(
+    path.join(repoDir, "future-update.levain.yaml"),
+    [
+      "version: 2.0.0",
       "levain:",
       "  minVersion: 99.0.0",
       "cmd.install:",
       "  - mkdir ${baseDir}/blocked",
     ].join("\n"),
-  });
+  );
 
-  const cmd = new Update(config);
-  // TODO(phase-4.5): Update currently logs a warning and skips install instead of failing.
-  await cmd.execute(["future-update"]);
+  const config2 = await createConfigForHome(levainHome, repoDir);
+  const cmd = new Update(config2);
+  await assertRejects(
+    async () => await cmd.execute(["future-update"]),
+    Error,
+    t("cmd.install.mustUpgradeLevain", { pkg: "future-update" }),
+  );
 
   assertFind(
     logger.messages,
@@ -182,4 +204,5 @@ Deno.test("Update should skip install when levain.minVersion is newer than curre
       ),
   );
   assertEquals(existsSync(path.join(levainHome, "future-update", "blocked")), false);
+  assert(existsSync(path.join(levainHome, "future-update", "v1")));
 });

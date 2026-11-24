@@ -42,6 +42,7 @@ export default class Levain {
           "wait-to-begin",
           "wait-after-end",
           "skip-levain-updates",
+          "skip-auto-clean",
           "levain-upgrade",
         ],
       });

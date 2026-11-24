@@ -35,18 +35,22 @@ Deno.test("ExplainCommand should throw when no packages are provided", async () 
   );
 });
 
-Deno.test("ExplainCommand should throw when package cannot be resolved", async () => {
-  const config = await setupConfigWithRecipes({});
+Deno.test("ExplainCommand should log similar packages and throw when package cannot be resolved", async () => {
+  const logger = await TestHelper.setupTestLogger();
+  const config = await setupConfigWithRecipes({
+    "my-tool.levain.yaml": "version: 1.0.0\n",
+  });
   const cmd = new ExplainCommand(config);
 
   await assertRejects(
-    async () => await cmd.execute(["no-such-package"]),
+    async () => await cmd.execute(["my-tol"]),
     Error,
     t("cmd.explain.nothing"),
   );
+  assertFind(logger.messages, (msg) => msg.includes("my-tool"));
 });
 
-Deno.test("ExplainCommand should print install and env actions for package and dependencies", async () => {
+Deno.test("ExplainCommand should print install, shell, and env actions for package and dependencies", async () => {
   const logger = await TestHelper.setupTestLogger();
   const config = await setupConfigWithRecipes({
     "dep-pkg.levain.yaml": `version: 1.0.0\ncmd.install:\n  - echo installing dep\n`,
@@ -56,6 +60,8 @@ Deno.test("ExplainCommand should print install and env actions for package and d
       "  - dep-pkg",
       "cmd.install:",
       "  - mkdir ${baseDir}/bin",
+      "cmd.shell:",
+      "  - echo entering app shell",
       "cmd.env:",
       "  - setEnv APP_HOME ${baseDir}",
     ].join("\n"),
@@ -69,5 +75,6 @@ Deno.test("ExplainCommand should print install and env actions for package and d
   assertFind(logger.messages, (msg) => msg.includes("* echo installing dep"));
   assertFind(logger.messages, (msg) => msg.includes("## levain install app-pkg"));
   assertFind(logger.messages, (msg) => msg.includes("* mkdir ${baseDir}/bin"));
+  assertFind(logger.messages, (msg) => msg.includes("* echo entering app shell"));
   assertFind(logger.messages, (msg) => msg.includes("* setEnv APP_HOME ${baseDir}"));
 });

@@ -13,8 +13,15 @@ import LevainReleases from "./lib/releases/levain_releases.ts";
 import LevainVersion from "./levain_version.ts";
 import OsUtils from "./lib/os/os_utils.ts";
 import LevainPaths from "./lib/paths/levain_paths.ts";
+import DateUtils from "./lib/utils/date_utils.ts";
 
 export default class LevainCli {
+  private static readonly AUTO_CLEAN_COMMANDS = new Set([
+    "install",
+    "update",
+    "shell",
+    "clone",
+  ]);
   async execute(myArgs: any = {}): Promise<void> {
     log.info(t("levain_cli.levainVersion", {
       version: LevainVersion.levainVersion,
@@ -95,9 +102,7 @@ export default class LevainCli {
         log.info(t("levain_cli.bye"));
         Deno.exit(0);
       } else {
-        if (cmd != "clean" && Math.random() > 0.75) {
-          await loader.command("clean", []);
-        }
+        await this.maybeAutoClean(cmd, config, myArgs, loader);
 
         await loader.command(cmd, myArgs._);
         // FIXME Will this save a broken config?
@@ -129,5 +134,23 @@ export default class LevainCli {
     log.info("");
     log.info(t("levain_cli.availableCommands"));
     examples.forEach((example) => log.info(example));
+  }
+
+  private async maybeAutoClean(cmd: string, config: Config, myArgs: any, loader: Loader): Promise<void> {
+    if (myArgs["skip-auto-clean"] || !LevainCli.AUTO_CLEAN_COMMANDS.has(cmd)) {
+      return;
+    }
+
+    const today = DateUtils.dateTag();
+    if (config.lastAutoClean === today) {
+      return;
+    }
+
+    try {
+      await loader.command("clean", []);
+      config.lastAutoClean = today;
+    } catch (err) {
+      log.warn(`Auto-clean skipped due to error: ${err}`);
+    }
   }
 }
