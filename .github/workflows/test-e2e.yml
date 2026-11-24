@@ -66,7 +66,7 @@ jobs:
           # Workaround - ADD Levain to GitHub PATH
           Add-Content $env:GITHUB_PATH "$HOME\levain\levain"
 
-      - name: Levian list
+      - name: Levain list
         shell: cmd
         run: |
           levain list
@@ -75,7 +75,7 @@ jobs:
         uses: microsoft/security-devops-action@cf28f87c67770dbaa208cce3665fafc849f77507 # v1.12.1
         id: msdo-levain
 
-      - name: Levian install EVERYTHING
+      - name: Levain install EVERYTHING
         shell: cmd
         run: |
           @echo off
@@ -110,7 +110,7 @@ jobs:
         uses: microsoft/security-devops-action@cf28f87c67770dbaa208cce3665fafc849f77507 # v1.12.1
         id: msdo-install
 
-      - name: Levian update
+      - name: Levain update
         shell: cmd
         run: |
           levain update

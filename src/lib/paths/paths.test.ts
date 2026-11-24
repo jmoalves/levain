@@ -124,7 +124,7 @@ Deno.test("GeneralPaths should resolve mvnCliPath and tempDir fallback chain", (
 Deno.test("ExtraBin should resolve platform-specific tool directories", () => {
   const expectedRoot = path.resolve(LevainPaths.levainSrcDir, "extra-bin", Deno.build.os);
   assertEquals(ExtraBin.extraBinDir, expectedRoot);
-  assertEquals(ExtraBin.sevenZipDir, path.resolve(expectedRoot, "7-Zip"));
+  assertEquals(ExtraBin.sevenZipDir, path.resolve(expectedRoot, "7-zip"));
   assertEquals(ExtraBin.gitDir, path.resolve(expectedRoot, "git"));
   assertEquals(ExtraBin.osUtilsDir, path.resolve(expectedRoot, "os-utils"));
 });

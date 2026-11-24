@@ -1,52 +1,54 @@
 #!/bin/bash
+set -euo pipefail
 
-scriptPath="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd && cd - >/dev/null 2>&1 )"
+scriptPath="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 
-debug=false
 echoErr() { printf "ERR: %s\n" "$*" >&2; }
-echoDebug() { $debug && printf "DEBUG: %s\n" "$*" >&2; }
 
-########
-# FIXME: Check parameters
-vStart=$1
-vEnd=$2
-denoDir=$3
-levainDir=$4
+vStart=${1:-}
+vEnd=${2:-}
+denoDir=${3:-}
+levainDir=${4:-}
+
+if [ -z "$vStart" ] || [ -z "$vEnd" ] || [ -z "$denoDir" ] || [ -z "$levainDir" ]; then
+    echoErr "Usage: $0 <start-version|latest> <end-version> <deno-dir> <levain-dir>"
+    exit 1
+fi
 
 repoSlug="${GITHUB_REPOSITORY:-jmoalves/levain}"
 repoOwner="${repoSlug%%/*}"
 repoName="${repoSlug#*/}"
 
-if [ "$vStart" == "LATEST" -o "$vStart" == "latest" ]; then
-    # Levain latest
-    levainRelease=$( bash $scriptPath/github-get-release.sh -o "$repoOwner" -r "$repoName" latest )
+if [ "$vStart" = "LATEST" ] || [ "$vStart" = "latest" ]; then
+    levainRelease=$(bash "${scriptPath}/github-get-release.sh" -o "$repoOwner" -r "$repoName" latest)
     if [ -z "$levainRelease" ]; then
-        echoErr ERROR getting levain release latest
+        echoErr "ERROR getting levain release latest"
         exit 1
     fi
-    vStart=$( echo $levainRelease | jq -rc '.tag_name' | sed 's/v//g' )
+    vStart=$(printf '%s' "$levainRelease" | jq -rc '.tag_name // empty' | sed 's/^v//')
+    if [ -z "$vStart" ]; then
+        echoErr "ERROR resolving tag_name from latest release response"
+        exit 1
+    fi
 fi
 
 echo
 echo '**WARNING:** Some security software may block `levain.exe`. Ask your Systems Administrator for advice.'
 
-
 echo
 echo '# Support binaries'
 echo "| Software | version |"
 echo "| :----- | :------- |"
-echo "| Deno | $( ${denoDir}/deno -V | sed 's/deno //ig' ) |"
-if [ -e ${levainDir}/extra-bin/windows/inventory.md ]; then
-    cat ${levainDir}/extra-bin/windows/inventory.md
+echo "| Deno | $( "${denoDir}/deno" -V | sed 's/deno //ig' ) |"
+if [ -e "${levainDir}/extra-bin/windows/inventory.md" ]; then
+    cat "${levainDir}/extra-bin/windows/inventory.md"
 fi
 echo
 
-
 echo
-echo '# Changes from' $vStart to $vEnd
-git log v${vStart}..v${vEnd} --no-merges --dense --pretty="- %s" \
-    | grep -v "^- vHEAD" \
-    | grep -v "^- v[0-9]\+" \
-    | grep -v "^- (skipChangelog)" \
-    | grep -v "^- skip:" \
-    | grep -v "^- - skip:"
+echo "# Changes from ${vStart} to ${vEnd}"
+commits=$(git log "v${vStart}..v${vEnd}" --no-merges --dense --pretty="- %s")
+if [ -n "$commits" ]; then
+    printf '%s\n' "$commits" \
+        | grep -Ev "^- (vHEAD|v[0-9]+|\(skipChangelog\)|skip:|- skip:|chore\(release\):)" || true
+fi

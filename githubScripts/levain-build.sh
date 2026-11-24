@@ -1,71 +1,72 @@
 #!/bin/bash
+set -euo pipefail
 
-scriptPath="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd && cd - >/dev/null 2>&1 )"
+myDeno=${1:-}
+levainSrcDir=${2:-}
+targetDir=${3:-}
 
-# FIXME: Check parameters
-myDeno=$1
-levainSrcDir=$2
-targetDir=$3
+if [ -z "$myDeno" ] || [ -z "$levainSrcDir" ] || [ -z "$targetDir" ]; then
+    echo "Usage: $0 <deno-executable> <levain-src-dir> <target-dir>" >&2
+    exit 1
+fi
+
+if [ ! -x "$myDeno" ]; then
+    echo "Cannot execute deno binary at '$myDeno'" >&2
+    exit 1
+fi
 
 levainCompile() {
     # https://stackoverflow.com/questions/16654607/using-getopts-inside-a-bash-function
-    local OPTIND OPTARG o target output
-    target=
-    output=
+    local OPTIND OPTARG o target="" output=""
 
     while getopts "t:o:" o; do
-    case "${o}" in
-    t)
-        target="${OPTARG}"
-        ;;
-
-    o)
-        output="${OPTARG}"
-        ;;
-    esac
+        case "${o}" in
+            t) target="${OPTARG}" ;;
+            o) output="${OPTARG}" ;;
+            *)
+                echo "Invalid option in levainCompile" >&2
+                exit 1
+                ;;
+        esac
     done
     shift $((OPTIND - 1))
 
-    ${myDeno} compile \
+    "${myDeno}" compile \
         --frozen \
-        --reload \
         --allow-all \
-        --target ${target} \
-        --output ${output} \
-        ${levainSrcDir}/levain.ts \
+        --target "${target}" \
+        --output "${output}" \
+        "${levainSrcDir}/levain.ts" \
         --is_compiled_binary
 
     # --is_compiled_binary - Workaround for Levain compile vs uncompiled
     # https://stackoverflow.com/questions/76647896/determine-if-running-uncompiled-ts-script-or-compiled-deno-executable
-    # SEE ALSO: levain-build.cmd
-    # SEE ALSO: levain-build.sh
-    # SEE ALSO: levain.ts - get levainRootFile()
+    # SEE ALSO: scripts/levain-build.cmd
+    # SEE ALSO: githubScripts/levain-build.sh
+    # SEE ALSO: src/lib/paths/levain_paths.ts
 }
 
 # Create levain executable
-## Target options
+## Target options:
 # x86_64-unknown-linux-gnu
 # x86_64-pc-windows-msvc
 # x86_64-apple-darwin
 # aarch64-apple-darwin
-##
-# levainCompile -t x86_64-unknown-linux-gnu -o ${targetDir}/levain
-# levainCompile -t x86_64-apple-darwin -o ${targetDir}/levain-mcos
-rm -rf ${targetDir}
-mkdir -p ${targetDir}
-mkdir -p ${targetDir}/build
+rm -rf "${targetDir}"
+mkdir -p "${targetDir}/build"
 
-levainCompile -t x86_64-pc-windows-msvc -o ${targetDir}/build/levain.exe
-cp -rv ${levainSrcDir}/levain.cmd ${targetDir}/
-cp -rv ${levainSrcDir}/levain.ps1 ${targetDir}/
-cp -rv ${levainSrcDir}/levain.sh ${targetDir}/
-cp -rv ${levainSrcDir}/LICENSE ${targetDir}/
-cp -rv ${levainSrcDir}/recipes/ ${targetDir}/build/recipes/
-cp -rv ${levainSrcDir}/extra-bin/ ${targetDir}/build/extra-bin/
+levainCompile -t x86_64-pc-windows-msvc -o "${targetDir}/build/levain.exe"
+cp -rv "${levainSrcDir}/levain.cmd" "${targetDir}/"
+cp -rv "${levainSrcDir}/levain.ps1" "${targetDir}/"
+cp -rv "${levainSrcDir}/levain.sh" "${targetDir}/"
+cp -rv "${levainSrcDir}/LICENSE" "${targetDir}/"
+cp -rv "${levainSrcDir}/recipes/" "${targetDir}/build/recipes/"
+cp -rv "${levainSrcDir}/extra-bin/" "${targetDir}/build/extra-bin/"
 
 # Binary SHA256
-cd ${targetDir}/build
-sha256sum levain.exe > levain.exe.sha256
-echo levain.exe.sha256
-cat levain.exe.sha256
-cd - >/dev/null
+(
+    cd "${targetDir}/build"
+    sha256sum levain.exe > levain.exe.sha256
+    echo "levain.exe.sha256"
+    cat levain.exe.sha256
+)

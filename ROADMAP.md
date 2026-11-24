@@ -18,7 +18,7 @@ While v1 is being hardened and validated, `v0.93.1` remains the `Latest` release
 | **Phase 3.6** | `fix/v1-blockers` | Close P0 security, privacy, exit-code, E2E, i18n, and runtime bugs surfaced by the 5-lens whole-repo review | Done |
 | **Phase 4** | `test/coverage-and-reliability` | Real coverage baseline, 100% actions × options contract recipes, unit tests for all commands, core modules, and `src/lib/io/` | Done |
 | **Phase 4.5** | `refactor/core-cli-and-actions` | Fix incomplete commands, `levain.minVersion`, `levainShell`, `parse_args.ts`, broken actions, "did you mean?", and CLI/activate UX | Done |
-| **Phase 5** | `perf/startup-and-repos` | Measure & optimize startup/repos/CI, pragmatically reduce `extra-bin` toward pure Deno, macOS/Linux foundation, and v1 production readiness | Planned |
+| **Phase 5** | `chore/ci-and-branch-governance`, `perf/...`, `feat/...`, `docs/...` | Protect `master` (PR-only), harden CI/build, measure & optimize startup/repos/I/O, reduce `extra-bin`, cross-platform & multi-instance concurrency, redesign `explain`, overhaul docs/README, triage issues, and ship `v1.1.0` | In Progress |
 
 ---
 
@@ -128,15 +128,21 @@ While v1 is being hardened and validated, `v0.93.1` remains the `Latest` release
 
 ---
 
-## Phase 5 — Performance, `extra-bin` Reduction, Cross-Platform & v1 Readiness
+## Phase 5 — Performance, `extra-bin` Reduction, Cross-Platform, Concurrency, Docs & `v1.1.0` Readiness
 
-**Branch(es):** `perf/startup-and-repos`, `feat/pure-deno-and-cross-platform` *(split as needed)*
+**Branch(es):** `chore/ci-and-branch-governance`, `perf/startup-and-repos`, `refactor/reduce-extra-bin`, `feat/cross-platform-and-concurrency`, `feat/explain-playbook-and-cli-docs`, `docs/handover-and-v1-1-readiness` *(incremental PRs)*
 
-- [ ] **CI & build script hardening:** add `DENO_DIR` caching, remove redundant `--reload` flags, add `set -euo pipefail` and proper quoting across `githubScripts/*.sh` and `scripts/*.cmd`, and align `7-Zip` directory casing.
-- [ ] **Measure and optimize CLI startup, repository crawling & I/O:** instrument startup phases, add TTL caching / parallelization for `checkLevainUpdate` and `GitRepository`, avoid redundant YAML parsing in `FileSystemRepository`/`FileSystemPackage`, throttle `ConsoleFeedback` and `AutoFlushLogFileHandler`, use `moveSync` in `savePreviousInstall`, benchmark binary size, and trim unneeded dependencies (`date-fns`, `validator`, lazy command/action loading).
-- [ ] **Pragmatically reduce `extra-bin` dependency toward pure Deno:** gradually absorb `extra-bin/windows/os-utils/` scripts into TypeScript/Deno (reducing PowerShell/VBS spawns and Defender false-positive surface), prefer pure-Deno/native extraction for `.zip`/`.tar.gz`, and keep `7-Zip` (`.7z`/SFX) and `MinGit` (Windows fallback when system `git` is absent) only where genuinely justified.
-- [ ] **Cross-platform foundation (macOS & Linux):** align with Levain's original multi-OS intent (`levain.sh`, `OsShell`, `UnTar`, `GitUtils`, `OsUtils.createShortcut`, `LevainReleases`, OS guards in `recipes/levain.levain.yaml`, pure `ConfigPaths` getters) without regressing Windows stability.
-- [ ] **Validate v1 pre-releases end-to-end:**
-  - Run `Test - e2e` workflow against the latest `v1.0.x` pre-release (after fixing `test-e2e.yml` and exit codes).
-  - Validate on a clean Windows machine over SSH (`deno task test:windows`) with Windows Defender active and `pt-BR` locale, including `levain activate`.
-- [ ] **Handover readiness:** remove remaining hardcoded `jmoalves/levain` references (`LevainReleases`), replace raw string throws with `Error`, clean non-English code comments, and write a concise maintenance and ownership handover guide (`CONTRIBUTING.md` / `docs/MAINTAINING.md`).
+- [x] **Branch governance (`master` PR-only) & CI/build hardening:** prohibit direct commits/pushes to `master` via local `.githooks/{pre-commit,pre-push}` (`deno task setup:hooks`) + GitHub Ruleset on `master` (requiring PR + `static-checks` & `unit-win`), adapt `release.yml` / `tag-release.sh` / `push-release.sh` to push `release/vX.Y.Z` + tag and open an automatic version-bump PR instead of pushing directly to `master`, add `DENO_DIR` caching (`actions/cache`) across CI workflows, remove redundant `--reload` flags, add `set -euo pipefail`, SHA-256 verification, and safe quoting across `githubScripts/*.sh` and `scripts/*.cmd`, and align `7-zip` directory casing in `ExtraBin`.
+- [ ] **Measure and optimize CLI startup, repository crawling & I/O:** instrument startup phases, add TTL caching / parallelization for `checkLevainUpdate` and `GitRepository`, avoid redundant YAML parsing in `FileSystemRepository`/`FileSystemPackage`, fix `excludeDirs` segment matching, throttle `ConsoleFeedback` and `AutoFlushLogFileHandler`, use `Deno.renameSync` with fallback in `savePreviousInstall`, benchmark binary size, and remove unneeded npm dependencies (`date-fns`, `validator`) where justified by measurements.
+- [ ] **Pragmatically reduce `extra-bin` dependency toward pure Deno:** gradually absorb `extra-bin/windows/os-utils/` scripts into TypeScript/Deno (reducing PowerShell/VBS spawns and Defender false-positive surface), prefer pure-Deno/native extraction for `.zip`/`.tar.gz` (validated by benchmark), and keep `7-Zip` (`.7z`/SFX) and `MinGit` (Windows fallback when system `git` is absent) only where genuinely justified.
+- [ ] **Cross-platform foundation (macOS & Linux) & multi-instance concurrency safety:**
+  - Align with Levain's original multi-OS intent (`levain.sh`, `OsShell`, `UnTar`, `GitUtils`, `OsUtils.createShortcut`, `LevainReleases`, OS guards in `recipes/levain.levain.yaml`, pure `ConfigPaths` getters) without regressing Windows stability.
+  - Handle **two or more simultaneous Levain instances** safely on the same machine: cross-platform lockfile with stale-PID recovery for mutating commands (`install`, `update`, `clean`, `clone`), atomic writes for `levain.config.json`, collision-free `FileCache` / log handling, and clear actionable error messages.
+- [ ] **Redesign `explain` as a human-readable manual playbook & "documentation inside Levain" UX:**
+  - Rework `explain` so it serves as a clear step-by-step manual guide ("what to do yourself if you don't want Levain to automate it") with dependency order, resolved variables (masking secrets), and human-readable translations of recipe actions (plus optional `--raw` mode).
+  - Refine CLI `--help` and `actions` descriptions so options are intuitive and self-documenting without needing to study external manuals first.
+- [ ] **Documentation overhaul, GitHub Issues triage, handover & `v1.1.0` end-to-end validation:**
+  - Overhaul `README.md` around the "documentation inside Levain" philosophy and add concise handover guides (`CONTRIBUTING.md`, `docs/MAINTAINING.md`).
+  - Clean remaining handover debt (raw string `throw`s, non-English comments, `humanizeBytes`/`VersionNumber`/`ZipRepository`/`PackageManager` edge bugs, hardcoded `jmoalves/levain` in `LevainReleases`).
+  - Review and triage open GitHub Issues (identify already-resolved items across Phases 1–5, obsolete issues, and true post-1.1.0 backlog).
+  - Bump version to `1.1.0-SNAPSHOT` → pre-release `v1.1.0`, validate on a clean Windows machine over SSH (`deno task test:windows`, Windows Defender active, `pt-BR`, including `levain activate`) and run full `Test - e2e` workflow before promoting `v1.1.0` as `Latest`.

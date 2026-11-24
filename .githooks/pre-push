@@ -1,0 +1,10 @@
+#!/bin/sh
+set -eu
+
+while read -r _local_ref _local_sha remote_ref _remote_sha; do
+  if [ "${remote_ref:-}" = "refs/heads/master" ]; then
+    echo "ERROR: Direct pushes to 'master' are prohibited." >&2
+    echo "Push a thematic branch and merge via Pull Request targeting 'master'." >&2
+    exit 1
+  fi
+done

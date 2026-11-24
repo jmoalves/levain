@@ -2,94 +2,97 @@
 
 SETLOCAL EnableDelayedExpansion
 
-set myPath=%~dp0
-set myPath=%mypath:~0,-1%
-set levainRoot=%myPath%\..
+set "myPath=%~dp0"
+set "myPath=%myPath:~0,-1%"
+set "levainRoot=%myPath%\.."
 
-set coverOps=
-set checkSources=
+set "myDenoDir="
 
 :getOpts
-if "a%1" == "a" goto endGetOpts
-if "%1" == "--" shift & goto endGetOpts
+if "%~1"=="" goto endGetOpts
+if "%~1"=="--" shift & goto endGetOpts
 
-if /I "%1" == "--denoDir" (
-    if "a%2" == "a" (
+if /I "%~1"=="--denoDir" (
+    if "%~2"=="" (
         echo You must inform the denoDir
         exit /b 1
     )
 
-    set myDenoDir=%2& shift & shift & goto getOpts
+    set "myDenoDir=%~2"
+    shift
+    shift
+    goto getOpts
 )
 
 :: Invalid option?
-set checkOption=%1
+set "checkOption=%~1"
 if /i "%checkOption:~0,1%"=="-" (
-    echo Unknown option %1
+    echo Unknown option %~1
     exit /b 1
 )
 
 :endGetOpts
 
-if "a%myDenoDir%" == "a" (
-    set myDenoDir=%levainRoot%\bin
+if not defined myDenoDir (
+    set "myDenoDir=%levainRoot%\bin"
     echo WARN - Using deno default at !myDenoDir!
 )
 
-if not exist %myDenoDir% (
-    echo Can\'t find dir %myDenoDir%
+if not exist "%myDenoDir%" (
+    echo Can't find dir %myDenoDir%
     exit /b 1
 )
 
-set myDenoExe=%myDenoDir%\deno.exe
-if not exist %myDenoExe% (
-    echo We can\'t find %myDenoExe%
+set "myDenoExe=%myDenoDir%\deno.exe"
+if not exist "%myDenoExe%" (
+    echo We can't find %myDenoExe%
     exit /b 1
 )
 
-set DENO_DIR=%myDenoDir%
+if not defined DENO_DIR set "DENO_DIR=%myDenoDir%"
 echo Deno at %myDenoExe%
-%myDenoExe% -V info
+"%myDenoExe%" --version
+if errorlevel 1 exit /b 1
 
 :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-set levainOutputDir=%1
-if "a%levainOutputDir%" == "a" (
-    set levainOutputDir=%levainRoot%\target
+set "levainOutputDir=%~1"
+if not defined levainOutputDir (
+    set "levainOutputDir=%levainRoot%\target"
 )
 
 echo.
 echo Building Levain at %levainOutputDir%
 
-if exist %levainOutputDir% rmdir /q/s %levainOutputDir%
+if exist "%levainOutputDir%" rmdir /q /s "%levainOutputDir%"
 
 :: COMPILE Levain
 "%myDenoExe%" compile ^
     --frozen ^
-    --reload ^
     --allow-all ^
     --target x86_64-pc-windows-msvc ^
-    --output %levainOutputDir%\build\levain.exe ^
-    %levainRoot%\levain.ts ^
+    --output "%levainOutputDir%\build\levain.exe" ^
+    "%levainRoot%\levain.ts" ^
     --is_compiled_binary
-    
+
     @REM --is_compiled_binary - Workaround for Levain compile vs uncompiled
     @REM https://stackoverflow.com/questions/76647896/determine-if-running-uncompiled-ts-script-or-compiled-deno-executable
-    @REM SEE ALSO: levain-build.cmd
-    @REM SEE ALSO: levain-build.sh
-    @REM SEE ALSO: levain.ts - get levainRootFile()
+    @REM SEE ALSO: scripts/levain-build.cmd
+    @REM SEE ALSO: githubScripts/levain-build.sh
+    @REM SEE ALSO: src/lib/paths/levain_paths.ts
 if errorlevel 1 exit /b 1
 
 :: Copy auxiliary files
 echo.
 echo Copying auxiliary files to %levainOutputDir%
-xcopy /q   %levainRoot%\levain.cmd %levainOutputDir%\ >nul
-xcopy /q   %levainRoot%\levain.ps1 %levainOutputDir%\ >nul
-xcopy /q   %levainRoot%\levain.sh %levainOutputDir%\ >nul
-xcopy /q   %levainRoot%\LICENSE %levainOutputDir%\ >nul
-xcopy /q/s %levainRoot%\recipes\ %levainOutputDir%\build\recipes\ >nul
-xcopy /q/s %levainRoot%\extra-bin\ %levainOutputDir%\build\extra-bin\ >nul
+xcopy /q   "%levainRoot%\levain.cmd" "%levainOutputDir%\" >nul || exit /b 1
+xcopy /q   "%levainRoot%\levain.ps1" "%levainOutputDir%\" >nul || exit /b 1
+xcopy /q   "%levainRoot%\levain.sh" "%levainOutputDir%\" >nul || exit /b 1
+xcopy /q   "%levainRoot%\LICENSE" "%levainOutputDir%\" >nul || exit /b 1
+xcopy /q/s "%levainRoot%\recipes\" "%levainOutputDir%\build\recipes\" >nul || exit /b 1
+xcopy /q/s "%levainRoot%\extra-bin\" "%levainOutputDir%\build\extra-bin\" >nul || exit /b 1
 
-call %myPath%/msDefender.cmd %levainOutputDir%
+call "%myPath%\msDefender.cmd" "%levainOutputDir%"
+if errorlevel 1 exit /b 1
 
 ENDLOCAL

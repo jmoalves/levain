@@ -8,7 +8,7 @@ export default class ExtraBin {
   }
 
   static get sevenZipDir(): string {
-    return path.resolve(ExtraBin.extraBinDir, "7-Zip");
+    return path.resolve(ExtraBin.extraBinDir, "7-zip");
   }
 
   static get gitDir(): string {

@@ -70,7 +70,7 @@ if not exist "%myDenoExe%" (
     exit /b 1
 )
 
-set DENO_DIR=%myDenoDir%
+if not defined DENO_DIR set "DENO_DIR=%myDenoDir%"
 echo Deno at %myDenoExe%
 "%myDenoExe%" --version
 

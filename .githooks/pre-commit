@@ -1,0 +1,11 @@
+#!/bin/sh
+set -eu
+
+branch="$(git symbolic-ref --quiet --short HEAD 2>/dev/null || true)"
+if [ "$branch" = "master" ]; then
+  echo "ERROR: Direct commits to 'master' are prohibited." >&2
+  echo "Create a short-lived thematic branch first, e.g.:" >&2
+  echo "  git checkout -b fix/my-change" >&2
+  echo "Then open a Pull Request targeting 'master'." >&2
+  exit 1
+fi

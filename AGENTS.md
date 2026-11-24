@@ -14,9 +14,11 @@ Levain is a Deno/TypeScript CLI that installs and configures development environ
 
 ## Branching & Release Model
 
-* **`master`** is the active **v1 / Deno 2** codebase (JSR/npm specifiers in `deno.json`, no `import_map.json`). v1 is currently stabilizing through pre-releases (`v1.0.x`) before replacing v0 as `Latest`.
+* **`master`** is the active **v1 / Deno 2** codebase (JSR/npm specifiers in `deno.json`, no `import_map.json`). v1 is currently stabilizing through pre-releases before replacing v0 as `Latest` (target `v1.1.0`).
 * **`v0.x`** is the maintenance branch for legacy **v0 / Deno 1.46.3** hotfixes while `v0.93.1` remains the `Latest` release.
-* **`deno2_opus`** is obsolete (kept temporarily on `origin` so in-flight contributor forks are not broken). **All new work and PRs must target `master`** from short-lived thematic branches (`chore/...`, `feat/...`, `fix/...`, `test/...`, `perf/...`).
+* **`deno2_opus`** is obsolete (kept temporarily on `origin` so in-flight contributor forks are not broken).
+* **No direct commits or pushes to `master`:** **ALL** changes (including automated release version bumps) must go through short-lived thematic branches (`chore/...`, `feat/...`, `fix/...`, `test/...`, `perf/...`, `docs/...`, `release/...`) and be merged via Pull Request targeting `master`.
+  * Enable the local Git guard hooks once per clone with `deno task setup:hooks` (activates `.githooks/pre-commit` and `.githooks/pre-push` to reject accidental commits or pushes directly to `master`).
 * See [`ROADMAP.md`](ROADMAP.md) for the active housekeeping and stabilization plan.
 
 ---
