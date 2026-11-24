@@ -81,6 +81,7 @@
     "install-deps": "deno install"
   },
   "imports": {
+    "@cliffy/command": "jsr:@cliffy/command@^1.3.1",
     "@cliffy/prompt": "jsr:@cliffy/prompt@^1.3.1",
     "@deno-library/progress": "jsr:@deno-library/progress@^1.5.1",
     "@i18next/i18next": "jsr:@i18next/i18next@^27.2.4",
@@ -96,7 +97,6 @@
     "@std/yaml": "jsr:@std/yaml@^1.3.0",
     "@zip.js/zip.js": "npm:@zip.js/zip.js@^2.25.0",
     "date-fns": "npm:date-fns@^4.4.0",
-    "fastest-levenshtein": "npm:fastest-levenshtein@^1.0.16",
     "validator": "npm:validator@^13.15.35"
   },
   "nodeModulesDir": "auto"

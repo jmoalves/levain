@@ -78,6 +78,12 @@ __levain_main() {
         local -a activate_args=()
         local arg
         for arg in "$@"; do
+            if [[ "$arg" == "--help" || "$arg" == "-h" ]]; then
+                "$__levain_exe" "$cmd" "$@"
+                return $?
+            fi
+        done
+        for arg in "$@"; do
             if [[ "$arg" == "--skip-pre" ]]; then
                 skip_pre=1
             else

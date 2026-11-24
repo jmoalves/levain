@@ -13,6 +13,8 @@ import SetEnv from "./os/set_env.ts";
 import Template from "./template.ts";
 import AssertContainsAction from "./assert_contains_action.ts";
 import type Config from "../lib/config.ts";
+import t from "../lib/i18n.ts";
+import StringUtils from "../lib/utils/string_utils.ts";
 import CheckChainDirExists from "./check/check_chain_dir_exists.ts";
 import Echo from "./echo.ts";
 import RemoveFromRegistry from "./os/remove_from_registry.ts";
@@ -90,7 +92,12 @@ export default class ActionFactory {
   get(action: string, config: Config): Action {
     const builder = actionMap.get(action);
     if (!builder) {
-      throw new Error(`Action ${action} not found - Aborting...`);
+      const similar = [...StringUtils.findSimilar(action, this.list(), 5)];
+      const base = t("action.action_factory.notFound", { action });
+      const hint = similar.length > 0
+        ? ` ${t("action.action_factory.didYouMean", { suggestions: similar.join(", ") })}`
+        : "";
+      throw new Error(`${base}${hint}`);
     }
     return builder(config);
   }

@@ -3,7 +3,7 @@ import * as log from "@std/log";
 import t from "./src/lib/i18n.ts";
 
 import ConsoleAndFileLogger from "./src/lib/logger/console_and_file_logger.ts";
-import { parseArgs } from "./src/lib/parse_args.ts";
+import { CliValidationError, parseCliArgs } from "./src/cli/cli_parser.ts";
 import { Timer } from "./src/lib/timer.ts";
 import CliUtil from "./src/lib/cli_util.ts";
 
@@ -20,33 +20,12 @@ export default class Levain {
 
   async runLevinWithLog(cmdArgs: string[] = []): Promise<ConsoleAndFileLogger | undefined> {
     try {
-      this.myArgs = parseArgs(cmdArgs, {
-        stringOnce: [
-          "email-domain",
-          "levainCache",
-          "shellPath",
-          "is_compiled_binary",
-        ],
-        stringMany: [
-          "levainHome",
-          "addRepo",
-          "tempRepo",
-          "add-log",
-          "add-log-dir",
-        ],
-        boolean: [
-          "ask-fullname",
-          "ask-login",
-          "ask-email",
-          "ask-password",
-          "wait-to-begin",
-          "wait-after-end",
-          "skip-levain-updates",
-          "skip-auto-clean",
-          "levain-upgrade",
-        ],
-      });
-      
+      const parsed = await parseCliArgs(cmdArgs);
+      if (parsed.kind === "handled") {
+        return undefined;
+      }
+
+      this.myArgs = parsed.myArgs;
       await this.prepareLogs(this.myArgs);
 
       log.info("");
@@ -54,6 +33,16 @@ export default class Levain {
       log.info("==================================");
       await new LevainCli().execute(this.myArgs);
     } catch (err) {
+      if (err instanceof CliValidationError) {
+        console.error(err.message);
+        console.error(t("cli.helpHint"));
+        this.error = true;
+        return undefined;
+      }
+
+      if (!this.logger) {
+        await this.prepareLogs(this.myArgs ?? {});
+      }
       log.error("");
       log.error("********************************************************************************");
       log.error("");
@@ -64,24 +53,27 @@ export default class Levain {
 
       this.error = true;
     } finally {
-      this.logger?.showLogFiles(this.logFiles);
+      if (this.logger) {
+        this.logger.showLogFiles(this.logFiles);
 
-      log.info("");
-      const timed = this.timer.humanize();
-      log.info(t("levain.levainRan", { timer: timed }));
-      this.logger?.flush();
+        log.info("");
+        const timed = this.timer.humanize();
+        log.info(t("levain.levainRan", { timer: timed }));
+        this.logger.flush();
 
-      if (this.error) {
-        log.error(t("levain.executionFailed"));
-      } else {
-        log.debug(t("levain.executionSuccess"));
+        if (this.error) {
+          log.error(t("levain.executionFailed"));
+        } else {
+          log.debug(t("levain.executionSuccess"));
+        }
       }
 
-      if (!CliUtil.testMode && Deno.stdout.isTerminal()) {
-        if (this.error || (this.myArgs && this.myArgs["wait-after-end"])) {
-          console.log("");
-          prompt(t("enterFinish"));
-        }
+      const shouldWaitAfterEnd = Boolean(
+        this.myArgs?.["wait-after-end"] || (this.error && this.myArgs?.["levain-upgrade"]),
+      );
+      if (!CliUtil.testMode && Deno.stdin.isTerminal() && Deno.stdout.isTerminal() && shouldWaitAfterEnd) {
+        console.log("");
+        prompt(t("enterFinish"));
       }
     }
 

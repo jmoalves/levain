@@ -9,6 +9,7 @@ import OsUtils from "./src/lib/os/os_utils.ts";
 import RepositoryManager from "./src/lib/repository/repository_manager.ts";
 
 import Levain from "./levain.ts";
+import LevainCli from "./src/levain_cli.ts";
 import HomePaths from "./src/lib/paths/home_paths.ts";
 
 Deno.test("should create a homeLog and a tempLog by default", async () => {
@@ -67,12 +68,15 @@ Deno.test("should add an extra log dir", async () => {
   }
 });
 
-Deno.test("should mark error=true when an unknown command is executed", async () => {
+Deno.test("should report CLI validation error cleanly without creating logs or initializing repos", async () => {
   const prevTestMode = CliUtil.testMode;
   const prevConfig = ConsoleAndFileLogger.config;
-  const randomStub = stub(Math, "random", () => 0);
   const sanitizeStub = stub(OsUtils, "sanitizeUserPath", () => Promise.resolve());
   const repoInitStub = stub(RepositoryManager.prototype, "init", () => Promise.resolve([]));
+  const errorLines: string[] = [];
+  const errStub = stub(console, "error", (...args: unknown[]) => {
+    errorLines.push(args.map(String).join(" "));
+  });
   const tempHome = TestHelper.getNewTempDir();
   let logger;
 
@@ -86,11 +90,56 @@ Deno.test("should mark error=true when an unknown command is executed", async ()
       "definitely-unknown-command-xyz",
     ]);
     assertEquals(levain.error, true);
+    assertEquals(logger, undefined, "CLI validation errors must not overwrite ~/levain.log");
+    assertEquals(repoInitStub.calls.length, 0, "unknown commands must fail before initializing repositories");
+    assertEquals(errorLines.length, 2);
   } finally {
+    errStub.restore();
     repoInitStub.restore();
     sanitizeStub.restore();
-    randomStub.restore();
     ConsoleAndFileLogger.config = prevConfig;
+    CliUtil.testMode = prevTestMode;
+    await logger?.close();
+  }
+});
+
+Deno.test("should handle --version immediately without creating logs or initializing repos", async () => {
+  const repoInitStub = stub(RepositoryManager.prototype, "init", () => Promise.resolve([]));
+  const logStub = stub(console, "log", () => {});
+
+  try {
+    const levain = new Levain();
+    const logger = await levain.runLevinWithLog(["--version"]);
+    assertEquals(levain.error, false);
+    assertEquals(logger, undefined);
+    assertEquals(repoInitStub.calls.length, 0);
+  } finally {
+    logStub.restore();
+    repoInitStub.restore();
+  }
+});
+
+Deno.test("should NOT prompt Hit ENTER on runtime errors unless --wait-after-end is explicitly passed", async () => {
+  const prevTestMode = CliUtil.testMode;
+  const origPrompt = globalThis.prompt;
+  const execStub = stub(LevainCli.prototype, "execute", () => Promise.reject(new Error("boom")));
+  let promptCalls = 0;
+  let logger;
+
+  try {
+    CliUtil.testMode = false;
+    globalThis.prompt = () => {
+      promptCalls++;
+      return "";
+    };
+
+    const levain = new Levain();
+    logger = await levain.runLevinWithLog(["actions"]);
+    assertEquals(levain.error, true);
+    assertEquals(promptCalls, 0);
+  } finally {
+    execStub.restore();
+    globalThis.prompt = origPrompt;
     CliUtil.testMode = prevTestMode;
     await logger?.close();
   }

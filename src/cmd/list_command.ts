@@ -43,7 +43,7 @@ export default class ListCommand implements Command {
         log.info(``);
         log.info(`${searchText} - ${t("cmd.list_command.unableToList")}`);
 
-        const similarPackages = [...StringUtils.findSimilar(searchText, packages.map((it) => it.name))];
+        const similarPackages = [...StringUtils.findSimilar(searchText, packages.map((it) => it.name), 5)];
         log.info(``);
         if (similarPackages.length == 0) {
           log.info(`${searchText} - ${t("cmd.list_command.unableToSimilar")}`);

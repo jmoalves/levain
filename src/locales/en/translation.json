@@ -11,9 +11,95 @@
     "bye": "Bye.",
     "availableCommands": "Available commands:"
   },
+  "cli": {
+    "description": "Declarative development environment installer and shell manager.",
+    "helpHint": "Run \"levain --help\" for usage.",
+    "group": {
+      "logging": "Logging options",
+      "userSetup": "User setup options (used by install)"
+    },
+    "option": {
+      "levainHome": "Levain home directory (repeatable).",
+      "addRepo": "Add a persistent recipe repository (repeatable).",
+      "tempRepo": "Add a temporary recipe repository (repeatable).",
+      "addLog": "Write logs to an additional file (repeatable).",
+      "addLogDir": "Write logs to an additional directory (repeatable).",
+      "emailDomain": "Default email domain for user setup.",
+      "levainCache": "Override the download cache directory.",
+      "shellPath": "Executable path used by interactive levain shell.",
+      "askFullname": "Prompt for full name during install.",
+      "askLogin": "Prompt for login during install.",
+      "askEmail": "Prompt for email during install.",
+      "askPassword": "Prompt for password during install.",
+      "waitToBegin": "Prompt before starting execution.",
+      "waitAfterEnd": "Wait for ENTER after finishing.",
+      "skipLevainUpdates": "Skip checking for newer Levain releases.",
+      "skipAutoClean": "Skip the automatic daily cleanup.",
+      "levainUpgrade": "Internal Levain self-upgrade flow.",
+      "isCompiledBinary": "Internal compiled-binary marker."
+    },
+    "cmd": {
+      "install": {
+        "description": "Install packages and their dependencies (defaults to current .levain.yaml).",
+        "force": "Force reinstall of the requested packages.",
+        "noUpdate": "Skip updating already-installed packages."
+      },
+      "update": {
+        "description": "Update installed or specified packages.",
+        "force": "Force update even when already up to date."
+      },
+      "shell": {
+        "description": "Open a configured Levain shell for packages (defaults to current .levain.yaml)."
+      },
+      "activate": {
+        "description": "Activate a Levain environment in the current shell.",
+        "skipPre": "Skip running pre-activation checks and updates."
+      },
+      "list": {
+        "description": "List available packages (optionally filtered)."
+      },
+      "clean": {
+        "description": "Clean backups, temporary files, logs, or cache.",
+        "cache": "Remove all files from the download cache.",
+        "backup": "Clean backup directories.",
+        "temp": "Clean temporary directories.",
+        "logs": "Clean old log files.",
+        "all": "Clean cache, backups, temporary files, and logs.",
+        "deep": "Also remove today's backups and old extracted releases."
+      },
+      "actions": {
+        "description": "List available recipe actions."
+      },
+      "info": {
+        "description": "Show package metadata, status, and dependency order.",
+        "verbose": "Show detailed paths and repository information."
+      },
+      "explain": {
+        "description": "Show the actions that would run for packages."
+      },
+      "clone": {
+        "description": "Clone a git repository and open its Levain shell.",
+        "dirs": "Create a parent directory named after the repository owner."
+      },
+      "activateMachine": {
+        "description": "Internal shell activation helper."
+      }
+    },
+    "error": {
+      "unknownOption": "Unknown option \"{{option}}\".",
+      "didYouMean": "Did you mean: {{suggestions}}?"
+    }
+  },
+  "action": {
+    "action_factory": {
+      "notFound": "Action '{{action}}' not found - Aborting...",
+      "didYouMean": "Did you mean: {{suggestions}}?"
+    }
+  },
   "cmd": {
     "actions": {
       "actionsFound": "= Actions:",
+      "didYouMean": "Did you mean one of these actions?",
       "example": "  actions [optional search text]"
     },
     "activate": {
@@ -30,7 +116,7 @@
       "endFeedback": "# CLEAN - {{amount}}",
       "errorIgnoringEntryPath": "Error {{error}} - Ignoring {{entryPath}}",
       "entryPathIgnoringError": "{{entryPath}} - Ignoring {{error}}",
-      "example": "  clean [--cache] [--backup] [--temp] [--logs]"
+      "example": "  clean [--cache] [--backup] [--temp] [--logs] [--all] [--deep]"
     },
     "command_factory": {
       "notFound": "Command '{{cmd}}' not found",
@@ -49,7 +135,7 @@
       "example": "  info [--verbose] <package name> ... <package name>"
     },
     "install": {
-      "noPackages": "What packages do your want to install? Aborting...",
+      "noPackages": "What packages do you want to install? Aborting...",
       "unableToFind": "Unable to find these packages - {{pkgNames}}",
       "similar": "=== Similar known packages",
       "errorNotFound": "Couldn't find package {{pkgNames}} to install. Aborting...",
@@ -63,7 +149,7 @@
       "nothing": "install - Nothing to install. Aborting...",
       "finished": "install {{pkgNames}} - FINISHED",
       "ignoreMinVer": "- We will IGNORE the package {{pkg}} installation. It needs a newer levain version {{min}} - Your version is {{current}}",
-      "mustUpgradeLevain": "You must upgrade your levain (or fix the package {{pkg}} configuration",
+      "mustUpgradeLevain": "You must upgrade your levain (or fix the package {{pkg}} configuration)",
       "pkgTook": "--> {{pkg}} took {{timer}}",
       "goodNotSave": "Good. We do not need to save {{baseDir}} because it does not exist",
       "keepingBaseDir": "- Keeping the baseDir for {{pkg}} as requested",

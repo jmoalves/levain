@@ -7,7 +7,8 @@ import ConsoleAndFileLogger from "./lib/logger/console_and_file_logger.ts";
 import Loader from "./lib/loader.ts";
 import UserInfoUtil from "./lib/user_info/userinfo_util.ts";
 import CliUtil from "./lib/cli_util.ts";
-import CommandFactory, { CommandNotFoundError } from "./cmd/command_factory.ts";
+import { CommandNotFoundError } from "./cmd/command_factory.ts";
+import { getCliHelpText } from "./cli/cli_parser.ts";
 import LevainReleases from "./lib/releases/levain_releases.ts";
 
 import LevainVersion from "./levain_version.ts";
@@ -70,7 +71,7 @@ export default class LevainCli {
       config.shellPath = myArgs.shellPath;
     }
 
-    if (!myArgs["skip-levain-updates"]) {
+    if (!myArgs["skip-levain-updates"] && !myArgs["levain-upgrade"]) {
       const levainReleases = new LevainReleases(config);
       await levainReleases.checkLevainUpdate();
     }
@@ -88,19 +89,20 @@ export default class LevainCli {
     try {
       if (myArgs["levain-upgrade"]) {
         await loader.command("install", ["--force", "levain"]);
+        config.save();
         log.info("");
         log.info("");
         log.info("");
         log.info(t("levain_cli.levainUpgrade"));
         log.info("");
 
-        if (Deno.stdout.isTerminal()) {
+        if (!CliUtil.testMode && Deno.stdin.isTerminal() && Deno.stdout.isTerminal()) {
           prompt(t("enterFinish"));
         }
 
         log.info("");
         log.info(t("levain_cli.bye"));
-        Deno.exit(0);
+        return;
       } else {
         await this.maybeAutoClean(cmd, config, myArgs, loader);
 
@@ -124,16 +126,8 @@ export default class LevainCli {
   }
 
   showCliHelp() {
-    const commandFactory = new CommandFactory();
-    const examples = commandFactory
-      .list()
-      .sort()
-      .map((name) => commandFactory.get(name, new Config({})))
-      .map((command) => command.oneLineExample);
-
     log.info("");
-    log.info(t("levain_cli.availableCommands"));
-    examples.forEach((example) => log.info(example));
+    log.info(getCliHelpText(false));
   }
 
   private async maybeAutoClean(cmd: string, config: Config, myArgs: any, loader: Loader): Promise<void> {

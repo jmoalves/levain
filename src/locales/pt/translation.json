@@ -7,17 +7,103 @@
   },
   "levain_cli": {
     "levainVersion": "Levain {{version}} com Deno v{{denoVersion}} em {{levainRootFile}}",
-    "levainUpgrade": "Upgrade do Levain concluído. Por favor, re-execute seu comando anterior",
+    "levainUpgrade": "Upgrade do Levain concluído. Por favor, reexecute seu comando anterior",
     "bye": "Até logo.",
     "availableCommands": "Comandos disponíveis:"
+  },
+  "cli": {
+    "description": "Instalador declarativo de ambientes de desenvolvimento e gerenciador de shell.",
+    "helpHint": "Execute \"levain --help\" para ver como usar.",
+    "group": {
+      "logging": "Opções de log",
+      "userSetup": "Opções de dados do usuário (usadas por install)"
+    },
+    "option": {
+      "levainHome": "Diretório base do Levain (repetível).",
+      "addRepo": "Adiciona um repositório persistente de receitas (repetível).",
+      "tempRepo": "Adiciona um repositório temporário de receitas (repetível).",
+      "addLog": "Grava logs em um arquivo adicional (repetível).",
+      "addLogDir": "Grava logs em um diretório adicional (repetível).",
+      "emailDomain": "Domínio de e-mail padrão para configuração do usuário.",
+      "levainCache": "Substitui o diretório de cache de downloads.",
+      "shellPath": "Caminho do executável usado pelo shell interativo do Levain.",
+      "askFullname": "Solicita o nome completo durante o install.",
+      "askLogin": "Solicita o login durante o install.",
+      "askEmail": "Solicita o e-mail durante o install.",
+      "askPassword": "Solicita a senha durante o install.",
+      "waitToBegin": "Aguarda confirmação antes de iniciar a execução.",
+      "waitAfterEnd": "Aguarda ENTER ao finalizar.",
+      "skipLevainUpdates": "Ignora a verificação de novas versões do Levain.",
+      "skipAutoClean": "Ignora a limpeza automática diária.",
+      "levainUpgrade": "Fluxo interno de atualização do Levain.",
+      "isCompiledBinary": "Marcador interno de binário compilado."
+    },
+    "cmd": {
+      "install": {
+        "description": "Instala pacotes e suas dependências (usa o .levain.yaml atual se omitido).",
+        "force": "Força a reinstalação dos pacotes informados.",
+        "noUpdate": "Não atualiza pacotes já instalados."
+      },
+      "update": {
+        "description": "Atualiza pacotes instalados ou especificados.",
+        "force": "Força a atualização mesmo quando já está atualizado."
+      },
+      "shell": {
+        "description": "Abre um shell configurado pelo Levain (usa o .levain.yaml atual se omitido)."
+      },
+      "activate": {
+        "description": "Ativa um ambiente Levain no shell atual.",
+        "skipPre": "Pula as verificações e atualizações de pré-ativação."
+      },
+      "list": {
+        "description": "Lista os pacotes disponíveis (opcionalmente filtrados)."
+      },
+      "clean": {
+        "description": "Limpa backups, arquivos temporários, logs ou cache.",
+        "cache": "Remove todos os arquivos do cache de downloads.",
+        "backup": "Limpa os diretórios de backup.",
+        "temp": "Limpa os diretórios temporários.",
+        "logs": "Limpa arquivos de log antigos.",
+        "all": "Limpa cache, backups, arquivos temporários e logs.",
+        "deep": "Remove também backups de hoje e releases extraídas antigas."
+      },
+      "actions": {
+        "description": "Lista as ações disponíveis para receitas."
+      },
+      "info": {
+        "description": "Mostra metadados, status e ordem de dependências dos pacotes.",
+        "verbose": "Mostra caminhos detalhados e informações dos repositórios."
+      },
+      "explain": {
+        "description": "Mostra as ações que seriam executadas para os pacotes."
+      },
+      "clone": {
+        "description": "Clona um repositório git e abre seu shell Levain.",
+        "dirs": "Cria um diretório pai com o nome do dono do repositório."
+      },
+      "activateMachine": {
+        "description": "Auxiliar interno de ativação de shell."
+      }
+    },
+    "error": {
+      "unknownOption": "Opção desconhecida \"{{option}}\".",
+      "didYouMean": "Você quis dizer: {{suggestions}}?"
+    }
+  },
+  "action": {
+    "action_factory": {
+      "notFound": "Ação '{{action}}' não encontrada - Abortando...",
+      "didYouMean": "Você quis dizer: {{suggestions}}?"
+    }
   },
   "cmd": {
     "actions": {
       "actionsFound": "= Ações:",
-      "example": "  actions <optional search text>"
+      "didYouMean": "Você quis dizer uma dessas ações?",
+      "example": "  actions [texto de busca opcional]"
     },
     "activate": {
-      "example": "  activate <pacote opcional>",
+      "example": "  activate [pacote opcional]",
       "installMissing": "Erro! É necessário instalar o módulo de activate com o comando:"
     },
     "_activate-machine": {
@@ -30,10 +116,10 @@
       "endFeedback": "# CLEAN - {{amount}}",
       "errorIgnoringEntryPath": "Erro {{error}} - Ignorando {{entryPath}}",
       "entryPathIgnoringError": "{{entryPath}} - Ignorando {{error}}",
-      "example": "  clean --cache(opcional) --backup(opcional) --temp(opcional) --logs(opcional)"
+      "example": "  clean [--cache] [--backup] [--temp] [--logs] [--all] [--deep]"
     },
     "command_factory": {
-      "notFound": "Commando '{{cmd}}' não encontrado",
+      "notFound": "Comando '{{cmd}}' não encontrado",
       "didYouMean": "Você quis dizer um desses comandos?"
     },
     "explain": {
@@ -61,9 +147,9 @@
       "askLater": "Ok. Perguntamos de novo em outra hora.",
       "reloadInstalled": "Recarregando pacotes - só os já instalados.",
       "nothing": "install - Nada para instalar. Abortando...",
-      "finished": "install {{pkgNames}} - CONCLUíDO",
+      "finished": "install {{pkgNames}} - CONCLUÍDO",
       "ignoreMinVer": "- Vamos IGNORAR a instalação do pacote {{pkg}}. Ele requer uma versão mais nova do Levain {{min}} - Sua versão é a {{current}}",
-      "mustUpgradeLevain": "Você precisa fazer upgrade do Levain (ou corrigir a configuração do pacote {{pkg}}",
+      "mustUpgradeLevain": "Você precisa fazer upgrade do Levain (ou corrigir a configuração do pacote {{pkg}})",
       "pkgTook": "--> {{pkg}} levou {{timer}}",
       "goodNotSave": "Show! Não precisamos guardar {{baseDir}} porque ele não existe",
       "keepingBaseDir": "- Mantendo o baseDir para {{pkg}} como solicitado",
@@ -84,7 +170,7 @@
       "unableToList": "Não consegui listar alguns pacotes",
       "unableToSimilar": "Não consegui encontrar similares também",
       "similarPackages": "Pacotes similares",
-      "example": "  list <texto opcional de busca>"
+      "example": "  list [texto opcional de busca]"
     },
     "clone": {
       "informURL": "Indique a url que você quer clonar",
@@ -98,7 +184,7 @@
     "shell": {
       "checkUpdates": "shell deve verificar se há updates? {{shouldCheck}}",
       "notAllowed": "A ação levainShell não é permitida aqui. Verifique sua receita - pkg: {{pkg}} action: {{action}}",
-      "example": "  shell <pacote opcional>"
+      "example": "  shell [pacote opcional]"
     }
   },
   "lib": {
@@ -187,7 +273,7 @@
         "match": "Show, você digitou duas vezes a mesma senha.",
         "mismatch": "As senhas não batem... Por favor, informe novamente.",
         "unablePasswordAttempts": "Não consegui coletar a senha após {{tries}} tentativas",
-        "invalidFullName": "Nome complete INVÁLIDO - {{result}}"
+        "invalidFullName": "Nome completo INVÁLIDO - {{result}}"
       },
       "input_name": {
         "namePrompt": "Qual seu NOME COMPLETO (para o Git)?",

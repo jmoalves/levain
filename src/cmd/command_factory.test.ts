@@ -39,19 +39,27 @@ Deno.test("CommandFactory.get should instantiate every listed command with an ex
   }
 });
 
-Deno.test("CommandFactory.get should throw CommandNotFoundError and suggest similar commands", async () => {
+Deno.test("CommandFactory.get should throw CommandNotFoundError and suggest similar public commands", async () => {
   const logger = await TestHelper.setupTestLogger();
   const factory = new CommandFactory();
   const config = TestHelper.getConfig();
 
   assertThrows(
-    () => factory.get("instal", config),
+    () => factory.get("insatll", config),
     CommandNotFoundError,
-    t("cmd.command_factory.notFound", { cmd: "instal" }),
+    t("cmd.command_factory.notFound", { cmd: "insatll" }),
   );
 
   assertFind(logger.messages, (msg) => msg.includes(t("cmd.command_factory.didYouMean")));
   assertFind(logger.messages, (msg) => msg.includes("\tinstall"));
+
+  // Internal hidden commands (starting with "_") must not be suggested
+  logger.messages.length = 0;
+  assertThrows(
+    () => factory.get("_activate-machin", config),
+    CommandNotFoundError,
+  );
+  assertEquals(logger.messages.some((msg) => msg.includes("_activate-machine")), false);
 });
 
 Deno.test("CommandFactory.get should throw CommandNotFoundError without suggestions for unrelated name", async () => {

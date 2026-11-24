@@ -1,6 +1,6 @@
 import RepositoryFactory from "./repository_factory.ts";
 import TestHelper from "../test/test_helper.ts";
-import { assert, assertNotEquals } from "@std/assert";
+import { assert, assertNotEquals, assertNotStrictEquals } from "@std/assert";
 
 Deno.test("RepositoryFactory.getOrCreate should return same repository for the same uri", async () => {
   const config = TestHelper.getConfig();
@@ -35,6 +35,6 @@ Deno.test("RepositoryFactory.getOrCreate should isolate cache per Config and roo
   const repoCfg1Root = await RepositoryFactory.getOrCreate(config1, repoPath, true);
   const repoCfg2Full = await RepositoryFactory.getOrCreate(config2, repoPath, false);
 
-  assertNotEquals(repoCfg1Full, repoCfg1Root);
-  assertNotEquals(repoCfg1Full, repoCfg2Full);
+  assertNotStrictEquals(repoCfg1Full, repoCfg1Root);
+  assertNotStrictEquals(repoCfg1Full, repoCfg2Full);
 });

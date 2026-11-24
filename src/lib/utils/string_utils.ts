@@ -1,5 +1,3 @@
-import { distance } from "fastest-levenshtein";
-
 export default class StringUtils {
   static textContainsAtLeastOneChar(text: string, chars: string): boolean {
     return [...chars].some((char) => text.includes(char));
@@ -99,33 +97,106 @@ export default class StringUtils {
       .filter((text) => text?.length);
   }
 
-  static findSimilar(search: string, database: string[]): Set<string> {
-    const names: Set<string> = new Set();
+  static findSimilar(search: string, database: string[], maxResults?: number): Set<string> {
+    const trimmed = search?.trim() ?? "";
+    if (!trimmed) {
+      return new Set();
+    }
 
-    for (const name of database) {
-      const d = this.partialDistance(search.toLowerCase(), name.toLowerCase());
-      const perc = d / search.length;
-      // log.info(`|${search} - ${name}| = ${d} - ${perc}`)
-      if ((d >= 0) && (perc <= 0.40)) {
-        names.add(name);
+    const searchLower = trimmed.toLowerCase();
+    const scored: Array<{ name: string; distance: number; isPrefix: boolean; lenDiff: number; index: number }> = [];
+
+    for (let index = 0; index < database.length; index++) {
+      const name = database[index];
+      const nameLower = name.toLowerCase();
+      const d = this.partialDistance(searchLower, nameLower);
+      const perc = d / searchLower.length;
+      const isShortMatch =
+        searchLower.length === 1
+          ? nameLower.includes(searchLower)
+          : searchLower.length === 2
+          ? nameLower.includes(searchLower) || this.damerauLevenshtein(searchLower, nameLower) <= 1
+          : searchLower.length === 3 && (d <= 1 || nameLower.includes(searchLower));
+
+      if ((searchLower.length >= 3 && d >= 0 && perc <= 0.40) || isShortMatch) {
+        scored.push({
+          name,
+          distance: d,
+          isPrefix: nameLower.startsWith(searchLower),
+          lenDiff: Math.abs(nameLower.length - searchLower.length),
+          index,
+        });
       }
     }
 
-    return names;
+    scored.sort((a, b) =>
+      a.distance - b.distance ||
+      Number(b.isPrefix) - Number(a.isPrefix) ||
+      a.lenDiff - b.lenDiff ||
+      a.index - b.index
+    );
+
+    const limited = maxResults !== undefined ? scored.slice(0, maxResults) : scored;
+    return new Set(limited.map((entry) => entry.name));
+  }
+
+  /**
+   * Optimal String Alignment (Damerau-Levenshtein) distance where adjacent
+   * transpositions (e.g. "insatll" <-> "install") have cost 1.
+   */
+  static damerauLevenshtein(a: string, b: string): number {
+    const lenA = a.length;
+    const lenB = b.length;
+    if (lenA === 0) return lenB;
+    if (lenB === 0) return lenA;
+
+    const dp: number[][] = Array.from({ length: lenA + 1 }, () => new Array(lenB + 1).fill(0));
+    for (let i = 0; i <= lenA; i++) dp[i][0] = i;
+    for (let j = 0; j <= lenB; j++) dp[0][j] = j;
+
+    for (let i = 1; i <= lenA; i++) {
+      for (let j = 1; j <= lenB; j++) {
+        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+        let best = Math.min(
+          dp[i - 1][j] + 1,
+          dp[i][j - 1] + 1,
+          dp[i - 1][j - 1] + cost,
+        );
+        if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
+          best = Math.min(best, dp[i - 2][j - 2] + 1);
+        }
+        dp[i][j] = best;
+      }
+    }
+
+    return dp[lenA][lenB];
   }
 
   private static partialDistance(str1: string, str2: string): number {
-    // http://www.augustobaffa.pro.br/wiki/Dist%C3%A2ncia_de_Levenshtein
     const diff = str2.length - str1.length;
-    if (diff <= 0) {
-      return distance(str1, str2);
+    if (diff < 0) {
+      return this.damerauLevenshtein(str1, str2);
+    }
+
+    const windowLengths = [str1.length];
+    if (str1.length >= 4) {
+      windowLengths.push(str1.length - 1);
+      if (str1.length + 1 <= str2.length) {
+        windowLengths.push(str1.length + 1);
+      }
     }
 
     let ret = Number.MAX_VALUE;
-    for (let i = 0; i <= diff; i++) {
-      const partial = str2.substring(i, i + str1.length);
-      const v = distance(str1, partial);
-      ret = Math.min(ret, v);
+    for (const winLen of windowLengths) {
+      const maxOffset = str2.length - winLen;
+      for (let i = 0; i <= maxOffset; i++) {
+        const partial = str2.substring(i, i + winLen);
+        const v = this.damerauLevenshtein(str1, partial);
+        ret = Math.min(ret, v);
+        if (ret === 0) {
+          return 0;
+        }
+      }
     }
 
     return ret;
