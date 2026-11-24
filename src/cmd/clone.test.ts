@@ -153,3 +153,41 @@ Deno.test("Clone should skip git clone and warn when target directory already ex
     existsStub.restore();
   }
 });
+
+Deno.test("Clone should preserve #branch in URL and fall back to basename for non-GitHub git URLs", async () => {
+  const expectedRepoDir = path.resolve("my-bare-repo");
+  const cloneCalls: Array<{ url: string; dst: string }> = [];
+
+  const existsStub = stub(FileUtils, "exists", () => false);
+  const chdirStub = stub(Deno, "chdir", () => {});
+  const gitCloneStub = stub(GitUtils.prototype, "clone", (url: string, dst: string) => {
+    cloneCalls.push({ url, dst });
+    return Promise.resolve();
+  });
+  const loaderCmdStub = stub(Loader.prototype, "command", () => Promise.resolve());
+
+  try {
+    const config = TestHelper.getConfig();
+    const reloadStub = stub(config.repositoryManager, "reloadCurrentDir", () => Promise.resolve());
+    try {
+      const cmd = new Clone(config);
+      await cmd.execute(["/local/path/my-bare-repo.git#develop"]);
+
+      assertEquals(cloneCalls, [{ url: "/local/path/my-bare-repo.git#develop", dst: expectedRepoDir }]);
+
+      // --dirs without recognizable user segment should reject clearly
+      await assertRejects(
+        async () => await cmd.execute(["--dirs", "/local/path/my-bare-repo.git"]),
+        Error,
+        t("cmd.clone.invalidDir", { dir: "/local/path/my-bare-repo.git" }),
+      );
+    } finally {
+      reloadStub.restore();
+    }
+  } finally {
+    loaderCmdStub.restore();
+    gitCloneStub.restore();
+    chdirStub.restore();
+    existsStub.restore();
+  }
+});

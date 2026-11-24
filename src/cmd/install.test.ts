@@ -252,7 +252,7 @@ Deno.test("Install should keep existing baseDir files when levain.preserveBaseDi
   assert(existsSync(userDataFile), "preserveBaseDirOnUpdate should keep existing files in baseDir");
 });
 
-Deno.test("Install should skip install and log error when levain.minVersion is newer than current Levain", async () => {
+Deno.test("Install should abort with error and skip cmd.env when uninstalled package requires newer levain.minVersion", async () => {
   const logger = await TestHelper.setupTestLogger();
   const { config, levainHome } = await setupConfigWithRecipes({
     "future-pkg.levain.yaml": [
@@ -267,8 +267,11 @@ Deno.test("Install should skip install and log error when levain.minVersion is n
   });
 
   const cmd = new Install(config);
-  // TODO(phase-4.5): Install currently logs an error and skips cmd.install instead of failing with non-zero exit.
-  await cmd.execute(["future-pkg"]);
+  await assertRejects(
+    async () => await cmd.execute(["future-pkg"]),
+    Error,
+    t("cmd.install.mustUpgradeLevain", { pkg: "future-pkg" }),
+  );
 
   assertFind(
     logger.messages,
@@ -281,11 +284,120 @@ Deno.test("Install should skip install and log error when levain.minVersion is n
         }),
       ),
   );
-  assertFind(logger.messages, (msg) => msg.includes(t("cmd.install.mustUpgradeLevain", { pkg: "future-pkg" })));
   assertEquals(existsSync(path.join(levainHome, "future-pkg", "should-not-exist")), false);
   assertEquals(
     existsSync(path.join(config.configPaths.levainRegistryDir, "future-pkg.levain.yaml")),
     false,
   );
-  assertEquals(config.getVar("FUTURE_ENV"), "ran");
+  assertEquals(config.getVar("FUTURE_ENV"), undefined);
+});
+
+Deno.test("Install should keep installed package and warn when update requires newer levain.minVersion", async () => {
+  const logger = await TestHelper.setupTestLogger();
+  const { config, repoDir, levainHome } = await setupConfigWithRecipes({
+    "existing-future.levain.yaml": [
+      "version: 1.0.0",
+      "cmd.install:",
+      "  - mkdir ${baseDir}/v1",
+      "cmd.env:",
+      "  - setEnv EXISTING_FUTURE_ENV ok",
+    ].join("\n"),
+  });
+
+  await new Install(config).execute(["existing-future"]);
+
+  await Deno.writeTextFile(
+    path.join(repoDir, "existing-future.levain.yaml"),
+    [
+      "version: 2.0.0",
+      "levain:",
+      "  minVersion: 99.0.0",
+      "cmd.install:",
+      "  - mkdir ${baseDir}/v2",
+      "cmd.env:",
+      "  - setEnv EXISTING_FUTURE_ENV ok-v2",
+    ].join("\n"),
+  );
+
+  const config2 = await createConfigForHome(levainHome, repoDir);
+  await TestHelper.mockInputWrap(t("cmd.install.updatePromptDefault"), async () => {
+    await new Install(config2).execute(["existing-future"]);
+  });
+
+  assertFind(
+    logger.messages,
+    (msg) =>
+      msg.includes(
+        t("cmd.install.ignoreMinVer", {
+          pkg: "existing-future",
+          min: "99.0.0",
+          current: LevainVersion.levainVersion,
+        }),
+      ),
+  );
+  assert(existsSync(path.join(levainHome, "existing-future", "v1")));
+  assertEquals(existsSync(path.join(levainHome, "existing-future", "v2")), false);
+  // cmd.env must run from the installed v1 recipe, not the incompatible v2 recipe
+  assertEquals(config2.getVar("EXISTING_FUTURE_ENV"), "ok");
+
+  // If the installed baseDir is missing from disk, minVersion must fail instead of succeeding silently
+  await Deno.remove(path.join(levainHome, "existing-future"), { recursive: true });
+  const config3 = await createConfigForHome(levainHome, repoDir);
+  await TestHelper.mockInputWrap(t("cmd.install.updatePromptDefault"), async () => {
+    await assertRejects(
+      async () => await new Install(config3).execute(["existing-future"]),
+      Error,
+      t("cmd.install.mustUpgradeLevain", { pkg: "existing-future" }),
+    );
+  });
+});
+
+Deno.test("Install should not mutate cmd.install array in place and should support spaces in levainHome", async () => {
+  const repoDir = TestHelper.getNewTempDir();
+  await Deno.writeTextFile(
+    path.join(repoDir, "space-pkg.levain.yaml"),
+    [
+      "version: 1.0.0",
+      "cmd.install:",
+      "  - mkdir ${baseDir}/sub",
+    ].join("\n"),
+  );
+
+  const parent = TestHelper.getNewTempDir();
+  const homeWithSpaces = path.join(parent, "levain home with spaces");
+  const config = await createConfigForHome(homeWithSpaces, repoDir);
+  await seedInstalledLevain(config);
+  await config.repositoryManager.reload();
+
+  await new Install(config).execute(["space-pkg"]);
+
+  const pkg = config.packageManager.package("space-pkg");
+  assert(pkg);
+  assertEquals(pkg.yamlItem("cmd.install"), ["mkdir ${baseDir}/sub"]);
+  assert(existsSync(path.join(homeWithSpaces, "space-pkg", "sub")));
+  assert(existsSync(path.join(config.configPaths.levainRegistryDir, "space-pkg.levain.yaml")));
+});
+
+Deno.test("Install should throw when savePreviousInstall fails", async () => {
+  const { config, repoDir, levainHome } = await setupConfigWithRecipes({
+    "fail-bkp.levain.yaml": [
+      "version: 1.0.0",
+      "cmd.install:",
+      "  - mkdir ${baseDir}/sub",
+    ].join("\n"),
+  });
+
+  await new Install(config).execute(["fail-bkp"]);
+
+  const config2 = await createConfigForHome(levainHome, repoDir);
+  // Make levainBackupDir a regular file so backup mkdir/copy fails deterministically
+  const blockingFile = path.join(TestHelper.getNewTempDir(), "not-a-dir");
+  await Deno.writeTextFile(blockingFile, "block");
+  config2.configPaths.levainBackupDir = blockingFile;
+
+  await assertRejects(
+    async () => await new Install(config2).execute(["--force", "fail-bkp"]),
+    Error,
+    t("cmd.install.errorSaving", { pkg: "fail-bkp" }),
+  );
 });

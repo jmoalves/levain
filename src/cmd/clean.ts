@@ -41,8 +41,8 @@ export default class CleanCommand implements Command {
       stopEarly: false,
     });
 
-    const noArgs = !parameters.length;
-    if (noArgs) {
+    const hasTargetFlag = Boolean(myArgs.cache || myArgs.backup || myArgs.temp || myArgs.logs || myArgs.all);
+    if (!hasTargetFlag) {
       myArgs.cache = false;
       myArgs.backup = true;
       myArgs.temp = true;
@@ -61,7 +61,9 @@ export default class CleanCommand implements Command {
 
     this.feedback.start(t("cmd.clean.startFeedback"));
 
-    total += this.cleanCacheDir(myArgs.cache);
+    if (!hasTargetFlag || myArgs.cache) {
+      total += this.cleanCacheDir(myArgs.cache);
+    }
 
     if (myArgs.backup) {
       total += this.cleanBackupDir(shallow);
@@ -110,17 +112,27 @@ export default class CleanCommand implements Command {
     // clean files older than 30 days
     return this.cleanDir(
       cacheDir,
-      cleanCache ? undefined : (dirEntry: Deno.DirEntry) => {
+      (dirEntry: Deno.DirEntry) => {
         const entry = path.resolve(cacheDir, dirEntry.name);
+        if (!existsSync(entry)) {
+          return false;
+        }
         const stat = FileUtils.getFileInfoSync(entry);
-        return (!stat.atime ? false : isBefore(stat.atime, DateUtils.daysAgo(cacheExpiration)));
+        const lastUsed = stat.atime ?? stat.mtime;
+        return !lastUsed ? false : isBefore(lastUsed, DateUtils.daysAgo(cacheExpiration));
       },
     );
   }
 
-  private cleanDir(entry: string, includeResolver?: (dirEntry: Deno.DirEntry) => boolean): number {
+  private cleanDir(
+    entry: string,
+    includeResolver?: (dirEntry: Deno.DirEntry) => boolean,
+    removeRoot = true,
+  ): number {
     const entryPath = path.resolve(entry);
-    // log.debug(`WALK ${entryPath}`)
+    if (!existsSync(entryPath)) {
+      return 0;
+    }
 
     this.feedback.show();
 
@@ -128,7 +140,6 @@ export default class CleanCommand implements Command {
     if (!entryInfo.isDirectory) {
       try {
         FileUtils.removeSync(entryPath);
-        // log.debug(`DEL-FILE ${entryPath} - ${entryInfo.size}`)
         return entryInfo.size;
       } catch (error) {
         log.debug(t("cmd.clean.errorIgnoringEntryPath", { error: error, entryPath: entryPath }));
@@ -137,20 +148,21 @@ export default class CleanCommand implements Command {
     }
 
     const size = Array.from(Deno.readDirSync(entryPath))
-      .filter((entry) => !includeResolver || includeResolver(entry))
-      .map((entry) => this.cleanDir(path.resolve(entryPath, entry.name)))
+      .filter((dirEntry) => !includeResolver || includeResolver(dirEntry))
+      .map((dirEntry) => this.cleanDir(path.resolve(entryPath, dirEntry.name), undefined, true))
       .reduce(
         (dirsize, filesize) => dirsize + filesize,
         0,
       );
 
-    try {
-      FileUtils.removeSync(entryPath);
-    } catch (error) {
-      log.debug(t("cmd.clean.entryPathIgnoringError", { error: error, entryPath: entryPath }));
+    if (removeRoot) {
+      try {
+        FileUtils.removeSync(entryPath);
+      } catch (error) {
+        log.debug(t("cmd.clean.entryPathIgnoringError", { error: error, entryPath: entryPath }));
+      }
     }
 
-    // log.debug(`DEL-DIR  ${entryPath} - ${size}`)
     return size;
   }
 
@@ -160,19 +172,21 @@ export default class CleanCommand implements Command {
       return 0;
     }
 
-    return this.cleanDir(saveDir, (dirEntry: any) => {
-      if (dirEntry.name.match(/^\.rename\./)) {
-        // log.debug(`RM ${dirEntry.name}`)
-        return true;
-      }
+    return this.cleanDir(
+      saveDir,
+      (dirEntry: any) => {
+        if (dirEntry.name.match(/^\.rename\./)) {
+          return true;
+        }
 
-      if (dirEntry.name.match(/^\.deleted\./)) {
-        // log.debug(`RM ${dirEntry.name}`)
-        return true;
-      }
+        if (dirEntry.name.match(/^\.deleted\./)) {
+          return true;
+        }
 
-      return false;
-    });
+        return false;
+      },
+      false,
+    );
   }
 
   private cleanOsTempDir(shallow: boolean): number {
@@ -181,22 +195,26 @@ export default class CleanCommand implements Command {
       return 0;
     }
 
-    let size = this.cleanDir(tempDir, (dirEntry: any) => {
-      if (dirEntry.name.match(`^levain-install-`)) {
-        // using install.ps1
+    let size = this.cleanDir(
+      tempDir,
+      (dirEntry: any) => {
+        if (dirEntry.name.match(`^levain-install-`)) {
+          // using install.ps1
+          return false;
+        }
+
+        if (dirEntry.name.match("^levain-temp-")) {
+          return true;
+        }
+
+        if (dirEntry.isDirectory && dirEntry.name.match("^levain-")) {
+          return true;
+        }
+
         return false;
-      }
-
-      if (dirEntry.name.match("^levain-temp-")) {
-        return true;
-      }
-
-      if (dirEntry.isDirectory && dirEntry.name.match("^levain-")) {
-        return true;
-      }
-
-      return false;
-    });
+      },
+      false,
+    );
 
     const levainReleasesDir = GeneralPaths.tempLevainReleasesDir;
     if (existsSync(levainReleasesDir)) {
@@ -225,16 +243,20 @@ export default class CleanCommand implements Command {
       return 0;
     }
 
-    return this.cleanDir(tempDir, (dirEntry) => {
-      if (dirEntry.isFile && dirEntry.name.match("^levain-.*\.log")) {
-        const dateTag = LogUtils.logDateTag();
-        if (!dirEntry.name.match(`^levain-${dateTag}-.*`)) { // Do not remove today's logs
-          return true;
+    return this.cleanDir(
+      tempDir,
+      (dirEntry) => {
+        if (dirEntry.isFile && /^levain-.*\.log$/.test(dirEntry.name)) {
+          const dateTag = LogUtils.logDateTag();
+          if (!dirEntry.name.startsWith(`levain-${dateTag}-`)) { // Do not remove today's logs
+            return true;
+          }
         }
-      }
 
-      return false;
-    });
+        return false;
+      },
+      false,
+    );
   }
 
   readonly oneLineExample = t("cmd.clean.example");

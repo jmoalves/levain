@@ -5,6 +5,7 @@ export default class ConfigPersistentAttributes {
   shellPath?: string;
   lastKnownVersion?: string;
   lastUpdateQuestion?: string;
+  lastAutoClean?: string;
   autoUpdate?: boolean;
   shellCheckForUpdate?: boolean;
   levainHome?: string;

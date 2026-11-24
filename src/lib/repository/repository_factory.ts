@@ -6,8 +6,22 @@ import GitUtils from "../utils/git_utils.ts";
 import type Repository from "./repository.ts";
 
 
+class ScopedRepoCache extends Map<string, Repository> {
+  constructor(private readonly onClear: () => void) {
+    super();
+  }
+
+  override clear(): void {
+    super.clear();
+    this.onClear();
+  }
+}
+
 export default class RepositoryFactory {
-  static knownRepos = new Map<string, Repository>();
+  private static reposByConfig = new WeakMap<Config, Map<string, Repository>>();
+  static knownRepos: Map<string, Repository> = new ScopedRepoCache(() => {
+    RepositoryFactory.reposByConfig = new WeakMap<Config, Map<string, Repository>>();
+  });
 
   static isGitPath(repoPath: string): boolean {
     return GitUtils.isGitPath(repoPath);
@@ -46,8 +60,15 @@ export default class RepositoryFactory {
     }
 
     const repoPath = RepositoryFactory.normalize(repoURI);
-    if (RepositoryFactory.knownRepos.has(repoPath)) {
-      const repo = RepositoryFactory.knownRepos.get(repoPath)!;
+    const cacheKey = `${repoPath}|rootOnly=${rootOnly}`;
+    let configCache = RepositoryFactory.reposByConfig.get(config);
+    if (!configCache) {
+      configCache = new Map<string, Repository>();
+      RepositoryFactory.reposByConfig.set(config, configCache);
+    }
+
+    if (configCache.has(cacheKey)) {
+      const repo = configCache.get(cacheKey)!;
       log.debug(`Reusing repo ${repo.describe()}`);
       return repo;
     }
@@ -66,7 +87,8 @@ export default class RepositoryFactory {
 
     await repo.init();
 
-    RepositoryFactory.knownRepos.set(repoPath, repo);
+    configCache.set(cacheKey, repo);
+    RepositoryFactory.knownRepos.set(cacheKey, repo);
     return repo;
   }
 }

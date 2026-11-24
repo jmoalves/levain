@@ -1,5 +1,4 @@
 import * as log from "@std/log";
-import { distance } from "fastest-levenshtein";
 
 import t from "../lib/i18n.ts";
 
@@ -7,7 +6,6 @@ import type Config from "../lib/config.ts";
 import StringUtils from "../lib/utils/string_utils.ts";
 
 import type Command from "./command.ts";
-
 
 export default class ListCommand implements Command {
   constructor(private config: Config) {
@@ -23,7 +21,10 @@ export default class ListCommand implements Command {
     log.info(`  ${repo.describe()}`);
 
     const packages = repo.listPackages();
-    const filteredPackages = args ? packages?.filter((it) => it.name.includes(searchText)) : packages;
+    const lowerSearch = searchText.toLowerCase();
+    const filteredPackages = lowerSearch
+      ? packages?.filter((it) => it.name.toLowerCase().includes(lowerSearch))
+      : packages;
 
     const packageCount = packages?.length;
     if (!packageCount) {
@@ -42,35 +43,19 @@ export default class ListCommand implements Command {
         log.info(``);
         log.info(`${searchText} - ${t("cmd.list_command.unableToList")}`);
 
-        const similarPackages = packages?.filter((it) => this.similarNames(it.name, searchText));
+        const similarPackages = [...StringUtils.findSimilar(searchText, packages.map((it) => it.name))];
         log.info(``);
-        if (!similarPackages || similarPackages.length == 0) {
+        if (similarPackages.length == 0) {
           log.info(`${searchText} - ${t("cmd.list_command.unableToSimilar")}`);
         } else {
           log.info(`${searchText} - ${t("cmd.list_command.similarPackages")}`);
-          for (const a of similarPackages) {
-            log.info(a.name);
+          for (const name of similarPackages) {
+            log.info(name);
           }
         }
         log.info("");
       }
     }
-  }
-
-  // TODO Use the same function that exists in packageManager
-  similarNames(name1: string, name2: string): boolean {
-    if (
-      name1.toLowerCase().includes(name2.toLowerCase()) ||
-      name2.toLowerCase().includes(name1.toLowerCase())
-    ) {
-      return true;
-    }
-
-    const d = distance(name1.toLowerCase(), name2.toLowerCase());
-    if (d <= 2) {
-      return true;
-    }
-    return false;
   }
 
   readonly oneLineExample = t("cmd.list_command.example");

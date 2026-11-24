@@ -26,17 +26,20 @@ export default class InfoCommand implements Command {
       const pkgNames: string[] = myArgs._;
 
       pkgs = this.config.packageManager.resolvePackages(pkgNames, false, false);
+      if (!pkgs) {
+        this.config.packageManager.resolvePackages(["levain"], false, false);
+      }
 
       log.info("");
       log.info(t("cmd.info.yourPackages"));
-      pkgNames.forEach((pkg) => this.showPackage(myArgs, 0, pkg));
+      pkgNames.forEach((pkg) => this.showPackage(myArgs, 0, pkg, new Set()));
     } else {
       this.config.packageManager.resolvePackages(["levain"], false, false);
     }
 
     log.info("");
     log.info("=== Levain");
-    this.showPackage(myArgs, 0, "levain");
+    this.showPackage(myArgs, 0, "levain", new Set());
 
     if (pkgs) {
       log.info("");
@@ -45,17 +48,25 @@ export default class InfoCommand implements Command {
     }
   }
 
-  showPackage(args: any, level: number, pkgName: string) {
+  showPackage(args: any, level: number, pkgName: string, visited: Set<string> = new Set()) {
     if (pkgName == "levain" && level != 0) {
+      return;
+    }
+    if (visited.has(pkgName)) {
       return;
     }
 
     const ident = "  ".repeat(level);
-    const pkg: Package | undefined = this.config.packageManager.package(pkgName);
+    const pkg: Package | undefined = this.config.packageManager.package(pkgName) ??
+      this.config.repositoryManager.repository.resolvePackage(pkgName);
 
     if (!pkg) {
       log.info("");
       log.info(t("cmd.info.packageNotFound", { pkgName: pkgName }));
+      const similar = [...this.config.packageManager.getSimilarNames(pkgName)];
+      if (similar.length > 0) {
+        log.info(`${t("cmd.install.similar")}: ${similar.join(", ")}`);
+      }
       return;
     }
 
@@ -71,7 +82,9 @@ export default class InfoCommand implements Command {
       log.info(`${ident}\\ filePath..: ${pkg.filePath}`);
     }
 
-    pkg.dependencies?.forEach((dep) => this.showPackage(args, level + 1, dep));
+    const nextVisited = new Set(visited);
+    nextVisited.add(pkgName);
+    pkg.dependencies?.forEach((dep) => this.showPackage(args, level + 1, dep, nextVisited));
   }
 
   readonly oneLineExample = t("cmd.info.example");

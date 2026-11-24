@@ -43,7 +43,7 @@ export default class RepositoryManager {
   }
 
   async reload(): Promise<void> {
-    this.invalidatePackages();
+    await this.invalidatePackages();
     await this.createRepositories();
     await this.initRepositories();
   }
@@ -114,7 +114,7 @@ export default class RepositoryManager {
   }
 
   ////////////////////////////////////////////////////////////////////////////////
-  private invalidatePackages() {
+  private async invalidatePackages(): Promise<void> {
     if (!this.repositories) {
       throw Error(t("lib.repository.repository_manager.notFound"));
     }
@@ -124,7 +124,7 @@ export default class RepositoryManager {
       if (repos[key]) {
         const repo: Repository = repos[key];
         log.debug(`INVALIDATE-PACKAGES Repo[${key}] - ${repo.name}`);
-        repo.reload();
+        await repo.reload();
       }
     }
   }

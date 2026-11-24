@@ -33,16 +33,13 @@ export default class Shell implements Command {
       curDirPkg = await this.config.repositoryManager.currentDirPackage();
       if (curDirPkg && curDirPkg.dependencies && curDirPkg.dependencies.length > 0) {
         pkgNames = curDirPkg.dependencies;
-        let actions = curDirPkg.yamlItem("cmd.shell");
+        const shellActions = curDirPkg.yamlItem("cmd.shell");
         const envActions = curDirPkg.yamlItem("cmd.env");
-        if (envActions) {
-          if (actions) {
-            Array.prototype.push.apply(actions, envActions);
-          } else {
-            actions = envActions;
-          }
-        }
-        pkgActions = actions;
+        const combined = [
+          ...(Array.isArray(shellActions) ? shellActions : []),
+          ...(Array.isArray(envActions) ? envActions : []),
+        ];
+        pkgActions = combined.length > 0 ? combined : undefined;
       } else {
         pkgNames = [this.config.defaultPackage];
       }

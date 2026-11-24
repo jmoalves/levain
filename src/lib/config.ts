@@ -35,6 +35,7 @@ export default class Config {
 
   private _lastKnownVersion: string | undefined;
   private _lastUpdateQuestion: string | undefined;
+  private _lastAutoClean: string | undefined;
   private _autoUpdate: boolean | undefined;
   private _shellCheckForUpdate: boolean | undefined;
   private lastCfg?: ConfigPersistentAttributes;
@@ -45,12 +46,27 @@ export default class Config {
     this._repoManager = new RepositoryManager(this);
     
     const loaded = this.load(HomePaths.levainConfigFile);
+    const loadedHome = this.configPaths.levainHome;
 
     this.configEnv(args);
     this.configHome(args);
 
     if (!loaded) {
-      this.load(this.configPaths.oldLevainConfigFile); // Backward compatibility
+      this.load(this.configPaths.oldLevainConfigFile, Boolean(args["levainHome"])); // Backward compatibility
+    }
+
+    // If CLI --levainHome overrode the saved levainHome without an explicit --levainCache,
+    // reset a default <oldHome>/.levainCache so it follows the new home directory.
+    if (
+      args["levainHome"] &&
+      !args.levainCache &&
+      loadedHome !== "<unset>" &&
+      loadedHome !== this.configPaths.levainHome
+    ) {
+      const prevDefaultCache = path.resolve(loadedHome, ".levainCache");
+      if (this.lastCfg?.cacheDir && path.resolve(this.lastCfg.cacheDir) === prevDefaultCache) {
+        this.configPaths.levainCacheDir = path.join(this.configPaths.levainHome, ".levainCache");
+      }
     }
 
     this.configCache(args);
@@ -134,6 +150,15 @@ export default class Config {
   set lastUpdateQuestion(dateTag: string | undefined) {
     log.debug(`lastUpdateQuestion: ${this._lastUpdateQuestion} => ${dateTag}`);
     this._lastUpdateQuestion = dateTag;
+  }
+
+  get lastAutoClean(): string | undefined {
+    return this._lastAutoClean;
+  }
+
+  set lastAutoClean(dateTag: string | undefined) {
+    log.debug(`lastAutoClean: ${this._lastAutoClean} => ${dateTag}`);
+    this._lastAutoClean = dateTag;
   }
 
   get autoUpdate(): boolean | undefined {
@@ -221,13 +246,14 @@ export default class Config {
     cfg.shellPath = this._shellPath;
     cfg.lastKnownVersion = this._lastKnownVersion;
     cfg.lastUpdateQuestion = this._lastUpdateQuestion;
+    cfg.lastAutoClean = this._lastAutoClean;
     cfg.autoUpdate = this._autoUpdate;
     cfg.shellCheckForUpdate = this._shellCheckForUpdate;
     cfg.levainHome = this.configPaths.levainHome;
     return cfg;
   }
 
-  private load(configFile: string): boolean {
+  private load(configFile: string, preserveLevainHome = false): boolean {
     if (!configFile) {
       return false;
     }
@@ -266,6 +292,10 @@ export default class Config {
       this._lastUpdateQuestion = cfg.lastUpdateQuestion;
     }
 
+    if (cfg.lastAutoClean) {
+      this._lastAutoClean = cfg.lastAutoClean;
+    }
+
     if (cfg.autoUpdate) {
       this._autoUpdate = cfg.autoUpdate;
     }
@@ -276,7 +306,7 @@ export default class Config {
       this._shellCheckForUpdate = true;
     }
 
-    if (cfg.levainHome) {
+    if (cfg.levainHome && !preserveLevainHome) {
       this.setLevainHome(cfg.levainHome);
     }
 
@@ -319,7 +349,7 @@ export default class Config {
   /////////////////////////////////////////////////////////////////////////////////
   private configEnv(args: any): void {
     Object.keys(args).forEach((key) => {
-      if (!key.startsWith("_")) {
+      if (!key.startsWith("_") && key !== "levainHome") {
         this.setVar(key, args[key]);
       }
     });
@@ -332,15 +362,9 @@ export default class Config {
   }
 
   private configHome(args: any): void {
-    if (this.configPaths.levainHome != "<unset>") {
-      return;
-    }
-  
-
-
-
     if (args["levainHome"]) {
-      const dirs: string[] = args["levainHome"];
+      const rawDirs = args["levainHome"];
+      const dirs: string[] = Array.isArray(rawDirs) ? rawDirs : [rawDirs];
       const homeDir = dirs.find((dir) => {
         const home = path.resolve(Deno.cwd(), dir);
         log.debug(`Checking home at ${home}`);
@@ -359,6 +383,10 @@ export default class Config {
 
       this.setLevainHome(path.resolve(Deno.cwd(), homeDir));
       log.debug(`ARG levainHome=${this.configPaths.levainHome}`);
+      return;
+    }
+
+    if (this.configPaths.levainHome != "<unset>") {
       return;
     }
 

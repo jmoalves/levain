@@ -47,6 +47,9 @@ export default class Clone implements Command {
     log.debug(`parsed: ${JSON.stringify(parsedPath)}`);
 
     if (myArgs.dirs) {
+      if (!parsedPath.user) {
+        throw new Error(t("cmd.clone.invalidDir", { dir: url }));
+      }
       const parentDir = path.resolve(parsedPath.user);
       FileUtils.ensureDirSync(parentDir);
 
@@ -57,13 +60,17 @@ export default class Clone implements Command {
       Deno.chdir(parentDir);
     }
 
-    const repoDir = path.resolve(parsedPath.repo);
+    const repoName = parsedPath.repo || path.basename(parsedPath.url).replace(/\.git$/, "");
+    if (!repoName) {
+      throw new Error(t("cmd.clone.needGitPath", { url: url }));
+    }
+    const repoDir = path.resolve(repoName);
 
     const git = new GitUtils();
     if (FileUtils.exists(repoDir)) {
       log.warn(t("cmd.clone.dirExists", { dir: repoDir }));
     } else {
-      await git.clone(parsedPath.url, repoDir);
+      await git.clone(url, repoDir);
     }
 
     Deno.chdir(repoDir);

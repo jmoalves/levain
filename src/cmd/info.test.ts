@@ -101,15 +101,23 @@ Deno.test("InfoCommand should distinguish installed and updateAvailable packages
   );
 });
 
-Deno.test("InfoCommand should log packageNotFound when requested package is missing", async () => {
+Deno.test("InfoCommand should show valid sibling packages and Levain even when another package is missing", async () => {
   const logger = await TestHelper.setupTestLogger();
-  const { config } = await setupConfigWithRecipes({});
+  const { config } = await setupConfigWithRecipes({
+    "my-sample.levain.yaml": "version: 1.0.0\n",
+  });
 
   const cmd = new InfoCommand(config);
-  await cmd.execute(["missing-package-xyz"]);
+  await cmd.execute(["my-sample", "my-sampl"]);
 
   assertFind(
     logger.messages,
-    (msg) => msg.includes(t("cmd.info.packageNotFound", { pkgName: "missing-package-xyz" })),
+    (msg) => msg.includes(`+ my-sample - 1.0.0${t("cmd.info.notInstalled")}`),
   );
+  assertFind(
+    logger.messages,
+    (msg) => msg.includes(t("cmd.info.packageNotFound", { pkgName: "my-sampl" })),
+  );
+  assertFind(logger.messages, (msg) => msg.includes("my-sample"));
+  assertFind(logger.messages, (msg) => msg.includes("+ levain - "));
 });

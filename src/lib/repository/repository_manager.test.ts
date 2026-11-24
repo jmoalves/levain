@@ -1,3 +1,4 @@
+import * as path from "@std/path";
 import RepositoryManager from "./repository_manager.ts";
 import TestHelper from "../test/test_helper.ts";
 import { assert, assertEquals } from "@std/assert";
@@ -109,4 +110,20 @@ Deno.test("RepositoryManager.createRegularRepositories should add tempRepos and 
     "repo does not contain extraRepoDir",
   );
   assertEquals(repo.initialized(), true);
+});
+
+Deno.test("RepositoryManager.reload should await repo.reload on all managed repositories", async () => {
+  const config = TestHelper.getConfig();
+  const repositoryManager = new RepositoryManager(config);
+  const tempRepo = TestHelper.getNewTempDir();
+  await Deno.writeTextFile(path.join(tempRepo, "initial.levain.yaml"), "version: 1.0.0\n");
+
+  await repositoryManager.init({ extraRepos: [], tempRepos: [tempRepo] });
+  assert(repositoryManager.repository.resolvePackage("initial"));
+  assertEquals(repositoryManager.repository.resolvePackage("added-later"), undefined);
+
+  await Deno.writeTextFile(path.join(tempRepo, "added-later.levain.yaml"), "version: 1.0.0\n");
+  await repositoryManager.reload();
+
+  assert(repositoryManager.repository.resolvePackage("added-later"));
 });
