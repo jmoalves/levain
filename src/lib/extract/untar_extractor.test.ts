@@ -53,20 +53,25 @@ if (OsUtils.isWindows()) {
     );
   });
 
-  Deno.test("UnTar.extractImpl should fail cleanly when decompressed stream is not a valid tar archive", async () => {
+  Deno.test("UnTar.extractImpl should fail cleanly when tar extraction stage fails", async () => {
     const baseDir = TestHelper.getNewTempDir();
-    const badTarGz = path.join(baseDir, "not-a-tar.tar.gz");
-    const dstDir = path.join(baseDir, "out");
-    await Deno.mkdir(dstDir, { recursive: true });
+    const srcContentDir = path.join(baseDir, "src");
+    await Deno.mkdir(srcContentDir, { recursive: true });
+    await Deno.writeTextFile(path.join(srcContentDir, "hello.txt"), "hello-untar");
 
-    const compressed = new Response("this is definitely not a valid tar archive").body!
-      .pipeThrough(new CompressionStream("gzip"));
-    const gzBytes = new Uint8Array(await new Response(compressed).arrayBuffer());
-    await Deno.writeFile(badTarGz, gzBytes);
+    const tarGzPath = path.join(baseDir, "valid.tar.gz");
+    const tarCmd = await new Deno.Command("tar", {
+      args: ["-czf", tarGzPath, "-C", srcContentDir, "hello.txt"],
+    }).output();
+    assertEquals(tarCmd.success, true, new TextDecoder().decode(tarCmd.stderr));
+
+    // Destination is an existing regular file -> 7z decompress succeeds, 7z tar extract fails
+    const blockingFile = path.join(baseDir, "not-a-dir");
+    await Deno.writeTextFile(blockingFile, "blocker");
 
     const extractor = new UnTar(TestHelper.getConfig());
     await assertRejects(
-      async () => await extractor.extractImpl(badTarGz, dstDir),
+      async () => await extractor.extractImpl(tarGzPath, blockingFile),
       Error,
       "7z tar extract terminated with code",
     );
