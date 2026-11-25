@@ -15,6 +15,7 @@ import LevainVersion from "./levain_version.ts";
 import OsUtils from "./lib/os/os_utils.ts";
 import LevainPaths from "./lib/paths/levain_paths.ts";
 import DateUtils from "./lib/utils/date_utils.ts";
+import { InstanceLock } from "./lib/fs/instance_lock.ts";
 
 export default class LevainCli {
   private static readonly AUTO_CLEAN_COMMANDS = new Set([
@@ -30,8 +31,11 @@ export default class LevainCli {
   private static readonly SANITIZE_PATH_COMMANDS = new Set([
     "install",
     "update",
-    "shell",
-    "clone",
+  ]);
+  private static readonly LOCKED_COMMANDS = new Set([
+    "install",
+    "update",
+    "clean",
   ]);
   async execute(myArgs: any = {}): Promise<void> {
     log.info(t("levain_cli.levainVersion", {
@@ -96,33 +100,52 @@ export default class LevainCli {
 
     const isActivateCmd = cmd === "_activate-machine" && myArgs._[0] === "cmd";
     const isActivatePre = cmd === "_activate-machine" && myArgs._[0] === "pre";
-    if (!myArgs["skip-levain-updates"] && !myArgs["levain-upgrade"] && !isActivateCmd) {
-      const levainReleases = new LevainReleases(config);
-      await measurePhase("checkLevainUpdate", () => levainReleases.checkLevainUpdate());
-    }
+    const isActivateInit = cmd === "_activate-machine" && myArgs._[0] === "init";
+    const needsLock = Boolean(
+      myArgs["levain-upgrade"] || isActivatePre || isActivateInit || LevainCli.LOCKED_COMMANDS.has(cmd),
+    );
+    const lockCommand = myArgs["levain-upgrade"]
+      ? "--levain-upgrade"
+      : (isActivatePre || isActivateInit)
+      ? "activate"
+      : (cmd ?? "unknown");
 
-    // Repository Manager (skip for commands that never access repositories)
-    if (myArgs["levain-upgrade"] || !LevainCli.NO_REPO_COMMANDS.has(cmd)) {
-      await measurePhase("repositoryManager.init", () =>
-        config.repositoryManager.init({
-          extraRepos: myArgs.addRepo,
-          tempRepos: myArgs.tempRepo,
-          forceRefresh: cmd === "update",
-          installedOnly: isActivateCmd,
-        })
-      );
-    }
-
-    // Sanitize user PATH only for commands that install, mutate, or launch environments
-    if (myArgs["levain-upgrade"] || isActivatePre || LevainCli.SANITIZE_PATH_COMMANDS.has(cmd)) {
-      await measurePhase("sanitizeUserPath", () => OsUtils.sanitizeUserPath());
-    }
-
-    const loader = new Loader(config);
+    let instanceLock: InstanceLock | undefined;
     try {
+      if (needsLock) {
+        instanceLock = await measurePhase("instanceLock", () =>
+          InstanceLock.acquire(config.configPaths.levainLockPath, { command: lockCommand })
+        );
+      }
+
+      if (!myArgs["skip-levain-updates"] && !myArgs["levain-upgrade"] && !isActivateCmd) {
+        const levainReleases = new LevainReleases(config);
+        await measurePhase("checkLevainUpdate", () => levainReleases.checkLevainUpdate());
+      }
+
+      // Repository Manager (skip for commands that never access repositories)
+      if (myArgs["levain-upgrade"] || !LevainCli.NO_REPO_COMMANDS.has(cmd)) {
+        await measurePhase("repositoryManager.init", () =>
+          config.repositoryManager.init({
+            extraRepos: myArgs.addRepo,
+            tempRepos: myArgs.tempRepo,
+            forceRefresh: cmd === "update",
+            installedOnly: isActivateCmd,
+          })
+        );
+      }
+
+      // Sanitize user PATH only for locked mutating commands (shell sanitizes inside its install lock)
+      if (myArgs["levain-upgrade"] || isActivatePre || LevainCli.SANITIZE_PATH_COMMANDS.has(cmd)) {
+        await measurePhase("sanitizeUserPath", () => OsUtils.sanitizeUserPath());
+      }
+
+      const loader = new Loader(config);
       if (myArgs["levain-upgrade"]) {
         await measurePhase("levain-upgrade", () => loader.command("install", ["--force", "levain"]));
         config.save();
+        // Release lock before blocking on interactive finish prompt
+        instanceLock?.release();
         log.info("");
         log.info("");
         log.info("");
@@ -140,9 +163,12 @@ export default class LevainCli {
         await measurePhase("maybeAutoClean", () => this.maybeAutoClean(cmd, config, myArgs, loader));
 
         await measurePhase(`command:${cmd}`, () => loader.command(cmd, myArgs._));
-        // FIXME Will this save a broken config?
-        // config.saveIfChanged()
       }
+
+      /////////////////////////////////////////////////////////////////////////////////
+      log.debug("==================================");
+
+      config.saveIfChanged();
     } catch (err) {
       if (err instanceof CommandNotFoundError) {
         log.info("");
@@ -151,16 +177,12 @@ export default class LevainCli {
       }
       throw err;
     } finally {
+      instanceLock?.release();
       if (profileEnabled) {
         const summary = profileMarks.map((m) => `${m.phase}=${m.ms.toFixed(1)}ms`).join(" ");
         console.error(`[levain:profile] ${summary}`);
       }
     }
-
-    /////////////////////////////////////////////////////////////////////////////////
-    log.debug("==================================");
-
-    config.save();
   }
 
   showCliHelp() {
@@ -178,11 +200,18 @@ export default class LevainCli {
       return;
     }
 
+    let autoCleanLock: InstanceLock | undefined;
     try {
+      autoCleanLock = await InstanceLock.acquire(config.configPaths.levainLockPath, {
+        command: "clean",
+        waitTimeoutMs: 0,
+      });
       await loader.command("clean", []);
       config.lastAutoClean = today;
     } catch (err) {
       log.warn(`Auto-clean skipped due to error: ${err}`);
+    } finally {
+      autoCleanLock?.release();
     }
   }
 }

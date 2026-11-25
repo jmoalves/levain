@@ -2,7 +2,7 @@
 
 __levain_upgrade() {
     local base_dir="$1"
-    local temp_root="${TEMP:-${TMPDIR:-/tmp}}"
+    local temp_root="${TEMP:-${TMPDIR:-${TMP:-/tmp}}}"
     local target_file="$temp_root/levain/upgrade-target.txt"
     local levain_dir=""
     local line
@@ -14,7 +14,8 @@ __levain_upgrade() {
     if [[ -f "$target_file" ]]; then
         while IFS= read -r line || [[ -n "$line" ]]; do
             line="${line%$'\r'}"
-            if [[ "$line" =~ ^levain-[0-9]+\.[0-9]+\.[0-9]+$ ]] && [[ -f "$temp_root/levain/$line/levain.cmd" ]]; then
+            if [[ "$line" =~ ^levain-[0-9]+\.[0-9]+\.[0-9]+$ ]] && \
+               [[ -f "$temp_root/levain/$line/levain.cmd" || -f "$temp_root/levain/$line/levain.sh" ]]; then
                 levain_dir="$temp_root/levain/$line"
                 break
             fi
@@ -28,7 +29,7 @@ __levain_upgrade() {
         return 1
     fi
 
-    if command -v cmd.exe >/dev/null 2>&1; then
+    if command -v cmd.exe >/dev/null 2>&1 && [[ -f "$levain_dir/levain.cmd" ]]; then
         local win_cmd win_home
         if command -v cygpath >/dev/null 2>&1; then
             win_cmd="$(cygpath -w "$levain_dir/levain.cmd")"
@@ -38,8 +39,11 @@ __levain_upgrade() {
             win_home="$(dirname "$base_dir")"
         fi
         cmd.exe //c start //max "Levain Upgrade" cmd //c "\"\"$win_cmd\" \"--levainHome=$win_home\" --levain-upgrade\""
+    elif [[ -f "$levain_dir/levain.sh" ]]; then
+        bash "$levain_dir/levain.sh" "--levainHome=$(dirname "$base_dir")" --levain-upgrade || return $?
     else
-        "$levain_dir/levain.sh" "--levainHome=$(dirname "$base_dir")" --levain-upgrade || return $?
+        echo "Upgrade entrypoint not found in $levain_dir" >&2
+        return 1
     fi
 
     echo ""
@@ -48,20 +52,36 @@ __levain_upgrade() {
     return 0
 }
 
-__levain_main() {
-    local script_dir __levain_exe cmd script rc
-    script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+__levain_run() {
+    local script_dir="$1"
+    shift
 
     if [[ -n "${LEVAIN_EXE:-}" && -f "$LEVAIN_EXE" ]]; then
-        __levain_exe="$LEVAIN_EXE"
+        "$LEVAIN_EXE" "$@"
+    elif [[ -f "$script_dir/build/levain" && -x "$script_dir/build/levain" ]]; then
+        "$script_dir/build/levain" "$@"
     elif [[ -f "$script_dir/build/levain.exe" ]]; then
-        __levain_exe="$script_dir/build/levain.exe"
+        "$script_dir/build/levain.exe" "$@"
+    elif command -v deno >/dev/null 2>&1; then
+        if [[ -f "$script_dir/deno.json" ]]; then
+            deno run --allow-all --config "$script_dir/deno.json" "$script_dir/levain.ts" "$@"
+        else
+            deno run --allow-all "$script_dir/levain.ts" "$@"
+        fi
+    elif command -v cmd.exe >/dev/null 2>&1 && [[ -f "$script_dir/scripts/levain-deno.cmd" ]]; then
+        "$script_dir/scripts/levain-deno.cmd" "$@"
     else
-        __levain_exe="$script_dir/scripts/levain-deno.cmd"
+        echo "Error: Could not find compiled Levain binary or 'deno' in PATH." >&2
+        return 127
     fi
+}
+
+__levain_main() {
+    local script_dir cmd script rc
+    script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 
     if [[ $# -eq 0 ]]; then
-        "$__levain_exe"
+        __levain_run "$script_dir"
         rc=$?
         if [[ $rc -eq 42 ]]; then
             __levain_upgrade "$script_dir"
@@ -79,7 +99,7 @@ __levain_main() {
         local arg
         for arg in "$@"; do
             if [[ "$arg" == "--help" || "$arg" == "-h" ]]; then
-                "$__levain_exe" "$cmd" "$@"
+                __levain_run "$script_dir" "$cmd" "$@"
                 return $?
             fi
         done
@@ -91,7 +111,7 @@ __levain_main() {
             fi
         done
         if [[ $skip_pre -eq 0 ]]; then
-            "$__levain_exe" _activate-machine pre ${activate_args[@]+"${activate_args[@]}"}
+            __levain_run "$script_dir" _activate-machine pre ${activate_args[@]+"${activate_args[@]}"}
             rc=$?
             if [[ $rc -eq 42 ]]; then
                 __levain_upgrade "$script_dir"
@@ -101,7 +121,7 @@ __levain_main() {
                 return $rc
             fi
         fi
-        script="$("$__levain_exe" _activate-machine cmd --shell bash ${activate_args[@]+"${activate_args[@]}"})"
+        script="$(__levain_run "$script_dir" _activate-machine cmd --shell bash ${activate_args[@]+"${activate_args[@]}"})"
         rc=$?
         if [[ $rc -ne 0 ]]; then
             return $rc
@@ -110,7 +130,7 @@ __levain_main() {
             eval "$script"
         fi
     else
-        "$__levain_exe" "$cmd" "$@"
+        __levain_run "$script_dir" "$cmd" "$@"
         rc=$?
         if [[ $rc -eq 42 ]]; then
             __levain_upgrade "$script_dir"
@@ -122,7 +142,7 @@ __levain_main() {
 
 __levain_main "$@"
 __levain_rc=$?
-unset -f __levain_main __levain_upgrade
+unset -f __levain_main __levain_run __levain_upgrade
 
 if [[ "${BASH_SOURCE[0]}" != "$0" ]]; then
     return "$__levain_rc"

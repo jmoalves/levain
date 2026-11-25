@@ -1,9 +1,11 @@
 import { assertEquals, assertFalse, assertStringIncludes } from "@std/assert";
 import * as log from "@std/log";
+import * as path from "@std/path";
 
 import Config from "../config.ts";
 import ConsoleFeedback from "../utils/console_feedback.ts";
 import TestHelper from "../test/test_helper.ts";
+import { AutoFlushLogFileHandler } from "./auto_flush_log_file_handler.ts";
 import ConsoleAndFileLogger from "./console_and_file_logger.ts";
 import LogUtils from "./log_utils.ts";
 
@@ -143,4 +145,15 @@ Deno.test("ConsoleFeedback.show should throttle terminal writes and suppress int
   } finally {
     ConsoleFeedback.OUT = prevOut;
   }
+});
+
+Deno.test("AutoFlushLogFileHandler should degrade gracefully when log file cannot be opened", () => {
+  // Missing parent dir fails deterministically in setup() on all OSes; handler must disable cleanly instead of crashing
+  const missingParentLog = path.join(TestHelper.getNewTempDir(), "nonexistent-parent", "cannot-open.log");
+  const handler = new AutoFlushLogFileHandler("DEBUG", { filename: missingParentLog, mode: "w" });
+  handler.setup();
+  handler.log("ignored");
+  handler.handle(TestHelper.logRecord("ignored"));
+  handler.flush();
+  handler.destroy();
 });

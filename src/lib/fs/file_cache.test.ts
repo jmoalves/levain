@@ -1,10 +1,12 @@
 import * as path from "@std/path";
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertRejects } from "@std/assert";
+import { stub } from "@std/testing/mock";
 import type ProgressBar from "@deno-library/progress";
 
 import TestHelper from "../test/test_helper.ts";
 import { assertFolderIncludes, assertStringEndsWith } from "../test/more_asserts.ts";
 import type ProgressReader from "../io/progress_reader.ts";
+import { FileProgress } from "../io/file_progress.ts";
 
 import FileCache from "./file_cache.ts";
 
@@ -112,4 +114,63 @@ Deno.test("FileCache.get rewinds only once on cache miss and closes reader on ca
   assertEquals(hitPath, cachedPath);
   assertEquals(hitReader.rewindCount, 1);
   assertEquals(hitReader.closeCount, 1);
+});
+
+Deno.test("FileCache.copyToCache should reuse valid cache file populated concurrently by another instance", async () => {
+  const config = TestHelper.getConfig();
+  config.configPaths.levainCacheDir = path.join(TestHelper.getNewTempDir(), "nested-cache");
+  const fileCache = new FileCache(config);
+  const fixedMtime = new Date("2025-02-02T00:00:00.000Z");
+  const reader = new SpyProgressReader("https://example.org/shared.zip", "concurrent-payload", fixedMtime);
+  const target = fileCache.cachedFilePath(reader.name);
+
+  const copyStub = stub(FileProgress, "copyWithProgress", () => {
+    Deno.writeTextFileSync(target, "concurrent-payload");
+    Deno.utimeSync(target, new Date(), fixedMtime);
+    return Promise.reject(new Error("simulated concurrent rename contention"));
+  });
+
+  try {
+    const result = await fileCache.copyToCache(reader, true);
+    assertEquals(result, target);
+    assertEquals(Deno.readTextFileSync(result), "concurrent-payload");
+  } finally {
+    copyStub.restore();
+  }
+});
+
+Deno.test("FileCache should replace conflicting directory, tolerate utime errors on hit, and rethrow non-concurrent copy errors", async () => {
+  const config = TestHelper.getConfig();
+  config.configPaths.levainCacheDir = TestHelper.getNewTempDir();
+  const fileCache = new FileCache(config);
+  const fixedMtime = new Date("2025-03-03T00:00:00.000Z");
+
+  // Pre-create a conflicting directory at the cache target path
+  const reader = new SpyProgressReader("https://example.org/dir-conflict.zip", "fresh-bytes", fixedMtime);
+  const target = fileCache.cachedFilePath(reader.name);
+  Deno.mkdirSync(target, { recursive: true });
+
+  const cachedPath = await fileCache.get(reader);
+  assertEquals(cachedPath, target);
+  assertEquals(Deno.readTextFileSync(cachedPath), "fresh-bytes");
+
+  // Best-effort utime failure on cache hit must not fail the cache hit
+  const hitReader = new SpyProgressReader("https://example.org/dir-conflict.zip", "fresh-bytes", fixedMtime);
+  const utimeStub = stub(Deno, "utimeSync", () => {
+    throw new Error("simulated utime error");
+  });
+  try {
+    assertEquals(await fileCache.get(hitReader), target);
+  } finally {
+    utimeStub.restore();
+  }
+
+  // Real copy failure when cache is still invalid must propagate
+  const failReader = new SpyProgressReader("https://example.org/broken.zip", "broken-bytes", fixedMtime);
+  const copyStub = stub(FileProgress, "copyWithProgress", () => Promise.reject(new Error("network failed")));
+  try {
+    await assertRejects(async () => await fileCache.copyToCache(failReader, true), Error, "network failed");
+  } finally {
+    copyStub.restore();
+  }
 });

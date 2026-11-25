@@ -5,6 +5,7 @@ import t from "../lib/i18n.ts";
 import type Config from "../lib/config.ts";
 import { parseArgs } from "../lib/parse_args.ts";
 import type Package from "../lib/package/package.ts";
+import { resolvePackageActions } from "../lib/package/package_actions.ts";
 
 import type Command from "./command.ts";
 
@@ -64,8 +65,8 @@ export default class ExplainCommand implements Command {
 
   // deno-lint-ignore require-await
   async listActions(pkg: Package, item: string) {
-    const list = pkg.yamlItem(item);
-    if (!list) {
+    const list = resolvePackageActions(pkg, item);
+    if (list.length === 0) {
       return;
     }
 

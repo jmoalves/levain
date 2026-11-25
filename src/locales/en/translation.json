@@ -222,6 +222,11 @@
       }
     },
     "fs": {
+      "instance_lock": {
+        "busy": "Another Levain instance is currently running \"{{command}}\" (PID {{pid}}, started at {{startedAt}}). Wait for it to finish and try again. Lock file: {{lockPath}}",
+        "removingStale": "Removing stale Levain lock file from dead process (PID {{pid}}, command \"{{command}}\"): {{lockPath}}",
+        "removingCorrupt": "Removing unreadable stale Levain lock file: {{lockPath}}"
+      },
       "file_utils": {
         "getFileInfoSyncError": "read metadata of",
         "getSizeError": "read size of",

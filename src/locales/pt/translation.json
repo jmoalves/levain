@@ -222,6 +222,11 @@
       }
     },
     "fs": {
+      "instance_lock": {
+        "busy": "Outra instância do Levain está executando \"{{command}}\" (PID {{pid}}, iniciada em {{startedAt}}). Aguarde terminar e tente novamente. Arquivo de trava: {{lockPath}}",
+        "removingStale": "Removendo trava obsoleta de processo encerrado do Levain (PID {{pid}}, comando \"{{command}}\"): {{lockPath}}",
+        "removingCorrupt": "Removendo arquivo de trava ilegível e obsoleto do Levain: {{lockPath}}"
+      },
       "file_utils": {
         "getFileInfoSyncError": "ler metadados de",
         "getSizeError": "ler tamanho de",

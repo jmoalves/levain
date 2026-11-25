@@ -58,10 +58,15 @@ Deno.test("RepositoryManager.createCurrentDirRepo should user currentDir", async
 Deno.test("RepositoryManager.createInstalledRepo should user registryDir", async () => {
   const config = TestHelper.getConfig();
   const repositoryManager = new RepositoryManager(config);
+  const registryDir = config.configPaths.levainRegistryDir;
 
+  // When registryDir does not exist yet, createInstalledRepo stays side-effect-free and returns EmptyRepository
+  const emptyRepo = await repositoryManager.createInstalledRepo();
+  assertEquals(emptyRepo.name, "EmptyRepo");
+
+  Deno.mkdirSync(registryDir, { recursive: true });
   const repo = await repositoryManager.createInstalledRepo();
 
-  const registryDir = config.configPaths.levainRegistryDir;
   assert(
     repo.describe().match(TestHelper.pathRegExp(registryDir, { ignoreCase: true })),
     "repo does not contain registryDir",

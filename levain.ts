@@ -93,7 +93,6 @@ export default class Levain {
     extraLogDirs: string[] = [],
   ): string[] {
     let logFiles = [];
-    logFiles.push(ConsoleAndFileLogger.getLogFileInHomeFolder());
     logFiles.push(ConsoleAndFileLogger.getLogFileInTempFolder());
     logFiles = logFiles.concat(extraLogFiles);
     log.debug(`extraLogFiles [${extraLogFiles}] ${logFiles.length}`);

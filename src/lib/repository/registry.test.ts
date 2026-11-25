@@ -1,6 +1,8 @@
-import { ensureDirSync } from "@std/fs";
-import { assertEquals, assertRejects } from "@std/assert";
+import * as path from "@std/path";
+import { ensureDirSync, existsSync } from "@std/fs";
+import { assertEquals, assertFalse, assertRejects } from "@std/assert";
 
+import Registry from "./registry.ts";
 import TestHelper from "../test/test_helper.ts";
 import FileSystemPackage from "../package/file_system_package.ts";
 
@@ -66,4 +68,17 @@ Deno.test("Registry should remove package", async () => {
   } finally {
     Deno.removeSync(registry.rootDir, { recursive: true });
   }
+});
+
+Deno.test("Registry.init should stay empty without creating rootDir when registry directory does not exist", async () => {
+  const config = TestHelper.getConfig();
+  const missingDir = path.join(TestHelper.getNewTempDir(), "missing-registry");
+  const registry = new Registry(config, missingDir);
+
+  await registry.init();
+  // Second init is a no-op when already initialized
+  await registry.init();
+  assertEquals(registry.initialized(), true);
+  assertEquals(registry.size(), 0);
+  assertFalse(existsSync(missingDir));
 });

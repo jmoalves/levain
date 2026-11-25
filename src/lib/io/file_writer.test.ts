@@ -1,6 +1,7 @@
 import * as path from "@std/path";
 import { existsSync } from "@std/fs";
-import { assert, assertEquals } from "@std/assert";
+import { assert, assertEquals, assertRejects } from "@std/assert";
+import { stub } from "@std/testing/mock";
 import type ProgressBar from "@deno-library/progress";
 
 import TestHelper from "../test/test_helper.ts";
@@ -64,4 +65,33 @@ Deno.test("FileWriter.abort should close handle and delete temporary file withou
   assertEquals(existsSync(target), false);
   const remainingFiles = [...Deno.readDirSync(dir)];
   assertEquals(remainingFiles.length, 0, "no temp files should remain after abort()");
+});
+
+Deno.test("FileWriter.close should reject size mismatch before rename and tolerate mtime preservation error", async () => {
+  const dir = TestHelper.getNewTempDir();
+  const target = path.join(dir, "mismatch.txt");
+  const writer = new FileWriter(target);
+  await writer.write(new TextEncoder().encode("abc"));
+
+  await assertRejects(
+    async () => await writer.close({ expectedSize: 99 }),
+    Error,
+    "Copy size does not match",
+  );
+  assertEquals(existsSync(target), false, "mismatched temp file must not be published");
+  assertEquals([...Deno.readDirSync(dir)].length, 0, "temp file must be removed on close failure");
+
+  // Best-effort utime failure must not prevent atomic publish
+  const target2 = path.join(dir, "utime-warn.txt");
+  const writer2 = new FileWriter(target2);
+  await writer2.write(new TextEncoder().encode("ok"));
+  const utimeStub = stub(Deno, "utimeSync", () => {
+    throw new Error("utime unsupported");
+  });
+  try {
+    await writer2.close({ expectedSize: 2, mtime: new Date("2025-01-01T00:00:00Z") });
+    assertEquals(await Deno.readTextFile(target2), "ok");
+  } finally {
+    utimeStub.restore();
+  }
 });

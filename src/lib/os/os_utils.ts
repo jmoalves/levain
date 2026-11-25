@@ -20,14 +20,23 @@ export default class OsUtils {
   static get hostname(): string | undefined {
     const hostEnvStrings = ["COMPUTERNAME", "HOSTNAME"];
     const hostFromEnv = envChain(...hostEnvStrings);
-    if (!hostFromEnv) {
-      log.debug(
-        `Hostname not found. Looked for env vars ${hostEnvStrings.join()}`,
-      );
-      return undefined;
+    if (hostFromEnv) {
+      return hostFromEnv;
     }
 
-    return hostFromEnv;
+    try {
+      const osHostname = Deno.hostname();
+      if (osHostname) {
+        return osHostname;
+      }
+    } catch {
+      // Ignore if hostname syscall is unavailable
+    }
+
+    log.debug(
+      `Hostname not found. Looked for env vars ${hostEnvStrings.join()}`,
+    );
+    return undefined;
   }
 
   static onlyInWindows(isError = true) {
@@ -494,7 +503,20 @@ export default class OsUtils {
       }
       return OsUtils.decodeOutput(stdout);
     }
-    return Deno.symlinkSync(oldPathResolved, newPathResolved);
+
+    const linkPath = path.join(newPathResolved, path.basename(oldPathResolved));
+    try {
+      const existing = Deno.lstatSync(linkPath);
+      if (existing.isSymlink) {
+        Deno.removeSync(linkPath);
+      }
+    } catch (err) {
+      if (!(err instanceof Deno.errors.NotFound)) {
+        throw err;
+      }
+    }
+    Deno.symlinkSync(oldPathResolved, linkPath);
+    return linkPath;
   }
 
   static resolvePath(unresolvedPath: string | string[]): string {

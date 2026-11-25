@@ -56,21 +56,13 @@ export class FileProgress {
 
         await copy(r, dst);
 
-        await r.close()
-        await dst.close()
+        await r.close();
+        await dst.close({
+          expectedSize: r.size,
+          mtime: r.motificationTime,
+        });
 
-        if (r.size && dst.size && r.size != dst.size) {
-          throw Error(`Copy size does not match ${r.size} => ${dst.size}`);
-        }
         log.debug(`Size ok for ${dstFile}`);
-
-        // Preserve timestamps
-        if (r.motificationTime instanceof Date && dst.motificationTime instanceof Date) {
-          Deno.utimeSync(dstFile, new Date(), r.motificationTime);
-          log.debug(`Timestamps preserved - ${dstFile}`);
-        } else {
-          log.debug(`Could not preserve timestamps - ${dstFile}`);
-        }
 
         // Workaround - let console flush after progress bar
         await new Promise((r) => setTimeout(r, 0));

@@ -17,6 +17,7 @@ import Install from "./install.ts";
 
 async function seedInstalledLevain(config: Config) {
   await Deno.mkdir(config.configPaths.levainBaseDir, { recursive: true });
+  await Deno.mkdir(config.configPaths.levainRegistryDir, { recursive: true });
   await Deno.copyFile(
     LevainPaths.levainRecipePath,
     path.join(config.configPaths.levainRegistryDir, "levain.levain.yaml"),

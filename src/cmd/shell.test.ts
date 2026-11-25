@@ -1,9 +1,11 @@
-import { assert, assertEquals, assertRejects } from "@std/assert";
+import { assert, assertEquals, assertFalse, assertRejects } from "@std/assert";
+import { existsSync } from "@std/fs";
 import { stub } from "@std/testing/mock";
 
 import t from "../lib/i18n.ts";
 import Loader from "../lib/loader.ts";
 import type { OsShell } from "../lib/os/os_shell.ts";
+import OsUtils from "../lib/os/os_utils.ts";
 import FileSystemPackage from "../lib/package/file_system_package.ts";
 import TestHelper from "../lib/test/test_helper.ts";
 
@@ -104,10 +106,13 @@ Deno.test("Shell.readPackages should fall back to config.defaultPackage when no 
   }
 });
 
-Deno.test("Shell.installPackages should respect shellCheckForUpdate and reload repositories", async () => {
+Deno.test("Shell.installPackages should acquire and release InstanceLock around install and reload", async () => {
   const config = TestHelper.getConfig();
   const commandCalls: Array<{ cmd: string; args: string[] }> = [];
+  let lockExistedDuringInstall = false;
+  const sanitizeStub = stub(OsUtils, "sanitizeUserPath", () => Promise.resolve());
   const loaderCmdStub = stub(Loader.prototype, "command", (cmd: string, args: string[]) => {
+    lockExistedDuringInstall = existsSync(config.configPaths.levainLockPath);
     commandCalls.push({ cmd, args });
     return Promise.resolve();
   });
@@ -118,6 +123,8 @@ Deno.test("Shell.installPackages should respect shellCheckForUpdate and reload r
 
     config.shellCheckForUpdate = true;
     await cmd.installPackages(["pkgA"]);
+    assert(lockExistedDuringInstall, "lock should be held while install runs");
+    assertFalse(existsSync(config.configPaths.levainLockPath), "lock must be released before interactive shell opens");
 
     config.shellCheckForUpdate = false;
     await cmd.installPackages(["pkgA", "pkgB"]);
@@ -130,6 +137,7 @@ Deno.test("Shell.installPackages should respect shellCheckForUpdate and reload r
   } finally {
     reloadStub.restore();
     loaderCmdStub.restore();
+    sanitizeStub.restore();
   }
 });
 

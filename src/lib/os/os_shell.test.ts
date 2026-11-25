@@ -1,4 +1,5 @@
 import { assert, assertEquals, assertRejects } from "@std/assert";
+import * as path from "@std/path";
 import { stub } from "@std/testing/mock";
 import { OsShell } from "./os_shell.ts";
 import OsUtils from "./os_utils.ts";
@@ -94,6 +95,7 @@ Deno.test("OsShell should not mutate pkg cmd.shell or addpath.path across repeat
 
     assertEquals(config.context.action.addpath.path, ["/first/dir", "/second/dir"]);
     assertEquals(env1.PATH, env2.PATH);
+    assert(env1.PATH.includes(`/second/dir${path.DELIMITER}/first/dir`));
   } finally {
     resolveStub.restore();
   }

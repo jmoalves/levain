@@ -178,6 +178,46 @@ export class FileUtils {
     }
   }
 
+  /**
+   * Atomically replaces `filePath` by writing to a unique sibling temp file and renaming.
+   * Prevents truncated/corrupted files when multiple Levain instances run concurrently.
+   */
+  static writeTextFileAtomicSync(filePath: string, data: string) {
+    const resolved = path.resolve(filePath);
+    const dir = path.dirname(resolved);
+    FileUtils.ensureDirSync(dir);
+
+    const tempPath = path.join(
+      dir,
+      `.${path.basename(resolved)}.${Deno.pid}-${crypto.randomUUID().slice(0, 8)}.tmp`,
+    );
+    try {
+      Deno.writeTextFileSync(tempPath, data);
+      let lastErr: unknown;
+      for (let attempt = 0; attempt < 5; attempt++) {
+        try {
+          Deno.renameSync(tempPath, resolved);
+          return;
+        } catch (err) {
+          lastErr = err;
+          if (!(err instanceof Deno.errors.PermissionDenied) || attempt === 4) {
+            throw err;
+          }
+        }
+      }
+      throw lastErr;
+    } catch (err) {
+      try {
+        if (existsSync(tempPath)) {
+          Deno.removeSync(tempPath);
+        }
+      } catch {
+        // ignore cleanup error
+      }
+      throw fileError(err, resolved, t("lib.fs.file_utils.writeTextFileSyncError"));
+    }
+  }
+
   static removeSync(filePath: string | URL, options: Deno.RemoveOptions | undefined = undefined) {
     try {
        Deno.removeSync(filePath, options);

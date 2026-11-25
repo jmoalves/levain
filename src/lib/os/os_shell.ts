@@ -1,8 +1,10 @@
 import * as log from "@std/log";
+import * as path from "@std/path";
 
 import LevainVersion from "../../levain_version.ts";
 import type Config from "../config.ts";
 import type Package from "../package/package.ts";
+import { resolvePackageActions } from "../package/package_actions.ts";
 import Loader from "../loader.ts";
 
 import OsUtils from "./os_utils.ts";
@@ -77,16 +79,13 @@ export class OsShell {
       return;
     }
 
-    const shellActions = pkg.yamlItem("cmd.shell");
-    const envActions = pkg.yamlItem("cmd.env");
+    const shellActions = resolvePackageActions(pkg, "cmd.shell");
+    const envActions = resolvePackageActions(pkg, "cmd.env");
 
     log.debug(`${pkg.name} SHELL actions: ${JSON.stringify(shellActions)}`);
     log.debug(`${pkg.name} ENV   actions: ${JSON.stringify(envActions)}`);
 
-    const actions: string[] = [
-      ...(Array.isArray(shellActions) ? shellActions : []),
-      ...(Array.isArray(envActions) ? envActions : []),
-    ];
+    const actions: string[] = [...shellActions, ...envActions];
 
     log.debug(`${pkg.name} ALL   actions: ${JSON.stringify(actions)}`);
     if (actions.length === 0) {
@@ -338,13 +337,13 @@ export class OsShell {
     ];
     const uniquePath = [...new Set(ordered)];
 
-    const pathStr = uniquePath.join(";");
+    const pathStr = uniquePath.join(path.DELIMITER);
     const envPath = Deno.env.get("PATH");
     if (!envPath) {
       return pathStr;
     }
 
-    return pathStr + ";" + envPath;
+    return pathStr + path.DELIMITER + envPath;
   }
 
   private setEnv(env: Record<string, string>): void {

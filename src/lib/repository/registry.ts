@@ -16,6 +16,17 @@ export default class Registry extends FileSystemRepository {
     super(config, rootDir);
   }
 
+  override async init(): Promise<void> {
+    if (this.initialized()) {
+      return;
+    }
+    if (!existsSync(this.rootDir)) {
+      this.setInitialized();
+      return;
+    }
+    await super.init();
+  }
+
   async add(pkg: FileSystemPackage): Promise<void> {
     log.debug(`Registry.add ${pkg.fullPath} ${this.rootDir}`);
     if (!existsSync(pkg.fullPath)) {

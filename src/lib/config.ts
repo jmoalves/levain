@@ -233,8 +233,7 @@ export default class Config {
     log.debug(`SAVE ${fileName}`);
     log.debug(`${JSON.stringify(cfg, null, 3)}`);
 
-    ensureDirSync(this.configPaths.levainConfigDir);
-    FileUtils.writeTextFileSync(fileName, JSON.stringify(cfg, null, 3));
+    FileUtils.writeTextFileAtomicSync(fileName, JSON.stringify(cfg, null, 3));
     log.debug(`saved ${fileName}`);
 
     try {

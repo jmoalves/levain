@@ -10,9 +10,8 @@ import RepositoryManager from "./src/lib/repository/repository_manager.ts";
 
 import Levain from "./levain.ts";
 import LevainCli from "./src/levain_cli.ts";
-import HomePaths from "./src/lib/paths/home_paths.ts";
 
-Deno.test("should create a homeLog and a tempLog by default", async () => {
+Deno.test("should create a unique temp log by default (no shared home log)", async () => {
   let logger;
   try {
     const levain = new Levain();
@@ -20,9 +19,8 @@ Deno.test("should create a homeLog and a tempLog by default", async () => {
 
     assertEquals(levain.error, false);
     const logFiles = logger?.logFiles || [];
-    assertEquals(logFiles.length, 2);
-    const expectedHomeLog = HomePaths.levainLog;
-    assertFind(logFiles, (it) => it === expectedHomeLog, `couldn't find home ${expectedHomeLog} log in ${logFiles}`);
+    assertEquals(logFiles.length, 1);
+    assertFind(logFiles, (it) => /levain-.*\.log$/.test(it), `expected unique temp log in ${logFiles}`);
   } finally {
     await logger?.close();
   }
@@ -40,7 +38,7 @@ Deno.test("should add an extra log file", async () => {
     const levain = new Levain();
     logger = await levain.runLevinWithLog(params.split(" "));
     const logFiles = logger?.logFiles || [];
-    assertEquals(logFiles.length, 3);
+    assertEquals(logFiles.length, 2);
     assertFind(logFiles, (it) => it === extraLogFile, `didn\'t use extra log ${extraLogFile}`);
   } finally {
     CliUtil.testMode = prevTestMode;
@@ -57,7 +55,7 @@ Deno.test("should add an extra log dir", async () => {
     const levain = new Levain();
     logger = await levain.runLevinWithLog(params.split(" "));
     const logFiles = logger?.logFiles || [];
-    assertEquals(logFiles.length, 3);
+    assertEquals(logFiles.length, 2);
     assertFind(
       logFiles,
       (it) => it.includes(extraLogDir),

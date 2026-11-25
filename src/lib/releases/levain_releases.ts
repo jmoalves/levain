@@ -12,20 +12,44 @@ import LevainVersion from "../../levain_version.ts";
 import VersionNumber from "../utils/version_number.ts";
 import GeneralPaths from "../paths/general_paths.ts";
 import FileCache from "../fs/file_cache.ts";
+import { InstanceLock } from "../fs/instance_lock.ts";
 import { ExtractorFactory } from "../extract/extractor_factory.ts";
 import LogUtils from "../logger/log_utils.ts";
 
 const UPDATE_REQUEST = 42;
 
 export default class LevainReleases {
-  private apiUrl = "https://api.github.com/repos/jmoalves/levain/releases";
-  private downloadUrl = "https://github.com/jmoalves/levain/releases/download";
+  private static readonly DEFAULT_REPOSITORY = "jmoalves/levain";
+  private static readonly REPO_SLUG_PATTERN = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
+
+  private readonly apiUrl: string;
+  private readonly downloadUrl: string;
 
   private static releasesCache: any | undefined;
   private static latestCache: any | undefined;
   private static latestNotFound: boolean = false;
 
-  constructor(private config: Config) {
+  constructor(private config: Config, repository?: string) {
+    const repoSlug = LevainReleases.resolveRepository(repository);
+    this.apiUrl = `https://api.github.com/repos/${repoSlug}/releases`;
+    this.downloadUrl = `https://github.com/${repoSlug}/releases/download`;
+  }
+
+  static resolveRepository(repository?: string): string {
+    const slug = (repository ?? Deno.env.get("LEVAIN_REPOSITORY") ?? LevainReleases.DEFAULT_REPOSITORY).trim();
+    const parts = slug.split("/");
+    if (
+      !LevainReleases.REPO_SLUG_PATTERN.test(slug) ||
+      parts.length !== 2 ||
+      parts.some((segment) => segment === "." || segment === "..")
+    ) {
+      throw new Error(`Invalid Levain release repository slug: "${slug}"`);
+    }
+    return slug;
+  }
+
+  static releaseAssetPlatform(os: string = Deno.build.os, arch: string = Deno.build.arch): string {
+    return `${os}-${arch}`;
   }
 
   // deno-lint-ignore require-await
@@ -74,8 +98,8 @@ export default class LevainReleases {
       versionPath = "v" + versionPath;
     }
 
-    OsUtils.isWindows();
-    return `${this.downloadUrl}/${versionPath}/levain-${versionPath}-windows-x86_64.zip`;
+    const platform = LevainReleases.releaseAssetPlatform();
+    return `${this.downloadUrl}/${versionPath}/levain-${versionPath}-${platform}.zip`;
   }
 
   static resetCache() {
@@ -172,8 +196,7 @@ export default class LevainReleases {
     }
 
     try {
-      const levainReleases = new LevainReleases(this.config);
-      const latestVersion = await levainReleases.latestVersion();
+      const latestVersion = await this.latestVersion();
       this.config.lastUpdateCheck = today;
       if (!this.needsUpdate(latestVersion)) {
         return;
@@ -184,7 +207,7 @@ export default class LevainReleases {
       }
 
       this.config.lastKnownVersion = latestVersion.versionNumber;
-      await levainReleases.newReleaseInfo();
+      await this.newReleaseInfo();
 
       if (!this.config.autoUpdate) {
         if (this.config.lastUpdateQuestion == DateUtils.dateTag()) {
@@ -210,7 +233,7 @@ export default class LevainReleases {
 
       this.config.shellCheckForUpdate = true;
 
-      await levainReleases.prepareNewRelease();
+      await this.prepareNewRelease();
     } catch (error) {
       log.debug(`Error ${error}`);
       log.info(t("lib.releases.levain_releases.ignoring"));
@@ -361,9 +384,10 @@ export default class LevainReleases {
       }
     }
 
-    // Double check extracted release contains levain.cmd before writing upgrade marker
+    // Double check extracted release contains the OS entrypoint before writing upgrade marker
+    const expectedEntrypoint = OsUtils.isWindows() ? "levain.cmd" : "levain.sh";
     log.debug(`Checking (2) Levain at ${newVersionDir}`);
-    if (!existsSync(newVersionDir) || !existsSync(path.join(newVersionDir, "levain.cmd"))) {
+    if (!existsSync(newVersionDir) || !existsSync(path.join(newVersionDir, expectedEntrypoint))) {
       log.error(t("lib.releases.levain_releases.unableToLoad"));
       return;
     }
@@ -375,6 +399,7 @@ export default class LevainReleases {
     log.info(t("lib.releases.levain_releases.restarting"));
     log.info("");
 
+    InstanceLock.releaseAll();
     LogUtils.flushLogFiles();
     Deno.exit(UPDATE_REQUEST);
   }

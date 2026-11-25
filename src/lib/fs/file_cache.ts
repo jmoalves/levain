@@ -1,6 +1,6 @@
 import * as log from "@std/log";
 import * as path from "@std/path";
-import { existsSync } from "@std/fs";
+import { ensureDirSync, existsSync } from "@std/fs";
 
 import type Config from "../config.ts";
 import type ProgressReader from "../io/progress_reader.ts";
@@ -36,14 +36,21 @@ export default class FileCache {
       if (this.cacheValid(r, filePathInCache)) {
         log.debug(`fromCache ${filePathInCache}`);
         if (r.motificationTime) {
-          Deno.utimeSync(filePathInCache, new Date(), r.motificationTime);
+          try {
+            Deno.utimeSync(filePathInCache, new Date(), r.motificationTime);
+          } catch (err) {
+            log.debug(`Could not touch cached file ${filePathInCache}: ${err}`);
+          }
         }
         await r.close();
         return filePathInCache;
       }
 
-      if (OsUtils.removeDir(filePathInCache)) {
-        log.debug(`Cache - invalidate ${filePathInCache}`);
+      // Only remove unexpected directories at the target path; regular files are
+      // replaced atomically by FileWriter.close() so concurrent readers stay safe.
+      if (existsSync(filePathInCache) && FileUtils.isDir(filePathInCache)) {
+        OsUtils.removeDir(filePathInCache);
+        log.debug(`Cache - removed conflicting directory ${filePathInCache}`);
       }
 
       return await this.copyToCache(r, true);
@@ -94,8 +101,19 @@ export default class FileCache {
 
   async copyToCache(src: ProgressReader, alreadyRewound = false): Promise<string> {
     log.debug(`- COPY TO CACHE ${src.name}`);
+    ensureDirSync(this.dir);
     const filePathInCache = this.cachedFilePath(src.name);
-    await FileProgress.copyWithProgress(src, filePathInCache, alreadyRewound);
+    try {
+      await FileProgress.copyWithProgress(src, filePathInCache, alreadyRewound);
+    } catch (err) {
+      // If another concurrent Levain instance populated the exact same cache file while
+      // we were downloading, reuse the valid cached copy instead of failing.
+      if (this.cacheValid(src, filePathInCache)) {
+        log.debug(`Cache populated concurrently by another instance: ${filePathInCache}`);
+        return filePathInCache;
+      }
+      throw err;
+    }
     return filePathInCache;
   }
 }

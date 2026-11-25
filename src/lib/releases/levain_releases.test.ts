@@ -4,6 +4,7 @@ import { existsSync } from "@std/fs";
 import * as path from "@std/path";
 
 import LevainReleases from "./levain_releases.ts";
+import VersionNumber from "../utils/version_number.ts";
 import DateUtils from "../utils/date_utils.ts";
 import HttpUtils from "../utils/http_utils.ts";
 import FileCache from "../fs/file_cache.ts";
@@ -191,6 +192,7 @@ Deno.test("LevainReleases.prepareNewRelease cleans old versions, verifies privat
           const outDir = path.join(dst, "levain-1.0.10");
           await Deno.mkdir(outDir, { recursive: true });
           await Deno.writeTextFile(path.join(outDir, "levain.cmd"), "@echo new");
+          await Deno.writeTextFile(path.join(outDir, "levain.sh"), "#!/bin/bash\n");
         },
       }) as unknown as Extractor,
   );
@@ -247,5 +249,30 @@ Deno.test("LevainReleases.checkLevainUpdate skips GitHub API call when already c
   } finally {
     getStub.restore();
     LevainReleases.resetCache();
+  }
+});
+
+Deno.test("LevainReleases should resolve repository from LEVAIN_REPOSITORY, validate slug, and build OS/arch asset URLs", async () => {
+  assertEquals(LevainReleases.releaseAssetPlatform("windows", "x86_64"), "windows-x86_64");
+  assertEquals(LevainReleases.releaseAssetPlatform("linux", "x86_64"), "linux-x86_64");
+  assertEquals(LevainReleases.releaseAssetPlatform("darwin", "aarch64"), "darwin-aarch64");
+
+  assertThrows(() => LevainReleases.resolveRepository("invalid slug"), Error, "Invalid Levain release repository slug");
+  assertThrows(() => LevainReleases.resolveRepository("https://evil.example/a/b"), Error, "Invalid Levain release repository slug");
+  assertThrows(() => LevainReleases.resolveRepository("../evil"), Error, "Invalid Levain release repository slug");
+  assertThrows(() => LevainReleases.resolveRepository("org/.."), Error, "Invalid Levain release repository slug");
+
+  const config = TestHelper.getConfig();
+  const envStub = stub(Deno.env, "get", (key: string) => (key === "LEVAIN_REPOSITORY" ? "custom-org/levain-fork" : undefined));
+  try {
+    assertEquals(LevainReleases.resolveRepository(), "custom-org/levain-fork");
+    const releases = new LevainReleases(config);
+    const url = await releases.levainZipUrl(new VersionNumber("1.1.0"));
+    assertEquals(
+      url,
+      `https://github.com/custom-org/levain-fork/releases/download/v1.1.0/levain-v1.1.0-${Deno.build.os}-${Deno.build.arch}.zip`,
+    );
+  } finally {
+    envStub.restore();
   }
 });
