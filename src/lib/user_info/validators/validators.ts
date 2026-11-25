@@ -1,6 +1,18 @@
-import validator from "validator";
 import { ValidateResult } from "@cliffy/prompt";
 import { type Validator } from "./validator.ts";
+
+const EMAIL_REGEX = /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+$/;
+
+function isValidEmail(text: string): boolean {
+  if (!text || text.length > 254) {
+    return false;
+  }
+  const atIndex = text.indexOf("@");
+  if (atIndex <= 0 || atIndex > 64 || text.includes("..") || text[0] === "." || text[atIndex - 1] === ".") {
+    return false;
+  }
+  return EMAIL_REGEX.test(text);
+}
 
 export class MinLengthValidator implements Validator {
   constructor(public minLength: number) {
@@ -62,7 +74,7 @@ export class CompositeValidators implements Validator {
 
 export class EmailValidator implements Validator {
   validate(text: string): ValidateResult {
-    if (!validator.isEmail(text)) {
+    if (!isValidEmail(text)) {
       return "Please inform a valid EMAIL";
     }
 

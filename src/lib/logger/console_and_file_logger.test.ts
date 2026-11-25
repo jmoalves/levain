@@ -103,3 +103,42 @@ Deno.test("should mask passwords in file logs and ConsoleFeedback even when conf
     }
   }
 });
+
+Deno.test("ConsoleFeedback.show should throttle terminal writes and suppress interleaved spinners during concurrent operations", () => {
+  const prevOut = ConsoleFeedback.OUT;
+  const written: string[] = [];
+  const decoder = new TextDecoder();
+
+  try {
+    ConsoleFeedback.OUT = {
+      isTerminal: () => true,
+      writeSync: (p: Uint8Array) => {
+        written.push(decoder.decode(p));
+        return p.length;
+      },
+    } as typeof Deno.stdout;
+
+    const feedback = new ConsoleFeedback();
+    for (let i = 0; i < 20; i++) {
+      feedback.show();
+    }
+    assertEquals(written.length, 1);
+
+    // Concurrent feedback instances suppress interleaved spinners and omit leading \r on reset
+    written.length = 0;
+    const fb1 = new ConsoleFeedback();
+    const fb2 = new ConsoleFeedback();
+    fb1.start("Scan A");
+    fb2.start("Scan B");
+    fb1.show();
+    fb2.show();
+    fb2.reset("Done B");
+    fb1.reset("Done A");
+    const output = written.join("");
+    assertStringIncludes(output, "Done B\r\n");
+    assertStringIncludes(output, "Done A\r\n");
+    assertFalse(output.includes("\rDone B"));
+  } finally {
+    ConsoleFeedback.OUT = prevOut;
+  }
+});

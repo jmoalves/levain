@@ -96,9 +96,7 @@
     "@std/path": "jsr:@std/path@^1.1.6",
     "@std/testing": "jsr:@std/testing@^1.0.21",
     "@std/yaml": "jsr:@std/yaml@^1.3.0",
-    "@zip.js/zip.js": "npm:@zip.js/zip.js@^2.25.0",
-    "date-fns": "npm:date-fns@^4.4.0",
-    "validator": "npm:validator@^13.15.35"
+    "@zip.js/zip.js": "npm:@zip.js/zip.js@^2.25.0"
   },
   "nodeModulesDir": "auto"
 }

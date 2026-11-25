@@ -1,6 +1,6 @@
 import * as log from "@std/log";
 import * as path from "@std/path";
-import { copySync, existsSync, moveSync } from "@std/fs";
+import { copySync, existsSync } from "@std/fs";
 
 import t from "../lib/i18n.ts";
 
@@ -280,30 +280,33 @@ export default class Install implements Command {
         Deno.mkdirSync(bkpDir, { recursive: true });
       }
 
-      log.debug(`- SAVE-COPY  ${src} => ${dst}`);
-      copySync(src, dst);
-
       if (pkg.yamlItem("levain.preserveBaseDirOnUpdate")) {
+        log.debug(`- SAVE-COPY  ${src} => ${dst}`);
+        copySync(src, dst);
         log.info(t("cmd.install.keepingBaseDir", { pkg: pkg.name }));
         return;
       }
 
-      const deletedDir = Deno.makeTempDirSync({
-        dir: path.dirname(src),
-        prefix: ".deleted." + path.basename(src) + ".",
-        suffix: ".tmp",
+      log.debug(`- SAVE-MOV   ${src} => ${dst}`);
+      let crossDevice = false;
+      await retry(this.maxRetries, () => {
+        try {
+          Deno.renameSync(src, dst);
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          if (msg.includes("EXDEV") || msg.includes("os error 17") || msg.includes("os error 18")) {
+            crossDevice = true;
+            return;
+          }
+          throw err;
+        }
       });
-      log.debug(`- SAVE-PRE   ${deletedDir}`);
-      await retry(this.maxRetries, () => FileUtils.removeSync(deletedDir, { recursive: true }));
 
-      log.debug(`- SAVE-MOV   ${src} => ${deletedDir}`);
-      await retry(this.maxRetries, () => moveSync(src, deletedDir));
-
-      try {
-        log.debug(`- SAVE-DEL   ${deletedDir}`);
-        await retry(this.maxRetries, () => FileUtils.removeSync(deletedDir, { recursive: true }));
-      } catch (error) {
-        log.debug(t("cmd.install.ignoreError", { error: error }));
+      if (crossDevice) {
+        log.debug(`- SAVE-COPY (cross-device) ${src} => ${dst}`);
+        copySync(src, dst, { overwrite: true });
+        log.debug(`- SAVE-DEL   ${src}`);
+        await retry(this.maxRetries, () => FileUtils.removeSync(src, { recursive: true }));
       }
 
       log.debug(`SAVED ${src} => ${dst}`);

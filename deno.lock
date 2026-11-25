@@ -36,9 +36,7 @@
     "jsr:@std/testing@^1.0.21": "1.0.21",
     "jsr:@std/text@^1.0.19": "1.1.0",
     "jsr:@std/yaml@^1.3.0": "1.3.0",
-    "npm:@zip.js/zip.js@^2.25.0": "2.25.0",
-    "npm:date-fns@^4.4.0": "4.4.0",
-    "npm:validator@^13.15.35": "13.15.35"
+    "npm:@zip.js/zip.js@^2.25.0": "2.25.0"
   },
   "jsr": {
     "@cliffy/ansi@1.3.1": {
@@ -213,12 +211,6 @@
   "npm": {
     "@zip.js/zip.js@2.25.0": {
       "integrity": "sha512-oNRqUuU1XFu6G5d7Z0jufJ9dS9WteO0xiU/PNxsUrb4itZCsSbn191jpJzU00Gmc6S680X3DPZeF5EV4zAEMAg=="
-    },
-    "date-fns@4.4.0": {
-      "integrity": "sha512-+1UMbeh68lH1SegH83CGWwpb6OHHbpSgr3+s5Eww5M4CAgswBpoWS0AjTOfEJ33HiYKz1hdj/KTFprzXHmq/6w=="
-    },
-    "validator@13.15.35": {
-      "integrity": "sha512-TQ5pAGhd5whStmqWvYF4OjQROlmv9SMFVt37qoCBdqRffuuklWYQlCNnEs2ZaIBD1kZRNnikiZOS1eqgkar0iw=="
     }
   },
   "workspace": {
@@ -237,9 +229,7 @@
       "jsr:@std/path@^1.1.6",
       "jsr:@std/testing@^1.0.21",
       "jsr:@std/yaml@^1.3.0",
-      "npm:@zip.js/zip.js@^2.25.0",
-      "npm:date-fns@^4.4.0",
-      "npm:validator@^13.15.35"
+      "npm:@zip.js/zip.js@^2.25.0"
     ]
   }
 }

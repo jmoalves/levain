@@ -21,7 +21,14 @@ export default class RepositoryManager {
 
   constructor(private config: Config) { }
 
-  async init({ extraRepos, tempRepos }: { extraRepos: string[]; tempRepos?: string[] }): Promise<Repository[]> {
+  async init(
+    { extraRepos, tempRepos, forceRefresh = false, installedOnly = false }: {
+      extraRepos: string[];
+      tempRepos?: string[];
+      forceRefresh?: boolean;
+      installedOnly?: boolean;
+    },
+  ): Promise<Repository[]> {
     log.debug("");
     log.debug(
       `=== RepositoryManager.init - extraRepos: ${JSON.stringify(extraRepos)} tempRepos: ${JSON.stringify(tempRepos)}`,
@@ -38,7 +45,7 @@ export default class RepositoryManager {
       tempRepos.forEach((repo) => this.tempRepos.add(repo));
     }
 
-    await this.createRepositories();
+    await this.createRepositories(forceRefresh, installedOnly);
     return await this.initRepositories();
   }
 
@@ -129,13 +136,22 @@ export default class RepositoryManager {
     }
   }
 
-  private async createRepositories(): Promise<void> {
+  private static readonly MAX_CONCURRENT_REPOS = 4;
+
+  private async createRepositories(forceRefresh = false, installedOnly = false): Promise<void> {
     log.debug("");
     log.debug("=== createRepositories");
 
-    await this.createInstalledRepo();
-    await this.createRegularRepositories();
-    await this.createCurrentDirRepo();
+    const tasks: Array<Promise<unknown>> = [
+      this.createInstalledRepo(),
+      this.createCurrentDirRepo(),
+    ];
+    if (!installedOnly) {
+      tasks.push(this.createRegularRepositories(forceRefresh));
+    } else {
+      this.repositories.regular = new EmptyRepository();
+    }
+    await Promise.all(tasks);
   }
 
   private async initRepositories(): Promise<Repository[]> {
@@ -149,19 +165,27 @@ export default class RepositoryManager {
     const repos: any = this.repositories;
     log.debug(`## repos: ${this.repositories?.describe()}`);
 
-    const initializedRepositories: Repository[] = [];
-
+    const pending: Array<{ key: string; repo: Repository }> = [];
     for (const key in repos) {
       if (repos[key]) {
         const repo: Repository = repos[key];
         if (!repo.initialized()) {
-          log.debug(`INIT Repo[${key}] - ${repo.describe()} initialized? ${repo.initialized()}`);
-          await repo.init();
-          initializedRepositories.push(repo);
+          pending.push({ key, repo });
+        } else {
+          log.debug(`Repo[${key}] - ${repo.describe()} initialized? ${repo.initialized()}`);
         }
-        log.debug(`Repo[${key}] - ${repo.describe()} initialized? ${repo.initialized()}`);
       }
     }
+
+    const initializedRepositories: Repository[] = [];
+    await Promise.all(
+      pending.map(async ({ key, repo }) => {
+        log.debug(`INIT Repo[${key}] - ${repo.describe()} initialized? ${repo.initialized()}`);
+        await repo.init();
+        initializedRepositories.push(repo);
+        log.debug(`Repo[${key}] - ${repo.describe()} initialized? ${repo.initialized()}`);
+      }),
+    );
     this.logRepos(repos);
 
     return initializedRepositories;
@@ -197,10 +221,10 @@ export default class RepositoryManager {
     return this.repositories.installed = await this.createRepos(repos);
   }
 
-  public async createRegularRepositories(): Promise<Repository> {
+  public async createRegularRepositories(forceRefresh = false): Promise<Repository> {
     log.debug("createRegularRepository");
     const repos = await this.repoList(false);
-    return this.repositories.regular = await this.createRepos(repos);
+    return this.repositories.regular = await this.createRepos(repos, false, forceRefresh);
   }
 
   // deno-lint-ignore require-await
@@ -238,10 +262,22 @@ export default class RepositoryManager {
     this.tempRepos.forEach((repo) => repos.push(repo));
   }
 
-  private async createRepos(repoDirs: string[], rootOnly: boolean = false): Promise<Repository> {
-    const repoArr: Repository[] = [];
-    for (const repoPath of RepositoryFactory.normalizeList(repoDirs)) {
-      repoArr.push(await RepositoryFactory.getOrCreate(this.config, repoPath, rootOnly));
+  private async createRepos(
+    repoDirs: string[],
+    rootOnly: boolean = false,
+    forceRefresh: boolean = false,
+  ): Promise<Repository> {
+    const normalized = RepositoryFactory.normalizeList(repoDirs);
+    const repoArr: Repository[] = new Array(normalized.length);
+
+    for (let i = 0; i < normalized.length; i += RepositoryManager.MAX_CONCURRENT_REPOS) {
+      const chunk = normalized.slice(i, i + RepositoryManager.MAX_CONCURRENT_REPOS);
+      const resolvedChunk = await Promise.all(
+        chunk.map((repoPath) => RepositoryFactory.getOrCreate(this.config, repoPath, rootOnly, forceRefresh)),
+      );
+      for (let j = 0; j < resolvedChunk.length; j++) {
+        repoArr[i + j] = resolvedChunk[j];
+      }
     }
 
     const repoCount = repoArr.length;

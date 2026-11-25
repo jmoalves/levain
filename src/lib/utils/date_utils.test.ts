@@ -27,3 +27,10 @@ Deno.test("DateUtils - should format time with millis", () => {
   // Date month starts with zero!
   assertEquals(DateUtils.timeTagWithMillis("", new Date(2020, 11, 23, 12, 5, 25, 9)), "120525009");
 });
+
+Deno.test("DateUtils - daysAgo should subtract calendar days accurately", () => {
+  const ref = new Date(2026, 2, 10, 15, 30, 0); // March 10, 2026
+  const tenDaysAgo = DateUtils.daysAgo(10, ref);
+  assertEquals(DateUtils.dateTag(tenDaysAgo), "20260228");
+  assertEquals(DateUtils.dateTag(ref), "20260310");
+});

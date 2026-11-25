@@ -23,6 +23,16 @@ export default class LevainCli {
     "shell",
     "clone",
   ]);
+  private static readonly NO_REPO_COMMANDS = new Set([
+    "actions",
+    "clean",
+  ]);
+  private static readonly SANITIZE_PATH_COMMANDS = new Set([
+    "install",
+    "update",
+    "shell",
+    "clone",
+  ]);
   async execute(myArgs: any = {}): Promise<void> {
     log.info(t("levain_cli.levainVersion", {
       version: LevainVersion.levainVersion,
@@ -49,8 +59,21 @@ export default class LevainCli {
       return;
     }
 
+    const profileEnabled = Deno.env.get("LEVAIN_PROFILE") === "1";
+    const profileMarks: Array<{ phase: string; ms: number }> = [];
+    const measurePhase = async <T>(phase: string, fn: () => Promise<T> | T): Promise<T> => {
+      const start = performance.now();
+      try {
+        return await fn();
+      } finally {
+        const elapsed = performance.now() - start;
+        profileMarks.push({ phase, ms: elapsed });
+        log.debug(`[profile] ${phase}: ${elapsed.toFixed(1)}ms`);
+      }
+    };
+
     // Context
-    const config = new Config(myArgs);
+    const config = await measurePhase("config", () => new Config(myArgs));
     ConsoleAndFileLogger.config = config;
 
     function getCmdFromArgs() {
@@ -63,7 +86,7 @@ export default class LevainCli {
     // Ask for user_info
     if (cmd === "install") {
       const userInfoUtil = new UserInfoUtil();
-      await userInfoUtil.askUserInfo(config, myArgs);
+      await measurePhase("userInfo", () => userInfoUtil.askUserInfo(config, myArgs));
     }
 
     // Shell path
@@ -71,24 +94,34 @@ export default class LevainCli {
       config.shellPath = myArgs.shellPath;
     }
 
-    if (!myArgs["skip-levain-updates"] && !myArgs["levain-upgrade"]) {
+    const isActivateCmd = cmd === "_activate-machine" && myArgs._[0] === "cmd";
+    const isActivatePre = cmd === "_activate-machine" && myArgs._[0] === "pre";
+    if (!myArgs["skip-levain-updates"] && !myArgs["levain-upgrade"] && !isActivateCmd) {
       const levainReleases = new LevainReleases(config);
-      await levainReleases.checkLevainUpdate();
+      await measurePhase("checkLevainUpdate", () => levainReleases.checkLevainUpdate());
     }
 
-    // Repository Manager
-    await config.repositoryManager.init({
-      extraRepos: myArgs.addRepo,
-      tempRepos: myArgs.tempRepo,
-    });
+    // Repository Manager (skip for commands that never access repositories)
+    if (myArgs["levain-upgrade"] || !LevainCli.NO_REPO_COMMANDS.has(cmd)) {
+      await measurePhase("repositoryManager.init", () =>
+        config.repositoryManager.init({
+          extraRepos: myArgs.addRepo,
+          tempRepos: myArgs.tempRepo,
+          forceRefresh: cmd === "update",
+          installedOnly: isActivateCmd,
+        })
+      );
+    }
 
-    // sanitize path for clean execution
-    await OsUtils.sanitizeUserPath();
+    // Sanitize user PATH only for commands that install, mutate, or launch environments
+    if (myArgs["levain-upgrade"] || isActivatePre || LevainCli.SANITIZE_PATH_COMMANDS.has(cmd)) {
+      await measurePhase("sanitizeUserPath", () => OsUtils.sanitizeUserPath());
+    }
 
     const loader = new Loader(config);
     try {
       if (myArgs["levain-upgrade"]) {
-        await loader.command("install", ["--force", "levain"]);
+        await measurePhase("levain-upgrade", () => loader.command("install", ["--force", "levain"]));
         config.save();
         log.info("");
         log.info("");
@@ -104,9 +137,9 @@ export default class LevainCli {
         log.info(t("levain_cli.bye"));
         return;
       } else {
-        await this.maybeAutoClean(cmd, config, myArgs, loader);
+        await measurePhase("maybeAutoClean", () => this.maybeAutoClean(cmd, config, myArgs, loader));
 
-        await loader.command(cmd, myArgs._);
+        await measurePhase(`command:${cmd}`, () => loader.command(cmd, myArgs._));
         // FIXME Will this save a broken config?
         // config.saveIfChanged()
       }
@@ -117,6 +150,11 @@ export default class LevainCli {
         throw err;
       }
       throw err;
+    } finally {
+      if (profileEnabled) {
+        const summary = profileMarks.map((m) => `${m.phase}=${m.ms.toFixed(1)}ms`).join(" ");
+        console.error(`[levain:profile] ${summary}`);
+      }
     }
 
     /////////////////////////////////////////////////////////////////////////////////

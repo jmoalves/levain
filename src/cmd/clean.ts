@@ -2,8 +2,6 @@ import * as log from "@std/log";
 import * as path from "@std/path";
 import { existsSync } from "@std/fs";
 
-import { isBefore } from "date-fns";
-
 import t from "../lib/i18n.ts";
 
 import type Config from "../lib/config.ts";
@@ -110,6 +108,7 @@ export default class CleanCommand implements Command {
     }
 
     // clean files older than 30 days
+    const cutoffTime = DateUtils.daysAgo(cacheExpiration).getTime();
     return this.cleanDir(
       cacheDir,
       (dirEntry: Deno.DirEntry) => {
@@ -119,7 +118,7 @@ export default class CleanCommand implements Command {
         }
         const stat = FileUtils.getFileInfoSync(entry);
         const lastUsed = stat.atime ?? stat.mtime;
-        return !lastUsed ? false : isBefore(lastUsed, DateUtils.daysAgo(cacheExpiration));
+        return !lastUsed ? false : lastUsed.getTime() < cutoffTime;
       },
     );
   }

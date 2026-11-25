@@ -39,7 +39,12 @@ Deno.test("LevainCli should dispatch command, pass repo flags, apply shellPath, 
   const prevConfig = ConsoleAndFileLogger.config;
   const tempHome = TestHelper.getNewTempDir();
   const fakeShell = TestHelper.getNewTempFile();
-  const repoInitArgs: Array<{ extraRepos: string[]; tempRepos?: string[] }> = [];
+  const repoInitArgs: Array<{
+    extraRepos: string[];
+    tempRepos?: string[];
+    forceRefresh?: boolean;
+    installedOnly?: boolean;
+  }> = [];
   const commandCalls: Array<{ cmd: string; args: string[] }> = [];
 
   const randomStub = stub(Math, "random", () => 0);
@@ -67,8 +72,13 @@ Deno.test("LevainCli should dispatch command, pass repo flags, apply shellPath, 
     });
 
     assertEquals(releaseStub.calls.length, 0);
-    assertEquals(repoInitArgs, [{ extraRepos: ["/extra/repo"], tempRepos: ["/temp/repo"] }]);
-    assertEquals(sanitizeStub.calls.length, 1);
+    assertEquals(repoInitArgs, [{
+      extraRepos: ["/extra/repo"],
+      tempRepos: ["/temp/repo"],
+      forceRefresh: false,
+      installedOnly: false,
+    }]);
+    assertEquals(sanitizeStub.calls.length, 0, "read-only list command should skip sanitizeUserPath");
     assertEquals(commandCalls, [{ cmd: "list", args: ["jdk"] }]);
     assertEquals(saveStub.calls.length, 1);
     assertEquals(ConsoleAndFileLogger.config?.shellPath, fakeShell);
@@ -344,5 +354,69 @@ Deno.test("LevainCli --levain-upgrade should skip update check, reinstall levain
     sanitizeStub.restore();
     ConsoleAndFileLogger.config = prevConfig;
     CliUtil.testMode = prevTestMode;
+  }
+});
+
+Deno.test("LevainCli should skip update checks/regular repos/sanitizeUserPath on _activate-machine cmd, forceRefresh on update, and skip repo init on actions/clean", async () => {
+  const prevConfig = ConsoleAndFileLogger.config;
+  const prevProfile = Deno.env.get("LEVAIN_PROFILE");
+  const tempHome = TestHelper.getNewTempDir();
+  const profileLines: string[] = [];
+  const repoInitCalls: Array<{ forceRefresh?: boolean; installedOnly?: boolean }> = [];
+
+  const sanitizeStub = stub(OsUtils, "sanitizeUserPath", () => Promise.resolve());
+  const repoInitStub = stub(RepositoryManager.prototype, "init", (opts) => {
+    repoInitCalls.push({ forceRefresh: opts.forceRefresh, installedOnly: opts.installedOnly });
+    return Promise.resolve([]);
+  });
+  const saveStub = stub(Config.prototype, "save", () => {});
+  const releaseStub = stub(LevainReleases.prototype, "checkLevainUpdate", () => Promise.resolve());
+  const loaderCmdStub = stub(Loader.prototype, "command", () => Promise.resolve());
+  const errStub = stub(console, "error", (...args: unknown[]) => {
+    profileLines.push(args.map(String).join(" "));
+  });
+
+  try {
+    Deno.env.set("LEVAIN_PROFILE", "1");
+    const cli = new LevainCli();
+    await cli.execute({
+      _: ["_activate-machine", "cmd", "--shell", "bash"],
+      levainHome: [tempHome],
+    });
+
+    assertEquals(releaseStub.calls.length, 0, "_activate-machine cmd must skip update check");
+    assertEquals(sanitizeStub.calls.length, 0, "_activate-machine cmd must skip sanitizeUserPath");
+    assertEquals(repoInitCalls, [{ forceRefresh: false, installedOnly: true }]);
+    assert(profileLines.some((line) => line.includes("[levain:profile]") && line.includes("repositoryManager.init=")));
+
+    // actions and clean must skip repositoryManager.init and sanitizeUserPath
+    repoInitCalls.length = 0;
+    await cli.execute({ _: ["actions"], levainHome: [tempHome], "skip-levain-updates": true });
+    await cli.execute({ _: ["clean"], levainHome: [tempHome], "skip-levain-updates": true });
+    assertEquals(repoInitCalls.length, 0);
+    assertEquals(sanitizeStub.calls.length, 0);
+
+    // update must pass forceRefresh=true and run sanitizeUserPath
+    await cli.execute({
+      _: ["update", "git"],
+      levainHome: [tempHome],
+      "skip-levain-updates": true,
+      "skip-auto-clean": true,
+    });
+    assertEquals(repoInitCalls, [{ forceRefresh: true, installedOnly: false }]);
+    assertEquals(sanitizeStub.calls.length, 1);
+  } finally {
+    errStub.restore();
+    loaderCmdStub.restore();
+    releaseStub.restore();
+    saveStub.restore();
+    repoInitStub.restore();
+    sanitizeStub.restore();
+    ConsoleAndFileLogger.config = prevConfig;
+    if (prevProfile === undefined) {
+      Deno.env.delete("LEVAIN_PROFILE");
+    } else {
+      Deno.env.set("LEVAIN_PROFILE", prevProfile);
+    }
   }
 });

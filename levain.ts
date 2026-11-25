@@ -59,13 +59,13 @@ export default class Levain {
         log.info("");
         const timed = this.timer.humanize();
         log.info(t("levain.levainRan", { timer: timed }));
-        this.logger.flush();
 
         if (this.error) {
           log.error(t("levain.executionFailed"));
         } else {
           log.debug(t("levain.executionSuccess"));
         }
+        this.logger.flush();
       }
 
       const shouldWaitAfterEnd = Boolean(

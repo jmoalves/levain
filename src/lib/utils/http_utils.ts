@@ -1,6 +1,5 @@
 import * as log from "@std/log";
 import * as path from "@std/path";
-import validator from "validator";
 import { sleepRandomAmountOfSeconds } from "./utils.ts";
 
 export default class HttpUtils {
@@ -37,8 +36,20 @@ export default class HttpUtils {
     throw error;
   }
 
+  static isUrl(uri: string): boolean {
+    if (!uri || /\s/.test(uri) || !/^(https?|ftp):\/\//i.test(uri)) {
+      return false;
+    }
+    try {
+      const parsed = new URL(uri);
+      return Boolean(parsed.hostname);
+    } catch {
+      return false;
+    }
+  }
+
   static resolve(uri: string) {
-    if (validator.isURL(uri, {})) {
+    if (HttpUtils.isUrl(uri)) {
       return uri;
     }
     return path.resolve(uri);

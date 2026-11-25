@@ -38,3 +38,15 @@ Deno.test("RepositoryFactory.getOrCreate should isolate cache per Config and roo
   assertNotStrictEquals(repoCfg1Full, repoCfg1Root);
   assertNotStrictEquals(repoCfg1Full, repoCfg2Full);
 });
+
+Deno.test("RepositoryFactory.getOrCreate should deduplicate concurrent in-flight initializations", async () => {
+  const config = TestHelper.getConfig();
+  const repoPath = TestHelper.getTestDataPath("repository_factory/repo");
+
+  const [repoA, repoB] = await Promise.all([
+    RepositoryFactory.getOrCreate(config, repoPath),
+    RepositoryFactory.getOrCreate(config, repoPath),
+  ]);
+
+  assert(repoA === repoB);
+});

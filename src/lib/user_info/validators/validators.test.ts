@@ -68,8 +68,16 @@ Deno.test("EmailValidator should reject an ASCII name", () => {
   const validator = new EmailValidator();
   assertEquals(validator.validate("John"), "Please inform a valid EMAIL");
 });
-Deno.test("EmailValidator should have a static validator", () => {
+Deno.test("EmailValidator should accept valid emails and reject malformed ones", () => {
   assertEquals(EmailValidator.validate("mary@hadalittlelamb.org"), true);
+  assertEquals(EmailValidator.validate("user+tag@sub.example.org"), true);
+  assertEquals(EmailValidator.validate(""), "Please inform a valid EMAIL");
+  assertEquals(EmailValidator.validate("a..b@example.org"), "Please inform a valid EMAIL");
+  assertEquals(EmailValidator.validate(".a@example.org"), "Please inform a valid EMAIL");
+  assertEquals(EmailValidator.validate("a.@example.org"), "Please inform a valid EMAIL");
+  assertEquals(EmailValidator.validate("@example.org"), "Please inform a valid EMAIL");
+  assertEquals(EmailValidator.validate("user@localhost"), "Please inform a valid EMAIL");
+  assertEquals(EmailValidator.validate("a".repeat(250) + "@b.com"), "Please inform a valid EMAIL");
 });
 //
 // LoginValidator
