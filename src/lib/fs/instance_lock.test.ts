@@ -1,6 +1,8 @@
 import * as path from "@std/path";
 import { assert, assertEquals, assertFalse, assertRejects } from "@std/assert";
 import { existsSync } from "@std/fs";
+import { stub } from "@std/testing/mock";
+import process from "node:process";
 
 import TestHelper from "../test/test_helper.ts";
 import OsUtils from "../os/os_utils.ts";
@@ -206,10 +208,50 @@ Deno.test("InstanceLock should support out-of-order nested release and releaseAl
   assertFalse(existsSync(lockPath));
 
   // releaseAll cleans up all held locks (used before Deno.exit(42) self-upgrade)
-  await InstanceLock.acquire(lockPath, { command: "update" });
+  const held = await InstanceLock.acquire(lockPath, { command: "update" });
   assert(existsSync(lockPath));
   InstanceLock.releaseAll();
   assertFalse(existsSync(lockPath));
+  // Calling release() after releaseAll() is a safe no-op
+  held.release();
+
+  // Release when lock file was already deleted externally or corrupted
+  const held2 = await InstanceLock.acquire(lockPath, { command: "install" });
+  Deno.removeSync(lockPath);
+  held2.release();
+
+  const held3 = await InstanceLock.acquire(lockPath, { command: "install" });
+  Deno.writeTextFileSync(lockPath, '{"missingFields":true}');
+  held3.release();
+  assert(existsSync(lockPath));
+  Deno.removeSync(lockPath);
+});
+
+Deno.test("InstanceLock should handle malformed JSON schema, EPERM liveness, and remove failures cleanly", async () => {
+  const dir = TestHelper.getNewTempDir();
+  const lockPath = path.join(dir, "levain.lock");
+
+  // Valid JSON with wrong shape is treated as corrupt and recovered once aged
+  Deno.writeTextFileSync(lockPath, '{"pid":"not-a-number"}');
+  const lock = await InstanceLock.acquire(lockPath, {
+    command: "clean",
+    waitTimeoutMs: 200,
+    pollIntervalMs: 15,
+    staleCorruptAgeMs: 0,
+  });
+  lock.release();
+
+  // EPERM from process.kill(pid, 0) means the process exists under another user -> alive (true)
+  const killStub = stub(process, "kill", () => {
+    const err = new Error("Operation not permitted") as Error & { code?: string };
+    err.code = "EPERM";
+    throw err;
+  });
+  try {
+    assertEquals(InstanceLock.isPidAlive(12345), true);
+  } finally {
+    killStub.restore();
+  }
 });
 
 Deno.test("InstanceLock should respect deadline without spinning when lock path is an unremovable directory", async () => {

@@ -217,4 +217,23 @@ Deno.test("FileUtils.writeTextFileAtomicSync should write/replace atomically wit
   assertThrows(() => FileUtils.writeTextFileAtomicSync(dirTarget, "fail"));
   const rootEntries = [...Deno.readDirSync(dir)].map((e) => e.name);
   assert(!rootEntries.some((name) => name.endsWith(".tmp")));
+
+  // Transient PermissionDenied during renameSync retries and succeeds
+  const retryTarget = path.join(dir, "retry.json");
+  const origRename = Deno.renameSync;
+  let attempts = 0;
+  const renameStub = stub(Deno, "renameSync", (oldPath: string | URL, newPath: string | URL) => {
+    attempts++;
+    if (attempts === 1) {
+      throw new Deno.errors.PermissionDenied("transient Windows lock");
+    }
+    return origRename(oldPath, newPath);
+  });
+  try {
+    FileUtils.writeTextFileAtomicSync(retryTarget, '{"retried":true}');
+    assertEquals(attempts, 2);
+    assertEquals(Deno.readTextFileSync(retryTarget), '{"retried":true}');
+  } finally {
+    renameStub.restore();
+  }
 });

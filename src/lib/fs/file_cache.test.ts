@@ -1,5 +1,5 @@
 import * as path from "@std/path";
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertRejects } from "@std/assert";
 import { stub } from "@std/testing/mock";
 import type ProgressBar from "@deno-library/progress";
 
@@ -134,6 +134,42 @@ Deno.test("FileCache.copyToCache should reuse valid cache file populated concurr
     const result = await fileCache.copyToCache(reader, true);
     assertEquals(result, target);
     assertEquals(Deno.readTextFileSync(result), "concurrent-payload");
+  } finally {
+    copyStub.restore();
+  }
+});
+
+Deno.test("FileCache should replace conflicting directory, tolerate utime errors on hit, and rethrow non-concurrent copy errors", async () => {
+  const config = TestHelper.getConfig();
+  config.configPaths.levainCacheDir = TestHelper.getNewTempDir();
+  const fileCache = new FileCache(config);
+  const fixedMtime = new Date("2025-03-03T00:00:00.000Z");
+
+  // Pre-create a conflicting directory at the cache target path
+  const reader = new SpyProgressReader("https://example.org/dir-conflict.zip", "fresh-bytes", fixedMtime);
+  const target = fileCache.cachedFilePath(reader.name);
+  Deno.mkdirSync(target, { recursive: true });
+
+  const cachedPath = await fileCache.get(reader);
+  assertEquals(cachedPath, target);
+  assertEquals(Deno.readTextFileSync(cachedPath), "fresh-bytes");
+
+  // Best-effort utime failure on cache hit must not fail the cache hit
+  const hitReader = new SpyProgressReader("https://example.org/dir-conflict.zip", "fresh-bytes", fixedMtime);
+  const utimeStub = stub(Deno, "utimeSync", () => {
+    throw new Error("simulated utime error");
+  });
+  try {
+    assertEquals(await fileCache.get(hitReader), target);
+  } finally {
+    utimeStub.restore();
+  }
+
+  // Real copy failure when cache is still invalid must propagate
+  const failReader = new SpyProgressReader("https://example.org/broken.zip", "broken-bytes", fixedMtime);
+  const copyStub = stub(FileProgress, "copyWithProgress", () => Promise.reject(new Error("network failed")));
+  try {
+    await assertRejects(async () => await fileCache.copyToCache(failReader, true), Error, "network failed");
   } finally {
     copyStub.restore();
   }

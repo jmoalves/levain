@@ -76,6 +76,8 @@ Deno.test("Registry.init should stay empty without creating rootDir when registr
   const registry = new Registry(config, missingDir);
 
   await registry.init();
+  // Second init is a no-op when already initialized
+  await registry.init();
   assertEquals(registry.initialized(), true);
   assertEquals(registry.size(), 0);
   assertFalse(existsSync(missingDir));

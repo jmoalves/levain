@@ -20,6 +20,67 @@ Deno.test("OsUtils should know the users login", () => {
   assertNotEquals(OsUtils.login, undefined);
 });
 
+Deno.test("OsUtils.hostname should fall back to Deno.hostname when env vars are unset", () => {
+  const envStub = stub(Deno.env, "get", () => undefined);
+  const hostStub = stub(Deno, "hostname", () => "fallback-host");
+  try {
+    assertEquals(OsUtils.hostname, "fallback-host");
+  } finally {
+    hostStub.restore();
+    envStub.restore();
+  }
+
+  const envStub2 = stub(Deno.env, "get", () => undefined);
+  const hostFailStub = stub(Deno, "hostname", () => {
+    throw new Error("no hostname");
+  });
+  try {
+    assertEquals(OsUtils.hostname, undefined);
+  } finally {
+    hostFailStub.restore();
+    envStub2.restore();
+  }
+});
+
+Deno.test("OsUtils.createShortcut POSIX branch should target dstDir/basename and replace existing symlink", async () => {
+  const dstDir = TestHelper.getNewTempDir();
+  const targetFile = path.join(dstDir, "src-tool");
+  const expectedLink = path.join(dstDir, "src-tool");
+
+  let lstatCall = 0;
+  const removedPaths: string[] = [];
+  const symlinks: Array<[string, string]> = [];
+
+  const isWinStub = stub(OsUtils, "isWindows", () => false);
+  const lstatStub = stub(Deno, "lstatSync", () => {
+    lstatCall++;
+    if (lstatCall === 1) {
+      throw new Deno.errors.NotFound("not found");
+    }
+    return { isSymlink: true } as Deno.FileInfo;
+  });
+  const removeStub = stub(Deno, "removeSync", (p: string | URL) => {
+    removedPaths.push(String(p));
+  });
+  const symlinkStub = stub(Deno, "symlinkSync", (oldPath: string | URL, newPath: string | URL) => {
+    symlinks.push([String(oldPath), String(newPath)]);
+  });
+
+  try {
+    const link1 = await OsUtils.createShortcut(targetFile, dstDir);
+    const link2 = await OsUtils.createShortcut(targetFile, dstDir);
+    assertEquals(link1, expectedLink);
+    assertEquals(link2, expectedLink);
+    assertEquals(removedPaths, [expectedLink]);
+    assertEquals(symlinks, [[targetFile, expectedLink], [targetFile, expectedLink]]);
+  } finally {
+    symlinkStub.restore();
+    removeStub.restore();
+    lstatStub.restore();
+    isWinStub.restore();
+  }
+});
+
 Deno.test("OsUtils should know if we are running in Windows", () => {
   const os = Deno.build.os;
   const shouldBeWindows = os === "windows";
