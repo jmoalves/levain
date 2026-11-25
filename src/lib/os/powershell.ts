@@ -31,12 +31,6 @@ export class Powershell {
       });
     }
 
-    /*new Deno.Command("extra-bin/windows/os-utils/addToDesktop.cmd", {
-      args: [resolvedTargetFile],
-      stdout: "inherit",
-      stderr: "inherit",
-    });*/
-    // %PWS% -File %currentFileDir%createShortcut.ps1 "%TARGET_FILE%" "%SHORTCUT_DIR%"
     const [exec, ...cmd_args] = args;
     const command = new Deno.Command(exec, {
       args: cmd_args,

@@ -45,8 +45,7 @@ if errorlevel 1 (
     exit /b 1
 )
 
-if exist "%levainRoot%\extra-bin\windows\7-zip" rmdir /q /s "%levainRoot%\extra-bin\windows\7-zip"
-if exist "%levainRoot%\extra-bin\windows\git" rmdir /q /s "%levainRoot%\extra-bin\windows\git"
+if exist "%levainRoot%\extra-bin" rmdir /q /s "%levainRoot%\extra-bin"
 
 set "LEVAIN_ROOT=%levainRoot%"
 powershell.exe -ExecutionPolicy Bypass -NoLogo -NonInteractive -NoProfile -Command ^

@@ -126,5 +126,4 @@ Deno.test("ExtraBin should resolve platform-specific tool directories", () => {
   assertEquals(ExtraBin.extraBinDir, expectedRoot);
   assertEquals(ExtraBin.sevenZipDir, path.resolve(expectedRoot, "7-zip"));
   assertEquals(ExtraBin.gitDir, path.resolve(expectedRoot, "git"));
-  assertEquals(ExtraBin.osUtilsDir, path.resolve(expectedRoot, "os-utils"));
 });

@@ -16,12 +16,21 @@ export default class GitUtils {
 
   readonly feedback = new ConsoleFeedback();
 
-  constructor() {
-    if (OsUtils.isWindows()) {
-      this.gitCmd = `${ExtraBin.gitDir}\\cmd\\git.exe`;
-    } else {
-      this.gitCmd = `/usr/bin/git`;
+  constructor(gitCmd?: string) {
+    this.gitCmd = gitCmd ?? GitUtils.resolveGitCommand();
+  }
+
+  static resolveGitCommand(): string {
+    const systemGit = OsUtils.findInPath("git", [".EXE", ".COM"]);
+    if (systemGit) {
+      return systemGit;
     }
+
+    if (OsUtils.isWindows()) {
+      return path.join(ExtraBin.gitDir, "cmd", "git.exe");
+    }
+
+    return "git";
   }
 
   static isGitPath(gitUrl: string): boolean {
@@ -73,8 +82,7 @@ export default class GitUtils {
       this.gitCmd,
       "clone",
       "--progress",
-      "--config",
-      "core.autocrlf=true",
+      ...(OsUtils.isWindows() ? ["--config", "core.autocrlf=true"] : []),
       ...(gitPath.branch ? [`--branch=${gitPath.branch}`] : []),
       ...(shallow ? ["--single-branch", "--no-tags", "--depth", "1"] : []),
       "--",

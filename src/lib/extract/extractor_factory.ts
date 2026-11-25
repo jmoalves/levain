@@ -1,5 +1,9 @@
+import * as path from "@std/path";
+import { existsSync } from "@std/fs";
+
 import type Config from "../config.ts";
 import OsUtils from "../os/os_utils.ts";
+import ExtraBin from "../paths/extra_bin.ts";
 import { SevenZip } from "./sevenzip_extractor.ts";
 import { DenoZip } from "./denozip_extractor.ts";
 import { UnTar } from "./untar_extractor.ts";
@@ -12,6 +16,9 @@ export enum ExtractType {
 }
 
 export class ExtractorFactory {
+  /** Threshold above which Windows prefers native C++ 7z.exe (when bundled) for faster large-archive extraction. */
+  public static readonly LARGE_ZIP_THRESHOLD_BYTES = 50 * 1024 * 1024;
+
   private typeFromFile(filename?: string): ExtractType | undefined {
     if (!filename) {
       return undefined;
@@ -63,19 +70,34 @@ export class ExtractorFactory {
     return this.typeFromString(type) != undefined;
   }
 
+  private shouldUseSevenZipForZip(src: string): boolean {
+    if (!OsUtils.isWindows()) {
+      return false;
+    }
+    const sevenZipExe = path.join(ExtraBin.sevenZipDir, "7z.exe");
+    if (!existsSync(sevenZipExe)) {
+      return false;
+    }
+    try {
+      const stat = Deno.statSync(src);
+      return stat.size >= ExtractorFactory.LARGE_ZIP_THRESHOLD_BYTES;
+    } catch {
+      return false;
+    }
+  }
+
   createExtractor(config: Config, src: string, type?: string): Extractor {
     if (type && !this.isTypeSupported(type)) {
-      throw `${src} - file not supported (1).`;
+      throw new Error(`${src} - file not supported (1).`);
     }
 
     const localType = this.typeFromString(type) || this.typeFromFile(src);
     switch (localType) {
       case ExtractType.Zip:
-        if (OsUtils.isWindows()) {
+        if (this.shouldUseSevenZipForZip(src)) {
           return new SevenZip(config);
-        } else {
-          return new DenoZip(config);
         }
+        return new DenoZip(config);
 
       case ExtractType.SevenZip:
         return new SevenZip(config);
@@ -84,7 +106,7 @@ export class ExtractorFactory {
         return new UnTar(config);
 
       default:
-        throw `${src} - file not supported (2).`;
+        throw new Error(`${src} - file not supported (2).`);
     }
   }
 }

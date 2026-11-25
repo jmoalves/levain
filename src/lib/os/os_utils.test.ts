@@ -5,6 +5,7 @@ import {
   assertNotEquals,
   assertNotMatch,
   assertRejects,
+  assertThrows,
 } from "@std/assert";
 import { stub } from "@std/testing/mock";
 import * as path from "@std/path";
@@ -294,6 +295,140 @@ Deno.test("OsUtils.setEnvPermanent should pass argv array to setx and validate v
     runStub.restore();
     setEnvStub.restore();
     onlyWinStub.restore();
+  }
+});
+
+Deno.test("OsUtils.parseUserPathRegistryJson should parse Unicode Registry JSON and fail closed on invalid payloads", () => {
+  assertEquals(
+    OsUtils.parseUserPathRegistryJson(
+      '{"exists":true,"type":"ExpandString","value":"%USERPROFILE%\\\\bin;C:\\\\Users\\\\Jo\\u00e3o\\\\Program Files\\\\Tool"}\r\n',
+    ),
+    {
+      exists: true,
+      type: "ExpandString",
+      value: "%USERPROFILE%\\bin;C:\\Users\\João\\Program Files\\Tool",
+    },
+  );
+
+  assertEquals(
+    OsUtils.parseUserPathRegistryJson('{"exists":true,"type":"String","value":"C:\\\\Tools"}'),
+    {
+      exists: true,
+      type: "String",
+      value: "C:\\Tools",
+    },
+  );
+
+  assertEquals(
+    OsUtils.parseUserPathRegistryJson('{"exists":false,"value":""}'),
+    {
+      exists: false,
+      type: "ExpandString",
+      value: "",
+    },
+  );
+
+  assertThrows(() => OsUtils.parseUserPathRegistryJson(""), Error, "Empty response");
+  assertThrows(() => OsUtils.parseUserPathRegistryJson("not json"), Error, "Invalid JSON");
+  assertThrows(() => OsUtils.parseUserPathRegistryJson('{"exists":"yes"}'), Error, "Unexpected response shape");
+});
+
+Deno.test("OsUtils.addPathPermanent and setUserPath should reject control characters and separators", async () => {
+  const onlyWinStub = stub(OsUtils, "onlyInWindows", () => {});
+  try {
+    await assertRejects(
+      async () => await OsUtils.addPathPermanent("C:\\good;C:\\injected"),
+      Error,
+      "Invalid PATH entry",
+    );
+    await assertRejects(
+      async () => await OsUtils.addPathPermanent("C:\\bad\npath"),
+      Error,
+      "Invalid PATH entry",
+    );
+    await assertRejects(
+      async () => await OsUtils.setUserPath(["C:\\ok", "C:\\bad\0path"]),
+      Error,
+      "Invalid PATH entry",
+    );
+  } finally {
+    onlyWinStub.restore();
+  }
+});
+
+Deno.test("OsUtils.windowsSystemToolPath should resolve under SystemRoot/System32", () => {
+  const envStub = stub(Deno.env, "get", (key: string) => (key === "SystemRoot" ? "C:\\WinCustom" : undefined));
+  try {
+    assertEquals(
+      OsUtils.windowsSystemToolPath("tar.exe"),
+      path.join("C:\\WinCustom", "System32", "tar.exe"),
+    );
+  } finally {
+    envStub.restore();
+  }
+});
+
+Deno.test("OsUtils.findInPath should locate binaries on absolute PATH entries and reject unsafe extensions or relative dirs", () => {
+  const dir1 = TestHelper.getNewTempDir();
+  const dir2 = TestHelper.getNewTempDir();
+  const nonExecFile = path.join(dir1, "mytool");
+  const execFile = path.join(dir2, "mytool");
+  Deno.writeTextFileSync(nonExecFile, "#!/bin/sh\n");
+  Deno.writeTextFileSync(execFile, "#!/bin/sh\n");
+  if (!OsUtils.isWindows()) {
+    Deno.chmodSync(nonExecFile, 0o644);
+    Deno.chmodSync(execFile, 0o755);
+  }
+
+  const winNoExt = path.join(dir1, "wintool");
+  const winVbs = path.join(dir1, "wintool.VBS");
+  const winBat = path.join(dir1, "wintool.BAT");
+  const winExe = path.join(dir2, "wintool.EXE");
+  Deno.writeTextFileSync(winNoExt, "");
+  Deno.writeTextFileSync(winVbs, "");
+  Deno.writeTextFileSync(winBat, "");
+  Deno.writeTextFileSync(winExe, "");
+
+  const envMap: Record<string, string | undefined> = {
+    PATH: `.${path.DELIMITER}relative/dir${path.DELIMITER}"${dir1}"${path.DELIMITER}${dir2}`,
+    PATHEXT: ".VBS;.BAT;.EXE;.CMD",
+  };
+  const envStub = stub(Deno.env, "get", (key: string) => envMap[key]);
+  const isWinStub = stub(OsUtils, "isWindows", () => false);
+
+  try {
+    assertEquals(OsUtils.findInPath(""), undefined);
+    // Relative "." must not match files in CWD (e.g. deno.json)
+    assertEquals(OsUtils.findInPath("deno.json"), undefined);
+    // On POSIX, non-executable file in dir1 is skipped and executable in dir2 is returned;
+    // on Windows (where NTFS has no POSIX exec bits), dir1 matches first.
+    const expectedPosix = Deno.build.os === "windows" ? nonExecFile : execFile;
+    assertEquals(OsUtils.findInPath("mytool"), expectedPosix);
+    assertEquals(OsUtils.findInPath("does-not-exist-xyz"), undefined);
+
+    envMap.PATH = "";
+    assertEquals(OsUtils.findInPath("mytool"), undefined);
+  } finally {
+    isWinStub.restore();
+    envStub.restore();
+  }
+
+  // Simulate Windows PATHEXT lookup: .VBS and extensionless files must be skipped
+  envMap.PATH = `"${dir1}"${path.DELIMITER}"${dir2}"`;
+  const envStub2 = stub(Deno.env, "get", (key: string) => envMap[key]);
+  const isWinStub2 = stub(OsUtils, "isWindows", () => true);
+  try {
+    // Default allowed extensions skip .VBS and extensionless, matching .BAT before .EXE per PATHEXT
+    assertEquals(OsUtils.findInPath("wintool"), winBat);
+    // Restricting to [".EXE", ".COM"] skips .BAT and resolves .EXE
+    assertEquals(OsUtils.findInPath("wintool", [".EXE", ".COM"]), winExe);
+    // Explicit extension works directly
+    assertEquals(OsUtils.findInPath("wintool.EXE"), winExe);
+    // Extensionless-only file is NOT matched on Windows
+    assertEquals(OsUtils.findInPath("mytool"), undefined);
+  } finally {
+    isWinStub2.restore();
+    envStub2.restore();
   }
 });
 

@@ -3,7 +3,7 @@ import * as path from "@std/path";
 import { existsSync } from "@std/fs";
 import * as zip from "@zip.js/zip.js";
 
-import { DenoZip } from "./denozip_extractor.ts";
+import { DenoFileReader, DenoZip } from "./denozip_extractor.ts";
 import TestHelper from "../test/test_helper.ts";
 import { assertFolderIncludes } from "../test/more_asserts.ts";
 
@@ -131,4 +131,51 @@ Deno.test("DenoZip.resolveSafeEntryPath should accept valid relative, nested, di
   assertEquals(DenoZip.resolveSafeEntryPath(dst, "dir\\sub\\file.txt", false), path.resolve(dstRoot, "dir/sub/file.txt"));
   assertEquals(DenoZip.resolveSafeEntryPath(dst, "..config/a.txt", false), path.resolve(dstRoot, "..config/a.txt"));
   assertEquals(DenoZip.resolveSafeEntryPath(dst, "a/b/../c.txt", false), path.resolve(dstRoot, "a/c.txt"));
+});
+
+Deno.test("DenoZip should throw a localized read error when source archive does not exist", async () => {
+  const config = TestHelper.getConfig();
+  const extractor = new DenoZip(config);
+  const missingZip = path.join(TestHelper.getNewTempDir(), "does-not-exist.zip");
+
+  await assertRejects(
+    async () => await extractor.extractImpl(missingZip, TestHelper.getNewTempDir()),
+    Error,
+  );
+});
+
+Deno.test("DenoZip should throw a localized write error when target entry path is blocked by an existing directory", async () => {
+  const config = TestHelper.getConfig();
+  const extractor = new DenoZip(config);
+  const tempDir = TestHelper.getNewTempDir();
+  // testdata/extract/test.zip contains file "test/abc.txt"; pre-creating a directory with that name blocks Deno.open
+  await Deno.mkdir(path.join(tempDir, "test", "abc.txt"), { recursive: true });
+
+  await assertRejects(
+    async () => await extractor.extractImpl("testdata/extract/test.zip", tempDir),
+    Error,
+  );
+});
+
+Deno.test("DenoFileReader should clamp huge read lengths to file size and handle out-of-bounds reads safely", async () => {
+  const tempDir = TestHelper.getNewTempDir();
+  const sampleFile = path.join(tempDir, "sample.bin");
+  await Deno.writeTextFile(sampleFile, "hello-zip");
+
+  const reader = new DenoFileReader(sampleFile);
+  try {
+    await reader.init();
+    // Repeated init must be idempotent and not leak an extra file descriptor
+    await reader.init();
+
+    // Unbounded length from a malformed ZIP header must clamp to remaining file bytes without OOM
+    const clamped = await reader.readUint8Array(6, 10_000_000_000);
+    assertEquals(new TextDecoder().decode(clamped), "zip");
+
+    assertEquals((await reader.readUint8Array(-1, 5)).length, 0);
+    assertEquals((await reader.readUint8Array(0, 0)).length, 0);
+    assertEquals((await reader.readUint8Array(999, 5)).length, 0);
+  } finally {
+    reader.close();
+  }
 });

@@ -1,5 +1,6 @@
 import * as log from "@std/log";
 import * as path from "@std/path";
+import { existsSync } from "@std/fs";
 
 import type Config from "../config.ts";
 import ExtraBin from "../paths/extra_bin.ts";
@@ -11,16 +12,60 @@ export class UnTar extends Extractor {
     super(config);
   }
 
-  async extractImpl(src: string, dst: string) {
-    // TODO: Handle other os's
-    OsUtils.onlyInWindows();
+  resolveNativeTar(): string | undefined {
+    if (OsUtils.isWindows()) {
+      // Prefer Microsoft-signed bsdtar in System32: avoids PATH shadowing and GNU tar
+      // misinterpreting Windows drive letters (C:\...) as remote hosts.
+      const systemTar = OsUtils.windowsSystemToolPath("tar.exe");
+      return existsSync(systemTar) ? systemTar : undefined;
+    }
+    return OsUtils.findInPath("tar");
+  }
 
+  async extractImpl(src: string, dst: string) {
     log.debug(`-- UNTAR ${src} => ${dst}`);
 
-    const sevenZipExe = path.join(ExtraBin.sevenZipDir, "7z.exe");
+    const nativeTar = this.resolveNativeTar();
+    if (nativeTar) {
+      await this.extractWithNativeTar(nativeTar, src, dst);
+      return;
+    }
+
+    if (OsUtils.isWindows()) {
+      const sevenZipExe = path.join(ExtraBin.sevenZipDir, "7z.exe");
+      if (existsSync(sevenZipExe)) {
+        await this.extractWithSevenZip(sevenZipExe, src, dst);
+        return;
+      }
+    }
+
+    throw new Error(`Unable to extract ${src}: native 'tar' not found in PATH`);
+  }
+
+  private async extractWithNativeTar(tarExe: string, src: string, dst: string): Promise<void> {
+    const absSrc = path.resolve(src);
+    const absDst = path.resolve(dst);
+
+    const proc = new Deno.Command(tarExe, {
+      args: ["-xzf", absSrc, "-C", absDst],
+      stdout: "null",
+      stderr: "piped",
+    });
+    const { success, code, stderr } = await proc.output();
+    if (!success) {
+      const errDetail = OsUtils.decodeOutput(stderr).trim();
+      throw new Error(
+        `tar extract terminated with code ${code}${errDetail ? `: ${errDetail}` : ""}`,
+      );
+    }
+  }
+
+  async extractWithSevenZip(sevenZipExe: string, src: string, dst: string): Promise<void> {
+    const absSrc = path.resolve(src);
+    const absDst = path.resolve(dst);
 
     const decompress = new Deno.Command(sevenZipExe, {
-      args: ["x", "-bd", "-so", "--", src],
+      args: ["x", "-bd", "-so", "--", absSrc],
       stdout: "piped",
       stderr: "piped",
     }).spawn();
@@ -28,7 +73,7 @@ export class UnTar extends Extractor {
     let extract: Deno.ChildProcess;
     try {
       extract = new Deno.Command(sevenZipExe, {
-        args: ["x", "-si", "-bd", "-ttar", "-aoa", `-o${dst}`],
+        args: ["x", "-si", "-bd", "-ttar", "-aoa", `-o${absDst}`],
         stdin: "piped",
         stdout: "null",
         stderr: "piped",

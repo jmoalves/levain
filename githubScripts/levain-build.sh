@@ -61,7 +61,10 @@ cp -rv "${levainSrcDir}/levain.ps1" "${targetDir}/"
 cp -rv "${levainSrcDir}/levain.sh" "${targetDir}/"
 cp -rv "${levainSrcDir}/LICENSE" "${targetDir}/"
 cp -rv "${levainSrcDir}/recipes/" "${targetDir}/build/recipes/"
-cp -rv "${levainSrcDir}/extra-bin/" "${targetDir}/build/extra-bin/"
+mkdir -p "${targetDir}/build/extra-bin"
+if [ -d "${levainSrcDir}/extra-bin" ]; then
+    cp -rv "${levainSrcDir}/extra-bin/." "${targetDir}/build/extra-bin/"
+fi
 
 # Binary SHA256
 (

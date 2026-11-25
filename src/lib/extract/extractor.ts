@@ -40,7 +40,10 @@ export abstract class Extractor {
       const from = path.resolve(srcDir, child.name);
       if (strip) {
         if (count > 1) { // There can be only one!
-          throw `You should not ask for --strip if there are more than one directory`;
+          throw new Error(`You should not ask for --strip if there are more than one directory`);
+        }
+        if (child.isSymlink || !child.isDirectory) {
+          throw new Error(`Unsafe --strip archive root entry: ${child.name}`);
         }
 
         log.debug(`- STRIP ${from}`);
