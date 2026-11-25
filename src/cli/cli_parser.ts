@@ -122,6 +122,11 @@ export function createLevainCommand(
     .globalOption("--wait-to-begin", t("cli.option.waitToBegin"), { hidden: true })
     .globalOption("--levain-upgrade", t("cli.option.levainUpgrade"), { hidden: true })
     .globalOption("--is_compiled_binary", t("cli.option.isCompiledBinary"), { hidden: true })
+    .example(t("cli.example.root.list"), "levain list")
+    .example(t("cli.example.root.install"), "levain install jdk maven")
+    .example(t("cli.example.root.activate"), "levain activate")
+    .example(t("cli.example.root.explain"), "levain explain maven")
+    .example(t("cli.example.root.update"), "levain update")
     .action((opts) => {
       onDispatch(mapGlobalOptions(opts as Record<string, unknown>));
     });
@@ -130,6 +135,9 @@ export function createLevainCommand(
     .description(t("cli.cmd.install.description"))
     .option("--force", t("cli.cmd.install.force"))
     .option("--noUpdate", t("cli.cmd.install.noUpdate"))
+    .example(t("cli.example.install.project"), "levain install")
+    .example(t("cli.example.install.packages"), "levain install jdk maven")
+    .example(t("cli.example.install.force"), "levain install --force git")
     .arguments("[packages...:string]")
     .action((opts, ...packages: string[]) => {
       assertNoUnknownOptionTokens(packages, ["--force", "--noUpdate"]);
@@ -148,6 +156,8 @@ export function createLevainCommand(
   const updateCmd = new Command()
     .description(t("cli.cmd.update.description"))
     .option("--force", t("cli.cmd.update.force"))
+    .example(t("cli.example.update.all"), "levain update")
+    .example(t("cli.example.update.packages"), "levain update jdk maven")
     .arguments("[packages...:string]")
     .action((opts, ...packages: string[]) => {
       assertNoUnknownOptionTokens(packages, ["--force"]);
@@ -164,6 +174,8 @@ export function createLevainCommand(
 
   const shellCmd = new Command()
     .description(t("cli.cmd.shell.description"))
+    .example(t("cli.example.shell.project"), "levain shell")
+    .example(t("cli.example.shell.packages"), "levain shell jdk maven")
     .arguments("[packages...:string]")
     .action((opts, ...packages: string[]) => {
       assertNoUnknownOptionTokens(packages, []);
@@ -177,6 +189,9 @@ export function createLevainCommand(
   const activateCmd = new Command()
     .description(t("cli.cmd.activate.description"))
     .option("--skip-pre", t("cli.cmd.activate.skipPre"))
+    .example(t("cli.example.activate.project"), "levain activate")
+    .example(t("cli.example.activate.packages"), "levain activate jdk")
+    .example(t("cli.example.activate.skipPre"), "levain activate --skip-pre jdk")
     .arguments("[packages...:string]")
     .action((opts, ...packages: string[]) => {
       assertNoUnknownOptionTokens(packages, ["--skip-pre"]);
@@ -192,6 +207,8 @@ export function createLevainCommand(
 
   const listCmd = new Command()
     .description(t("cli.cmd.list.description"))
+    .example(t("cli.example.list.all"), "levain list")
+    .example(t("cli.example.list.filter"), "levain list jdk")
     .arguments("[search...:string]")
     .action((opts, ...search: string[]) => {
       assertNoUnknownOptionTokens(search, []);
@@ -210,6 +227,8 @@ export function createLevainCommand(
     .option("--logs", t("cli.cmd.clean.logs"))
     .option("--all", t("cli.cmd.clean.all"))
     .option("--deep", t("cli.cmd.clean.deep"))
+    .example(t("cli.example.clean.default"), "levain clean")
+    .example(t("cli.example.clean.all"), "levain clean --all --deep")
     .action((opts) => {
       const subArgs: string[] = [];
       if (opts.cache) subArgs.push("--cache");
@@ -226,6 +245,8 @@ export function createLevainCommand(
 
   const actionsCmd = new Command()
     .description(t("cli.cmd.actions.description"))
+    .example(t("cli.example.actions.all"), "levain actions")
+    .example(t("cli.example.actions.filter"), "levain actions template")
     .arguments("[search...:string]")
     .action((opts, ...search: string[]) => {
       assertNoUnknownOptionTokens(search, []);
@@ -239,6 +260,8 @@ export function createLevainCommand(
   const infoCmd = new Command()
     .description(t("cli.cmd.info.description"))
     .option("--verbose", t("cli.cmd.info.verbose"))
+    .example(t("cli.example.info.default"), "levain info maven")
+    .example(t("cli.example.info.verbose"), "levain info --verbose jdk")
     .arguments("[packages...:string]")
     .action((opts, ...packages: string[]) => {
       assertNoUnknownOptionTokens(packages, ["--verbose"]);
@@ -255,11 +278,18 @@ export function createLevainCommand(
 
   const explainCmd = new Command()
     .description(t("cli.cmd.explain.description"))
-    .arguments("<packages...:string>")
+    .option("--raw", t("cli.cmd.explain.raw"))
+    .example(t("cli.example.explain.project"), "levain explain")
+    .example(t("cli.example.explain.playbook"), "levain explain maven")
+    .example(t("cli.example.explain.markdown"), "levain explain maven > setup-guide.md")
+    .example(t("cli.example.explain.raw"), "levain explain --raw maven")
+    .arguments("[packages...:string]")
     .action((opts, ...packages: string[]) => {
-      assertNoUnknownOptionTokens(packages, []);
+      assertNoUnknownOptionTokens(packages, ["--raw"]);
       const literal = explainCmd.getLiteralArgs();
-      const subArgs = [...packages];
+      const subArgs: string[] = [];
+      if (opts.raw) subArgs.push("--raw");
+      subArgs.push(...packages);
       if (literal.length > 0) subArgs.push("--", ...literal);
       const myArgs = mapGlobalOptions(opts);
       myArgs._ = ["explain", ...subArgs];
@@ -270,6 +300,8 @@ export function createLevainCommand(
   const cloneCmd = new Command()
     .description(t("cli.cmd.clone.description"))
     .option("--dirs", t("cli.cmd.clone.dirs"))
+    .example(t("cli.example.clone.basic"), "levain clone https://github.com/org/repo.git")
+    .example(t("cli.example.clone.dirs"), "levain clone --dirs git@github.com:org/repo.git")
     .arguments("<url:string>")
     .action((opts, url: string) => {
       assertNoUnknownOptionTokens([url], ["--dirs"]);
@@ -305,6 +337,7 @@ const SUBCOMMAND_OPTIONS: Record<string, string[]> = {
   activate: ["--skip-pre"],
   clean: ["--cache", "--backup", "--temp", "--logs", "--all", "--deep"],
   info: ["--verbose"],
+  explain: ["--raw"],
   clone: ["--dirs"],
 };
 

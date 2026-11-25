@@ -97,6 +97,8 @@ Deno.test("cli_parser should route every public command, subcommand flags, globa
     { input: ["actions", "--", "-env"], expectedPositional: ["actions", "-env"] },
     { input: ["info", "--verbose", "jdk"], expectedPositional: ["info", "--verbose", "jdk"] },
     { input: ["info", "--", "jdk"], expectedPositional: ["info", "--", "jdk"] },
+    { input: ["explain"], expectedPositional: ["explain"] },
+    { input: ["explain", "--raw", "jdk"], expectedPositional: ["explain", "--raw", "jdk"] },
     { input: ["explain", "jdk"], expectedPositional: ["explain", "jdk"] },
     { input: ["explain", "jdk", "--", "-extra"], expectedPositional: ["explain", "jdk", "--", "-extra"] },
     {
@@ -152,6 +154,7 @@ Deno.test("cli_parser should handle --version and --help without dispatching com
 
   const helpText = getCliHelpText();
   assertStringIncludes(helpText, "install");
+  assertStringIncludes(helpText, "levain explain maven");
   assertEquals(helpText.includes("_activate-machine"), false);
   assertEquals(helpText.includes("--levain-upgrade"), false);
   // Plain help text for logs must not contain ANSI escape codes
@@ -192,8 +195,12 @@ Deno.test("cli_parser should reject unknown commands, unknown options, and inval
   );
   assertEquals(shortOptErr.message.includes("--force"), false);
 
-  // Required arity checks for explain and clone
-  await assertRejects(async () => await parseCliArgs(["explain"]), CliValidationError);
+  // Unknown option suggestion for explain (--raw) and required arity checks for clone
+  await assertRejects(
+    async () => await parseCliArgs(["explain", "--ra", "jdk"]),
+    CliValidationError,
+    "--raw",
+  );
   await assertRejects(async () => await parseCliArgs(["clone"]), CliValidationError);
   await assertRejects(
     async () => await parseCliArgs(["clone", "https://example.org/a.git", "https://example.org/b.git"]),

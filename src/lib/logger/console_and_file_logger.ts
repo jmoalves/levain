@@ -12,12 +12,17 @@ import { StderrConsoleHandler } from "./stderr_handler.ts";
 import ConsoleFeedback from "../utils/console_feedback.ts";
 import { NullWriter } from "./null_writer.ts";
 
+export type ConsoleLogMode = boolean | "errors-only";
+
 export default class ConsoleAndFileLogger {
   static config: Config | undefined;
   logFiles: string[] = [];
   handlers: any = {};
 
-  public static async setup(logFiles: string[] = [], omitLog = false): Promise<ConsoleAndFileLogger> {
+  public static async setup(
+    logFiles: string[] = [],
+    omitLog: ConsoleLogMode = false,
+  ): Promise<ConsoleAndFileLogger> {
     const logger = new ConsoleAndFileLogger();
     logger.handlers["console"] = logger.getConsoleHandler(omitLog);
     ConsoleFeedback.OUT = omitLog ? new NullWriter() : Deno.stdout;
@@ -48,9 +53,14 @@ export default class ConsoleAndFileLogger {
     });
   }
 
-  getConsoleHandler(omitLog: boolean = false): BaseHandler {
+  getConsoleHandler(omitLog: ConsoleLogMode = false): BaseHandler {
     const formatter = LogFormatterFactory.getHidePasswordFormatter(() => ConsoleAndFileLogger.config);
 
+    if (omitLog === "errors-only") {
+      const handler = new StderrConsoleHandler("ERROR");
+      handler.formatter = formatter;
+      return handler;
+    }
     if (omitLog) {
       const handler = new StderrConsoleHandler("CRITICAL");
       handler.formatter = formatter;

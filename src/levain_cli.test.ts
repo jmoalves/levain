@@ -390,6 +390,13 @@ Deno.test("LevainCli should skip update checks/regular repos/sanitizeUserPath on
     assertEquals(repoInitCalls, [{ forceRefresh: false, installedOnly: true }]);
     assert(profileLines.some((line) => line.includes("[levain:profile]") && line.includes("repositoryManager.init=")));
 
+    // explain must also skip checkLevainUpdate so redirected stdout is never polluted or blocked by upgrade prompt
+    await cli.execute({
+      _: ["explain", "levain"],
+      levainHome: [tempHome],
+    });
+    assertEquals(releaseStub.calls.length, 0, "explain must skip update check");
+
     // actions and clean must skip repositoryManager.init and sanitizeUserPath
     repoInitCalls.length = 0;
     await cli.execute({ _: ["actions"], levainHome: [tempHome], "skip-levain-updates": true });

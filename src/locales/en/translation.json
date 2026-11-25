@@ -75,7 +75,8 @@
         "verbose": "Show detailed paths and repository information."
       },
       "explain": {
-        "description": "Show the actions that would run for packages."
+        "description": "Generate a step-by-step manual setup guide (playbook) for packages (defaults to current .levain.yaml).",
+        "raw": "Show raw recipe action lines without translating to manual steps."
       },
       "clone": {
         "description": "Clone a git repository and open its Levain shell.",
@@ -83,6 +84,59 @@
       },
       "activateMachine": {
         "description": "Internal shell activation helper."
+      }
+    },
+    "example": {
+      "root": {
+        "list": "List available packages",
+        "install": "Install tools and dependencies",
+        "activate": "Activate environment in current terminal",
+        "explain": "See manual step-by-step instructions",
+        "update": "Update installed packages"
+      },
+      "install": {
+        "project": "Install dependencies from ./.levain.yaml",
+        "packages": "Install specific packages",
+        "force": "Force reinstall a package"
+      },
+      "update": {
+        "all": "Update all installed packages",
+        "packages": "Update specific packages"
+      },
+      "shell": {
+        "project": "Open a configured shell for ./.levain.yaml",
+        "packages": "Open a shell with specific packages"
+      },
+      "activate": {
+        "project": "Activate ./.levain.yaml in the current shell",
+        "packages": "Activate specific packages",
+        "skipPre": "Activate already-installed packages quickly"
+      },
+      "list": {
+        "all": "List all available packages",
+        "filter": "Filter packages by keyword"
+      },
+      "clean": {
+        "default": "Clean old backups, temp files, and logs",
+        "all": "Also clear the download cache and today's backups"
+      },
+      "actions": {
+        "all": "List all recipe actions with descriptions",
+        "filter": "Show usage and details for matching actions"
+      },
+      "info": {
+        "default": "Inspect Levain status and package dependencies",
+        "verbose": "Show installation paths and recipe sources"
+      },
+      "explain": {
+        "project": "Generate a manual guide for ./.levain.yaml",
+        "playbook": "Generate a manual step-by-step guide",
+        "markdown": "Save the guide as a Markdown file",
+        "raw": "Show raw YAML recipe directives"
+      },
+      "clone": {
+        "basic": "Clone a repository and open its Levain shell",
+        "dirs": "Organize clone under <owner>/<repo>"
       }
     },
     "error": {
@@ -94,12 +148,53 @@
     "action_factory": {
       "notFound": "Action '{{action}}' not found - Aborting...",
       "didYouMean": "Did you mean: {{suggestions}}?"
+    },
+    "docs": {
+      "activateCmd": "Emit shell commands to activate packages in the current terminal (internal).",
+      "activateInit": "Configure shell profiles/hooks so \"levain activate\" works in your terminal.",
+      "activatePre": "Install or update required packages before activating a shell (internal).",
+      "addPath": "Add a directory to PATH (current shell or permanently on Windows).",
+      "addToDesktop": "Create a Desktop shortcut to a file (Windows).",
+      "addToStartMenu": "Create a Start Menu shortcut to a file (Windows).",
+      "addToStartup": "Create a Windows Startup shortcut to run a file at login.",
+      "assertContains": "Verify that a text snippet appears inside another string.",
+      "backupFile": "Create a timestamped backup copy of an existing file.",
+      "checkChainDirExists": "Verify that at least one candidate directory exists (optionally saving it).",
+      "checkFileExists": "Verify that at least one of the listed files exists.",
+      "checkPort": "Verify that a local TCP/UDP port is free and available.",
+      "checkUrl": "Verify that an HTTP/HTTPS URL responds with status 200.",
+      "clone": "Clone a Git repository into a target directory (skips if non-empty).",
+      "contextMenu": "Register a Windows Explorer folder context menu entry.",
+      "contextMenuRemove": "Remove a Windows Explorer folder context menu entry.",
+      "copy": "Copy local files/directories or download URLs into a destination.",
+      "defaultPackage": "Set the default package used when running \"levain shell\" without args.",
+      "echo": "Print a message to the output.",
+      "extract": "Download (if URL) and extract a .zip, .7z, .tar.gz, or .tgz archive.",
+      "inspect": "Extract text from a file using a regular expression and store it in a variable.",
+      "jsonGet": "Read a property from a JSON file into a recipe variable.",
+      "jsonRemove": "Remove a property from a JSON file.",
+      "jsonSet": "Set a property in a JSON file (creating the file if needed).",
+      "killProcess": "Terminate a running process by name (Windows).",
+      "levainShell": "Run a shell command inside the package's configured environment.",
+      "mavenCopy": "Download a Maven artifact by coordinates into a destination directory.",
+      "mkdir": "Create a directory recursively (with optional NTFS compression on Windows).",
+      "propertyGet": "Read a key from a .properties file into a recipe variable.",
+      "propertySet": "Set a key/value pair in a .properties file.",
+      "removeFromRegistry": "Remove package entries from the installed Levain registry.",
+      "saveConfig": "Legacy no-op kept for recipe compatibility (config saves automatically).",
+      "setEnv": "Set an environment variable (current shell or permanently on Windows).",
+      "setVar": "Define a variable for subsequent actions in the same execution.",
+      "shellPath": "Configure the default executable used by \"levain shell\".",
+      "template": "Render a template file by applying string or regex replacements."
     }
   },
   "cmd": {
     "actions": {
       "actionsFound": "= Actions:",
+      "noneFound": "No actions found matching \"{{search}}\".",
       "didYouMean": "Did you mean one of these actions?",
+      "usageLabel": "Usage",
+      "hint": "Tip: run \"levain actions <name>\" to see usage syntax for specific actions.",
       "example": "  actions [optional search text]"
     },
     "activate": {
@@ -124,7 +219,93 @@
     },
     "explain": {
       "nothing": "explain - Nothing to explain.",
-      "example": "  explain <package>..."
+      "noPackages": "No packages specified and no .levain.yaml found in the current directory. Pass package names (e.g. \"levain explain maven\") or run inside a project folder.",
+      "errorNotFound": "Could not resolve package(s): {{pkgNames}}.",
+      "errorMissingDep": "Could not resolve all dependencies for: {{pkgNames}}.",
+      "example": "  explain [--raw] [package...]",
+      "title": "Manual setup guide: {{packages}}",
+      "rawTitle": "Raw recipe directives: {{packages}}",
+      "subtitle": "Follow these steps in order if you want to set up the environment manually without Levain.",
+      "order": "Installation order: {{order}}",
+      "baseDir": "Installation root: `{{dir}}`",
+      "statusInstalled": "already installed",
+      "statusUpdateAvailable": "installed — update available",
+      "statusNotInstalled": "not installed",
+      "stepHeader": "Step {{index}}: {{name}} (v{{version}}) [{{status}}]",
+      "stepHeaderNoVersion": "Step {{index}}: {{name}} [{{status}}]",
+      "recipeSource": "Recipe: `{{path}}`",
+      "installDir": "Install directory: `{{dir}}`",
+      "sectionInstall": "Installation steps",
+      "sectionEnv": "Environment configuration",
+      "sectionShell": "Shell startup steps",
+      "sectionProject": "Project environment ({{name}})",
+      "noSteps": "No manual steps required (meta-package / dependencies only).",
+      "otherOsOnly": "No manual steps for {{os}} (defined only for: {{platforms}}).",
+      "placeholder": {
+        "password": "<your password>",
+        "passwordUrlEncoded": "<your password (URL-encoded)>",
+        "login": "<your login>",
+        "email": "<your email>",
+        "fullname": "<your full name>",
+        "runtimeVar": "<value of {{name}}>",
+        "urlEncoded": "<{{value}} (URL-encoded)>"
+      },
+      "step": {
+        "mkdir": "Create directory `{{dir}}`.",
+        "mkdirCompact": "Create directory `{{dir}}` (optionally enable NTFS compression on Windows).",
+        "copy": "Copy {{src}} to `{{dst}}`{{suffix}}.",
+        "download": "Download {{src}} to `{{dst}}`{{suffix}}.",
+        "extract": "Extract archive `{{src}}` into `{{dst}}`{{suffix}}.",
+        "downloadAndExtract": "Download and extract `{{src}}` into `{{dst}}`{{suffix}}.",
+        "noteStripDir": "copying contents directly without the outer folder",
+        "noteStripArchive": "stripping the top-level folder inside the archive",
+        "noteIfNotExists": "skip if destination already exists",
+        "noteDefault": "default: `{{value}}`",
+        "clone": "Clone Git repository `{{url}}` into `{{dst}}`.",
+        "cloneBranch": "Clone Git repository `{{url}}` (branch `{{branch}}`) into `{{dst}}`.",
+        "addPath": "Add `{{dir}}` to your terminal `PATH`.",
+        "addPathPermanent": "Add `{{dir}}` permanently to your user `PATH`.",
+        "setEnv": "Set environment variable `{{key}}` = `{{value}}`.",
+        "setEnvPermanent": "Set permanent user environment variable `{{key}}` = `{{value}}`.",
+        "setVar": "Note value for later steps: `{{name}}` = `{{value}}`.",
+        "runCommand": "Run command: `{{command}}`",
+        "runCommandIgnoreErrors": "Run command (ignore errors if it fails): `{{command}}`",
+        "runCommandSaveVar": "Run command `{{command}}` and save its output as `{{varName}}`.",
+        "template": "Create `{{dst}}` from template `{{src}}`, replacing: {{replacements}}.",
+        "jsonSet": "In JSON file `{{file}}`, set `{{property}}` = `{{value}}`.",
+        "jsonSetIfNotExists": "In JSON file `{{file}}`, set `{{property}}` = `{{value}}` (only if not already set).",
+        "jsonGet": "Read `{{property}}` from JSON file `{{file}}` as `{{varName}}`{{suffix}}.",
+        "jsonRemove": "Remove property `{{property}}` from JSON file `{{file}}`.",
+        "propertySet": "In properties file `{{file}}`, set `{{property}}={{value}}`.",
+        "propertySetIfNotExists": "In properties file `{{file}}`, set `{{property}}={{value}}` (only if not already set).",
+        "propertyGet": "Read `{{property}}` from properties file `{{file}}` as `{{varName}}`{{suffix}}.",
+        "mavenCopy": "Download Maven artifact `{{coordinates}}` into `{{dst}}`{{suffix}}.",
+        "backupFile": "Back up existing file `{{file}}` before modifying it.",
+        "checkFileExists": "Verify that file `{{file}}` exists.",
+        "checkAnyFileExists": "Verify that at least one of these files exists: {{files}}.",
+        "checkChainDir": "Verify that at least one of these directories exists: {{dirs}}.",
+        "checkChainDirSaveVar": "Find the first existing directory among {{dirs}} and note it as `{{varName}}`{{suffix}}.",
+        "checkPort": "Verify that {{transport}} port `{{port}}` is free.",
+        "checkUrl": "Verify that URL `{{url}}` is reachable (HTTP 200).",
+        "assertContains": "Verify that `{{fullText}}` contains `{{text}}`.",
+        "inspect": "Inspect `{{file}}` to extract {{vars}}.",
+        "inspectWithPatterns": "Inspect `{{file}}` matching {{patterns}} to extract {{vars}}.",
+        "addToDesktop": "Create a Desktop shortcut pointing to `{{target}}`.",
+        "addToStartMenu": "Create a Start Menu shortcut pointing to `{{target}}`.",
+        "addToStartMenuFolder": "Create a Start Menu shortcut in folder `{{folder}}` pointing to `{{target}}`.",
+        "addToStartup": "Create a Startup shortcut so `{{target}}` runs at login.",
+        "contextMenu": "Register a Windows Explorer folder context menu item \"{{name}}\" running `{{cmd}}`.",
+        "contextMenuRemove": "Remove Windows Explorer folder context menu item `{{id}}`.",
+        "killProcess": "Stop running process `{{processName}}`.",
+        "echo": "Note: {{message}}",
+        "defaultPackage": "Configure `{{pkgName}}` as the default shell package.",
+        "shellPath": "Configure `{{shellPath}}` as the default interactive shell executable.",
+        "removeFromRegistry": "Remove {{packages}} from Levain's installed registry.",
+        "activateInit": "Configure your shell profile so `levain activate` is available.",
+        "activateInternal": "Internal shell activation step (`{{action}}`).",
+        "saveConfig": "Save configuration changes.",
+        "fallback": "Run recipe action: `{{line}}`"
+      }
     },
     "info": {
       "yourPackages": "=== Your packages",

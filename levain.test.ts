@@ -117,6 +117,17 @@ Deno.test("should handle --version immediately without creating logs or initiali
   }
 });
 
+Deno.test("should configure errors-only console logger for explain command so stdout stays pure Markdown", async () => {
+  let logger;
+  try {
+    const levain = new Levain();
+    logger = await levain.prepareLogs({ _: ["explain", "levain"] });
+    assertEquals(logger.handlers["console"].levelName, "ERROR");
+  } finally {
+    await logger?.close();
+  }
+});
+
 Deno.test("should NOT prompt Hit ENTER on runtime errors unless --wait-after-end is explicitly passed", async () => {
   const prevTestMode = CliUtil.testMode;
   const origPrompt = globalThis.prompt;
