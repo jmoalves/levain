@@ -157,3 +157,38 @@ Deno.test("AutoFlushLogFileHandler should degrade gracefully when log file canno
   handler.flush();
   handler.destroy();
 });
+
+Deno.test("should setup logger in errors-only console mode to keep stdout clean while formatting errors with password masking", async () => {
+  const prevConfig = ConsoleAndFileLogger.config;
+  const prevOut = ConsoleFeedback.OUT;
+  const logFile = Deno.makeTempFileSync();
+  let logger;
+
+  try {
+    const cfg = new Config([]);
+    cfg.password = "HiddenPass#7";
+    ConsoleAndFileLogger.config = cfg;
+
+    logger = await ConsoleAndFileLogger.setup([logFile], "errors-only");
+    const consoleHandler = logger.handlers["console"];
+    assertEquals(consoleHandler.levelName, "ERROR");
+
+    const formatted = consoleHandler.format(TestHelper.logRecord("failed with HiddenPass#7"));
+    assertFalse(formatted.includes("HiddenPass#7"));
+    assertStringIncludes(formatted, "failed with ******");
+
+    // Info still goes to the file log without polluting stdout
+    log.info("info-for-file-only");
+    LogUtils.flushLogFiles();
+    assertStringIncludes(Deno.readTextFileSync(logFile), "info-for-file-only");
+  } finally {
+    ConsoleAndFileLogger.config = prevConfig;
+    ConsoleFeedback.OUT = prevOut;
+    await logger?.close();
+    try {
+      Deno.removeSync(logFile);
+    } catch {
+      // ignore temp cleanup error
+    }
+  }
+});

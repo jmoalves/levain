@@ -75,7 +75,8 @@
         "verbose": "Mostra caminhos detalhados e informações dos repositórios."
       },
       "explain": {
-        "description": "Mostra as ações que seriam executadas para os pacotes."
+        "description": "Gera um roteiro manual passo a passo para instalar e configurar pacotes (usa o .levain.yaml atual se omitido).",
+        "raw": "Mostra as diretivas originais da receita sem traduzir para passos manuais."
       },
       "clone": {
         "description": "Clona um repositório git e abre seu shell Levain.",
@@ -83,6 +84,59 @@
       },
       "activateMachine": {
         "description": "Auxiliar interno de ativação de shell."
+      }
+    },
+    "example": {
+      "root": {
+        "list": "Listar pacotes disponíveis",
+        "install": "Instalar ferramentas e dependências",
+        "activate": "Ativar o ambiente no terminal atual",
+        "explain": "Ver roteiro manual passo a passo",
+        "update": "Atualizar pacotes instalados"
+      },
+      "install": {
+        "project": "Instalar dependências do ./.levain.yaml",
+        "packages": "Instalar pacotes específicos",
+        "force": "Forçar a reinstalação de um pacote"
+      },
+      "update": {
+        "all": "Atualizar todos os pacotes instalados",
+        "packages": "Atualizar pacotes específicos"
+      },
+      "shell": {
+        "project": "Abrir shell configurado para o ./.levain.yaml",
+        "packages": "Abrir shell com pacotes específicos"
+      },
+      "activate": {
+        "project": "Ativar o ./.levain.yaml no terminal atual",
+        "packages": "Ativar pacotes específicos",
+        "skipPre": "Ativar rapidamente pacotes já instalados"
+      },
+      "list": {
+        "all": "Listar todos os pacotes disponíveis",
+        "filter": "Filtrar pacotes por palavra-chave"
+      },
+      "clean": {
+        "default": "Limpar backups antigos, temporários e logs",
+        "all": "Limpar também cache de downloads e backups de hoje"
+      },
+      "actions": {
+        "all": "Listar todas as ações de receita com descrições",
+        "filter": "Ver sintaxe e detalhes das ações filtradas"
+      },
+      "info": {
+        "default": "Inspecionar status do Levain e dependências",
+        "verbose": "Mostrar caminhos de instalação e origem das receitas"
+      },
+      "explain": {
+        "project": "Gerar roteiro manual para o ./.levain.yaml",
+        "playbook": "Gerar um roteiro manual passo a passo",
+        "markdown": "Salvar o roteiro em um arquivo Markdown",
+        "raw": "Ver diretivas originais da receita YAML"
+      },
+      "clone": {
+        "basic": "Clonar repositório e abrir seu shell Levain",
+        "dirs": "Organizar clone em <dono>/<repositório>"
       }
     },
     "error": {
@@ -94,12 +148,53 @@
     "action_factory": {
       "notFound": "Ação '{{action}}' não encontrada - Abortando...",
       "didYouMean": "Você quis dizer: {{suggestions}}?"
+    },
+    "docs": {
+      "activateCmd": "Emite comandos de shell para ativar pacotes no terminal atual (interno).",
+      "activateInit": "Configura perfis/hooks de shell para que \"levain activate\" funcione no terminal.",
+      "activatePre": "Instala ou atualiza pacotes necessários antes da ativação do shell (interno).",
+      "addPath": "Adiciona um diretório ao PATH (sessão atual ou permanente no Windows).",
+      "addToDesktop": "Cria um atalho na Área de Trabalho para um arquivo (Windows).",
+      "addToStartMenu": "Cria um atalho no Menu Iniciar para um arquivo (Windows).",
+      "addToStartup": "Cria um atalho na Inicialização do Windows para executar no login.",
+      "assertContains": "Verifica se um trecho de texto aparece dentro de outra string.",
+      "backupFile": "Cria uma cópia de backup com data e hora no nome de um arquivo existente.",
+      "checkChainDirExists": "Verifica se ao menos um diretório candidato existe (opcionalmente salvando em variável).",
+      "checkFileExists": "Verifica se ao menos um dos arquivos informados existe.",
+      "checkPort": "Verifica se uma porta TCP/UDP local está livre e disponível.",
+      "checkUrl": "Verifica se uma URL HTTP/HTTPS responde com status 200.",
+      "clone": "Clona um repositório Git em um diretório de destino (pula se não estiver vazio).",
+      "contextMenu": "Registra um item no menu de contexto de pastas do Windows Explorer.",
+      "contextMenuRemove": "Remove um item do menu de contexto de pastas do Windows Explorer.",
+      "copy": "Copia arquivos/pastas locais ou baixa URLs para um destino.",
+      "defaultPackage": "Define o pacote padrão usado ao rodar \"levain shell\" sem argumentos.",
+      "echo": "Imprime uma mensagem na saída.",
+      "extract": "Baixa (se for URL) e extrai um arquivo .zip, .7z, .tar.gz ou .tgz.",
+      "inspect": "Extrai texto de um arquivo usando expressão regular e salva em uma variável.",
+      "jsonGet": "Lê uma propriedade de um arquivo JSON para uma variável de receita.",
+      "jsonRemove": "Remove uma propriedade de um arquivo JSON.",
+      "jsonSet": "Define uma propriedade em um arquivo JSON (criando o arquivo se necessário).",
+      "killProcess": "Encerra um processo em execução pelo nome (Windows).",
+      "levainShell": "Executa um comando de shell dentro do ambiente configurado do pacote.",
+      "mavenCopy": "Baixa um artefato Maven pelas coordenadas para um diretório de destino.",
+      "mkdir": "Cria um diretório recursivamente (com compactação NTFS opcional no Windows).",
+      "propertyGet": "Lê uma chave de um arquivo .properties para uma variável de receita.",
+      "propertySet": "Define um par chave/valor em um arquivo .properties.",
+      "removeFromRegistry": "Remove entradas de pacotes do registro de instalados do Levain.",
+      "saveConfig": "Ação legada sem efeito mantida por compatibilidade (a configuração é salva automaticamente).",
+      "setEnv": "Define uma variável de ambiente (sessão atual ou permanente no Windows).",
+      "setVar": "Define uma variável para uso nas ações seguintes da mesma execução.",
+      "shellPath": "Configura o executável padrão usado por \"levain shell\".",
+      "template": "Gera um arquivo a partir de um template aplicando substituições de texto ou regex."
     }
   },
   "cmd": {
     "actions": {
       "actionsFound": "= Ações:",
+      "noneFound": "Nenhuma ação encontrada para \"{{search}}\".",
       "didYouMean": "Você quis dizer uma dessas ações?",
+      "usageLabel": "Uso",
+      "hint": "Dica: execute \"levain actions <nome>\" para ver a sintaxe de uso de ações específicas.",
       "example": "  actions [texto de busca opcional]"
     },
     "activate": {
@@ -124,7 +219,93 @@
     },
     "explain": {
       "nothing": "explain - Nada para explicar.",
-      "example": "  explain <pacote>..."
+      "noPackages": "Nenhum pacote informado e nenhum .levain.yaml encontrado no diretório atual. Informe os pacotes (ex.: \"levain explain maven\") ou execute na pasta de um projeto.",
+      "errorNotFound": "Não foi possível encontrar o(s) pacote(s): {{pkgNames}}.",
+      "errorMissingDep": "Não foi possível resolver todas as dependências de: {{pkgNames}}.",
+      "example": "  explain [--raw] [pacote...]",
+      "title": "Roteiro manual: {{packages}}",
+      "rawTitle": "Diretivas originais da receita: {{packages}}",
+      "subtitle": "Siga estes passos em ordem caso queira montar o ambiente manualmente sem o Levain.",
+      "order": "Ordem de instalação: {{order}}",
+      "baseDir": "Diretório base de instalação: `{{dir}}`",
+      "statusInstalled": "já instalado",
+      "statusUpdateAvailable": "instalado — atualização disponível",
+      "statusNotInstalled": "não instalado",
+      "stepHeader": "Passo {{index}}: {{name}} (v{{version}}) [{{status}}]",
+      "stepHeaderNoVersion": "Passo {{index}}: {{name}} [{{status}}]",
+      "recipeSource": "Receita: `{{path}}`",
+      "installDir": "Pasta de instalação: `{{dir}}`",
+      "sectionInstall": "Passos de instalação",
+      "sectionEnv": "Configuração de ambiente",
+      "sectionShell": "Passos de abertura do shell",
+      "sectionProject": "Ambiente do projeto ({{name}})",
+      "noSteps": "Nenhum passo manual necessário (metapacote / apenas dependências).",
+      "otherOsOnly": "Nenhum passo manual para {{os}} (definido apenas para: {{platforms}}).",
+      "placeholder": {
+        "password": "<sua senha>",
+        "passwordUrlEncoded": "<sua senha (URL-encoded)>",
+        "login": "<seu login>",
+        "email": "<seu e-mail>",
+        "fullname": "<seu nome completo>",
+        "runtimeVar": "<valor de {{name}}>",
+        "urlEncoded": "<{{value}} (URL-encoded)>"
+      },
+      "step": {
+        "mkdir": "Crie o diretório `{{dir}}`.",
+        "mkdirCompact": "Crie o diretório `{{dir}}` (opcionalmente habilite compactação NTFS no Windows).",
+        "copy": "Copie {{src}} para `{{dst}}`{{suffix}}.",
+        "download": "Baixe {{src}} para `{{dst}}`{{suffix}}.",
+        "extract": "Extraia o arquivo `{{src}}` em `{{dst}}`{{suffix}}.",
+        "downloadAndExtract": "Baixe e extraia `{{src}}` em `{{dst}}`{{suffix}}.",
+        "noteStripDir": "copiando o conteúdo diretamente sem a pasta externa",
+        "noteStripArchive": "removendo a pasta raiz interna do arquivo compactado",
+        "noteIfNotExists": "pule se o destino já existir",
+        "noteDefault": "padrão: `{{value}}`",
+        "clone": "Clone o repositório Git `{{url}}` em `{{dst}}`.",
+        "cloneBranch": "Clone o repositório Git `{{url}}` (branch `{{branch}}`) em `{{dst}}`.",
+        "addPath": "Adicione `{{dir}}` ao `PATH` do terminal.",
+        "addPathPermanent": "Adicione `{{dir}}` permanentemente ao seu `PATH` de usuário.",
+        "setEnv": "Defina a variável de ambiente `{{key}}` = `{{value}}`.",
+        "setEnvPermanent": "Defina a variável de ambiente permanente do usuário `{{key}}` = `{{value}}`.",
+        "setVar": "Anote para os passos seguintes: `{{name}}` = `{{value}}`.",
+        "runCommand": "Execute no terminal: `{{command}}`",
+        "runCommandIgnoreErrors": "Execute no terminal (ignore erros caso falhe): `{{command}}`",
+        "runCommandSaveVar": "Execute `{{command}}` e guarde a saída como `{{varName}}`.",
+        "template": "Crie `{{dst}}` a partir do template `{{src}}`, substituindo: {{replacements}}.",
+        "jsonSet": "No arquivo JSON `{{file}}`, defina `{{property}}` = `{{value}}`.",
+        "jsonSetIfNotExists": "No arquivo JSON `{{file}}`, defina `{{property}}` = `{{value}}` (somente se ainda não existir).",
+        "jsonGet": "Leia `{{property}}` do arquivo JSON `{{file}}` como `{{varName}}`{{suffix}}.",
+        "jsonRemove": "Remova a propriedade `{{property}}` do arquivo JSON `{{file}}`.",
+        "propertySet": "No arquivo de propriedades `{{file}}`, defina `{{property}}={{value}}`.",
+        "propertySetIfNotExists": "No arquivo de propriedades `{{file}}`, defina `{{property}}={{value}}` (somente se ainda não existir).",
+        "propertyGet": "Leia `{{property}}` do arquivo de propriedades `{{file}}` como `{{varName}}`{{suffix}}.",
+        "mavenCopy": "Baixe o artefato Maven `{{coordinates}}` para `{{dst}}`{{suffix}}.",
+        "backupFile": "Faça backup do arquivo existente `{{file}}` antes de modificá-lo.",
+        "checkFileExists": "Verifique se o arquivo `{{file}}` existe.",
+        "checkAnyFileExists": "Verifique se ao menos um destes arquivos existe: {{files}}.",
+        "checkChainDir": "Verifique se ao menos um destes diretórios existe: {{dirs}}.",
+        "checkChainDirSaveVar": "Encontre o primeiro diretório existente entre {{dirs}} e anote como `{{varName}}`{{suffix}}.",
+        "checkPort": "Verifique se a porta {{transport}} `{{port}}` está livre.",
+        "checkUrl": "Verifique se a URL `{{url}}` está acessível (HTTP 200).",
+        "assertContains": "Verifique se `{{fullText}}` contém `{{text}}`.",
+        "inspect": "Inspecione `{{file}}` para extrair {{vars}}.",
+        "inspectWithPatterns": "Inspecione `{{file}}` buscando {{patterns}} para extrair {{vars}}.",
+        "addToDesktop": "Crie um atalho na Área de Trabalho apontando para `{{target}}`.",
+        "addToStartMenu": "Crie um atalho no Menu Iniciar apontando para `{{target}}`.",
+        "addToStartMenuFolder": "Crie um atalho no Menu Iniciar (pasta `{{folder}}`) apontando para `{{target}}`.",
+        "addToStartup": "Crie um atalho na Inicialização para executar `{{target}}` no login.",
+        "contextMenu": "Registre no menu de contexto de pastas do Windows Explorer o item \"{{name}}\" executando `{{cmd}}`.",
+        "contextMenuRemove": "Remova do menu de contexto de pastas do Windows Explorer o item `{{id}}`.",
+        "killProcess": "Encerre o processo em execução `{{processName}}`.",
+        "echo": "Observação: {{message}}",
+        "defaultPackage": "Configure `{{pkgName}}` como pacote padrão do shell.",
+        "shellPath": "Configure `{{shellPath}}` como executável padrão do shell interativo.",
+        "removeFromRegistry": "Remova {{packages}} do registro de pacotes instalados do Levain.",
+        "activateInit": "Configure o perfil do terminal para habilitar `levain activate`.",
+        "activateInternal": "Passo interno de ativação do shell (`{{action}}`).",
+        "saveConfig": "Salve as alterações de configuração.",
+        "fallback": "Execute a diretiva da receita: `{{line}}`"
+      }
     },
     "info": {
       "yourPackages": "=== Seus pacotes",

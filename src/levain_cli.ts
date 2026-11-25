@@ -118,7 +118,7 @@ export default class LevainCli {
         );
       }
 
-      if (!myArgs["skip-levain-updates"] && !myArgs["levain-upgrade"] && !isActivateCmd) {
+      if (!myArgs["skip-levain-updates"] && !myArgs["levain-upgrade"] && !isActivateCmd && cmd !== "explain") {
         const levainReleases = new LevainReleases(config);
         await measurePhase("checkLevainUpdate", () => levainReleases.checkLevainUpdate());
       }
