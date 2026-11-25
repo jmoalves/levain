@@ -3,8 +3,6 @@ import * as log from "@std/log";
 import * as fs from "@std/fs";
 import { ArrayUtils } from "../utils/array_utils.ts";
 import { envChain } from "../utils/utils.ts";
-import { Powershell } from "./powershell.ts";
-import ExtraBin from "../paths/extra_bin.ts";
 import { FileUtils } from "../fs/file_utils.ts";
 import { isNotFoundFileError } from "../utils/error_utils.ts";
 import HomePaths from "../paths/home_paths.ts";
@@ -115,8 +113,9 @@ export default class OsUtils {
       return;
     }
 
-    const psCmd = new Deno.Command("powershell", {
+    const psCmd = new Deno.Command(OsUtils.windowsPowershellExe(), {
       args: [
+        "-NoLogo",
         "-NoProfile",
         "-NonInteractive",
         "-Command",
@@ -142,6 +141,9 @@ export default class OsUtils {
 
   static async addPathPermanent(newPathItem: string): Promise<string> {
     OsUtils.onlyInWindows();
+    if (/[;\r\n\0]/.test(newPathItem)) {
+      throw new Error(`Invalid PATH entry: "${newPathItem}" must not contain ';', CR, LF, or NUL`);
+    }
 
     const path = await this.getUserPath();
     const newPath = ArrayUtils.remove(path, newPathItem);
@@ -248,28 +250,203 @@ export default class OsUtils {
     return path.replace(/"/g, "");
   }
 
+  static windowsSystemToolPath(relativeToolPath: string): string {
+    const systemRoot = Deno.env.get("SystemRoot") || Deno.env.get("WINDIR") || "C:\\Windows";
+    return path.join(systemRoot, "System32", relativeToolPath);
+  }
+
+  private static windowsPowershellExe(): string {
+    const candidate = OsUtils.windowsSystemToolPath(path.join("WindowsPowerShell", "v1.0", "powershell.exe"));
+    return fs.existsSync(candidate) ? candidate : "powershell.exe";
+  }
+
+  static findInPath(
+    binaryName: string,
+    windowsAllowedExtensions: string[] = [".EXE", ".COM", ".CMD", ".BAT"],
+  ): string | undefined {
+    const rawPath = Deno.env.get("PATH") ?? Deno.env.get("Path") ?? "";
+    if (!rawPath || !binaryName) {
+      return undefined;
+    }
+
+    const dirs = rawPath.split(path.DELIMITER).filter((dir) => dir.trim().length > 0);
+    const isWin = OsUtils.isWindows();
+    const candidates: string[] = [];
+
+    if (isWin && !/\.[a-z0-9]+$/i.test(binaryName)) {
+      const allowedSet = new Set(windowsAllowedExtensions.map((ext) => ext.toUpperCase()));
+      const rawPathext = (Deno.env.get("PATHEXT") || ".EXE;.COM;.CMD;.BAT")
+        .split(";")
+        .map((ext) => ext.trim().toUpperCase())
+        .filter((ext) => ext.length > 0 && allowedSet.has(ext));
+      const exts = rawPathext.length > 0 ? rawPathext : Array.from(allowedSet);
+      for (const ext of exts) {
+        candidates.push(`${binaryName}${ext}`);
+      }
+    } else {
+      candidates.push(binaryName);
+    }
+
+    for (const dir of dirs) {
+      const cleanDir = dir.trim().replace(/^"|"$/g, "");
+      if (!cleanDir || !path.isAbsolute(cleanDir)) continue;
+      for (const name of candidates) {
+        const fullPath = path.join(cleanDir, name);
+        try {
+          const stat = Deno.statSync(fullPath);
+          if (!stat.isFile) continue;
+          if (!isWin && stat.mode !== null && (stat.mode & 0o111) === 0) continue;
+          return fullPath;
+        } catch {
+          continue;
+        }
+      }
+    }
+
+    return undefined;
+  }
+
+  static parseUserPathRegistryJson(
+    stdout: string,
+  ): { exists: boolean; value: string; type: string } {
+    const trimmed = stdout.trim();
+    if (!trimmed) {
+      throw new Error("Empty response while reading HKCU\\Environment\\Path");
+    }
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(trimmed);
+    } catch (err) {
+      throw new Error(`Invalid JSON while reading HKCU\\Environment\\Path: ${err}`);
+    }
+    if (
+      typeof parsed !== "object" ||
+      parsed === null ||
+      typeof (parsed as Record<string, unknown>).exists !== "boolean" ||
+      typeof (parsed as Record<string, unknown>).value !== "string"
+    ) {
+      throw new Error("Unexpected response shape while reading HKCU\\Environment\\Path");
+    }
+    const record = parsed as { exists: boolean; value: string; type?: unknown };
+    return {
+      exists: record.exists,
+      value: record.value,
+      type: typeof record.type === "string" ? record.type : "ExpandString",
+    };
+  }
+
+  private static broadcastEnvironmentChange(): void {
+    if (!OsUtils.isWindows()) {
+      return;
+    }
+    try {
+      const envUtf16 = new Uint16Array(Array.from("Environment\0", (ch) => ch.charCodeAt(0)));
+      const user32 = Deno.dlopen("user32.dll", {
+        SendMessageTimeoutW: {
+          parameters: ["usize", "u32", "usize", "buffer", "u32", "u32", "pointer"],
+          result: "isize",
+        },
+      });
+      try {
+        // HWND_BROADCAST = 0xFFFF, WM_SETTINGCHANGE = 0x001A, SMTO_ABORTIFHUNG = 0x0002
+        user32.symbols.SendMessageTimeoutW(
+          0xFFFFn,
+          0x001A,
+          0n,
+          new Uint8Array(envUtf16.buffer),
+          0x0002,
+          1000,
+          null,
+        );
+      } finally {
+        user32.close();
+      }
+    } catch (err) {
+      log.debug(`Best-effort WM_SETTINGCHANGE broadcast skipped: ${err}`);
+    }
+  }
+
   static async getUserPath(): Promise<string[]> {
     this.onlyInWindows();
-    const script = this.getScriptUri("getUserPath.ps1");
+    const psScript = [
+      "$ErrorActionPreference = 'Stop'",
+      "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8",
+      "$key = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Environment', $false)",
+      "try {",
+      "  if ($null -eq $key) { Write-Output '{\"exists\":false,\"type\":\"ExpandString\",\"value\":\"\"}' }",
+      "  else {",
+      "    $val = $key.GetValue('Path', $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)",
+      "    if ($null -eq $val) { Write-Output '{\"exists\":false,\"type\":\"ExpandString\",\"value\":\"\"}' }",
+      "    else {",
+      "      $kind = $key.GetValueKind('Path').ToString()",
+      "      [PSCustomObject]@{ exists = $true; type = $kind; value = [string]$val } | ConvertTo-Json -Compress",
+      "    }",
+      "  }",
+      "} finally { if ($null -ne $key) { $key.Dispose() } }",
+    ].join("; ");
 
-    const rawPath = await Powershell.run(script, true);
+    const psCmd = new Deno.Command(OsUtils.windowsPowershellExe(), {
+      args: ["-NoLogo", "-NonInteractive", "-NoProfile", "-Command", psScript],
+      stdout: "piped",
+      stderr: "piped",
+    });
+    const { success, stdout, stderr, code } = await psCmd.output();
+    if (!success) {
+      const errText = OsUtils.decodeOutput(stderr).trim();
+      throw new Error(`Error ${code} reading HKCU\\Environment\\Path: ${errText}`);
+    }
 
-    return rawPath.split(";");
+    const regEntry = OsUtils.parseUserPathRegistryJson(OsUtils.decodeOutput(stdout));
+    if (!regEntry.exists || !regEntry.value) {
+      return [];
+    }
+    return regEntry.value.split(";");
   }
 
-  static async setUserPath(path: string[]): Promise<string> {
+  static async setUserPath(pathEntries: string[]): Promise<string> {
     this.onlyInWindows();
-    const pathString = path.join(";");
-    const sanitizedPath = this.sanitizePathString(pathString);
-    const script = this.getScriptUri("setUserPath.ps1");
+    for (const entry of pathEntries) {
+      if (/[\r\n\0]/.test(entry)) {
+        throw new Error(`Invalid PATH entry: must not contain CR, LF, or NUL`);
+      }
+    }
 
-    return await Powershell.run(script, false, false, [sanitizedPath]);
-  }
-  
-  static getScriptUri(scriptName: string) {
-    OsUtils.onlyInWindows();
-    const scriptsDir = ExtraBin.osUtilsDir;
-    return path.resolve(scriptsDir, scriptName);
+    const pathString = pathEntries.join(";");
+    const sanitizedPath = this.sanitizePathString(pathString);
+
+    const psScript = [
+      "$ErrorActionPreference = 'Stop'",
+      "$key = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Environment', $true)",
+      "if ($null -eq $key) { $key = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey('Environment') }",
+      "try {",
+      "  $kind = [Microsoft.Win32.RegistryValueKind]::ExpandString",
+      "  if ($null -ne $key.GetValue('Path', $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)) {",
+      "    $existingKind = $key.GetValueKind('Path')",
+      "    if ($existingKind -eq [Microsoft.Win32.RegistryValueKind]::String -or $existingKind -eq [Microsoft.Win32.RegistryValueKind]::ExpandString) {",
+      "      $kind = $existingKind",
+      "    }",
+      "  }",
+      "  $newVal = if ($null -eq $env:__LEVAIN_USER_PATH) { '' } else { $env:__LEVAIN_USER_PATH }",
+      "  $key.SetValue('Path', $newVal, $kind)",
+      "} finally { $key.Dispose() }",
+    ].join("; ");
+
+    const psCmd = new Deno.Command(OsUtils.windowsPowershellExe(), {
+      args: ["-NoLogo", "-NonInteractive", "-NoProfile", "-Command", psScript],
+      env: {
+        __LEVAIN_USER_PATH: sanitizedPath,
+      },
+      stdout: "piped",
+      stderr: "piped",
+    });
+    const { success, stdout, stderr, code } = await psCmd.output();
+    if (!success) {
+      const errText = OsUtils.decodeOutput(stderr).trim();
+      throw new Error(`Error ${code} writing HKCU\\Environment\\Path: ${errText}`);
+    }
+
+    OsUtils.broadcastEnvironmentChange();
+    return OsUtils.decodeOutput(stdout);
   }
 
   static async createShortcut(
@@ -283,16 +460,33 @@ export default class OsUtils {
     fs.ensureDirSync(newPathResolved);
 
     if (OsUtils.isWindows()) {
-      const createShortcutScript = OsUtils.getScriptUri(
-        "createShortcut.ps1",
-      );
+      const targetDir = path.dirname(oldPathResolved);
+      const shortcutFile = path.join(newPathResolved, `${path.basename(oldPathResolved)}.lnk`);
+      const psScript = [
+        "$ErrorActionPreference = 'Stop'",
+        "$ws = New-Object -ComObject WScript.Shell",
+        "$s = $ws.CreateShortcut($env:__LEVAIN_SHORTCUT_FILE)",
+        "$s.WorkingDirectory = $env:__LEVAIN_SHORTCUT_WORKDIR",
+        "$s.TargetPath = $env:__LEVAIN_SHORTCUT_TARGET",
+        "$s.Save()",
+      ].join("; ");
 
-      return await Powershell.run(
-        createShortcutScript,
-        false,
-        false,
-        [oldPathResolved, newPathResolved],
-      );
+      const psCmd = new Deno.Command(OsUtils.windowsPowershellExe(), {
+        args: ["-NoLogo", "-NonInteractive", "-NoProfile", "-Command", psScript],
+        env: {
+          __LEVAIN_SHORTCUT_TARGET: oldPathResolved,
+          __LEVAIN_SHORTCUT_WORKDIR: targetDir,
+          __LEVAIN_SHORTCUT_FILE: shortcutFile,
+        },
+        stdout: "piped",
+        stderr: "piped",
+      });
+      const { success, stdout, stderr, code } = await psCmd.output();
+      if (!success) {
+        const errText = OsUtils.decodeOutput(stderr).trim();
+        throw new Error(`Error ${code} creating Windows shortcut for "${oldPathResolved}": ${errText}`);
+      }
+      return OsUtils.decodeOutput(stdout);
     }
     return Deno.symlinkSync(oldPathResolved, newPathResolved);
   }

@@ -10,6 +10,61 @@ import t from "../i18n.ts";
 // Avoid lingering idle Web Worker timers in Deno CLI/test processes.
 zip.configure({ useWebWorkers: false });
 
+export class DenoFileReader extends zip.Reader<string> {
+  private file: Deno.FsFile | undefined;
+
+  constructor(private readonly filePath: string) {
+    super(filePath);
+  }
+
+  override async init(): Promise<void> {
+    if (this.file) {
+      return;
+    }
+    try {
+      this.file = await Deno.open(this.filePath, { read: true });
+      const stat = await this.file.stat();
+      this.size = stat.size;
+      await super.init?.();
+    } catch (err) {
+      this.close();
+      throw fileError(err, this.filePath, t("lib.extract.denozip_extractor.extractImplReadError"));
+    }
+  }
+
+  override async readUint8Array(index: number, length: number): Promise<Uint8Array> {
+    if (!this.file) {
+      throw new Error(`Zip source file not open: ${this.filePath}`);
+    }
+    if (length <= 0 || index < 0 || index >= this.size) {
+      return new Uint8Array(0);
+    }
+    const toRead = Math.min(length, this.size - index);
+    await this.file.seek(index, Deno.SeekMode.Start);
+    const buffer = new Uint8Array(toRead);
+    let offset = 0;
+    while (offset < toRead) {
+      const n = await this.file.read(buffer.subarray(offset));
+      if (n === null) {
+        break;
+      }
+      offset += n;
+    }
+    return offset === toRead ? buffer : buffer.subarray(0, offset);
+  }
+
+  close(): void {
+    if (this.file) {
+      try {
+        this.file.close();
+      } catch {
+        // Ignore already-closed handle
+      }
+      this.file = undefined;
+    }
+  }
+}
+
 export class DenoZip extends Extractor {
   constructor(config: Config) {
     super(config);
@@ -47,13 +102,8 @@ export class DenoZip extends Extractor {
   async extractImpl(src: string, dst: string) {
     log.debug(`-- Deno unZIP ${src} => ${dst}`);
 
-    let fileBytes: Uint8Array<ArrayBuffer>;
-    try {
-      fileBytes = await Deno.readFile(src);
-    } catch (err) {
-      throw fileError(err, src, t("lib.extract.denozip_extractor.extractImplReadError"));
-    }
-    const reader = new zip.ZipReader(new zip.BlobReader(new Blob([fileBytes])));
+    const fileReader = new DenoFileReader(src);
+    const reader = new zip.ZipReader(fileReader);
 
     try {
       const entries = await reader.getEntries();
@@ -73,20 +123,38 @@ export class DenoZip extends Extractor {
           recursive: true,
         });
 
-        const writer = new zip.BlobWriter();
-        const blob = await entry.getData(writer);
+        let outFile: Deno.FsFile;
+        try {
+          outFile = await Deno.open(outputPath, { write: true, create: true, truncate: true });
+        } catch (err) {
+          throw fileError(
+            err,
+            outputPath,
+            t("lib.extract.denozip_extractor.extractImplWriteError", { filePath: src }),
+          );
+        }
 
         try {
-          await Deno.writeFile(
-            outputPath,
-            new Uint8Array(await blob.arrayBuffer()),
-          );
+          await entry.getData!(outFile.writable);
         } catch (err) {
-          throw fileError(err, outputPath, t("lib.extract.denozip_extractor.extractImplWriteError", { filePath: src }));
+          try {
+            outFile.close();
+          } catch {
+            // Writable stream may have already closed the handle
+          }
+          throw fileError(
+            err,
+            outputPath,
+            t("lib.extract.denozip_extractor.extractImplWriteError", { filePath: src }),
+          );
         }
       }
     } finally {
-      await reader.close();
+      try {
+        await reader.close();
+      } finally {
+        fileReader.close();
+      }
     }
   }
 }

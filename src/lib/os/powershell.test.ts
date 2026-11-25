@@ -1,7 +1,9 @@
 import { assertEquals } from "@std/assert";
+import * as path from "@std/path";
 
 import { Powershell } from "./powershell.ts";
 import OsUtils from "./os_utils.ts";
+import TestHelper from "../test/test_helper.ts";
 
 if (OsUtils.isWindows()) {
   Deno.test({
@@ -18,7 +20,9 @@ if (OsUtils.isWindows()) {
   Deno.test({
     name: "Powershell should run a file",
     async fn() {
-      const script = OsUtils.getScriptUri("helloWorld.ps1");
+      const tempDir = TestHelper.getNewTempDir();
+      const script = path.join(tempDir, "helloWorld.ps1");
+      await Deno.writeTextFile(script, 'Write-Output "Hello, powershell scripts!"\n');
 
       const result = await Powershell.run(script, true);
 

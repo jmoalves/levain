@@ -3,6 +3,7 @@ import * as path from "@std/path";
 
 import TestHelper from "../test/test_helper.ts";
 import { assertFolderIncludes } from "../test/more_asserts.ts";
+import OsUtils from "../os/os_utils.ts";
 import { ExtractorFactory } from "./extractor_factory.ts";
 import { Extractor } from "./extractor.ts";
 
@@ -68,4 +69,37 @@ Deno.test("Extractor.extractToTemp should clear feedback interval timer when ext
     Error,
     "boom during extract",
   );
+});
+
+Deno.test("Extractor.move with --strip should reject non-directory or symlink root entries", async () => {
+  class DummyExtractor extends Extractor {
+    extractImpl(_src: string, _dst: string): void {}
+  }
+
+  const extractor = new DummyExtractor(TestHelper.getConfig());
+
+  // Regular file as root entry
+  const srcWithFile = TestHelper.getNewTempDir();
+  const dst1 = TestHelper.getNewTempDir();
+  await Deno.writeTextFile(path.join(srcWithFile, "plain.txt"), "not a dir");
+  await assertRejects(
+    async () => await extractor.move(true, srcWithFile, dst1),
+    Error,
+    "Unsafe --strip archive root entry",
+  );
+
+  // Symlink pointing to external directory (POSIX / elevated Windows)
+  if (!OsUtils.isWindows()) {
+    const externalDir = TestHelper.getNewTempDir();
+    await Deno.writeTextFile(path.join(externalDir, "secret.txt"), "outside");
+    const srcWithSymlink = TestHelper.getNewTempDir();
+    const dst2 = TestHelper.getNewTempDir();
+    await Deno.symlink(externalDir, path.join(srcWithSymlink, "escape-link"));
+
+    await assertRejects(
+      async () => await extractor.move(true, srcWithSymlink, dst2),
+      Error,
+      "Unsafe --strip archive root entry",
+    );
+  }
 });

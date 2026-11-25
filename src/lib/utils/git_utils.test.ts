@@ -3,6 +3,7 @@ import { stub } from "@std/testing/mock";
 import * as path from "@std/path";
 
 import GitUtils from "./git_utils.ts";
+import ExtraBin from "../paths/extra_bin.ts";
 import TestHelper from "../test/test_helper.ts";
 import { assertDirCountGreaterOrEqualTo } from "../test/more_asserts.ts";
 import OsUtils from "../os/os_utils.ts";
@@ -156,19 +157,47 @@ Deno.test("GitUtils.clone should clone a repo", async () => {
 
   assertDirCountGreaterOrEqualTo(tempFolder, 3);
 });
+Deno.test("GitUtils.resolveGitCommand should prefer system git on PATH and fall back per OS", () => {
+  const findStub = stub(OsUtils, "findInPath", () => "/usr/bin/git");
+  try {
+    assertEquals(GitUtils.resolveGitCommand(), "/usr/bin/git");
+  } finally {
+    findStub.restore();
+  }
+
+  const missingStub = stub(OsUtils, "findInPath", () => undefined);
+  const winStub = stub(OsUtils, "isWindows", () => true);
+  try {
+    assertEquals(GitUtils.resolveGitCommand(), path.join(ExtraBin.gitDir, "cmd", "git.exe"));
+  } finally {
+    winStub.restore();
+    missingStub.restore();
+  }
+
+  const missingStub2 = stub(OsUtils, "findInPath", () => undefined);
+  const posixStub = stub(OsUtils, "isWindows", () => false);
+  try {
+    assertEquals(GitUtils.resolveGitCommand(), "git");
+  } finally {
+    posixStub.restore();
+    missingStub2.restore();
+  }
+});
+
 Deno.test("GitUtils.clone should pass argv array directly without shell wrapper and support spaces in destination", async () => {
   const calls: (string | string[])[] = [];
   const runStub = stub(OsUtils, "runAndLog", (cmd: string | string[]) => {
     calls.push(cmd);
     return Promise.resolve("");
   });
+  const winStub = stub(OsUtils, "isWindows", () => true);
 
   try {
-    const gitUtils = new GitUtils();
+    const gitUtils = new GitUtils("git");
     await gitUtils.clone("https://github.com/jmoalves/levain.git#develop", "/tmp/my dest dir", true);
 
     assertEquals(calls, [[
-      gitUtils.gitCmd,
+      "git",
       "clone",
       "--progress",
       "--config",
@@ -183,7 +212,37 @@ Deno.test("GitUtils.clone should pass argv array directly without shell wrapper 
       "/tmp/my dest dir",
     ]]);
   } finally {
+    winStub.restore();
     runStub.restore();
+  }
+
+  const posixCalls: (string | string[])[] = [];
+  const runStub2 = stub(OsUtils, "runAndLog", (cmd: string | string[]) => {
+    posixCalls.push(cmd);
+    return Promise.resolve("");
+  });
+  const posixStub = stub(OsUtils, "isWindows", () => false);
+
+  try {
+    const gitUtils = new GitUtils("git");
+    await gitUtils.clone("https://github.com/jmoalves/levain.git#develop", "/tmp/my dest dir", true);
+
+    assertEquals(posixCalls, [[
+      "git",
+      "clone",
+      "--progress",
+      "--branch=develop",
+      "--single-branch",
+      "--no-tags",
+      "--depth",
+      "1",
+      "--",
+      "https://github.com/jmoalves/levain.git",
+      "/tmp/my dest dir",
+    ]]);
+  } finally {
+    posixStub.restore();
+    runStub2.restore();
   }
 });
 Deno.test("GitUtils.clone should clone into a destination path containing spaces", async () => {

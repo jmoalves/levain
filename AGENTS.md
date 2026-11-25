@@ -130,7 +130,7 @@ Execution path: `levain.ts` (logging setup, global arg parsing) → `src/levain_
 * Otherwise → `FileSystemRepository`
 Composed via `ChainRepository` across installed (`registry`), regular (`recipes/` + `--addRepo` + `--tempRepo`), and current directory (`currentDir`).
 
-**Paths & extra-bin** (`src/lib/paths/`): `LevainPaths`, `ConfigPaths`, `HomePaths`, `GeneralPaths`, and `ExtraBin` (`src/lib/paths/extra_bin.ts`) centralize path resolution and break circular imports. `ExtraBin` points at bundled Windows tools (`7-Zip`, `git`, `os-utils`) under `extra-bin/windows/`. Long-term direction is to **pragmatically reduce `extra-bin` reliance in favor of pure Deno/TypeScript** (starting with `os-utils` helpers) while keeping external fallbacks (`7-Zip`, `MinGit`) only where clearly justified.
+**Paths & extra-bin** (`src/lib/paths/`): `LevainPaths`, `ConfigPaths`, `HomePaths`, `GeneralPaths`, and `ExtraBin` (`src/lib/paths/extra_bin.ts`) centralize path resolution and break circular imports. `ExtraBin` points at bundled Windows fallback tools (`7-zip`, `git`) under `extra-bin/windows/`. Legacy `os-utils` scripts have been absorbed into TypeScript/Deno (`OsUtils`); `7-Zip` (`.7z`/SFX/large `.zip`) and `MinGit` (fallback when system `git` is absent from `PATH`) are kept only where clearly justified.
 
 **Config** (`src/lib/config.ts`) is threaded through every command and action, owning base dirs, user credentials, and config persistence (`$HOME/levain.config.json`, with legacy fallback).
 

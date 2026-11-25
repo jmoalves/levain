@@ -14,8 +14,4 @@ export default class ExtraBin {
   static get gitDir(): string {
     return path.resolve(ExtraBin.extraBinDir, "git");
   }
-
-  static get osUtilsDir(): string {
-    return path.resolve(ExtraBin.extraBinDir, "os-utils");
-  }
 }

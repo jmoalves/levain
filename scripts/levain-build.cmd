@@ -90,7 +90,9 @@ xcopy /q   "%levainRoot%\levain.ps1" "%levainOutputDir%\" >nul || exit /b 1
 xcopy /q   "%levainRoot%\levain.sh" "%levainOutputDir%\" >nul || exit /b 1
 xcopy /q   "%levainRoot%\LICENSE" "%levainOutputDir%\" >nul || exit /b 1
 xcopy /q/s "%levainRoot%\recipes\" "%levainOutputDir%\build\recipes\" >nul || exit /b 1
-xcopy /q/s "%levainRoot%\extra-bin\" "%levainOutputDir%\build\extra-bin\" >nul || exit /b 1
+if exist "%levainRoot%\extra-bin" (
+    xcopy /q/s "%levainRoot%\extra-bin\" "%levainOutputDir%\build\extra-bin\" >nul || exit /b 1
+)
 
 call "%myPath%\msDefender.cmd" "%levainOutputDir%"
 if errorlevel 1 exit /b 1
