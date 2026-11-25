@@ -33,15 +33,23 @@ export class AutoFlushLogFileHandler extends log.FileHandler {
     if (this.disabled) {
       return;
     }
-    super.flush();
-    this.lastFlush = Date.now();
+    try {
+      super.flush();
+      this.lastFlush = Date.now();
+    } catch {
+      this.disabled = true;
+    }
   }
 
   override destroy(): void {
     if (this.disabled) {
       return;
     }
-    super.destroy();
+    try {
+      super.destroy();
+    } catch {
+      this.disabled = true;
+    }
   }
 
   override handle(logRecord: log.LogRecord): void {

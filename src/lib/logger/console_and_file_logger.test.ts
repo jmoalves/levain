@@ -1,10 +1,8 @@
 import { assertEquals, assertFalse, assertStringIncludes } from "@std/assert";
 import * as log from "@std/log";
 import * as path from "@std/path";
-import { stub } from "@std/testing/mock";
 
 import Config from "../config.ts";
-import HomePaths from "../paths/home_paths.ts";
 import ConsoleFeedback from "../utils/console_feedback.ts";
 import TestHelper from "../test/test_helper.ts";
 import { AutoFlushLogFileHandler } from "./auto_flush_log_file_handler.ts";
@@ -149,30 +147,10 @@ Deno.test("ConsoleFeedback.show should throttle terminal writes and suppress int
   }
 });
 
-Deno.test("ConsoleAndFileLogger should append to shared HomePaths.levainLog and AutoFlushLogFileHandler should degrade gracefully on open failure", async () => {
-  const tempHome = TestHelper.getNewTempDir();
-  const sharedLog = path.join(tempHome, "levain.log");
-  Deno.writeTextFileSync(sharedLog, "EXISTING-INSTANCE-LINE\n");
-
-  const homeStub = stub(HomePaths, "homedir", () => tempHome);
-  let logger;
-  try {
-    logger = await ConsoleAndFileLogger.setup([sharedLog], true);
-    log.info("SECOND-INSTANCE-LINE");
-    logger.flush();
-    await logger.close();
-
-    const content = Deno.readTextFileSync(sharedLog);
-    assertStringIncludes(content, "EXISTING-INSTANCE-LINE");
-    assertStringIncludes(content, "SECOND-INSTANCE-LINE");
-  } finally {
-    await logger?.close();
-    homeStub.restore();
-  }
-
-  // Opening a directory path as a log file fails in setup(); handler must disable cleanly instead of crashing
-  const dirAsFile = TestHelper.getNewTempDir();
-  const handler = new AutoFlushLogFileHandler("DEBUG", { filename: dirAsFile, mode: "a" });
+Deno.test("AutoFlushLogFileHandler should degrade gracefully when log file cannot be opened", () => {
+  // Missing parent dir fails deterministically in setup() on all OSes; handler must disable cleanly instead of crashing
+  const missingParentLog = path.join(TestHelper.getNewTempDir(), "nonexistent-parent", "cannot-open.log");
+  const handler = new AutoFlushLogFileHandler("DEBUG", { filename: missingParentLog, mode: "w" });
   handler.setup();
   handler.log("ignored");
   handler.handle(TestHelper.logRecord("ignored"));

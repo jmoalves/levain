@@ -11,7 +11,6 @@ import { FileUtils } from "../fs/file_utils.ts";
 import { StderrConsoleHandler } from "./stderr_handler.ts";
 import ConsoleFeedback from "../utils/console_feedback.ts";
 import { NullWriter } from "./null_writer.ts";
-import HomePaths from "../paths/home_paths.ts";
 
 export default class ConsoleAndFileLogger {
   static config: Config | undefined;
@@ -67,10 +66,6 @@ export default class ConsoleAndFileLogger {
     });
   }
 
-  static getLogFileInHomeFolder(): string {
-    return HomePaths.levainLog;
-  }
-
   static getLogFileInExtraDir(extraDir: string) {
     const myFileName =
       `levain-${OsUtils.hostname?.toLowerCase()}-${OsUtils.login?.toLowerCase()}-${LogUtils.logTag()}.log`;
@@ -95,15 +90,10 @@ export default class ConsoleAndFileLogger {
   }
 
   getLogFileHandler(logFile: string, options = {}): FileHandler {
-    const resolvedLog = path.resolve(logFile);
-    const resolvedHomeLog = path.resolve(HomePaths.levainLog);
-    const isSharedHomeLog = OsUtils.isWindows()
-      ? resolvedLog.toLowerCase() === resolvedHomeLog.toLowerCase()
-      : resolvedLog === resolvedHomeLog;
     const fullOptions = {
       filename: logFile,
       formatter: LogFormatterFactory.getFormatterWithDatetimeAndLevel(() => ConsoleAndFileLogger.config),
-      mode: isSharedHomeLog ? "a" : "w",
+      mode: "w",
       ...options,
     };
     return new AutoFlushLogFileHandler("DEBUG", fullOptions);
