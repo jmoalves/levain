@@ -1,6 +1,7 @@
 import Repository from "./repository.ts";
 
-import { assertEquals, assertRejects } from "@std/assert";
+import { assertEquals, assertRejects, assertThrows } from "@std/assert";
+import * as path from "@std/path";
 import { stub } from "@std/testing/mock";
 import { GitRepository } from "./git_repository.ts";
 import GitUtils from "../utils/git_utils.ts";
@@ -115,3 +116,46 @@ async function getInitedRepo(rootDir: string): Promise<Repository> {
 function getRepo(rootDir: string = gitRootUrl) {
   return new GitRepository(TestHelper.getConfig(), rootDir);
 }
+
+Deno.test("GitRepository throws before init, handles stale TTL, ignores update error, and supports resolvePackage and reload", async () => {
+  const uninited = getRepo();
+  assertThrows(() => uninited.listPackages(), Error, "GitRepo not loaded");
+  assertThrows(() => uninited.resolvePackage("git"), Error, "GitRepo not loaded");
+
+  const localGitRepo = await TestHelper.createLocalGitRepo({
+    "recipes/git.levain.yaml": "version: 1.0.0\n",
+  });
+  const config = TestHelper.getConfig();
+  const repo = new GitRepository(config, localGitRepo);
+  await repo.init();
+  assertEquals(repo.resolvePackage("git")?.name, "git");
+  await repo.reload();
+
+  // Age HEAD/FETCH_HEAD past TTL so isWithinUpdateTtl returns false, and verify update errors are ignored
+  const localDir = path.resolve(config.configPaths.levainConfigDir, "gitRepos", GitUtils.localBaseDir(localGitRepo));
+  const oldDate = new Date(Date.now() - 5 * 60 * 1000);
+  for (const marker of ["FETCH_HEAD", "HEAD"]) {
+    const markerPath = path.join(localDir, ".git", marker);
+    try {
+      Deno.utimeSync(markerPath, oldDate, oldDate);
+    } catch {
+      // FETCH_HEAD may not exist on fresh clone
+    }
+  }
+
+  const failingUpdateStub = stub(GitUtils.prototype, "update", () => Promise.reject(new Error("offline")));
+  try {
+    const repo2 = new GitRepository(config, localGitRepo);
+    await repo2.init();
+    assertEquals(failingUpdateStub.calls.length, 1);
+    assertEquals(repo2.resolvePackage("git")?.name, "git");
+
+    // Missing markers (.git removed) also triggers update
+    await Deno.remove(path.join(localDir, ".git"), { recursive: true });
+    const repo3 = new GitRepository(config, localGitRepo);
+    await repo3.init();
+    assertEquals(failingUpdateStub.calls.length, 2);
+  } finally {
+    failingUpdateStub.restore();
+  }
+});

@@ -153,3 +153,55 @@ Deno.test("should NOT prompt Hit ENTER on runtime errors unless --wait-after-end
     await logger?.close();
   }
 });
+
+Deno.test("should prompt Hit ENTER when --wait-after-end is set in interactive terminal and handle unexpected error before logger init", async () => {
+  const prevTestMode = CliUtil.testMode;
+  const origPrompt = globalThis.prompt;
+  const stdinTtyStub = stub(Deno.stdin, "isTerminal", () => true);
+  const stdoutTtyStub = stub(Deno.stdout, "isTerminal", () => true);
+  const execStub = stub(LevainCli.prototype, "execute", () => Promise.resolve());
+  const logStub = stub(console, "log", () => {});
+  let promptCalls = 0;
+  let logger;
+
+  try {
+    CliUtil.testMode = false;
+    globalThis.prompt = () => {
+      promptCalls++;
+      return "";
+    };
+
+    const levain = new Levain();
+    logger = await levain.runLevinWithLog(["--wait-after-end", "actions"]);
+    assertEquals(levain.error, false);
+    assertEquals(promptCalls, 1);
+
+    // Unexpected error during prepareLogs falls into catch when this.logger is still undefined
+    const levain2 = new Levain();
+    let prepCalls = 0;
+    const origPrep = levain2.prepareLogs.bind(levain2);
+    const prepStub = stub(levain2, "prepareLogs", (args: unknown) => {
+      prepCalls++;
+      if (prepCalls === 1) {
+        return Promise.reject(new Error("transient log setup failure"));
+      }
+      return origPrep(args);
+    });
+    try {
+      const logger2 = await levain2.runLevinWithLog(["actions"]);
+      assertEquals(levain2.error, true);
+      assertEquals(prepCalls, 2);
+      await logger2?.close();
+    } finally {
+      prepStub.restore();
+    }
+  } finally {
+    logStub.restore();
+    execStub.restore();
+    stdoutTtyStub.restore();
+    stdinTtyStub.restore();
+    globalThis.prompt = origPrompt;
+    CliUtil.testMode = prevTestMode;
+    await logger?.close();
+  }
+});

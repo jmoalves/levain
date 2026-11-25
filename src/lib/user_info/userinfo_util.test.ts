@@ -5,6 +5,9 @@ import { stub } from "@std/testing/mock";
 import { assertStringEndsWith } from "../test/more_asserts.ts";
 
 import UserInfoUtil from "./userinfo_util.ts";
+import { InputFullName } from "./input_name.ts";
+import { InputEmail } from "./input_email.ts";
+import { InputLogin } from "./input_login.ts";
 import TestHelper from "../test/test_helper.ts";
 import { CliffyTestHelper } from "./cliffy_test_helper.ts";
 import { UserInfo } from "./user_info.ts";
@@ -158,5 +161,58 @@ Deno.test("UserInfoUtil.askPassword should retry short/mismatched passwords and 
     assertEquals(config.password, undefined);
   } finally {
     secretStub.restore();
+  }
+});
+
+Deno.test("UserInfoUtil.askUserInfo asks login, email (with domain), and password, and validates errors", async () => {
+  const userInfoUtil = new UserInfoUtil(TestHelper.getNewTempFile());
+  const config = TestHelper.getConfig();
+
+  const loginStub = stub(InputLogin, "inputAndValidate", () => Promise.resolve("jdoe"));
+  let receivedEmailDefault = "";
+  const emailStub = stub(InputEmail, "inputAndValidate", (def: string) => {
+    receivedEmailDefault = def;
+    return Promise.resolve(def);
+  });
+  const pwResponses = ["", "secret123", "secret123"];
+  const secretStub = stub(Secret, "prompt", () => Promise.resolve(pwResponses.shift() ?? ""));
+  const logStub = stub(console, "log", () => {});
+
+  try {
+    const info = await userInfoUtil.askUserInfo(config, {
+      "ask-login": true,
+      "ask-email": true,
+      "email-domain": "example.org",
+      "ask-password": true,
+    });
+    assertEquals(info.login, "jdoe");
+    assertEquals(receivedEmailDefault, "jdoe@example.org");
+    assertEquals(info.email, "jdoe@example.org");
+    assertEquals(config.password, "secret123");
+
+    // Validation failures in askFullName and askEmail
+    const badNameStub = stub(InputFullName, "inputAndValidate", () => Promise.resolve("ab"));
+    try {
+      await assertRejects(() => userInfoUtil.askFullName(config), Error);
+    } finally {
+      badNameStub.restore();
+    }
+
+    emailStub.restore();
+    const emptyEmailStub = stub(InputEmail, "inputAndValidate", () => Promise.resolve(""));
+    try {
+      await assertRejects(() => userInfoUtil.askEmail(config, "@corp.example"), Error);
+    } finally {
+      emptyEmailStub.restore();
+    }
+  } finally {
+    logStub.restore();
+    secretStub.restore();
+    try {
+      emailStub.restore();
+    } catch {
+      // already restored above
+    }
+    loginStub.restore();
   }
 });

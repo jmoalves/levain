@@ -1,4 +1,4 @@
-import { assert, assertEquals } from "@std/assert";
+import { assert, assertEquals, assertFalse, assertThrows } from "@std/assert";
 
 import VersionNumber from "./version_number.ts";
 
@@ -61,4 +61,25 @@ Deno.test("VersionNumber - compare", () => {
   assert(versionNumber("10.0.1").isSameAs(versionNumber("10.0.1")));
   assert(versionNumber("10.0.1").isNewerThan(versionNumber("9.1.2")));
   assert(versionNumber("9.1.2").isOlderThan(versionNumber("10.0.1")));
+});
+
+Deno.test("VersionNumber - invalid versions, HEAD precedence, and SemVer 11.4 edge cases", () => {
+  assertFalse(VersionNumber.isValid(""));
+  assertFalse(VersionNumber.isValid("1.0.0 beta"));
+  assertThrows(() => versionNumber("1.0.0!bad"), Error, "Invalid version number");
+
+  // HEAD / vHEAD precedence
+  assertEquals(versionNumber("HEAD").compareTo(versionNumber("vHEAD")), VersionNumber.SAME);
+  assertEquals(versionNumber("HEAD").compareTo(versionNumber("99.9.9")), VersionNumber.NEWER);
+  assertEquals(versionNumber("99.9.9").compareTo(versionNumber("vHEAD")), VersionNumber.OLDER);
+
+  // SemVer 11.4.3: numeric identifiers have lower precedence than non-numeric identifiers
+  assertEquals(versionNumber("1.0.0-1").compareTo(versionNumber("1.0.0-alpha")), VersionNumber.OLDER);
+  assertEquals(versionNumber("1.0.0-alpha").compareTo(versionNumber("1.0.0-1")), VersionNumber.NEWER);
+
+  // SemVer 11.4.4: pre-release vs release & multi-component pre-release precedence
+  assertEquals(versionNumber("1.0.0-alpha").compareTo(versionNumber("1.0.0")), VersionNumber.OLDER);
+  assertEquals(versionNumber("1.0.0-alpha-1").compareTo(versionNumber("1.0.0-alpha")), VersionNumber.NEWER);
+  assertEquals(versionNumber("1.0.0-alpha").compareTo(versionNumber("1.0.0-alpha-1")), VersionNumber.OLDER);
+  assertEquals(versionNumber("1.0.0-alpha").compareTo(versionNumber("1.0.0-alpha.1")), VersionNumber.OLDER);
 });

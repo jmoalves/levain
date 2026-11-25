@@ -32,6 +32,13 @@ Deno.test("EmptyRepository should resolvePackage packages to undefined", async (
 
   assertEquals(repo.resolvePackage("abc"), undefined);
 });
+Deno.test("EmptyRepository should support invalidatePackages, readPackages, and reload", async () => {
+  const repo = new EmptyRepository();
+
+  repo.invalidatePackages();
+  assertEquals(await repo.readPackages(), []);
+  await repo.reload();
+});
 
 // deno-lint-ignore require-await
 async function getRepo(): Promise<Repository> {

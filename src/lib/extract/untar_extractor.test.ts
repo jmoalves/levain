@@ -5,6 +5,7 @@ import { stub } from "@std/testing/mock";
 import { UnTar } from "./untar_extractor.ts";
 import TestHelper from "../test/test_helper.ts";
 import OsUtils from "../os/os_utils.ts";
+import ExtraBin from "../paths/extra_bin.ts";
 
 Deno.test("UnTar.extractImpl should extract a .tar.gz archive with spaces in source and destination paths", async () => {
   const baseDir = TestHelper.getNewTempDir();
@@ -161,3 +162,187 @@ if (OsUtils.isWindows()) {
     }
   });
 }
+
+Deno.test("UnTar.extractImpl should dispatch to extractWithSevenZip on Windows when native tar is absent and 7z.exe exists", async () => {
+  const fakeSevenZipDir = TestHelper.getNewTempDir();
+  const fakeSevenZipExe = path.join(fakeSevenZipDir, "7z.exe");
+  await Deno.writeTextFile(fakeSevenZipExe, "");
+
+  const extractor = new UnTar(TestHelper.getConfig());
+  const resolveStub = stub(extractor, "resolveNativeTar", () => undefined);
+  const isWinStub = stub(OsUtils, "isWindows", () => true);
+  const sevenZipDirProp = Object.getOwnPropertyDescriptor(ExtraBin, "sevenZipDir");
+  Object.defineProperty(ExtraBin, "sevenZipDir", { get: () => fakeSevenZipDir, configurable: true });
+  const sevenZipCalls: string[][] = [];
+  const sevenZipStub = stub(extractor, "extractWithSevenZip", (exe: string, src: string, dst: string) => {
+    sevenZipCalls.push([exe, src, dst]);
+    return Promise.resolve();
+  });
+
+  try {
+    await extractor.extractImpl("archive.tar.gz", "/out");
+    assertEquals(sevenZipCalls, [[fakeSevenZipExe, "archive.tar.gz", "/out"]]);
+  } finally {
+    sevenZipStub.restore();
+    if (sevenZipDirProp) Object.defineProperty(ExtraBin, "sevenZipDir", sevenZipDirProp);
+    isWinStub.restore();
+    resolveStub.restore();
+  }
+});
+
+Deno.test("UnTar.extractWithSevenZip pipes streams and handles spawn, decompress, extract, and pipe errors", async () => {
+  const extractor = new UnTar(TestHelper.getConfig());
+  const encoder = new TextEncoder();
+
+  function makeStream(text: string): ReadableStream<Uint8Array<ArrayBuffer>> {
+    return new ReadableStream({
+      start(controller) {
+        if (text) controller.enqueue(encoder.encode(text));
+        controller.close();
+      },
+    });
+  }
+
+  function makeSink(failOnWrite = false): { stream: WritableStream<Uint8Array>; chunks: Uint8Array[] } {
+    const chunks: Uint8Array[] = [];
+    const stream = new WritableStream<Uint8Array>({
+      write(chunk) {
+        if (failOnWrite) throw new Error("broken pipe");
+        chunks.push(chunk);
+      },
+    });
+    return { stream, chunks };
+  }
+
+  const OrigCommand = Deno.Command;
+  try {
+    // 1. Success pipeline
+    let callIdx = 0;
+    const sink1 = makeSink();
+    (Deno as { Command: unknown }).Command = class FakeCommand {
+      spawn() {
+        callIdx++;
+        if (callIdx === 1) {
+          return {
+            stdout: makeStream("tar-bytes"),
+            stderr: makeStream(""),
+            status: Promise.resolve({ success: true, code: 0 }),
+          };
+        }
+        return {
+          stdin: sink1.stream,
+          stderr: makeStream(""),
+          status: Promise.resolve({ success: true, code: 0 }),
+        };
+      }
+    };
+    await extractor.extractWithSevenZip("7z.exe", "a.tar.gz", "dst");
+    assertEquals(new TextDecoder().decode(sink1.chunks[0]), "tar-bytes");
+
+    // 2. Second spawn throws -> cleans up decompress process and rethrows
+    callIdx = 0;
+    let killed = false;
+    (Deno as { Command: unknown }).Command = class FakeCommand {
+      spawn() {
+        callIdx++;
+        if (callIdx === 1) {
+          return {
+            stdout: makeStream("tar-bytes"),
+            stderr: makeStream(""),
+            kill() {
+              killed = true;
+            },
+            status: Promise.resolve({ success: false, code: 1 }),
+          };
+        }
+        throw new Error("second spawn failed");
+      }
+    };
+    await assertRejects(
+      () => extractor.extractWithSevenZip("7z.exe", "a.tar.gz", "dst"),
+      Error,
+      "second spawn failed",
+    );
+    assertEquals(killed, true);
+
+    // 3. Decompress exits non-zero
+    callIdx = 0;
+    const sink3 = makeSink();
+    (Deno as { Command: unknown }).Command = class FakeCommand {
+      spawn() {
+        callIdx++;
+        if (callIdx === 1) {
+          return {
+            stdout: makeStream(""),
+            stderr: makeStream("corrupt gzip"),
+            status: Promise.resolve({ success: false, code: 2 }),
+          };
+        }
+        return {
+          stdin: sink3.stream,
+          stderr: makeStream(""),
+          status: Promise.resolve({ success: true, code: 0 }),
+        };
+      }
+    };
+    await assertRejects(
+      () => extractor.extractWithSevenZip("7z.exe", "a.tar.gz", "dst"),
+      Error,
+      "7z decompress terminated with code 2: corrupt gzip",
+    );
+
+    // 4. Tar extract exits non-zero
+    callIdx = 0;
+    const sink4 = makeSink();
+    (Deno as { Command: unknown }).Command = class FakeCommand {
+      spawn() {
+        callIdx++;
+        if (callIdx === 1) {
+          return {
+            stdout: makeStream("tar-bytes"),
+            stderr: makeStream(""),
+            status: Promise.resolve({ success: true, code: 0 }),
+          };
+        }
+        return {
+          stdin: sink4.stream,
+          stderr: makeStream("disk full"),
+          status: Promise.resolve({ success: false, code: 1 }),
+        };
+      }
+    };
+    await assertRejects(
+      () => extractor.extractWithSevenZip("7z.exe", "a.tar.gz", "dst"),
+      Error,
+      "7z tar extract terminated with code 1: disk full",
+    );
+
+    // 5. Pipe error while both exit 0
+    callIdx = 0;
+    const sink5 = makeSink(true);
+    (Deno as { Command: unknown }).Command = class FakeCommand {
+      spawn() {
+        callIdx++;
+        if (callIdx === 1) {
+          return {
+            stdout: makeStream("tar-bytes"),
+            stderr: makeStream(""),
+            status: Promise.resolve({ success: true, code: 0 }),
+          };
+        }
+        return {
+          stdin: sink5.stream,
+          stderr: makeStream(""),
+          status: Promise.resolve({ success: true, code: 0 }),
+        };
+      }
+    };
+    await assertRejects(
+      () => extractor.extractWithSevenZip("7z.exe", "a.tar.gz", "dst"),
+      Error,
+      "broken pipe",
+    );
+  } finally {
+    (Deno as { Command: unknown }).Command = OrigCommand;
+  }
+});

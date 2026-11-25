@@ -1,5 +1,5 @@
 import * as path from "@std/path";
-import { assert, assertEquals, assertNotEquals, assertThrows } from "@std/assert";
+import { assert, assertEquals, assertNotEquals, assertRejects, assertThrows } from "@std/assert";
 import { stub } from "@std/testing/mock";
 import { existsSync } from "@std/fs";
 
@@ -236,4 +236,47 @@ Deno.test("FileUtils.writeTextFileAtomicSync should write/replace atomically wit
   } finally {
     renameStub.restore();
   }
+});
+
+Deno.test("FileUtils covers getModificationTimestamp, resolve without parent, and error wrappers", async () => {
+  const dir = TestHelper.getNewTempDir();
+  const file = path.join(dir, "sample.txt");
+  Deno.writeTextFileSync(file, "abc");
+
+  assert(FileUtils.getModificationTimestamp(file) instanceof Date);
+  const resolved = FileUtils.resolve(undefined, "relative/path.txt");
+  assertEquals(resolved, path.resolve("relative/path.txt"));
+
+  // checkBitwisePermission catches stat errors cleanly
+  const statErrStub = stub(FileUtils, "getFileInfoSync", () => {
+    throw new Error("stat failed");
+  });
+  try {
+    assertEquals(FileUtils.canReadSync(file), false);
+  } finally {
+    statErrStub.restore();
+  }
+
+  // createBackup wraps copyFileSync failure
+  const copyStub = stub(Deno, "copyFileSync", () => {
+    throw new Deno.errors.PermissionDenied("no copy");
+  });
+  try {
+    assertThrows(() => FileUtils.createBackup(file), Error);
+  } finally {
+    copyStub.restore();
+  }
+
+  // ensureDirSync logs and rethrows when path is an existing file
+  const errStub = stub(console, "error", () => {});
+  try {
+    assertThrows(() => FileUtils.ensureDirSync(file));
+  } finally {
+    errStub.restore();
+  }
+
+  // createEmptyFile, writeTextFileSync, renameSync wrap errors with fileError
+  await assertRejects(() => FileUtils.createEmptyFile(path.join(dir, "missing-sub", "empty.txt")), Error);
+  assertThrows(() => FileUtils.writeTextFileSync(dir, "cannot write to dir"), Error);
+  assertThrows(() => FileUtils.renameSync(path.join(dir, "nope"), path.join(dir, "dst")), Error);
 });

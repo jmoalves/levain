@@ -3,6 +3,7 @@ import * as path from "@std/path";
 import { stub } from "@std/testing/mock";
 
 import Config from "./config.ts";
+import { FileUtils } from "./fs/file_utils.ts";
 import HomePaths from "./paths/home_paths.ts";
 import { assertStringEndsWith } from "./test/more_asserts.ts";
 import TestHelper from "./test/test_helper.ts";
@@ -146,6 +147,94 @@ Deno.test("Config should persist lastAutoClean and let CLI --levainHome pick fir
 
     // When no candidate in --levainHome is valid, throw clearly
     assertThrows(() => new Config({ levainHome: [invalidCandidate] }));
+  } finally {
+    homeStub.restore();
+  }
+});
+
+Deno.test("Config validates shellPath, persists optional fields, resolves levainHome fallbacks, and surfaces IO errors", () => {
+  const tempDir = TestHelper.getNewTempDir();
+  const exePath = path.join(tempDir, "my-shell.exe");
+  Deno.writeTextFileSync(exePath, "");
+  const homeStub = stub(HomePaths, "homedir", () => tempDir);
+  try {
+    // 1. Fallback to ENV levainHome when no saved config exists
+    const envHome = path.join(tempDir, "env-home");
+    const envStub = stub(Deno.env, "get", (key: string) => (key === "levainHome" ? envHome : undefined));
+    try {
+      const cfgEnv = new Config({});
+      assertEquals(cfgEnv.configPaths.levainHome, path.resolve(envHome));
+    } finally {
+      envStub.restore();
+    }
+
+    // 2. Fallback to HomePaths.levainFallbackHome when env is absent
+    const envEmptyStub = stub(Deno.env, "get", () => undefined);
+    try {
+      const cfgDefault = new Config({});
+      assertEquals(cfgDefault.configPaths.levainHome, HomePaths.levainFallbackHome);
+    } finally {
+      envEmptyStub.restore();
+    }
+
+    // 3. Fallback to sibling ../.levain/config.json relative to levainSrcDir
+    const infoStub = stub(FileUtils, "getFileInfoSync", () => ({ isFile: true }) as Deno.FileInfo);
+    try {
+      const cfgSibling = new Config({});
+      assert(cfgSibling.configPaths.levainHome.length > 0);
+    } finally {
+      infoStub.restore();
+    }
+
+    // 4. Persist and reload all optional fields + validate shellPath getter + setVar("levainHome")
+    const cfg = new Config({ levainHome: path.join(tempDir, "h1") });
+    cfg.defaultPackage = "my-pkg";
+    cfg.lastKnownVersion = "1.2.3";
+    cfg.lastUpdateQuestion = "20261125";
+    cfg.shellCheckForUpdate = false;
+    cfg.shellPath = exePath;
+    assertEquals(cfg.shellPath, exePath);
+    assertEquals(cfg.lastKnownVersion, "1.2.3");
+    assertEquals(cfg.lastUpdateQuestion, "20261125");
+    assertEquals(cfg.shellCheckForUpdate, false);
+
+    // Non-existent shellPath and directory shellPath return undefined
+    cfg.shellPath = path.join(tempDir, "does-not-exist.exe");
+    assertEquals(cfg.shellPath, undefined);
+    cfg.shellPath = tempDir;
+    assertEquals(cfg.shellPath, undefined);
+
+    cfg.shellPath = exePath;
+    cfg.setVar("levainHome", path.join(tempDir, "h2"));
+    assertEquals(cfg.configPaths.levainHome, path.join(tempDir, "h2"));
+    cfg.save();
+
+    const reloaded = new Config({});
+    assertEquals(reloaded.defaultPackage, "my-pkg");
+    assertEquals(reloaded.shellPath, exePath);
+    assertEquals(reloaded.lastKnownVersion, "1.2.3");
+    assertEquals(reloaded.lastUpdateQuestion, "20261125");
+    assertEquals(reloaded.shellCheckForUpdate, false);
+
+    // 5. Non-NotFound read error in loadText rethrows
+    const readErrStub = stub(FileUtils, "readTextFileSync", () => {
+      throw new Deno.errors.PermissionDenied("denied");
+    });
+    try {
+      assertThrows(() => new Config({}), Deno.errors.PermissionDenied);
+    } finally {
+      readErrStub.restore();
+    }
+
+    // 6. Non-NotFound removeSync error in save() rethrows
+    const removeErrStub = stub(FileUtils, "removeSync", () => {
+      throw new Deno.errors.PermissionDenied("cannot delete old config");
+    });
+    try {
+      assertThrows(() => reloaded.save(), Deno.errors.PermissionDenied);
+    } finally {
+      removeErrStub.restore();
+    }
   } finally {
     homeStub.restore();
   }

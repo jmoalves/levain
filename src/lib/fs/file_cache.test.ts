@@ -5,6 +5,7 @@ import type ProgressBar from "@deno-library/progress";
 
 import TestHelper from "../test/test_helper.ts";
 import { assertFolderIncludes, assertStringEndsWith } from "../test/more_asserts.ts";
+import { FileUtils } from "./file_utils.ts";
 import type ProgressReader from "../io/progress_reader.ts";
 import { FileProgress } from "../io/file_progress.ts";
 
@@ -170,6 +171,46 @@ Deno.test("FileCache should replace conflicting directory, tolerate utime errors
   const copyStub = stub(FileProgress, "copyWithProgress", () => Promise.reject(new Error("network failed")));
   try {
     await assertRejects(async () => await fileCache.copyToCache(failReader, true), Error, "network failed");
+  } finally {
+    copyStub.restore();
+  }
+});
+
+Deno.test("FileCache closes reader on get() error, rejects mismatched mtime, and handles cacheValid stat errors", async () => {
+  const config = TestHelper.getConfig();
+  config.configPaths.levainCacheDir = TestHelper.getNewTempDir();
+  const fileCache = new FileCache(config);
+  const mtime1 = new Date("2025-04-01T00:00:00.000Z");
+  const mtime2 = new Date("2025-05-01T00:00:00.000Z");
+
+  // Populate cache with mtime1
+  const r1 = new SpyProgressReader("https://example.org/mtime-test.zip", "12345", mtime1);
+  const cachedPath = await fileCache.get(r1);
+
+  // Different mtime with same size -> cacheValid returns false
+  const r2 = new SpyProgressReader("https://example.org/mtime-test.zip", "12345", mtime2);
+  assertEquals(fileCache.cacheValid(r2, cachedPath), false);
+
+  // Stat failure inside cacheValid returns false gracefully
+  const infoStub = stub(FileUtils, "getFileInfoSync", () => {
+    throw new Error("stat error");
+  });
+  try {
+    assertEquals(fileCache.cacheValid(r1, cachedPath), false);
+  } finally {
+    infoStub.restore();
+  }
+
+  // Error inside get() closes reader (even if close() itself throws) and propagates original error
+  const brokenReader = new SpyProgressReader("https://example.org/fail.zip", "abc", mtime1);
+  brokenReader.close = () => {
+    brokenReader.closeCount++;
+    throw new Error("close error ignored");
+  };
+  const copyStub = stub(FileProgress, "copyWithProgress", () => Promise.reject(new Error("download boom")));
+  try {
+    await assertRejects(() => fileCache.get(brokenReader), Error, "download boom");
+    assertEquals(brokenReader.closeCount, 1);
   } finally {
     copyStub.restore();
   }

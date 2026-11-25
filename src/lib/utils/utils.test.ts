@@ -1,4 +1,4 @@
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertRejects } from "@std/assert";
 import { stub } from "@std/testing/mock";
 
 import { promptSecret, retry } from "./utils.ts";
@@ -59,4 +59,46 @@ Deno.test("promptSecret should decode multi-byte UTF-8, handle DEL/BS backspaces
     ttyStub.restore();
     writeStub.restore();
   }
+});
+
+Deno.test("promptSecret handles EOF, Ctrl+C, Ctrl+D, and CR", () => {
+  const cases: Array<{ bytes: number[]; expected: string | undefined }> = [
+    { bytes: [], expected: undefined }, // immediate EOF
+    { bytes: [0x61, 0x62], expected: "ab" }, // EOF with buffered text
+    { bytes: [0x61, 0x03], expected: undefined }, // Ctrl+C
+    { bytes: [0x61, 0x04], expected: undefined }, // Ctrl+D
+    { bytes: [0x6f, 0x6b, 0x0d], expected: "ok" }, // CR
+  ];
+
+  const writeStub = stub(Deno.stdout, "writeSync", (p: Uint8Array) => p.length);
+  const ttyStub = stub(Deno.stdin, "isTerminal", () => false);
+  try {
+    for (const tc of cases) {
+      let pos = 0;
+      const readStub = stub(Deno.stdin, "readSync", (buf: Uint8Array) => {
+        if (pos >= tc.bytes.length) return null;
+        buf[0] = tc.bytes[pos++];
+        return 1;
+      });
+      try {
+        assertEquals(promptSecret("pw: "), tc.expected);
+      } finally {
+        readStub.restore();
+      }
+    }
+  } finally {
+    ttyStub.restore();
+    writeStub.restore();
+  }
+});
+
+Deno.test("retry rethrows last error after exhausting maxAttempts", async () => {
+  await assertRejects(
+    () =>
+      retry(1, () => {
+        throw new Error("always fails");
+      }, 0),
+    Error,
+    "always fails",
+  );
 });

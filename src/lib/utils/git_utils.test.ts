@@ -510,3 +510,65 @@ Deno.test({
     // assertMatch(lastMessage, /fatal: not in a git directory/)
   },
 });
+
+Deno.test("GitUtils.clone rethrows OsUtils.runAndLog failure and cleans up timer", async () => {
+  const runStub = stub(OsUtils, "runAndLog", () => Promise.reject(new Error("clone failed")));
+  try {
+    await assertRejects(
+      () => new GitUtils("git").clone("https://github.com/jmoalves/levain.git", TestHelper.getNewTempDir()),
+      Error,
+      "clone failed",
+    );
+  } finally {
+    runStub.restore();
+  }
+});
+
+Deno.test("GitUtils.update fast-forwards when remote advances and handles invalid upstream / detached HEAD", async () => {
+  // 1. Fast-forward real repo when remote gets a new commit
+  const remote = TestHelper.getNewTempDir();
+  const clone1 = TestHelper.getNewTempDir();
+  const clone2 = TestHelper.getNewTempDir();
+  await OsUtils.runAndLog(["git", "init", "--bare", remote]);
+  await OsUtils.runAndLog(["git", "clone", remote, clone1]);
+  await OsUtils.runAndLog(["git", "config", "user.email", "test@test.com"], clone1);
+  await OsUtils.runAndLog(["git", "config", "user.name", "Test"], clone1);
+  await Deno.writeTextFile(path.join(clone1, "v1.txt"), "1");
+  await OsUtils.runAndLog(["git", "add", "."], clone1);
+  await OsUtils.runAndLog(["git", "commit", "-m", "v1"], clone1);
+  await OsUtils.runAndLog(["git", "push"], clone1);
+
+  await OsUtils.runAndLog(["git", "clone", remote, clone2]);
+
+  // Push second commit from clone1
+  await Deno.writeTextFile(path.join(clone1, "v2.txt"), "2");
+  await OsUtils.runAndLog(["git", "add", "."], clone1);
+  await OsUtils.runAndLog(["git", "commit", "-m", "v2"], clone1);
+  await OsUtils.runAndLog(["git", "push"], clone1);
+
+  await new GitUtils().update(clone2);
+  assertEquals(await Deno.readTextFile(path.join(clone2, "v2.txt")), "2");
+
+  // 2. Invalid upstream without '/' falls back to current branch, and detached HEAD (empty branch) fails without retry
+  const runStub = stub(OsUtils, "runAndLog", (cmd: string | string[]) => {
+    const args = Array.isArray(cmd) ? cmd : cmd.split(" ");
+    if (args.includes("@{u}")) return Promise.resolve("no-slash-upstream\n");
+    if (args.includes("--show-current")) return Promise.resolve("\n");
+    return Promise.resolve("");
+  });
+  try {
+    await assertRejects(() => new GitUtils("git").update(clone2), Error);
+  } finally {
+    runStub.restore();
+  }
+
+  // 3. gitRoot rethrows unexpected non-permission errors
+  const lstatStub = stub(Deno, "lstatSync", () => {
+    throw new Error("unexpected fs error");
+  });
+  try {
+    assertThrows(() => GitUtils.gitRoot(clone2), Error, "unexpected fs error");
+  } finally {
+    lstatStub.restore();
+  }
+});

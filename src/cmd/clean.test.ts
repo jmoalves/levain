@@ -7,6 +7,9 @@ import TestHelper from "../lib/test/test_helper.ts";
 import { assertDirCount, assertPathDoesNotExist } from "../lib/test/more_asserts.ts";
 import DateUtils from "../lib/utils/date_utils.ts";
 import MathUtil from "../lib/utils/math_util.ts";
+import { FileUtils } from "../lib/fs/file_utils.ts";
+import GeneralPaths from "../lib/paths/general_paths.ts";
+import LevainVersion from "../levain_version.ts";
 
 import CommandFactory from "./command_factory.ts";
 import CleanCommand from "./clean.ts";
@@ -195,3 +198,88 @@ function verifyClean(
     envStub.restore();
   }
 }
+
+Deno.test("CleanCommand cleans failed saves, handles OS temp release dirs, preserves today's backup & install dirs, and tolerates remove errors", () => {
+  const config = TestHelper.getConfig();
+  const levainHome = TestHelper.getNewTempDir();
+  config.configPaths.levainHome = levainHome;
+  const backupDir = path.join(levainHome, ".levain", "backup");
+  Deno.mkdirSync(backupDir, { recursive: true });
+  config.configPaths.levainBackupDir = backupDir;
+
+  // Today's backup should be kept on shallow clean
+  const todayBackup = path.join(backupDir, `bkp-${DateUtils.dateTag()}-090000`);
+  Deno.mkdirSync(todayBackup, { recursive: true });
+  Deno.writeTextFileSync(path.join(todayBackup, "keep.txt"), "keep");
+
+  // Failed save artifacts (.rename.* and .deleted.*) under levainHome should be cleaned; normal dirs kept
+  const failedRename = path.join(levainHome, ".rename.pkg-1");
+  const failedDeleted = path.join(levainHome, ".deleted.pkg-2");
+  const normalDir = path.join(levainHome, "normal-pkg");
+  Deno.mkdirSync(failedRename, { recursive: true });
+  Deno.mkdirSync(failedDeleted, { recursive: true });
+  Deno.mkdirSync(normalDir, { recursive: true });
+
+  // Isolated OS temp with install dir (keep), levain-* dir (remove), and releases dir (current kept, old removed only on --deep)
+  const isolatedOsTempDir = TestHelper.getNewTempDir();
+  const installDir = path.join(isolatedOsTempDir, "levain-install-123");
+  const staleLevainDir = path.join(isolatedOsTempDir, "levain-orphan-dir");
+  const releasesDir = path.join(isolatedOsTempDir, "levain");
+  const curRelDir = path.join(releasesDir, `levain-${LevainVersion.levainVersion.versionNumber}`);
+  const oldRelDir = path.join(releasesDir, "levain-0.0.1");
+  Deno.mkdirSync(installDir, { recursive: true });
+  Deno.mkdirSync(staleLevainDir, { recursive: true });
+  Deno.mkdirSync(curRelDir, { recursive: true });
+  Deno.mkdirSync(oldRelDir, { recursive: true });
+
+  const origEnvGet = Deno.env.get.bind(Deno.env);
+  const envStub = stub(Deno.env, "get", (key: string) => {
+    if (key === "TEMP" || key === "TMPDIR" || key === "TMP") {
+      return isolatedOsTempDir;
+    }
+    return origEnvGet(key);
+  });
+
+  try {
+    // Shallow clean
+    new CleanCommand(config).execute(["--backup", "--temp"]);
+    assert(existsSync(todayBackup), "today's backup must be kept on shallow clean");
+    assertPathDoesNotExist(failedRename);
+    assertPathDoesNotExist(failedDeleted);
+    assert(existsSync(normalDir), "normal package dir in levainHome must be preserved");
+    assert(existsSync(installDir), "levain-install-* dir must be preserved");
+    assertPathDoesNotExist(staleLevainDir);
+    assert(existsSync(curRelDir), "current release dir must be preserved");
+    assert(existsSync(oldRelDir), "old release dir is preserved on shallow clean");
+
+    // Deep clean removes old release dir while keeping current release dir
+    new CleanCommand(config).execute(["--temp", "--deep"]);
+    assert(existsSync(curRelDir), "current release dir must be preserved even on --deep");
+    assertPathDoesNotExist(oldRelDir);
+
+    // Tolerate file removal errors inside cleanDir
+    const lockedFile = path.join(isolatedOsTempDir, "levain-temp-locked.tmp");
+    Deno.writeTextFileSync(lockedFile, "locked");
+    const rmStub = stub(FileUtils, "removeSync", () => {
+      throw new Error("EBUSY");
+    });
+    try {
+      new CleanCommand(config).execute(["--temp"]);
+      assert(existsSync(lockedFile));
+    } finally {
+      rmStub.restore();
+    }
+
+    // Empty tempDir and empty levainHome guard branches
+    const tempDirProp = Object.getOwnPropertyDescriptor(GeneralPaths, "tempDir");
+    Object.defineProperty(GeneralPaths, "tempDir", { get: () => "", configurable: true });
+    config.configPaths.levainHome = "";
+    try {
+      new CleanCommand(config).execute(["--backup", "--temp", "--logs"]);
+    } finally {
+      if (tempDirProp) Object.defineProperty(GeneralPaths, "tempDir", tempDirProp);
+    }
+  } finally {
+    envStub.restore();
+  }
+});

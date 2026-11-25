@@ -298,3 +298,100 @@ Deno.test("InstanceLock.isPidAlive should detect current process, invalid PIDs, 
 
   assertEquals(InstanceLock.isPidAlive(childPid), false);
 });
+
+Deno.test("InstanceLock handles race disappearance, open/write errors, missing mtime, and remove errors", async () => {
+  const dir = TestHelper.getNewTempDir();
+  const lockPath = path.join(dir, "race.lock");
+
+  // 1. Concurrent release between openSync(AlreadyExists) and readTextFileSync(NotFound) -> retries immediately and succeeds
+  const origOpen = Deno.openSync;
+  let openCalls = 0;
+  const raceOpenStub = stub(Deno, "openSync", (p: string | URL, opts?: Deno.OpenOptions) => {
+    openCalls++;
+    if (openCalls === 1) {
+      throw new Deno.errors.AlreadyExists("just released");
+    }
+    return origOpen(p, opts);
+  });
+  try {
+    const lock = await InstanceLock.acquire(lockPath, { command: "install", waitTimeoutMs: 500 });
+    assertEquals(openCalls, 2);
+    lock.release();
+  } finally {
+    raceOpenStub.restore();
+  }
+
+  // 2. Non-AlreadyExists error in openSync rethrows
+  const permOpenStub = stub(Deno, "openSync", () => {
+    throw new Deno.errors.PermissionDenied("denied");
+  });
+  try {
+    await assertRejects(() => InstanceLock.acquire(lockPath, { command: "install" }), Deno.errors.PermissionDenied);
+  } finally {
+    permOpenStub.restore();
+  }
+
+  // 3. writeSync error during tryCreateExclusive closes file, removes partial lock, and rethrows
+  let closed = false;
+  const failWriteOpenStub = stub(Deno, "openSync", () =>
+    ({
+      writeSync: () => {
+        throw new Error("disk full");
+      },
+      close: () => {
+        closed = true;
+      },
+    }) as unknown as Deno.FsFile
+  );
+  try {
+    await assertRejects(() => InstanceLock.acquire(lockPath, { command: "install" }), Error, "disk full");
+    assertEquals(closed, true);
+  } finally {
+    failWriteOpenStub.restore();
+  }
+
+  // 4. Corrupt lock when statSync has mtime=null or throws -> not treated as aged -> times out
+  Deno.writeTextFileSync(lockPath, "{corrupt");
+  const resolvedLockPath = path.resolve(lockPath);
+  const origStat = Deno.statSync;
+  const statNullStub = stub(Deno, "statSync", (p: string | URL) =>
+    path.resolve(String(p)) === resolvedLockPath ? ({ mtime: null } as unknown as Deno.FileInfo) : origStat(p)
+  );
+  try {
+    await assertRejects(
+      () => InstanceLock.acquire(lockPath, { command: "clean", waitTimeoutMs: 25, pollIntervalMs: 10, staleCorruptAgeMs: 0 }),
+      InstanceLockError,
+    );
+  } finally {
+    statNullStub.restore();
+  }
+
+  const statErrStub = stub(Deno, "statSync", (p: string | URL) => {
+    if (path.resolve(String(p)) === resolvedLockPath) {
+      throw new Error("stat error");
+    }
+    return origStat(p);
+  });
+  try {
+    await assertRejects(
+      () => InstanceLock.acquire(lockPath, { command: "clean", waitTimeoutMs: 25, pollIntervalMs: 10, staleCorruptAgeMs: 0 }),
+      InstanceLockError,
+    );
+  } finally {
+    statErrStub.restore();
+  }
+
+  // 5. tryRemoveFile handles NotFound and non-NotFound errors gracefully on release
+  const removeErrStub = stub(Deno, "removeSync", () => {
+    throw new Deno.errors.PermissionDenied("busy");
+  });
+  try {
+    await assertRejects(
+      () => InstanceLock.acquire(lockPath, { command: "clean", waitTimeoutMs: 25, pollIntervalMs: 10, staleCorruptAgeMs: 0 }),
+      InstanceLockError,
+    );
+  } finally {
+    removeErrStub.restore();
+  }
+  Deno.removeSync(lockPath);
+});

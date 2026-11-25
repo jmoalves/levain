@@ -550,3 +550,205 @@ if (OsUtils.isWindows()) {
     }
   });
 }
+
+Deno.test("OsUtils handles missing login/hostname, non-NotFound exists errors, invalid runAndLog type, and missing remove targets", async () => {
+  const envStub = stub(Deno.env, "get", () => undefined);
+  const hostStub = stub(Deno, "hostname", () => {
+    throw new Error("no hostname");
+  });
+  try {
+    assertThrows(() => OsUtils.login, Error, "User not found");
+    assertEquals(OsUtils.hostname, undefined);
+  } finally {
+    hostStub.restore();
+    envStub.restore();
+  }
+
+  // Non-NotFound error in OsUtils.exists propagates
+  const statStub = stub(Deno, "stat", () => Promise.reject(new Deno.errors.PermissionDenied("denied")));
+  try {
+    await assertRejects(() => OsUtils.exists("/forbidden"), Error);
+  } finally {
+    statStub.restore();
+  }
+
+  // Unknown command type in runAndLog throws
+  await assertRejects(
+    () => OsUtils.runAndLog(123 as unknown as string),
+    Error,
+    "Unknown command type",
+  );
+
+  // removeFile / removeDir return false when path does not exist
+  const missing = path.join(TestHelper.getNewTempDir(), "does-not-exist");
+  assertEquals(OsUtils.removeFile(missing), false);
+  assertEquals(OsUtils.removeDir(missing), false);
+
+  // clearConsole dispatches per OS
+  const runCalls: (string | string[])[] = [];
+  const runStub = stub(OsUtils, "runAndLog", (cmd: string | string[]) => {
+    runCalls.push(cmd);
+    return Promise.resolve("");
+  });
+  try {
+    await OsUtils.clearConsole();
+    assertEquals(runCalls.length, 1);
+  } finally {
+    runStub.restore();
+  }
+});
+
+Deno.test("OsUtils cross-platform unit tests for Windows env, PATH, and shortcut helpers", async () => {
+  const encoder = new TextEncoder();
+  const isWinStub = stub(OsUtils, "isWindows", () => true);
+  const OrigCommand = Deno.Command;
+  const envVarKey = `LEVAIN_TEST_UNIT_VAR_${crypto.randomUUID().replaceAll("-", "").slice(0, 8)}`;
+
+  try {
+    // 1. setEnvPermanent validation & setx vs PowerShell fallback + error handling
+    await assertRejects(() => OsUtils.setEnvPermanent("", "v"), Error, "Invalid environment variable name");
+    await assertRejects(() => OsUtils.setEnvPermanent("BAD=NAME", "v"), Error, "Invalid environment variable name");
+    await assertRejects(() => OsUtils.setEnvPermanent(envVarKey, "val\0nul"), Error, "must not contain NUL");
+
+    const runLogCalls: (string | string[])[] = [];
+    const runLogStub = stub(OsUtils, "runAndLog", (cmd: string | string[]) => {
+      runLogCalls.push(cmd);
+      return Promise.resolve("");
+    });
+    try {
+      await OsUtils.setEnvPermanent(envVarKey, "simple-value");
+      assertEquals(runLogCalls, [["setx", envVarKey, "simple-value"]]);
+    } finally {
+      runLogStub.restore();
+      Deno.env.delete(envVarKey);
+    }
+
+    // PowerShell fallback for dash-prefixed values (success + failure)
+    let psSuccess = true;
+    (Deno as { Command: unknown }).Command = class FakeCommand {
+      output() {
+        return Promise.resolve({
+          success: psSuccess,
+          code: psSuccess ? 0 : 1,
+          stdout: new Uint8Array(),
+          stderr: encoder.encode("ps error"),
+        });
+      }
+    };
+    try {
+      await OsUtils.setEnvPermanent(envVarKey, "-Xmx1g");
+      psSuccess = false;
+      await assertRejects(() => OsUtils.setEnvPermanent(envVarKey, "-Xmx1g"), Error, "setting permanent environment variable");
+    } finally {
+      Deno.env.delete(envVarKey);
+    }
+
+    // 2. getUserPath & setUserPath & addPathPermanent & removePathPermanent & isInUserPath
+    let regStdout = JSON.stringify({ exists: true, type: "ExpandString", value: "C:\\A;C:\\B" });
+    let regOk = true;
+    (Deno as { Command: unknown }).Command = class FakeCommand {
+      output() {
+        return Promise.resolve({
+          success: regOk,
+          code: regOk ? 0 : 1,
+          stdout: encoder.encode(regStdout),
+          stderr: encoder.encode("reg err"),
+        });
+      }
+    };
+    assertEquals(await OsUtils.getUserPath(), ["C:\\A", "C:\\B"]);
+    assertEquals(await OsUtils.isInUserPath("C:\\A"), true);
+
+    regStdout = JSON.stringify({ exists: false, type: "ExpandString", value: "" });
+    assertEquals(await OsUtils.getUserPath(), []);
+
+    regOk = false;
+    await assertRejects(() => OsUtils.getUserPath(), Error, "reading HKCU\\Environment\\Path");
+
+    // setUserPath validation, success (with dlopen stubbed), and failure
+    await assertRejects(() => OsUtils.setUserPath(["C:\\Bad\nPath"]), Error, "Invalid PATH entry");
+    await assertRejects(() => OsUtils.addPathPermanent("C:\\A;C:\\B"), Error, "Invalid PATH entry");
+
+    const dlopenStub = stub(Deno, "dlopen", () => {
+      throw new Error("no user32 on test");
+    });
+    try {
+      regOk = true;
+      regStdout = "ok";
+      assertEquals(await OsUtils.setUserPath(["C:\\A", '"C:\\B"']), "ok");
+
+      regOk = false;
+      await assertRejects(() => OsUtils.setUserPath(["C:\\A"]), Error, "writing HKCU\\Environment\\Path");
+    } finally {
+      dlopenStub.restore();
+    }
+
+    // addPathPermanent & removePathPermanent flow
+    const getPathStub = stub(OsUtils, "getUserPath", () => Promise.resolve(["C:\\Old", "C:\\Keep"]));
+    const setPathCalls: string[][] = [];
+    const setPathStub = stub(OsUtils, "setUserPath", (entries: string[]) => {
+      setPathCalls.push(entries);
+      return Promise.resolve("written");
+    });
+    try {
+      await OsUtils.addPathPermanent("C:\\New");
+      await OsUtils.removePathPermanent("C:\\Old");
+      assertEquals(setPathCalls, [
+        ["C:\\New", "C:\\Old", "C:\\Keep"],
+        ["C:\\Keep"],
+      ]);
+    } finally {
+      setPathStub.restore();
+      getPathStub.restore();
+    }
+
+    // 3. createShortcut Windows branch (success + failure) & startup/desktop/startMenu wrappers
+    const tmpDir = TestHelper.getNewTempDir();
+    let scSuccess = true;
+    (Deno as { Command: unknown }).Command = class FakeCommand {
+      output() {
+        return Promise.resolve({
+          success: scSuccess,
+          code: scSuccess ? 0 : 1,
+          stdout: encoder.encode("shortcut-ok"),
+          stderr: encoder.encode("shortcut-err"),
+        });
+      }
+    };
+    assertEquals(await OsUtils.createShortcut(path.join(tmpDir, "app.exe"), tmpDir), "shortcut-ok");
+    scSuccess = false;
+    await assertRejects(
+      () => OsUtils.createShortcut(path.join(tmpDir, "app.exe"), tmpDir),
+      Error,
+      "creating Windows shortcut",
+    );
+
+    const scCalls: Array<[string | string[], string | string[]]> = [];
+    const scStub = stub(OsUtils, "createShortcut", (a: string | string[], b: string | string[]) => {
+      scCalls.push([a, b]);
+      return Promise.resolve("");
+    });
+    const startupProp = Object.getOwnPropertyDescriptor(HomePaths, "startupDir");
+    const desktopProp = Object.getOwnPropertyDescriptor(HomePaths, "desktopDir");
+    const startMenuProp = Object.getOwnPropertyDescriptor(HomePaths, "startMenuDir");
+    Object.defineProperty(HomePaths, "startupDir", { get: () => path.join(tmpDir, "Startup"), configurable: true });
+    Object.defineProperty(HomePaths, "desktopDir", { get: () => path.join(tmpDir, "Desktop"), configurable: true });
+    Object.defineProperty(HomePaths, "startMenuDir", { get: () => path.join(tmpDir, "StartMenu"), configurable: true });
+    try {
+      await OsUtils.addToStartup("C:\\app.exe");
+      await OsUtils.addToDesktop("C:\\app.exe");
+      await OsUtils.addToStartMenu("C:\\app.exe");
+      await OsUtils.addToStartMenu("C:\\app.exe", "MyFolder");
+      assertEquals(scCalls.length, 4);
+      assertEquals(scCalls[3][1], path.resolve(path.join(tmpDir, "StartMenu"), "MyFolder"));
+    } finally {
+      if (startMenuProp) Object.defineProperty(HomePaths, "startMenuDir", startMenuProp);
+      if (desktopProp) Object.defineProperty(HomePaths, "desktopDir", desktopProp);
+      if (startupProp) Object.defineProperty(HomePaths, "startupDir", startupProp);
+      scStub.restore();
+    }
+  } finally {
+    (Deno as { Command: unknown }).Command = OrigCommand;
+    isWinStub.restore();
+  }
+});

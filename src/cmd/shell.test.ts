@@ -4,9 +4,10 @@ import { stub } from "@std/testing/mock";
 
 import t from "../lib/i18n.ts";
 import Loader from "../lib/loader.ts";
-import type { OsShell } from "../lib/os/os_shell.ts";
+import { OsShell } from "../lib/os/os_shell.ts";
 import OsUtils from "../lib/os/os_utils.ts";
 import FileSystemPackage from "../lib/package/file_system_package.ts";
+import { PackageManagerMock } from "../lib/package/package_manager_mock.ts";
 import TestHelper from "../lib/test/test_helper.ts";
 
 import CommandFactory from "./command_factory.ts";
@@ -185,4 +186,30 @@ Deno.test("Shell.runShell should forbid levainShell actions to prevent infinite 
     Error,
     t("cmd.shell.notAllowed", { pkg: curPkg.name, action: "levainShell echo boom" }),
   );
+});
+
+Deno.test("Shell.execute orchestrates readPackages, installPackages, and interactive OsShell", async () => {
+  const config = TestHelper.getConfig();
+  config.packageManager = new PackageManagerMock(config);
+  const cmd = new Shell(config);
+
+  const installCalls: string[][] = [];
+  let interactiveFlag = false;
+  const installStub = stub(cmd, "installPackages", (pkgs: string[]) => {
+    installCalls.push(pkgs);
+    return Promise.resolve();
+  });
+  const runStub = stub(cmd, "runShell", (osShell: OsShell) => {
+    interactiveFlag = osShell.interactive;
+    return Promise.resolve();
+  });
+
+  try {
+    await cmd.execute(["pkgA"]);
+    assertEquals(installCalls, [["pkgA"]]);
+    assertEquals(interactiveFlag, true);
+  } finally {
+    runStub.restore();
+    installStub.restore();
+  }
 });

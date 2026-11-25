@@ -41,9 +41,9 @@ A finding may be low impact in local dev but **blocking for promoting v1 to `Lat
    - Machine names, hostnames, internal domains/IPs, cloud accounts, local user paths (`C:\Users\...`, `/home/...`), real credentials, or private project references in code, tests, docs, skills, scripts, `git log`, or PR descriptions.
    - Verify the Windows testing contract (`LEVAIN_TEST_SSH_CONFIG` / `LEVAIN_TEST_HOST`) stays completely generic with no host-specific provisioning or addresses committed.
 2. **Credentials & logging:**
-   - `config.password` / `${levain.password}` exposure in logs (`LogUtils.hidePassword` must mask all occurrences), error messages, temp files, `levain.config.json`, or process command lines (`os_shell.ts`, `levainShell.ts`, `powershell.ts`).
+   - `config.password` / `${levain.password}` exposure in logs (`LogUtils.hidePassword` must mask all occurrences), error messages, temp files, `levain.config.json`, or process command lines (`os_shell.ts`, `levainShell.ts`).
 3. **Command injection & untrusted input:**
-   - Unquoted or concatenated shell arguments in `levainShell`, `os_shell.ts`, `powershell.ts`, `git_utils.ts`, `cmd_initializer.ts`, `testing/run-windows-tests.ts`, and `githubScripts/*.sh`.
+   - Unquoted or concatenated shell arguments in `levainShell`, `os_shell.ts`, `git_utils.ts`, `cmd_initializer.ts`, `testing/run-windows-tests.ts`, and `githubScripts/*.sh`.
    - Path traversal / Zip Slip in archive extraction (`denozip_extractor.ts`, `sevenzip_extractor.ts`, `untar_extractor.ts`) and unsafe temp-file creation.
    - Plain `http://` downloads or disabled TLS verification (`curl -k`, `--insecure`).
 4. **CI / release supply chain:**

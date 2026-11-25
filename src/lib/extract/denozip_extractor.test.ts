@@ -1,6 +1,7 @@
 import { assertEquals, assertFalse, assertRejects, assertThrows } from "@std/assert";
 import * as path from "@std/path";
 import { existsSync } from "@std/fs";
+import { stub } from "@std/testing/mock";
 import * as zip from "@zip.js/zip.js";
 
 import { DenoFileReader, DenoZip } from "./denozip_extractor.ts";
@@ -177,5 +178,51 @@ Deno.test("DenoFileReader should clamp huge read lengths to file size and handle
     assertEquals((await reader.readUint8Array(999, 5)).length, 0);
   } finally {
     reader.close();
+  }
+});
+
+Deno.test("DenoFileReader rejects read before init, handles short EOF reads, and DenoZip wraps stream write failures", async () => {
+  const tempDir = TestHelper.getNewTempDir();
+  const sampleFile = path.join(tempDir, "sample.bin");
+  await Deno.writeTextFile(sampleFile, "hello");
+
+  // Uninitialized readUint8Array throws
+  const uninited = new DenoFileReader(sampleFile);
+  await assertRejects(() => uninited.readUint8Array(0, 5), Error, "Zip source file not open");
+
+  // Early EOF (read returns null) returns partial bytes cleanly
+  const reader = new DenoFileReader(sampleFile);
+  await reader.init();
+  const internalFile = (reader as unknown as { file: Deno.FsFile }).file;
+  const readStub = stub(internalFile, "read", () => Promise.resolve(null));
+  try {
+    const partial = await reader.readUint8Array(0, 5);
+    assertEquals(partial.length, 0);
+  } finally {
+    readStub.restore();
+    reader.close();
+  }
+
+  // Stream write error during entry.getData closes outFile and wraps error
+  const outDir = path.join(tempDir, "out");
+  const origOpen = Deno.open;
+  const openStub = stub(Deno, "open", async (p: string | URL, opts?: Deno.OpenOptions) => {
+    if (opts?.write) {
+      return {
+        writable: new WritableStream({
+          write() {
+            throw new Error("simulated write failure");
+          },
+        }),
+        close() {},
+      } as unknown as Deno.FsFile;
+    }
+    return await origOpen(p, opts);
+  });
+  try {
+    const extractor = new DenoZip(TestHelper.getConfig());
+    await assertRejects(() => extractor.extractImpl("testdata/extract/test.zip", outDir), Error);
+  } finally {
+    openStub.restore();
   }
 });
