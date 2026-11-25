@@ -1,25 +1,37 @@
 #!/bin/bash
+set -euo pipefail
 
-# FIXME: Check parameters
-levainDir=$1
-binZipFile=$2
+levainDir=${1:-}
+binZipFile=${2:-}
 
-## Create Levain zip
-cd ${levainDir}
-rm -rf ${binZipFile}
-zip -9r ${binZipFile} extra-bin -x "extra-bin/windows/os-utils**" >/dev/null
-cd - >/dev/null
+if [ -z "$levainDir" ] || [ -z "$binZipFile" ]; then
+    echo "Usage: $0 <levain-build-dir> <output-zip-file>" >&2
+    exit 1
+fi
 
-cd $( dirname ${binZipFile} )
-sha256sum $( basename ${binZipFile} ) > ${binZipFile}.sha256
-cd - >/dev/null
+mkdir -p "$(dirname "${binZipFile}")"
+zipParentDir="$(cd "$(dirname "${binZipFile}")" && pwd)"
+zipBaseName="$(basename "${binZipFile}")"
+absZipFile="${zipParentDir}/${zipBaseName}"
+
+# Create Levain extra-bin zip
+(
+    cd "${levainDir}"
+    rm -f "${absZipFile}"
+    zip -9r "${absZipFile}" extra-bin -x "extra-bin/windows/os-utils**" >/dev/null
+)
+
+(
+    cd "${zipParentDir}"
+    sha256sum "${zipBaseName}" > "${absZipFile}.sha256"
+)
 
 echo
-echo ${binZipFile} created
+echo "${absZipFile} created"
 
 echo
-unzip -l ${binZipFile}
+unzip -l "${absZipFile}"
 
 echo
-echo ${binZipFile}.sha256
-cat ${binZipFile}.sha256
+echo "${absZipFile}.sha256"
+cat "${absZipFile}.sha256"

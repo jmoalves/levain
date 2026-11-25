@@ -27,22 +27,38 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Validate Deno version
+        id: deno_ver
+        shell: pwsh
+        env:
+          INPUT_DENO_VERSION: ${{ github.event.inputs.denoVersion || env.DEFAULT_DENO_VERSION }}
+        run: |
+          if ($env:INPUT_DENO_VERSION -notmatch '^[0-9]+\.[0-9]+\.[0-9]+$') {
+            throw "Invalid DENO_VERSION: $env:INPUT_DENO_VERSION"
+          }
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "version=$env:INPUT_DENO_VERSION"
 
       - name: Get Deno
         shell: cmd
         run: |
-          if exist %DENO_ROOT_PATH% rmdir /q/s %DENO_ROOT_PATH%
-          if not exist %DENO_ROOT_PATH% mkdir %DENO_ROOT_PATH%
-          call %GITHUB_WORKSPACE%\githubScripts\get-deno.cmd %DENO_ROOT_PATH% %DENO_VERSION%
+          if exist "%DENO_ROOT_PATH%" rmdir /q/s "%DENO_ROOT_PATH%"
+          if not exist "%DENO_ROOT_PATH%" mkdir "%DENO_ROOT_PATH%"
+          call "%GITHUB_WORKSPACE%\githubScripts\get-deno.cmd" "%DENO_ROOT_PATH%" "%DENO_VERSION%"
+          if errorlevel 1 exit /b %ERRORLEVEL%
         env:
-          DENO_VERSION: ${{ github.event.inputs.denoVersion || env.DEFAULT_DENO_VERSION }}
+          DENO_VERSION: ${{ steps.deno_ver.outputs.version }}
           DENO_ROOT_PATH: ${{ runner.temp }}\deno
           GITHUB_WORKSPACE: ${{ github.workspace }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check sources
         shell: cmd
         run: |
-          call %GITHUB_WORKSPACE%\scripts\check-sources.cmd %DENO_ROOT_PATH%
+          call "%GITHUB_WORKSPACE%\scripts\check-sources.cmd" --clean "%DENO_ROOT_PATH%"
+          if errorlevel 1 exit /b %ERRORLEVEL%
         env:
           DENO_ROOT_PATH: ${{ runner.temp }}\deno
           GITHUB_WORKSPACE: ${{ github.workspace }}

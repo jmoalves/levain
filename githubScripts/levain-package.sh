@@ -1,34 +1,48 @@
 #!/bin/bash
+set -euo pipefail
 
-# FIXME: Check parameters
-levainDir=$1
-levainZipFile=$2
-strip=$3
+levainDir=${1:-}
+levainZipFile=${2:-}
+strip=${3:-}
 
-## Copy levain.exe SHA256
-cp -v ${levainDir}/build/levain.exe.sha256 $( dirname ${levainZipFile} )
-
-## Create Levain zip
-if [ -z "$strip" ]; then
-    cd $( dirname ${levainDir} )
-    zip -9r ${levainZipFile} $( basename ${levainDir} ) >/dev/null
-    cd - >/dev/null
-else
-    cd ${levainDir}
-    zip -9r ${levainZipFile} * >/dev/null
-    cd - >/dev/null
+if [ -z "$levainDir" ] || [ -z "$levainZipFile" ]; then
+    echo "Usage: $0 <levain-dir> <output-zip-file> [STRIP]" >&2
+    exit 1
 fi
 
-cd $( dirname ${levainZipFile} )
-sha256sum $( basename ${levainZipFile} ) > ${levainZipFile}.sha256
-cd - >/dev/null
+mkdir -p "$(dirname "${levainZipFile}")"
+zipParentDir="$(cd "$(dirname "${levainZipFile}")" && pwd)"
+zipBaseName="$(basename "${levainZipFile}")"
+absZipFile="${zipParentDir}/${zipBaseName}"
+
+# Copy levain.exe SHA256
+cp -v "${levainDir}/build/levain.exe.sha256" "${zipParentDir}/"
+
+# Create Levain zip
+rm -f "${absZipFile}"
+if [ -z "$strip" ]; then
+    (
+        cd "$(dirname "${levainDir}")"
+        zip -9r "${absZipFile}" "$(basename "${levainDir}")" >/dev/null
+    )
+else
+    (
+        cd "${levainDir}"
+        zip -9r "${absZipFile}" . >/dev/null
+    )
+fi
+
+(
+    cd "${zipParentDir}"
+    sha256sum "${zipBaseName}" > "${absZipFile}.sha256"
+)
 
 echo
-echo ${levainZipFile} created
+echo "${absZipFile} created"
 
 echo
-unzip -l ${levainZipFile}
+unzip -l "${absZipFile}"
 
 echo
-echo ${levainZipFile}.sha256
-cat ${levainZipFile}.sha256
+echo "${absZipFile}.sha256"
+cat "${absZipFile}.sha256"
