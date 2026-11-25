@@ -5,6 +5,7 @@ import Config from "../config.ts";
 import ConsoleFeedback from "../utils/console_feedback.ts";
 import TestHelper from "../test/test_helper.ts";
 import ConsoleAndFileLogger from "./console_and_file_logger.ts";
+import LogUtils from "./log_utils.ts";
 
 Deno.test("should setup logger with logFiles and console", async () => {
   let logger;
@@ -68,7 +69,8 @@ Deno.test("should mask passwords in file logs and ConsoleFeedback even when conf
     ConsoleAndFileLogger.config = cfg;
 
     log.info(`Connecting with TopSecret#42 and TopSecret#42`);
-    logger.flush();
+    log.warn(`Warn with TopSecret#42`);
+    LogUtils.flushLogFiles();
 
     // Exercise console handler formatter directly for both omitLog=true and omitLog=false
     const omittedConsoleLine = logger.handlers["console"].format(TestHelper.logRecord("console TopSecret#42"));
@@ -101,5 +103,44 @@ Deno.test("should mask passwords in file logs and ConsoleFeedback even when conf
     } catch {
       // ignore temp cleanup error
     }
+  }
+});
+
+Deno.test("ConsoleFeedback.show should throttle terminal writes and suppress interleaved spinners during concurrent operations", () => {
+  const prevOut = ConsoleFeedback.OUT;
+  const written: string[] = [];
+  const decoder = new TextDecoder();
+
+  try {
+    ConsoleFeedback.OUT = {
+      isTerminal: () => true,
+      writeSync: (p: Uint8Array) => {
+        written.push(decoder.decode(p));
+        return p.length;
+      },
+    } as typeof Deno.stdout;
+
+    const feedback = new ConsoleFeedback();
+    for (let i = 0; i < 20; i++) {
+      feedback.show();
+    }
+    assertEquals(written.length, 1);
+
+    // Concurrent feedback instances suppress interleaved spinners and omit leading \r on reset
+    written.length = 0;
+    const fb1 = new ConsoleFeedback();
+    const fb2 = new ConsoleFeedback();
+    fb1.start("Scan A");
+    fb2.start("Scan B");
+    fb1.show();
+    fb2.show();
+    fb2.reset("Done B");
+    fb1.reset("Done A");
+    const output = written.join("");
+    assertStringIncludes(output, "Done B\r\n");
+    assertStringIncludes(output, "Done A\r\n");
+    assertFalse(output.includes("\rDone B"));
+  } finally {
+    ConsoleFeedback.OUT = prevOut;
   }
 });

@@ -1,10 +1,11 @@
 import * as log from "@std/log";
+import * as path from "@std/path";
 import type Config from "../config.ts";
 import OsUtils from "../os/os_utils.ts";
 import GitUtils from "../utils/git_utils.ts";
+import HttpUtils from "../utils/http_utils.ts";
 
 import type Repository from "./repository.ts";
-
 
 class ScopedRepoCache extends Map<string, Repository> {
   constructor(private readonly onClear: () => void) {
@@ -19,8 +20,10 @@ class ScopedRepoCache extends Map<string, Repository> {
 
 export default class RepositoryFactory {
   private static reposByConfig = new WeakMap<Config, Map<string, Repository>>();
+  private static inFlightByConfig = new WeakMap<Config, Map<string, Promise<Repository>>>();
   static knownRepos: Map<string, Repository> = new ScopedRepoCache(() => {
     RepositoryFactory.reposByConfig = new WeakMap<Config, Map<string, Repository>>();
+    RepositoryFactory.inFlightByConfig = new WeakMap<Config, Map<string, Promise<Repository>>>();
   });
 
   static isGitPath(repoPath: string): boolean {
@@ -43,8 +46,6 @@ export default class RepositoryFactory {
       return repoPath;
     }
 
-    // Should normalize path separators (\, /) as well?
-
     if (!OsUtils.isWindows()) {
       return repoPath;
     }
@@ -52,15 +53,35 @@ export default class RepositoryFactory {
     return repoPath.toLowerCase().trim();
   }
 
-  static async getOrCreate(config: Config, repoURI: string, rootOnly: boolean = false): Promise<Repository> {
+  private static buildCacheKey(repoPath: string, rootOnly: boolean): string {
+    let canonical = repoPath;
+    if (RepositoryFactory.isGitPath(repoPath)) {
+      // Deduplicate URLs that map to the same local mirror dir (including case variants on Windows)
+      canonical = OsUtils.isWindows()
+        ? GitUtils.localBaseDir(repoPath).toLowerCase()
+        : GitUtils.localBaseDir(repoPath);
+    } else if (!HttpUtils.isUrl(repoPath)) {
+      const resolved = path.resolve(repoPath);
+      canonical = OsUtils.isWindows() ? resolved.toLowerCase() : resolved;
+    }
+    return `${canonical}|rootOnly=${rootOnly}`;
+  }
+
+  static async getOrCreate(
+    config: Config,
+    repoURI: string,
+    rootOnly: boolean = false,
+    forceRefresh: boolean = false,
+  ): Promise<Repository> {
     log.debug(`RepoFactory.create - repo for uri ${repoURI}`);
 
     if (!repoURI) {
-      throw "RepoFactory with no repoURI";
+      throw new Error("RepoFactory with no repoURI");
     }
 
     const repoPath = RepositoryFactory.normalize(repoURI);
-    const cacheKey = `${repoPath}|rootOnly=${rootOnly}`;
+    const cacheKey = RepositoryFactory.buildCacheKey(repoPath, rootOnly);
+
     let configCache = RepositoryFactory.reposByConfig.get(config);
     if (!configCache) {
       configCache = new Map<string, Repository>();
@@ -73,22 +94,41 @@ export default class RepositoryFactory {
       return repo;
     }
 
-    let repo: Repository;
-    if (RepositoryFactory.isGitPath(repoPath)) {
-      const { GitRepository } = await import("./git_repository.ts"); 
-      repo = new GitRepository(config, repoPath, rootOnly);
-    } else if (RepositoryFactory.isZipPath(repoPath)) {
-      const { ZipRepository } = await import("./zip_repository.ts"); 
-      repo = new ZipRepository(config, repoPath, rootOnly);
-    } else {
-      const { FileSystemRepository } = await import("./file_system_repository.ts"); 
-      repo = new FileSystemRepository(config, repoPath, rootOnly);
+    let inFlight = RepositoryFactory.inFlightByConfig.get(config);
+    if (!inFlight) {
+      inFlight = new Map<string, Promise<Repository>>();
+      RepositoryFactory.inFlightByConfig.set(config, inFlight);
     }
 
-    await repo.init();
+    const existingPromise = inFlight.get(cacheKey);
+    if (existingPromise) {
+      return await existingPromise;
+    }
 
-    configCache.set(cacheKey, repo);
-    RepositoryFactory.knownRepos.set(cacheKey, repo);
-    return repo;
+    const initPromise = (async () => {
+      let repo: Repository;
+      if (RepositoryFactory.isGitPath(repoPath)) {
+        const { GitRepository } = await import("./git_repository.ts");
+        repo = new GitRepository(config, repoPath, rootOnly, forceRefresh);
+      } else if (RepositoryFactory.isZipPath(repoPath)) {
+        const { ZipRepository } = await import("./zip_repository.ts");
+        repo = new ZipRepository(config, repoPath, rootOnly);
+      } else {
+        const { FileSystemRepository } = await import("./file_system_repository.ts");
+        repo = new FileSystemRepository(config, repoPath, rootOnly);
+      }
+
+      await repo.init();
+      configCache!.set(cacheKey, repo);
+      RepositoryFactory.knownRepos.set(cacheKey, repo);
+      return repo;
+    })();
+
+    inFlight.set(cacheKey, initPromise);
+    try {
+      return await initPromise;
+    } finally {
+      inFlight.delete(cacheKey);
+    }
   }
 }

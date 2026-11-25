@@ -13,6 +13,7 @@ import VersionNumber from "../utils/version_number.ts";
 import GeneralPaths from "../paths/general_paths.ts";
 import FileCache from "../fs/file_cache.ts";
 import { ExtractorFactory } from "../extract/extractor_factory.ts";
+import LogUtils from "../logger/log_utils.ts";
 
 const UPDATE_REQUEST = 42;
 
@@ -164,9 +165,16 @@ export default class LevainReleases {
       return;
     }
 
+    const today = DateUtils.dateTag();
+    if (this.config.lastUpdateCheck === today) {
+      log.debug(`Skipping Levain update check - already checked today (${today})`);
+      return;
+    }
+
     try {
       const levainReleases = new LevainReleases(this.config);
       const latestVersion = await levainReleases.latestVersion();
+      this.config.lastUpdateCheck = today;
       if (!this.needsUpdate(latestVersion)) {
         return;
       }
@@ -367,6 +375,7 @@ export default class LevainReleases {
     log.info(t("lib.releases.levain_releases.restarting"));
     log.info("");
 
+    LogUtils.flushLogFiles();
     Deno.exit(UPDATE_REQUEST);
   }
 }

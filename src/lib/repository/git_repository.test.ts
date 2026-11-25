@@ -1,7 +1,9 @@
 import Repository from "./repository.ts";
 
 import { assertEquals, assertRejects } from "@std/assert";
+import { stub } from "@std/testing/mock";
 import { GitRepository } from "./git_repository.ts";
+import GitUtils from "../utils/git_utils.ts";
 import LevainAsserts from "../test/levain_asserts.ts";
 import TestHelper from "../test/test_helper.ts";
 
@@ -55,6 +57,51 @@ Deno.test("GitRepository should list packages from git url", async () => {
     "maven-3.6",
     "openjdk-11",
   ]);
+});
+
+Deno.test("GitRepository should skip git update within TTL and update when TTL is 0", async () => {
+  const localGitRepo = await TestHelper.createLocalGitRepo({
+    "recipes/git.levain.yaml": "version: 1.0.0\n",
+  });
+  const config = TestHelper.getConfig();
+  const prevTtl = Deno.env.get("LEVAIN_GIT_UPDATE_TTL_SECONDS");
+
+  // First init clones the repository
+  const repo1 = new GitRepository(config, localGitRepo);
+  await repo1.init();
+
+  const updateStub = stub(GitUtils.prototype, "update", () => Promise.resolve());
+  try {
+    // Within default 60s TTL -> update is skipped
+    Deno.env.delete("LEVAIN_GIT_UPDATE_TTL_SECONDS");
+    const repo2 = new GitRepository(config, localGitRepo);
+    await repo2.init();
+    assertEquals(updateStub.calls.length, 0);
+
+    // forceRefresh=true (e.g. `levain update`) bypasses TTL
+    const repoForced = new GitRepository(config, localGitRepo, false, true);
+    await repoForced.init();
+    assertEquals(updateStub.calls.length, 1);
+
+    // With TTL=0 -> update is executed
+    Deno.env.set("LEVAIN_GIT_UPDATE_TTL_SECONDS", "0");
+    const repo3 = new GitRepository(config, localGitRepo);
+    await repo3.init();
+    assertEquals(updateStub.calls.length, 2);
+
+    // Invalid TTL falls back to default (60s -> skips update)
+    Deno.env.set("LEVAIN_GIT_UPDATE_TTL_SECONDS", "invalid");
+    assertEquals(GitRepository.updateTtlSeconds(), GitRepository.DEFAULT_UPDATE_TTL_SECONDS);
+    Deno.env.set("LEVAIN_GIT_UPDATE_TTL_SECONDS", "-5");
+    assertEquals(GitRepository.updateTtlSeconds(), GitRepository.DEFAULT_UPDATE_TTL_SECONDS);
+  } finally {
+    updateStub.restore();
+    if (prevTtl === undefined) {
+      Deno.env.delete("LEVAIN_GIT_UPDATE_TTL_SECONDS");
+    } else {
+      Deno.env.set("LEVAIN_GIT_UPDATE_TTL_SECONDS", prevTtl);
+    }
+  }
 });
 //
 // helpers

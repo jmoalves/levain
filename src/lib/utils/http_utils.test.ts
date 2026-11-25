@@ -11,6 +11,23 @@ Deno.test("HttpUtils.resolve should resolve file paths", () => {
 });
 Deno.test("HttpUtils.resolve should not change urls", () => {
   assertEquals(HttpUtils.resolve("http://google.com"), "http://google.com");
+  assertEquals(HttpUtils.resolve("https://example.org/file.zip"), "https://example.org/file.zip");
+  assertEquals(HttpUtils.resolve("http://localhost:8080/repo"), "http://localhost:8080/repo");
+});
+
+Deno.test("HttpUtils.isUrl should accept valid http/https/ftp URLs and reject file paths or malformed inputs", () => {
+  assertEquals(HttpUtils.isUrl("https://example.org/a.zip"), true);
+  assertEquals(HttpUtils.isUrl("ftp://files.example.org/pub"), true);
+  assertEquals(HttpUtils.isUrl("http://localhost/test"), true);
+  assertEquals(HttpUtils.isUrl("http://[::1]:8080/repo.zip"), true);
+  assertEquals(HttpUtils.isUrl("https://intranet-host/repo.zip"), true);
+  assertEquals(HttpUtils.isUrl(""), false);
+  assertEquals(HttpUtils.isUrl("http:example.org"), false);
+  assertEquals(HttpUtils.isUrl("http://[::invalid"), false);
+  assertEquals(HttpUtils.isUrl("https://example.org/with space"), false);
+  assertEquals(HttpUtils.isUrl("file:///tmp/test.zip"), false);
+  assertEquals(HttpUtils.isUrl("./local/path"), false);
+  assertEquals(HttpUtils.isUrl("C:\\Windows\\System32"), false);
 });
 
 //

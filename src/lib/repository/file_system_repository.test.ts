@@ -94,6 +94,30 @@ Deno.test("FileSystemRepository should ignore node_modules", async () => {
   assert(!packageNames.includes("hidden-by-folder"));
 });
 
+Deno.test("FileSystemRepository should ignore exact excluded dir names without skipping similar suffixes", async () => {
+  const tempRoot = Deno.makeTempDirSync({ prefix: "levain-fsrepo-excl-" });
+  try {
+    // Directories whose names merely end with excluded words ("attempt" -> "temp", "my-bin" -> "bin", "ecosystem" -> "system")
+    for (const dirName of ["attempt", "my-bin", "ecosystem"]) {
+      const dirPath = path.join(tempRoot, dirName);
+      ensureDirSync(dirPath);
+      Deno.writeTextFileSync(path.join(dirPath, `${dirName}-pkg.levain.yaml`), "version: 1.0.0\n");
+    }
+    // Actual excluded directory names must still be ignored
+    for (const ignoredDir of ["temp", "bin", "system"]) {
+      const dirPath = path.join(tempRoot, ignoredDir);
+      ensureDirSync(dirPath);
+      Deno.writeTextFileSync(path.join(dirPath, `${ignoredDir}-hidden.levain.yaml`), "version: 1.0.0\n");
+    }
+
+    const repo = await getInitedRepo(tempRoot);
+    const packageNames = repo.listPackages().map((pkg) => pkg.name);
+    assertArrayEqualsInAnyOrder(packageNames, ["attempt-pkg", "my-bin-pkg", "ecosystem-pkg"]);
+  } finally {
+    Deno.removeSync(tempRoot, { recursive: true });
+  }
+});
+
 Deno.test("FileSystemRepository should list FileSystemPackages", async () => {
   const repo = await getInitedRepo();
 

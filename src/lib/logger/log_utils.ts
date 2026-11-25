@@ -4,6 +4,14 @@ import DateUtils from "../utils/date_utils.ts";
 import StringUtils from "../utils/string_utils.ts";
 
 export default class LogUtils {
+  static flushLogFiles() {
+    for (const handler of log.getLogger().handlers) {
+      if (handler instanceof log.FileHandler) {
+        handler.flush();
+      }
+    }
+  }
+
   // deno-lint-ignore require-await
   static async closeLogFiles() {
     return this.setupDefaultLogConfig();

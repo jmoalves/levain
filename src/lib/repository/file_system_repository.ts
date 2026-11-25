@@ -1,6 +1,6 @@
 import * as log from "@std/log";
 import * as path from "@std/path";
-import { existsSync, ExpandGlobOptions } from "@std/fs";
+import { existsSync } from "@std/fs";
 
 import t from "../i18n.ts";
 
@@ -8,8 +8,8 @@ import type Config from "../config.ts";
 import type Package from "../package/package.ts";
 import FileSystemPackage from "../package/file_system_package.ts";
 import { Timer } from "../timer.ts";
-import { FileUtils } from "../fs/file_utils.ts";
 import ConsoleFeedback from "../utils/console_feedback.ts";
+import OsUtils from "../os/os_utils.ts";
 
 import AbstractRepository from "./abstract_repository.ts";
 import DirUtils from "../fs/dir_utils.ts";
@@ -30,6 +30,7 @@ export class FileSystemRepository extends AbstractRepository {
     "extra-bin",
   ];
 
+  private readonly excludeDirSet: Set<string>;
   readonly feedback = new ConsoleFeedback();
 
   private _packages: Map<string, Package> = new Map();
@@ -40,6 +41,7 @@ export class FileSystemRepository extends AbstractRepository {
     private rootOnly: boolean = false,
   ) {
     super(`FileSystemRepo`, path.resolve(rootDir));
+    this.excludeDirSet = new Set(this.excludeDirs.map((dir) => dir.toLowerCase()));
   }
 
   override describe(): string {
@@ -101,6 +103,22 @@ export class FileSystemRepository extends AbstractRepository {
 
   ///////////////////////////////////////////////////
 
+  private readInstalledRecipeSet(): Set<string> {
+    const installed = new Set<string>();
+    const registryDir = this.config.configPaths.levainRegistryDir;
+    const isWin = OsUtils.isWindows();
+    try {
+      for (const entry of Deno.readDirSync(registryDir)) {
+        if (entry.isFile) {
+          installed.add(isWin ? entry.name.toLowerCase() : entry.name);
+        }
+      }
+    } catch {
+      // Registry directory missing or unreadable -> treat as empty
+    }
+    return installed;
+  }
+
   private async readPackages(): Promise<Array<Package>> {
     if (!DirUtils.isDirectory(this.rootDir)) {
       log.debug(`# readPackages: rootDir not found ${this.rootDir}`);
@@ -110,14 +128,8 @@ export class FileSystemRepository extends AbstractRepository {
     this.feedback.start(t("lib.repository.file_system_repository.scanning", { dir: this.rootDir }));
 
     const timer = new Timer();
-
-    const globOptions: ExpandGlobOptions = {
-      root: this.rootDir,
-      extended: true,
-      includeDirs: true,
-      exclude: this.excludeDirs,
-    };
-    const packages: Array<Package> = await this.getPackageFiles(globOptions, this.rootOnly);
+    const installedRecipes = this.readInstalledRecipeSet();
+    const packages: Array<Package> = await this.crawlPackages(this.rootDir, this.rootOnly, installedRecipes);
 
     this.feedback.reset(t(
       "lib.repository.file_system_repository.found",
@@ -127,19 +139,12 @@ export class FileSystemRepository extends AbstractRepository {
     return packages;
   }
 
-  // deno-lint-ignore require-await
-  private async getPackageFiles(globOptions: ExpandGlobOptions, rootDirOnly: boolean = false): Promise<Array<Package>> {
-    log.debug(`# readPackages: ${JSON.stringify(globOptions)}`);
-    return this.crawlPackages(globOptions["root"] || ".", globOptions, rootDirOnly);
-  }
-
   private async crawlPackages(
     dirname: string,
-    options: ExpandGlobOptions,
     rootDirOnly: boolean = false,
+    installedRecipes: Set<string>,
     currentLevel = 0,
   ): Promise<Array<Package>> {
-    // TODO can we use expandGlob to get faster results?
     const maxLevels = 5;
     const nextLevel = currentLevel + 1;
 
@@ -151,7 +156,7 @@ export class FileSystemRepository extends AbstractRepository {
       return [];
     }
 
-    if (this.excludeDirs.some((ignoreDir) => dirname.toLowerCase().endsWith(ignoreDir.toLowerCase()))) {
+    if (currentLevel > 0 && this.isExcludedDirName(path.basename(dirname))) {
       log.debug(`ignoring ${dirname}`);
       return [];
     }
@@ -170,26 +175,28 @@ export class FileSystemRepository extends AbstractRepository {
       return [];
     }
 
-
     const promisesDir: Array<Promise<Array<Package>>> = [];
     const promisesFile: Array<Promise<Package | undefined>> = [];
 
     for await (const entry of entries) {
       // User feedback
       this.feedback.show();
-      const fullUri = path.resolve(dirname, entry.name);
       if (entry.isFile) {
         if (this.isPackageFile(entry.name)) {
-          promisesFile.push(this.readPackage(fullUri));
+          promisesFile.push(this.readPackage(path.resolve(dirname, entry.name), installedRecipes));
         }
-        // An attempt to optmize search in a crowded directory without packages
-        // Perhaps it would be better to read entries with a pattern
         continue;
       }
       if (!entry.isDirectory || rootDirOnly) {
         continue;
       }
-      promisesDir.push(this.crawlPackages(fullUri, options, false, nextLevel));
+      if (this.isExcludedDirName(entry.name)) {
+        log.debug(`ignoring ${path.resolve(dirname, entry.name)}`);
+        continue;
+      }
+      promisesDir.push(
+        this.crawlPackages(path.resolve(dirname, entry.name), false, installedRecipes, nextLevel),
+      );
     }
 
     const packages: Array<Package> = [];
@@ -207,27 +214,30 @@ export class FileSystemRepository extends AbstractRepository {
     return packages;
   }
 
+  private isExcludedDirName(dirName: string): boolean {
+    return this.excludeDirSet.has(dirName.toLowerCase());
+  }
+
   private isPackageFile(yamlFile: string): boolean {
     return yamlFile.match(/\.levain(\.ya?ml)?$/) != null;
   }
 
-  private async readPackage(yamlFile: string): Promise<Package | undefined> {
+  private async readPackage(yamlFile: string, installedRecipes: Set<string>): Promise<Package | undefined> {
     let yamlStr: string | undefined = undefined;
     try {
-      yamlStr = FileUtils.readTextFileSync(yamlFile);
+      yamlStr = await Deno.readTextFile(yamlFile);
     } catch (error) {
       log.error(`!!! error loading package ${yamlFile}: ${error}`);
       return undefined;
     }
 
-    const packageName = yamlFile.replace(/.*[\/|\\]/g, "").replace(/\.levain(\.ya?ml)?/, "");
+    const baseName = path.basename(yamlFile);
+    const packageName = baseName.replace(/\.levain(\.ya?ml)?/, "");
     log.debug(`readPackage ${packageName} ${yamlFile}`);
 
-    // log.debug(`yaml ${packageName} -> ${yamlStr}`)
-
-    // log.debug(`pkg ${packageName} -> ${pkg}`)
-
-    const packageHome = await this.config.replaceVars(`\${levainHome}/${packageName}`);
+    const packageHome = path.join(this.config.configPaths.levainHome, packageName);
+    const lookupKey = OsUtils.isWindows() ? baseName.toLowerCase() : baseName;
+    const isInstalled = installedRecipes.has(lookupKey);
 
     return new FileSystemPackage(
       this.config,
@@ -236,6 +246,7 @@ export class FileSystemRepository extends AbstractRepository {
       yamlFile,
       yamlStr,
       this,
+      isInstalled,
     );
   }
 }

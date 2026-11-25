@@ -1,5 +1,3 @@
-import { subDays } from "date-fns";
-
 export default class DateUtils {
   static dateTimeTag(dt: Date = new Date()): string {
     return `${DateUtils.dateTag(dt)}-${DateUtils.timeTag(dt)}`;
@@ -32,7 +30,9 @@ export default class DateUtils {
     return tag;
   }
 
-  static daysAgo(days: number): Date {
-    return subDays(new Date(), days);
+  static daysAgo(days: number, from: Date = new Date()): Date {
+    const dt = new Date(from.getTime());
+    dt.setDate(dt.getDate() - days);
+    return dt;
   }
 }

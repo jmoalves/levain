@@ -4,6 +4,7 @@ import { existsSync } from "@std/fs";
 import * as path from "@std/path";
 
 import LevainReleases from "./levain_releases.ts";
+import DateUtils from "../utils/date_utils.ts";
 import HttpUtils from "../utils/http_utils.ts";
 import FileCache from "../fs/file_cache.ts";
 import { ExtractorFactory } from "../extract/extractor_factory.ts";
@@ -217,6 +218,33 @@ Deno.test("LevainReleases.prepareNewRelease cleans old versions, verifies privat
     exitStub.restore();
     extractorStub.restore();
     cacheStub.restore();
+    getStub.restore();
+    LevainReleases.resetCache();
+  }
+});
+
+Deno.test("LevainReleases.checkLevainUpdate skips GitHub API call when already checked today", async () => {
+  LevainReleases.resetCache();
+  const getStub = stub(
+    HttpUtils,
+    "get",
+    () => Promise.resolve(new Response(JSON.stringify({ tag_name: "v0.0.1" }), { status: 200 })),
+  );
+
+  try {
+    const config = TestHelper.getConfig();
+    const releases = new LevainReleases(config);
+
+    // First check today hits GitHub API once and records lastUpdateCheck
+    await releases.checkLevainUpdate();
+    assertEquals(getStub.calls.length, 1);
+    assertEquals(config.lastUpdateCheck, DateUtils.dateTag());
+
+    // Second check on the same day skips network call completely
+    LevainReleases.resetCache();
+    await releases.checkLevainUpdate();
+    assertEquals(getStub.calls.length, 1);
+  } finally {
     getStub.restore();
     LevainReleases.resetCache();
   }

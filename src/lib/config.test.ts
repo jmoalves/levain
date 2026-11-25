@@ -104,12 +104,28 @@ Deno.test("Config should persist lastAutoClean and let CLI --levainHome pick fir
   try {
     const config1 = new Config({ levainHome: [savedHome] });
     config1.lastAutoClean = "20261124";
+    config1.lastUpdateCheck = "20261124";
+    config1.autoUpdate = false;
     config1.save();
 
-    // Reload without CLI override -> restores saved levainHome and lastAutoClean
+    // Reload without CLI override -> restores saved levainHome, lastAutoClean, lastUpdateCheck, and autoUpdate=false
     const config2 = new Config({});
     assertEquals(config2.configPaths.levainHome, path.resolve(savedHome));
     assertEquals(config2.lastAutoClean, "20261124");
+    assertEquals(config2.lastUpdateCheck, "20261124");
+    assertEquals(config2.autoUpdate, false);
+
+    // saveIfChanged skips saving when unchanged and saves when mutated
+    const saveStub = stub(config2, "save", () => {});
+    try {
+      config2.saveIfChanged();
+      assertEquals(saveStub.calls.length, 0);
+      config2.lastUpdateCheck = "20261125";
+      config2.saveIfChanged();
+      assertEquals(saveStub.calls.length, 1);
+    } finally {
+      saveStub.restore();
+    }
 
     // CLI --levainHome list skips invalid candidate, overrides saved levainHome, and updates default cacheDir
     const config3 = new Config({ levainHome: [invalidCandidate, cliHome] });

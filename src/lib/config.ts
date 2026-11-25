@@ -34,6 +34,7 @@ export default class Config {
   private _registry: Registry | undefined;
 
   private _lastKnownVersion: string | undefined;
+  private _lastUpdateCheck: string | undefined;
   private _lastUpdateQuestion: string | undefined;
   private _lastAutoClean: string | undefined;
   private _autoUpdate: boolean | undefined;
@@ -143,6 +144,15 @@ export default class Config {
     this._lastKnownVersion = version;
   }
 
+  get lastUpdateCheck(): string | undefined {
+    return this._lastUpdateCheck;
+  }
+
+  set lastUpdateCheck(dateTag: string | undefined) {
+    log.debug(`lastUpdateCheck: ${this._lastUpdateCheck} => ${dateTag}`);
+    this._lastUpdateCheck = dateTag;
+  }
+
   get lastUpdateQuestion(): string | undefined {
     return this._lastUpdateQuestion;
   }
@@ -208,7 +218,7 @@ export default class Config {
     log.debug(`Config.saveIfChanged`);
 
     const currentCfg = this.buildCfg();
-    if (currentCfg !== this.lastCfg) {
+    if (JSON.stringify(currentCfg) !== JSON.stringify(this.lastCfg)) {
       log.debug(`saving changed config`);
       return this.save();
     }
@@ -245,6 +255,7 @@ export default class Config {
     cfg.cacheDir = this.configPaths.levainCacheDir;
     cfg.shellPath = this._shellPath;
     cfg.lastKnownVersion = this._lastKnownVersion;
+    cfg.lastUpdateCheck = this._lastUpdateCheck;
     cfg.lastUpdateQuestion = this._lastUpdateQuestion;
     cfg.lastAutoClean = this._lastAutoClean;
     cfg.autoUpdate = this._autoUpdate;
@@ -288,6 +299,10 @@ export default class Config {
       this._lastKnownVersion = cfg.lastKnownVersion;
     }
 
+    if (cfg.lastUpdateCheck) {
+      this._lastUpdateCheck = cfg.lastUpdateCheck;
+    }
+
     if (cfg.lastUpdateQuestion) {
       this._lastUpdateQuestion = cfg.lastUpdateQuestion;
     }
@@ -296,7 +311,7 @@ export default class Config {
       this._lastAutoClean = cfg.lastAutoClean;
     }
 
-    if (cfg.autoUpdate) {
+    if (Object.hasOwn(cfg, "autoUpdate")) {
       this._autoUpdate = cfg.autoUpdate;
     }
 
@@ -310,6 +325,7 @@ export default class Config {
       this.setLevainHome(cfg.levainHome);
     }
 
+    this.lastCfg = this.buildCfg();
     return true;
   }
 

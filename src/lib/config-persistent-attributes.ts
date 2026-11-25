@@ -4,6 +4,7 @@ export default class ConfigPersistentAttributes {
   cacheDir?: string;
   shellPath?: string;
   lastKnownVersion?: string;
+  lastUpdateCheck?: string;
   lastUpdateQuestion?: string;
   lastAutoClean?: string;
   autoUpdate?: boolean;
