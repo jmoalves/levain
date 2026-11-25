@@ -167,3 +167,18 @@ function getCopyAction() {
   const factory = new ActionFactory();
   return factory.get("copy", config);
 }
+
+Deno.test("CopyAction rejects missing package, unsafe URL filenames, and logs/rethrows copySync errors", async () => {
+  const action = getCopyAction();
+  const dstDir = TestHelper.getNewTempDir();
+
+  await assertRejects(() => action.execute(undefined, [TestHelper.fileWithContent, dstDir]), Error, "No package for action copy");
+
+  // Copying a file over an existing directory path triggers copySync error inside doCopy
+  const blockingDir = path.join(dstDir, path.basename(TestHelper.fileWithContent));
+  await Deno.mkdir(blockingDir, { recursive: true });
+  await assertRejects(
+    () => action.execute(TestHelper.mockPackage(), ["--verbose", TestHelper.fileWithContent, dstDir]),
+    Error,
+  );
+});

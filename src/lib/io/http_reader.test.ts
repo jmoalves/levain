@@ -1,6 +1,7 @@
-import { assertEquals, assertRejects } from "@std/assert";
+import { assertEquals, assertRejects, assertThrows } from "@std/assert";
 import { stub } from "@std/testing/mock";
 import * as path from "@std/path";
+import type ProgressBar from "@deno-library/progress";
 
 import HttpReader from "./http_reader.ts";
 import { FileProgress } from "./file_progress.ts";
@@ -101,6 +102,38 @@ Deno.test("HttpReader + FileProgress retries cleanly when first stream fails mid
     await FileProgress.copyWithProgress(reader, dstFile, true);
     assertEquals(attempt, 2);
     assertEquals(Deno.readTextFileSync(dstFile), payload);
+  } finally {
+    await reader.close();
+    getStub.restore();
+  }
+});
+
+Deno.test("HttpReader covers read without rewind, progressBar setter, bytesCompleted, and unsupported size setter", async () => {
+  const reader = new HttpReader("https://example.org/item.bin");
+  assertEquals(await reader.read(new Uint8Array(8)), null);
+  assertThrows(() => {
+    reader.size = 100;
+  }, Error, "Unsupported");
+
+  let rendered = 0;
+  reader.progressBar = {
+    render(n: number) {
+      rendered = n;
+      return Promise.resolve();
+    },
+  } as unknown as ProgressBar;
+
+  const getStub = stub(
+    HttpUtils,
+    "get",
+    () => Promise.resolve(new Response("abcd", { status: 200, headers: { "content-length": "4" } })),
+  );
+  try {
+    await reader.rewind();
+    const buf = new Uint8Array(4);
+    assertEquals(await reader.read(buf), 4);
+    assertEquals(reader.bytesCompleted, 4);
+    assertEquals(rendered, 4);
   } finally {
     await reader.close();
     getStub.restore();

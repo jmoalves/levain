@@ -1,10 +1,13 @@
 import { assert, assertEquals, assertMatch, assertNotEquals, assertRejects } from "@std/assert";
 import * as path from "@std/path";
 import { ensureDirSync } from "@std/fs";
+import { stub } from "@std/testing/mock";
 
 import Config from "../config.ts";
+import DirUtils from "../fs/dir_utils.ts";
 import FileSystemPackage from "../package/file_system_package.ts";
 import { assertArrayEqualsInAnyOrder } from "../test/more_asserts.ts";
+import TestHelper from "../test/test_helper.ts";
 
 import { FileSystemRepository } from "./file_system_repository.ts";
 
@@ -160,3 +163,64 @@ function getRepo(
   const config = new Config();
   return new FileSystemRepository(config, rootDir, rootOnly);
 }
+
+Deno.test("FileSystemRepository handles double-init, non-dir root, depth limit, read errors, and reload on missing dir", async () => {
+  const tempRoot = TestHelper.getNewTempDir();
+  const filePath = path.join(tempRoot, "not-a-dir.txt");
+  Deno.writeTextFileSync(filePath, "hello");
+
+  // Non-directory root throws on init
+  const fileRepo = new FileSystemRepository(TestHelper.getConfig(), filePath);
+  await assertRejects(() => fileRepo.init(), Error, "repository should exist and be a dir");
+
+  // Deep nesting > 5 levels is skipped
+  const deepDir = path.join(tempRoot, "d1", "d2", "d3", "d4", "d5", "d6");
+  ensureDirSync(deepDir);
+  Deno.writeTextFileSync(path.join(deepDir, "too-deep.levain.yaml"), "version: 1.0.0\n");
+  Deno.writeTextFileSync(path.join(tempRoot, "top.levain.yaml"), "version: 1.0.0\n");
+
+  const repo = new FileSystemRepository(TestHelper.getConfig(), tempRoot);
+  await repo.init();
+  // Calling init() a second time is a no-op
+  await repo.init();
+  assertEquals(repo.listPackages().map((p) => p.name), ["top"]);
+
+  // readDir PermissionDenied and generic errors are swallowed gracefully
+  const permStub = stub(Deno, "readDir", () => {
+    throw new Deno.errors.PermissionDenied("denied");
+  });
+  try {
+    await repo.reload();
+    assertEquals(repo.listPackages(), []);
+  } finally {
+    permStub.restore();
+  }
+
+  const genericStub = stub(Deno, "readDir", () => {
+    throw new Error("io error");
+  });
+  try {
+    await repo.reload();
+    assertEquals(repo.listPackages(), []);
+  } finally {
+    genericStub.restore();
+  }
+
+  // readTextFile error on a package file logs and skips that package
+  const readFileStub = stub(Deno, "readTextFile", () => Promise.reject(new Error("unreadable")));
+  try {
+    await repo.reload();
+    assertEquals(repo.listPackages(), []);
+  } finally {
+    readFileStub.restore();
+  }
+
+  // reload when rootDir is no longer a directory returns empty list
+  const isDirStub = stub(DirUtils, "isDirectory", () => false);
+  try {
+    await repo.reload();
+    assertEquals(repo.listPackages(), []);
+  } finally {
+    isDirStub.restore();
+  }
+});

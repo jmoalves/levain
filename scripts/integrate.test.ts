@@ -1,9 +1,14 @@
-import { assertEquals, assertStringIncludes } from "@std/assert";
+import { assertEquals, assertRejects, assertStringIncludes } from "@std/assert";
+import { stub } from "@std/testing/mock";
 import {
+  defaultGetChangedFiles,
+  defaultRunDenoCommand,
+  defaultValidateI18n,
   getFilesToCheck,
   getTargetedTests,
   IntegrateDeps,
   Logger,
+  main,
   parseArgs,
   parseGitStatusOutput,
   runCascade,
@@ -482,4 +487,87 @@ Deno.test("integrate.ts - runCascade with mocked dependencies", async (t) => {
     assertEquals(failRes.failedLevel, 1);
     assertStringIncludes(errLog.errors.join("\n"), "Missing key 'x'");
   });
+});
+
+Deno.test("integrate.ts - validateI18nCatalogs handles invalid JSON, non-object root, unsupported types, and defaultValidateI18n", () => {
+  const badJson = validateI18nCatalogs("{bad", "[");
+  assertEquals(badJson.valid, false);
+  assertEquals(badJson.errors.length, 2);
+
+  const nonObj = validateI18nCatalogs("[]", JSON.stringify({ k: 42 }));
+  assertEquals(nonObj.valid, false);
+  assertStringIncludes(nonObj.errors.join("\n"), "Expected object");
+  assertStringIncludes(nonObj.errors.join("\n"), "Unsupported value type");
+
+  const realRes = defaultValidateI18n();
+  assertEquals(realRes.valid, true);
+});
+
+Deno.test("integrate.ts - defaultGetChangedFiles, defaultRunDenoCommand, and main", async () => {
+  const encoder = new TextEncoder();
+  const OrigCommand = Deno.Command;
+  const logStub = stub(console, "log", () => {});
+  const errStub = stub(console, "error", () => {});
+  try {
+    // defaultGetChangedFiles success
+    (Deno as { Command: unknown }).Command = class FakeCommand {
+      output() {
+        return Promise.resolve({ code: 0, stdout: encoder.encode(" M src/a.ts\n"), stderr: new Uint8Array() });
+      }
+    };
+    const changed = await defaultGetChangedFiles();
+    assertEquals(changed.tsChanged, ["src/a.ts"]);
+
+    // defaultGetChangedFiles failure
+    (Deno as { Command: unknown }).Command = class FakeCommand {
+      output() {
+        return Promise.resolve({ code: 1, stdout: new Uint8Array(), stderr: encoder.encode("fatal") });
+      }
+    };
+    await assertRejects(() => defaultGetChangedFiles(), Error, "Failed to execute git status");
+
+    // defaultRunDenoCommand success & failure
+    (Deno as { Command: unknown }).Command = class FakeCommand {
+      output() {
+        return Promise.resolve({ code: 0, stdout: encoder.encode("ok"), stderr: new Uint8Array() });
+      }
+    };
+    assertEquals((await defaultRunDenoCommand("Check", ["check"])).success, true);
+
+    (Deno as { Command: unknown }).Command = class FakeCommand {
+      output() {
+        return Promise.resolve({ code: 1, stdout: encoder.encode("out"), stderr: encoder.encode("err") });
+      }
+    };
+    assertEquals((await defaultRunDenoCommand("Check", ["check"])).success, false);
+
+    // main() with --check-i18n (passes without exiting) and failing i18n (calls Deno.exit(1))
+    const argsProp = Object.getOwnPropertyDescriptor(Deno, "args");
+    const exitCodes: number[] = [];
+    const exitStub = stub(Deno, "exit", (code?: number): never => {
+      exitCodes.push(code ?? 0);
+      return undefined as never;
+    });
+    try {
+      Object.defineProperty(Deno, "args", { value: ["--check-i18n"], configurable: true });
+      await main();
+      assertEquals(exitCodes, []);
+
+      // Trigger failure branch in main()
+      const readStub = stub(Deno, "readTextFileSync", () => "{invalid");
+      try {
+        await main();
+        assertEquals(exitCodes, [1]);
+      } finally {
+        readStub.restore();
+      }
+    } finally {
+      exitStub.restore();
+      if (argsProp) Object.defineProperty(Deno, "args", argsProp);
+    }
+  } finally {
+    (Deno as { Command: unknown }).Command = OrigCommand;
+    errStub.restore();
+    logStub.restore();
+  }
 });

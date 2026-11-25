@@ -1,8 +1,9 @@
-import { assert, assertEquals, assertRejects } from "@std/assert";
+import { assert, assertEquals, assertRejects, assertThrows } from "@std/assert";
 import * as path from "@std/path";
 import { stub } from "@std/testing/mock";
 import { OsShell } from "./os_shell.ts";
 import OsUtils from "./os_utils.ts";
+import LevainVersion from "../../levain_version.ts";
 import FileSystemPackage from "../package/file_system_package.ts";
 import TestHelper from "../test/test_helper.ts";
 import { PackageManagerMock } from "../package/package_manager_mock.ts";
@@ -214,3 +215,123 @@ if (OsUtils.isWindows()) {
     assertEquals(config.getVar("NO_LEAK_OUT"), "safe ^!__LEVAIN_SECRET_0^!");
   });
 }
+
+Deno.test("OsShell constructor throws when dependencies cannot be resolved and execute blocks recursive levainShell", async () => {
+  const config = TestHelper.getConfig();
+  const nullResolveStub = stub(config.packageManager, "resolvePackages", () => null);
+  try {
+    assertThrows(() => new OsShell(config, ["missing"]), Error, "Unable to load dependencies");
+  } finally {
+    nullResolveStub.restore();
+  }
+
+  const emptyPkg = new FileSystemPackage(config, "empty-pkg", TestHelper.getNewTempDir(), "empty.levain.yaml", "version: 1.0.0\n");
+  const loopPkg = new FileSystemPackage(
+    config,
+    "loop-pkg",
+    TestHelper.getNewTempDir(),
+    "loop.levain.yaml",
+    "version: 1.0.0\ncmd.env:\n  - levainShell echo boom\n",
+  );
+
+  const emptyStub = stub(config.packageManager, "resolvePackages", () => [emptyPkg]);
+  try {
+    const shell = new OsShell(config, ["empty-pkg"]);
+    await shell.execute([], false);
+  } finally {
+    emptyStub.restore();
+  }
+
+  const loopStub = stub(config.packageManager, "resolvePackages", () => [loopPkg]);
+  try {
+    const shell = new OsShell(config, ["loop-pkg"]);
+    await assertRejects(() => shell.execute([], false), Error, "levainShell action is not allowed here");
+  } finally {
+    loopStub.restore();
+  }
+});
+
+Deno.test("OsShell.prepareShellOptions covers interactive default prompt, missing PATH, and empty versionTag", async () => {
+  const config = TestHelper.getConfig();
+  config.shellPath = undefined;
+  config.packageManager = new PackageManagerMock(config);
+  config.context.action = { addpath: { path: ["/custom/bin"] } };
+
+  const osShell = new OsShell(config, ["abc"], true);
+  osShell.interactive = true;
+
+  const envStub = stub(Deno.env, "get", (key: string) => (key === "PATH" ? undefined : undefined));
+  const verProp = Object.getOwnPropertyDescriptor(LevainVersion, "levainVersion");
+  Object.defineProperty(LevainVersion, "levainVersion", { get: () => undefined, configurable: true });
+  try {
+    assertEquals(osShell.versionTag(), "");
+    const opt = await osShell.prepareShellOptions([]);
+    assertEquals(opt.cmd, ["cmd", "/c", "start", "cmd", "/k", "prompt", "[%LEVAIN_CURRENT%]", "%_LEVAIN_OLD_PROMPT%"]);
+    assert(opt.env["PATH"].includes("/custom/bin"));
+  } finally {
+    if (verProp) Object.defineProperty(LevainVersion, "levainVersion", verProp);
+    envStub.restore();
+  }
+});
+
+Deno.test("OsShell.openShell and execute handle saveVar, stripCRLF, spawn, and ignoreErrors cross-platform", async () => {
+  const config = TestHelper.getConfig();
+  config.packageManager = new PackageManagerMock(config);
+
+  const winStub = stub(OsUtils, "onlyInWindows", () => {});
+  const OrigCommand = Deno.Command;
+  const encoder = new TextEncoder();
+
+  try {
+    // 1. saveVar with stripCRLF trims trailing CRLF
+    (Deno as { Command: unknown }).Command = class FakeCommand {
+      output() {
+        return Promise.resolve({ success: true, code: 0, stdout: encoder.encode("hello\r\n"), stderr: new Uint8Array() });
+      }
+    };
+    const shell1 = new OsShell(config, ["abc"], true);
+    shell1.saveVar = "OUT_VAR";
+    shell1.stripCRLF = true;
+    await shell1.execute(["echo", "hello"], true);
+    assertEquals(config.getVar("OUT_VAR"), "hello");
+
+    // 2. saveVar failure throws with stderr logged when ignoreErrors=false, succeeds when ignoreErrors=true
+    (Deno as { Command: unknown }).Command = class FakeCommand {
+      output() {
+        return Promise.resolve({
+          success: false,
+          code: 7,
+          stdout: encoder.encode("partial\n"),
+          stderr: encoder.encode("failure detail"),
+        });
+      }
+    };
+    const shell2 = new OsShell(config, ["abc"], true);
+    shell2.saveVar = "ERR_VAR";
+    await assertRejects(() => shell2.openShell(["bad"]), Error, "CMD terminated with code 7");
+
+    shell2.ignoreErrors = true;
+    shell2.stripCRLF = true;
+    await shell2.openShell(["bad"]);
+    assertEquals(config.getVar("ERR_VAR"), "partial");
+
+    // 3. Non-saveVar uses spawn(): success, error, and ignoreErrors
+    let spawnSuccess = true;
+    (Deno as { Command: unknown }).Command = class FakeCommand {
+      spawn() {
+        return { status: Promise.resolve({ success: spawnSuccess, code: spawnSuccess ? 0 : 9 }) };
+      }
+    };
+    const shell3 = new OsShell(config, ["abc"], true);
+    await shell3.openShell(["ok"]);
+
+    spawnSuccess = false;
+    await assertRejects(() => shell3.openShell(["fail"]), Error, "CMD terminated with code 9");
+
+    shell3.ignoreErrors = true;
+    await shell3.openShell(["fail"]);
+  } finally {
+    (Deno as { Command: unknown }).Command = OrigCommand;
+    winStub.restore();
+  }
+});

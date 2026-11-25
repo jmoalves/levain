@@ -1,4 +1,4 @@
-import { assert, assertEquals, assertRejects } from "@std/assert";
+import { assert, assertEquals, assertRejects, assertThrows } from "@std/assert";
 import * as path from "@std/path";
 
 import TestHelper from "../test/test_helper.ts";
@@ -323,4 +323,19 @@ Deno.test("JsonUtils.remove should remove top-level, nested, and array propertie
   assertEquals(JsonUtils.remove(json, "[nested][constructor]"), false);
   assertEquals(JsonUtils.set(json, "[__proto__][polluted]", "yes"), false);
   assertEquals(({} as any).polluted, undefined);
+});
+
+Deno.test("JsonUtils handles invalid JSON, toBoolean edge cases, and invalid array tasks", () => {
+  const tmpDir = TestHelper.getNewTempDir();
+  const badFile = path.join(tmpDir, "invalid.json");
+  Deno.writeTextFileSync(badFile, "{ invalid json");
+  assertThrows(() => JsonUtils.load(badFile), Error);
+
+  assertEquals(JsonUtils.toBoolean("false"), false);
+  assertEquals(JsonUtils.toBoolean("  FALSE "), false);
+  assertEquals(JsonUtils.toBoolean(123), false);
+  assertEquals(JsonUtils.isBoolean("false"), true);
+
+  assertThrows(() => JsonUtils.set({ notArr: {} }, "[notArr][:+1:]", "x"), Error, "Target must be an array");
+  assertThrows(() => JsonUtils.set({ arr: [] }, "[arr][:unknown:]", "x"), Error, "Invalid array task");
 });

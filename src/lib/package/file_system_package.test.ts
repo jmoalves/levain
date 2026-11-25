@@ -1,7 +1,9 @@
-import { assertEquals } from "@std/assert";
+import { assert, assertEquals, assertThrows } from "@std/assert";
 import * as path from "@std/path";
 import { ensureDirSync } from "@std/fs";
+import { stub } from "@std/testing/mock";
 
+import { FileUtils } from "../fs/file_utils.ts";
 import FileSystemPackage from "./file_system_package.ts";
 import TestHelper from "../test/test_helper.ts";
 
@@ -93,4 +95,20 @@ Deno.test("FileSystemPackage.updateAvailable should lazily compare identical, co
   const pkgDisappearing = new FileSystemPackage(config, "demo", path.join(config.configPaths.levainHome, "demo"), srcFile, yamlV1);
   Deno.removeSync(regFile);
   assertEquals(pkgDisappearing.updateAvailable, true);
+
+  // Timestamps and non-NotFound read errors in updateAvailable
+  Deno.writeTextFileSync(srcFile, yamlV1);
+  Deno.writeTextFileSync(regFile, yamlV1);
+  const pkgTs = new FileSystemPackage(config, "demo", path.join(config.configPaths.levainHome, "demo"), srcFile, yamlV1);
+  assert(pkgTs.getRecipeTimestamp() instanceof Date);
+  assert(pkgTs.getInstalledTimestamp() instanceof Date);
+
+  const permStub = stub(FileUtils, "readTextFileSync", () => {
+    throw new Deno.errors.PermissionDenied("denied");
+  });
+  try {
+    assertThrows(() => pkgTs.updateAvailable, Deno.errors.PermissionDenied);
+  } finally {
+    permStub.restore();
+  }
 });

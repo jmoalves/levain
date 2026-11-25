@@ -8,6 +8,7 @@ import { MockPackage } from "./package/mock_package.ts";
 
 import HomePaths from "./paths/home_paths.ts";
 import StringUtils from "./utils/string_utils.ts";
+import UserInfoUtil from "./user_info/userinfo_util.ts";
 
 //
 // replaceVars
@@ -277,3 +278,49 @@ async function verifyVarValueMatches(varName: string, expectedPattern: RegExp, c
   const varValue = await VarResolver.getVarValue(varName, undefined, config);
   assertMatch(varValue ?? "undefined", expectedPattern);
 }
+
+Deno.test("VarResolver.getVarValue prompts missing levain.* user attributes, resolves homeDir/env/default, and rejects unknown levain.*", async () => {
+  const config = TestHelper.getConfig();
+  config.setVar("levain.var.default.myFallback", "default-val");
+
+  const loginStub = stub(UserInfoUtil.prototype, "askLogin", (cfg: Config) => {
+    cfg.login = "prompted-login";
+    return Promise.resolve("prompted-login");
+  });
+  const pwStub = stub(UserInfoUtil.prototype, "askPassword", (cfg: Config) => {
+    cfg.password = "prompted-pw";
+    return Promise.resolve("prompted-pw");
+  });
+  const emailStub = stub(UserInfoUtil.prototype, "askEmail", (cfg: Config) => {
+    cfg.email = "prompted@example.org";
+    return Promise.resolve("prompted@example.org");
+  });
+  const nameStub = stub(UserInfoUtil.prototype, "askFullName", (cfg: Config) => {
+    cfg.fullname = "Prompted User";
+    return Promise.resolve("Prompted User");
+  });
+  const origEnvGet = Deno.env.get.bind(Deno.env);
+  const envStub = stub(Deno.env, "get", (key: string) => (key === "MY_ENV_VAR" ? "from-env" : origEnvGet(key)));
+
+  try {
+    assertEquals(await VarResolver.getVarValue("levain.login", undefined, config), "prompted-login");
+    assertEquals(await VarResolver.getVarValue("levain.password", undefined, config), "prompted-pw");
+    assertEquals(await VarResolver.getVarValue("levain.email", undefined, config), "prompted@example.org");
+    assertEquals(await VarResolver.getVarValue("levain.fullname", undefined, config), "Prompted User");
+    assertEquals(await VarResolver.getVarValue("levain.homeDir", undefined, config), config.configPaths.levainHome);
+    assertEquals(await VarResolver.getVarValue("MY_ENV_VAR", undefined, config), "from-env");
+    assertEquals(await VarResolver.getVarValue("myFallback", undefined, config), "default-val");
+
+    await assertRejects(
+      () => VarResolver.getVarValue("levain.doesNotExist", undefined, config),
+      Error,
+      "Levain attribute levain.doesNotExist is undefined",
+    );
+  } finally {
+    envStub.restore();
+    nameStub.restore();
+    emailStub.restore();
+    pwStub.restore();
+    loginStub.restore();
+  }
+});

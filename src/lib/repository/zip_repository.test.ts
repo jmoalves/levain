@@ -1,4 +1,4 @@
-import { assertEquals, assertRejects } from "@std/assert";
+import { assertEquals, assertRejects, assertThrows } from "@std/assert";
 import { stub } from "@std/testing/mock";
 import * as path from "@std/path";
 
@@ -108,3 +108,15 @@ async function getInitedRepo(rootDir: string = "./testdata/zip_repository/zipRep
 function getRepo(rootDir: string = rootUri) {
   return new ZipRepository(TestHelper.getConfig(), rootDir);
 }
+
+Deno.test("ZipRepository throws before init and supports resolvePackage and reload after init", async () => {
+  const repo = getRepo();
+  assertThrows(() => repo.listPackages(), Error, "ZipRepo not loaded");
+  assertThrows(() => repo.resolvePackage("reciepe-in-a-zip"), Error, "ZipRepo not loaded");
+
+  await repo.init();
+  assertEquals(repo.resolvePackage("reciepe-in-a-zip")?.name, "reciepe-in-a-zip");
+  assertEquals(repo.resolvePackage("non-existent"), undefined);
+  await repo.reload();
+  assertEquals(repo.resolvePackage("reciepe-in-a-zip")?.name, "reciepe-in-a-zip");
+});

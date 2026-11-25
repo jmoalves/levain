@@ -1,6 +1,8 @@
 import RepositoryFactory from "./repository_factory.ts";
 import TestHelper from "../test/test_helper.ts";
-import { assert, assertNotEquals, assertNotStrictEquals, assertRejects } from "@std/assert";
+import OsUtils from "../os/os_utils.ts";
+import { assert, assertEquals, assertNotEquals, assertNotStrictEquals, assertRejects } from "@std/assert";
+import { stub } from "@std/testing/mock";
 
 Deno.test("RepositoryFactory.getOrCreate should return same repository for the same uri", async () => {
   const config = TestHelper.getConfig();
@@ -51,4 +53,27 @@ Deno.test("RepositoryFactory.getOrCreate should deduplicate concurrent in-flight
   assert(repoA === repoB);
 
   await assertRejects(() => RepositoryFactory.getOrCreate(config, ""), Error, "RepoFactory with no repoURI");
+});
+
+Deno.test("RepositoryFactory normalizes git/Windows paths and creates GitRepository and ZipRepository", async () => {
+  const gitUrl = "https://example.org/org/repo.git";
+  assertEquals(RepositoryFactory.normalize(gitUrl), gitUrl);
+
+  const isWinStub = stub(OsUtils, "isWindows", () => true);
+  try {
+    assertEquals(RepositoryFactory.normalize("  C:\\MyRepo  "), "c:\\myrepo");
+    assertEquals(RepositoryFactory.normalize(gitUrl), gitUrl);
+  } finally {
+    isWinStub.restore();
+  }
+
+  const config = TestHelper.getConfig();
+  const zipRepo = await RepositoryFactory.getOrCreate(config, "./testdata/zip_repository/zipRepo.zip");
+  assertEquals(zipRepo.name, "ZipRepo");
+
+  const localGitRepo = await TestHelper.createLocalGitRepo({
+    "recipes/sample.levain.yaml": "version: 1.0.0\n",
+  });
+  const gitRepo = await RepositoryFactory.getOrCreate(config, localGitRepo);
+  assertEquals(gitRepo.name, "GitRepo");
 });

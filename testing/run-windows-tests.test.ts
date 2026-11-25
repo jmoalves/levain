@@ -1,13 +1,18 @@
-import { assertEquals, assertStringIncludes, assertThrows } from "@std/assert";
+import { assert, assertEquals, assertRejects, assertStringIncludes, assertThrows } from "@std/assert";
 import * as path from "@std/path";
+import { stub } from "@std/testing/mock";
 import {
   buildRemoteCleanupCommand,
   buildRemoteCmdScript,
   buildScpArgs,
   buildSshArgs,
   CONTRACT_DOCS,
+  createDefaultDeps,
+  defaultCreateWorkspaceArchive,
+  defaultRunCommand,
   filterArchivePaths,
   formatSkipMessage,
+  main,
   parseArgs,
   quoteCmdArg,
   resolveWindowsSshContract,
@@ -323,4 +328,156 @@ Deno.test("run-windows-tests - runWindowsTests orchestration", async (t) => {
       ["test", "--allow-all", "--parallel", "--filter", "Registry"],
     ]);
   });
+
+  await t.step("propagates scp/ssh/local failures and honors --keep-remote", async () => {
+    const env: Record<string, string> = {
+      [SSH_CONFIG_ENV]: "/cfg/win_ssh",
+      [SSH_HOST_ENV]: "win-box",
+    };
+    const makeRemoteDeps = (failAtCall: number) => {
+      let call = 0;
+      const captured = createCapturedLogger();
+      const cmds: string[] = [];
+      const deps: RunnerDeps = {
+        getEnv: (k) => env[k],
+        fileExists: (p) => p === "/cfg/win_ssh",
+        os: "linux",
+        runCommand: (cmd) => {
+          call++;
+          cmds.push(cmd);
+          return Promise.resolve({ code: call === failAtCall ? 2 : 0, stdout: "", stderr: "" });
+        },
+        createWorkspaceArchive: () => Promise.resolve(),
+        makeTempDir: () => "/tmp/run-dir",
+        writeTextFile: () => {},
+        removePath: () => {},
+        generateRunId: () => "id1",
+        logger: captured.logger,
+      };
+      return { deps, cmds, captured };
+    };
+
+    // Pass extra arg without '--'
+    assertEquals(parseArgs(["--filter", "Foo"]).denoTestArgs, ["--filter", "Foo"]);
+
+    // 1st scp fails
+    assertEquals((await runWindowsTests(parseArgs([]), makeRemoteDeps(1).deps)).status, "failed");
+    // 2nd scp fails
+    assertEquals((await runWindowsTests(parseArgs([]), makeRemoteDeps(2).deps)).status, "failed");
+    // ssh execution fails
+    assertEquals((await runWindowsTests(parseArgs([]), makeRemoteDeps(3).deps)).status, "failed");
+    // --keep-remote skips cleanup ssh call (only 3 calls instead of 4)
+    const kept = makeRemoteDeps(99);
+    const keepRes = await runWindowsTests(parseArgs(["--keep-remote"]), kept.deps);
+    assertEquals(keepRes, { status: "passed", exitCode: 0 });
+    assertEquals(kept.cmds.length, 3);
+    assertStringIncludes(kept.captured.logs.join("\n"), "Keeping remote working directory");
+
+    // Local failures at check, lint, and test
+    for (const failStep of [1, 2, 3]) {
+      let n = 0;
+      const localDeps: RunnerDeps = {
+        getEnv: () => undefined,
+        fileExists: () => false,
+        os: "windows",
+        runCommand: () => Promise.resolve({ code: ++n === failStep ? 1 : 0, stdout: "", stderr: "" }),
+        createWorkspaceArchive: () => Promise.resolve(),
+        makeTempDir: () => "/tmp/x",
+        writeTextFile: () => {},
+        removePath: () => {},
+        generateRunId: () => "id",
+        logger: createCapturedLogger().logger,
+      };
+      assertEquals((await runWindowsTests(parseArgs(["--local"]), localDeps)).status, "failed");
+    }
+  });
+});
+
+Deno.test("run-windows-tests - defaultRunCommand, defaultCreateWorkspaceArchive, createDefaultDeps, and main", async () => {
+  const encoder = new TextEncoder();
+  const OrigCommand = Deno.Command;
+  const logStub = stub(console, "log", () => {});
+  try {
+    // defaultRunCommand piped & inherit
+    (Deno as { Command: unknown }).Command = class FakeCommand {
+      output() {
+        return Promise.resolve({ code: 0, stdout: encoder.encode("out"), stderr: encoder.encode("err") });
+      }
+    };
+    assertEquals(await defaultRunCommand("echo", ["hi"], false), { code: 0, stdout: "out", stderr: "err" });
+    assertEquals(await defaultRunCommand("echo", ["hi"], true), { code: 0, stdout: "", stderr: "" });
+
+    // defaultCreateWorkspaceArchive success
+    const deps = createDefaultDeps();
+    const tmpDir = deps.makeTempDir();
+    const archivePath = path.join(tmpDir, "ws.tar.gz");
+    deps.writeTextFile(path.join(tmpDir, "probe.txt"), "ok");
+    assert(deps.fileExists(path.join(tmpDir, "probe.txt")));
+    assertEquals(deps.generateRunId().length, 14);
+    assertEquals(typeof deps.getEnv("PATH"), "string");
+
+    let cmdIdx = 0;
+    (Deno as { Command: unknown }).Command = class FakeCommand {
+      output() {
+        cmdIdx++;
+        if (cmdIdx === 1) {
+          return Promise.resolve({ code: 0, stdout: encoder.encode("levain.ts\0"), stderr: new Uint8Array() });
+        }
+        return Promise.resolve({ code: 0, stdout: new Uint8Array(), stderr: new Uint8Array() });
+      }
+    };
+    await defaultCreateWorkspaceArchive(archivePath);
+
+    // defaultCreateWorkspaceArchive error cases: git fails, empty files, tar fails
+    (Deno as { Command: unknown }).Command = class FakeCommand {
+      output() {
+        return Promise.resolve({ code: 1, stdout: new Uint8Array(), stderr: encoder.encode("git err") });
+      }
+    };
+    await assertRejects(() => defaultCreateWorkspaceArchive(archivePath), Error, "git ls-files");
+
+    (Deno as { Command: unknown }).Command = class FakeCommand {
+      output() {
+        return Promise.resolve({ code: 0, stdout: encoder.encode(""), stderr: new Uint8Array() });
+      }
+    };
+    await assertRejects(() => defaultCreateWorkspaceArchive(archivePath), Error, "No workspace files");
+
+    cmdIdx = 0;
+    (Deno as { Command: unknown }).Command = class FakeCommand {
+      output() {
+        cmdIdx++;
+        if (cmdIdx === 1) {
+          return Promise.resolve({ code: 0, stdout: encoder.encode("levain.ts\0"), stderr: new Uint8Array() });
+        }
+        return Promise.resolve({ code: 1, stdout: new Uint8Array(), stderr: encoder.encode("tar err") });
+      }
+    };
+    await assertRejects(() => defaultCreateWorkspaceArchive(archivePath), Error, "via tar");
+
+    deps.removePath(tmpDir);
+    // removePath ignores missing paths
+    deps.removePath(path.join(tmpDir, "already-gone"));
+
+    // main() with unset SSH env skips cleanly with exit 0
+    const argsProp = Object.getOwnPropertyDescriptor(Deno, "args");
+    const envStub = stub(Deno.env, "get", () => undefined);
+    const exitCodes: number[] = [];
+    const exitStub = stub(Deno, "exit", (code?: number): never => {
+      exitCodes.push(code ?? 0);
+      return undefined as never;
+    });
+    try {
+      Object.defineProperty(Deno, "args", { value: [], configurable: true });
+      await main();
+      assertEquals(exitCodes, [0]);
+    } finally {
+      exitStub.restore();
+      envStub.restore();
+      if (argsProp) Object.defineProperty(Deno, "args", argsProp);
+    }
+  } finally {
+    (Deno as { Command: unknown }).Command = OrigCommand;
+    logStub.restore();
+  }
 });
