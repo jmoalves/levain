@@ -127,3 +127,14 @@ Deno.test("RepositoryManager.reload should await repo.reload on all managed repo
 
   assert(repositoryManager.repository.resolvePackage("added-later"));
 });
+
+Deno.test("RepositoryManager.init with installedOnly skips regular repositories", async () => {
+  const config = TestHelper.getConfig();
+  const repositoryManager = new RepositoryManager(config);
+  const extraRepoDir = TestHelper.getTestDataPath("repository_manager/extraRepo");
+
+  await repositoryManager.init({ extraRepos: [extraRepoDir], installedOnly: true });
+
+  assertEquals(repositoryManager.repository.listPackages(), []);
+  assertEquals(repositoryManager.repositoryInstalled.initialized(), true);
+});

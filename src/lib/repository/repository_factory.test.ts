@@ -1,6 +1,6 @@
 import RepositoryFactory from "./repository_factory.ts";
 import TestHelper from "../test/test_helper.ts";
-import { assert, assertNotEquals, assertNotStrictEquals } from "@std/assert";
+import { assert, assertNotEquals, assertNotStrictEquals, assertRejects } from "@std/assert";
 
 Deno.test("RepositoryFactory.getOrCreate should return same repository for the same uri", async () => {
   const config = TestHelper.getConfig();
@@ -49,4 +49,6 @@ Deno.test("RepositoryFactory.getOrCreate should deduplicate concurrent in-flight
   ]);
 
   assert(repoA === repoB);
+
+  await assertRejects(() => RepositoryFactory.getOrCreate(config, ""), Error, "RepoFactory with no repoURI");
 });

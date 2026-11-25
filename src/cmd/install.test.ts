@@ -401,3 +401,43 @@ Deno.test("Install should throw when savePreviousInstall fails", async () => {
     t("cmd.install.errorSaving", { pkg: "fail-bkp" }),
   );
 });
+
+Deno.test("Install.savePreviousInstall falls back to copy+remove on EXDEV cross-device rename", async () => {
+  const { config, repoDir, levainHome } = await setupConfigWithRecipes({
+    "exdev-pkg.levain.yaml": [
+      "version: 1.0.0",
+      "cmd.install:",
+      "  - mkdir ${baseDir}/v1",
+    ].join("\n"),
+  });
+
+  await new Install(config).execute(["exdev-pkg"]);
+  assert(existsSync(path.join(levainHome, "exdev-pkg", "v1")));
+
+  await Deno.writeTextFile(
+    path.join(repoDir, "exdev-pkg.levain.yaml"),
+    [
+      "version: 2.0.0",
+      "cmd.install:",
+      "  - mkdir ${baseDir}/v2",
+    ].join("\n"),
+  );
+
+  const config2 = await createConfigForHome(levainHome, repoDir);
+  const renameStub = stub(Deno, "renameSync", () => {
+    throw new Error("EXDEV: cross-device link not permitted (os error 18)");
+  });
+
+  try {
+    await new Install(config2).execute(["--force", "exdev-pkg"]);
+  } finally {
+    renameStub.restore();
+  }
+
+  assert(existsSync(path.join(levainHome, "exdev-pkg", "v2")));
+  assertEquals(existsSync(path.join(levainHome, "exdev-pkg", "v1")), false);
+  // Backup directory must contain the previous v1 install
+  const backups = [...Deno.readDirSync(config2.configPaths.levainBackupDir)].map((e) => e.name);
+  assert(backups.length >= 1);
+  assert(existsSync(path.join(config2.configPaths.levainBackupDir, backups[0], "exdev-pkg", "v1")));
+});

@@ -5,6 +5,7 @@ import Config from "../config.ts";
 import ConsoleFeedback from "../utils/console_feedback.ts";
 import TestHelper from "../test/test_helper.ts";
 import ConsoleAndFileLogger from "./console_and_file_logger.ts";
+import LogUtils from "./log_utils.ts";
 
 Deno.test("should setup logger with logFiles and console", async () => {
   let logger;
@@ -68,7 +69,8 @@ Deno.test("should mask passwords in file logs and ConsoleFeedback even when conf
     ConsoleAndFileLogger.config = cfg;
 
     log.info(`Connecting with TopSecret#42 and TopSecret#42`);
-    logger.flush();
+    log.warn(`Warn with TopSecret#42`);
+    LogUtils.flushLogFiles();
 
     // Exercise console handler formatter directly for both omitLog=true and omitLog=false
     const omittedConsoleLine = logger.handlers["console"].format(TestHelper.logRecord("console TopSecret#42"));

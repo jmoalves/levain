@@ -325,6 +325,7 @@ export default class Config {
       this.setLevainHome(cfg.levainHome);
     }
 
+    this.lastCfg = this.buildCfg();
     return true;
   }
 

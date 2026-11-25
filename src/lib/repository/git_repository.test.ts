@@ -88,6 +88,12 @@ Deno.test("GitRepository should skip git update within TTL and update when TTL i
     const repo3 = new GitRepository(config, localGitRepo);
     await repo3.init();
     assertEquals(updateStub.calls.length, 2);
+
+    // Invalid TTL falls back to default (60s -> skips update)
+    Deno.env.set("LEVAIN_GIT_UPDATE_TTL_SECONDS", "invalid");
+    assertEquals(GitRepository.updateTtlSeconds(), GitRepository.DEFAULT_UPDATE_TTL_SECONDS);
+    Deno.env.set("LEVAIN_GIT_UPDATE_TTL_SECONDS", "-5");
+    assertEquals(GitRepository.updateTtlSeconds(), GitRepository.DEFAULT_UPDATE_TTL_SECONDS);
   } finally {
     updateStub.restore();
     if (prevTtl === undefined) {

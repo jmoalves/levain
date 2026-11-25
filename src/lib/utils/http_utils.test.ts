@@ -23,6 +23,7 @@ Deno.test("HttpUtils.isUrl should accept valid http/https/ftp URLs and reject fi
   assertEquals(HttpUtils.isUrl("https://intranet-host/repo.zip"), true);
   assertEquals(HttpUtils.isUrl(""), false);
   assertEquals(HttpUtils.isUrl("http:example.org"), false);
+  assertEquals(HttpUtils.isUrl("http://[::invalid"), false);
   assertEquals(HttpUtils.isUrl("https://example.org/with space"), false);
   assertEquals(HttpUtils.isUrl("file:///tmp/test.zip"), false);
   assertEquals(HttpUtils.isUrl("./local/path"), false);
