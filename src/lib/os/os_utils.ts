@@ -12,7 +12,7 @@ export default class OsUtils {
     const userEnvStrings = ["USERID", "USER", "user", "username"];
     const userFromEnv = envChain(...userEnvStrings);
     if (!userFromEnv) {
-      throw `User not found. Looked for env vars ${userEnvStrings.join()}`;
+      throw new Error(`User not found. Looked for env vars ${userEnvStrings.join()}`);
     }
     return userFromEnv;
   }
@@ -189,7 +189,7 @@ export default class OsUtils {
       [exec, ...args] = command;
     } else {
       log.error(command);
-      throw `********** Unknown command type ${typeof command}`;
+      throw new Error(`********** Unknown command type ${typeof command}`);
     }
   
     const dcommand = new Deno.Command(exec, {
@@ -204,7 +204,7 @@ export default class OsUtils {
 
     if (!success) {
       const stderrOutput = OsUtils.decodeOutput(stderr);
-      throw `Error ${code} running "${command}\n${stderrOutput}"`;
+      throw new Error(`Error ${code} running "${command}\n${stderrOutput}"`);
     }
 
     const output = OsUtils.decodeOutput(stdout);

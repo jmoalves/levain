@@ -21,7 +21,7 @@ export default class AddPathAction implements Action {
     });
 
     if (myArgs?._?.length !== 1) {
-      throw "You must inform the path";
+      throw new Error("You must inform the path");
     }
 
     log.debug("AddPathAction args: " + JSON.stringify(myArgs));

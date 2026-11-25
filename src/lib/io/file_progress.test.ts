@@ -37,7 +37,7 @@ Deno.test("FileProgress.copyWithProgress should honor alreadyRewound on first at
     size: bytes.length,
     bytesCompleted: 0,
     progressBar: undefined as ProgressBar | undefined,
-    motificationTime: null,
+    modificationTime: null,
     rewind() {
       rewindCount++;
       offset = 0;
@@ -77,7 +77,7 @@ Deno.test("FileProgress.copyWithProgress should retry after transient error and 
     size: bytes.length,
     bytesCompleted: 0,
     progressBar: undefined,
-    motificationTime: null,
+    modificationTime: null,
     rewind() {
       attempt++;
       offset = 0;
@@ -120,7 +120,7 @@ Deno.test("FileProgress.copyWithProgress should fail after 3 retries on size mis
     size: 999,
     bytesCompleted: 0,
     progressBar: undefined,
-    motificationTime: null,
+    modificationTime: null,
     rewind() {
       rewindCount++;
       offset = 0;

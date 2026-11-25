@@ -1,4 +1,4 @@
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertThrows } from "@std/assert";
 
 import PackageManager from "./package_manager.ts";
 import TestHelper from "../test/test_helper.ts";
@@ -82,6 +82,36 @@ Deno.test("Managers should ignore empty package", () => {
   PackageManager.removeExtension(packageNames);
   // Then
   assertEquals(packageNames, ["package without dependencies", "package with a transitive dependency"]);
+});
+
+Deno.test("PackageManager should return null without false cycle error when two packages share a missing dependency", async () => {
+  const config = TestHelper.getConfig();
+  const repoMock = new MockRepository("mockRepoMissing", [
+    new MockPackage("pkg-a", new VersionNumber("1.0.0"), "mockA", ["missing-shared"]),
+    new MockPackage("pkg-b", new VersionNumber("1.0.0"), "mockB", ["missing-shared"]),
+  ]);
+  await repoMock.init();
+  config.repositoryManager.repository = repoMock;
+
+  const manager = new PackageManager(config);
+  assertEquals(manager.resolvePackages(["pkg-a", "pkg-b"], false, false), null);
+});
+
+Deno.test("PackageManager should throw Error on actual circular dependencies", async () => {
+  const config = TestHelper.getConfig();
+  const repoMock = new MockRepository("mockRepoCycle", [
+    new MockPackage("cycle-a", new VersionNumber("1.0.0"), "mockA", ["cycle-b"]),
+    new MockPackage("cycle-b", new VersionNumber("1.0.0"), "mockB", ["cycle-a"]),
+  ]);
+  await repoMock.init();
+  config.repositoryManager.repository = repoMock;
+
+  const manager = new PackageManager(config);
+  assertThrows(
+    () => manager.resolvePackages(["cycle-a"], false, false),
+    Error,
+    "Circular dependencies found at cycle-a",
+  );
 });
 
 async function getConfigWithMockRepo(): Promise<Config> {

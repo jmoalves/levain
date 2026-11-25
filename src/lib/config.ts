@@ -393,7 +393,7 @@ export default class Config {
       });
 
       if (!homeDir) {
-        throw `${t("lib.config.noHomeValid")}\n-> ${args["levainHome"]}`;
+        throw new Error(`${t("lib.config.noHomeValid")}\n-> ${args["levainHome"]}`);
       }
 
       this.setLevainHome(path.resolve(Deno.cwd(), homeDir));

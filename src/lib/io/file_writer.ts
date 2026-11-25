@@ -131,7 +131,7 @@ export default class FileWriter implements Writer, Progress, Timestamps, Closer 
   }
 
   // Timestamps
-  get motificationTime(): Date | null {
+  get modificationTime(): Date | null {
     if (this.fileInfo) {
       return this.fileInfo.mtime;
     }

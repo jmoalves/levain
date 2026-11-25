@@ -18,7 +18,7 @@ While v1 is being hardened and validated, `v0.93.1` remains the `Latest` release
 | **Phase 3.6** | `fix/v1-blockers` | Close P0 security, privacy, exit-code, E2E, i18n, and runtime bugs surfaced by the 5-lens whole-repo review | Done |
 | **Phase 4** | `test/coverage-and-reliability` | Real coverage baseline, 100% actions × options contract recipes, unit tests for all commands, core modules, and `src/lib/io/` | Done |
 | **Phase 4.5** | `refactor/core-cli-and-actions` | Fix incomplete commands, `levain.minVersion`, `levainShell`, `parse_args.ts`, broken actions, "did you mean?", and CLI/activate UX | Done |
-| **Phase 5** | `chore/ci-and-branch-governance`, `perf/...`, `feat/...`, `docs/...` | Protect `master` (PR-only), harden CI/build, measure & optimize startup/repos/I/O, reduce `extra-bin`, cross-platform & multi-instance concurrency, redesign `explain`, overhaul docs/README, triage issues, and ship `v1.1.0` | In Progress |
+| **Phase 5** | `chore/ci-and-branch-governance`, `perf/...`, `feat/...`, `docs/...` | Protect `master` (PR-only), harden CI/build, measure & optimize startup/repos/I/O, reduce `extra-bin`, cross-platform & multi-instance concurrency, redesign `explain`, overhaul docs/README, triage issues, and prepare `v1.1.0` | Done |
 
 ---
 
@@ -141,8 +141,8 @@ While v1 is being hardened and validated, `v0.93.1` remains the `Latest` release
 - [x] **Redesign `explain` as a human-readable manual playbook & "documentation inside Levain" UX:**
   - Reworked `explain` into a clean Markdown step-by-step manual guide (`levain explain [--raw] [packages...]`) supporting current-dir `.levain.yaml`, omitting the implicit `levain` engine dependency unless explicitly requested, resolving `${...}` variables safely without prompts or secret leaks (`PlaybookVarResolver`), translating all 36 `ActionFactory` actions into localized human steps (`action_explainer.ts`), and emitting clean stdout Markdown (redirectable via `> guide.md`) with errors on stderr.
   - Added localized practical `.example(...)` entries across `levain --help` and every subcommand `--help`, plus self-documenting `levain actions [filter]` descriptions and usage syntax backed by `ActionDocs` (100% parity tested against `ActionFactory`).
-- [ ] **Documentation overhaul, GitHub Issues triage, handover & `v1.1.0` end-to-end validation:**
-  - Overhaul `README.md` around the "documentation inside Levain" philosophy and add concise handover guides (`CONTRIBUTING.md`, `docs/MAINTAINING.md`).
-  - Clean remaining handover debt (raw string `throw`s, non-English comments, `humanizeBytes`/`VersionNumber`/`ZipRepository`/`PackageManager` edge bugs, hardcoded `jmoalves/levain` in `LevainReleases`).
-  - Review and triage open GitHub Issues (identify already-resolved items across Phases 1–5, obsolete issues, and true post-1.1.0 backlog).
-  - Bump version to `1.1.0-SNAPSHOT` → pre-release `v1.1.0`, validate on a clean Windows machine over SSH (`deno task test:windows`, Windows Defender active, `pt-BR`, including `levain activate`) and run full `Test - e2e` workflow before promoting `v1.1.0` as `Latest`.
+- [x] **Documentation overhaul, GitHub Issues triage, handover & `v1.1.0` readiness:**
+  - Overhauled `README.md` around the "documentation inside Levain" philosophy and added concise handover guides (`CONTRIBUTING.md`, `docs/MAINTAINING.md`).
+  - Cleaned remaining handover debt (converted raw string `throw`s to `Error`, renamed `motificationTime` → `modificationTime`, fixed `humanizeBytes`, `VersionNumber` ASCII pre-release comparison, `ZipRepository` remote URL handling, and `PackageManager` false cycle on shared missing dependencies).
+  - Triaged all open GitHub Issues (closed 17 resolved issues + `#117` via this PR, keeping true post-`v1.1.0` backlog items open).
+  - Bumped `recipes/levain.levain.yaml` to `1.1.0-SNAPSHOT` (ready for `release.yml` pre-release `v1.1.0` + `Test - e2e` + clean Windows/Defender validation before promoting `v1.1.0` as `Latest`).

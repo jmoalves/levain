@@ -67,7 +67,7 @@ export default class StringUtils {
     }
 
     size = Math.round(size * 1000);
-    const intPart = Math.round(size / 1000);
+    const intPart = Math.floor(size / 1000);
     const decPart = size % 1000;
 
     return `${StringUtils.padNum(intPart, 4)}.${(decPart + "").padStart(3, "0")} ${units[idx].padStart(2)}`;

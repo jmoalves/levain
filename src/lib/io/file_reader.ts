@@ -104,7 +104,7 @@ export default class FileReader implements ProgressReader {
   }
 
   // Timestamps
-  get motificationTime(): Date | null {
+  get modificationTime(): Date | null {
     if (this.fileInfo) {
       return this.fileInfo.mtime;
     }

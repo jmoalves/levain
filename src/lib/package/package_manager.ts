@@ -163,27 +163,31 @@ export default class PackageManager {
       });
       log.debug("");
 
-      throw msg;
+      throw new Error(msg);
     }
 
     names.add(pkgName);
-    log.debug(`## resolving package ${pkgName} in ${repo.describe()}`);
-    const pkgDef = repo.resolvePackage(pkgName);
-    if (!pkgDef) {
-      log.debug("PACKAGE NOT FOUND: " + pkgName);
-      return true;
-    }
-
-    // Deep first navigation - topological order of dependencies
-    let error: boolean = false;
-    if (pkgDef.dependencies) {
-      for (const dep of pkgDef.dependencies) {
-        const myError: boolean = this.resolveInRepo(repo, pkgs, names, dep, showLog);
-        error = error || myError;
+    try {
+      log.debug(`## resolving package ${pkgName} in ${repo.describe()}`);
+      const pkgDef = repo.resolvePackage(pkgName);
+      if (!pkgDef) {
+        log.debug("PACKAGE NOT FOUND: " + pkgName);
+        return true;
       }
-    }
 
-    pkgs.set(pkgName, pkgDef);
-    return error;
+      // Deep first navigation - topological order of dependencies
+      let error: boolean = false;
+      if (pkgDef.dependencies) {
+        for (const dep of pkgDef.dependencies) {
+          const myError: boolean = this.resolveInRepo(repo, pkgs, names, dep, showLog);
+          error = error || myError;
+        }
+      }
+
+      pkgs.set(pkgName, pkgDef);
+      return error;
+    } finally {
+      names.delete(pkgName);
+    }
   }
 }

@@ -13,7 +13,7 @@ export default class BackupFile implements Action {
   // deno-lint-ignore require-await
   async execute(_pkg: Package | undefined, parameters: string[]): Promise<void> {
     if (parameters.length != 1) {
-      throw `You must inform the file to backup - ${parameters}`;
+      throw new Error(`You must inform the file to backup - ${parameters}`);
     }
 
     const filename = parameters[0];

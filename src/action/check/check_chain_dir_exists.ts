@@ -53,7 +53,7 @@ export default class CheckChainDirExists implements Action {
 
   verifyArgs(args: any) {
     if (!args._ || args._.length === 0) {
-      throw "Inform the dirs that at least one should exist";
+      throw new Error("Inform the dirs that at least one should exist");
     }
   }
 }

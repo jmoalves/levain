@@ -41,7 +41,7 @@ class SpyProgressReader implements ProgressReader {
   get bytesCompleted() {
     return this.offset;
   }
-  get motificationTime() {
+  get modificationTime() {
     return this.mtime;
   }
 

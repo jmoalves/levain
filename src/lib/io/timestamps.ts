@@ -1,3 +1,3 @@
 export default interface Timestamps {
-  motificationTime: Date | null;
+  modificationTime: Date | null;
 }

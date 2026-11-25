@@ -73,7 +73,10 @@ Deno.test("ZipRepository should list packages from a zip url", async () => {
   );
 
   try {
-    const repo = await getInitedRepo("https://example.org/repos/zipRepo.zip");
+    const url = "https://example.org/repos/zipRepo.zip";
+    const repo = await getInitedRepo(url);
+    assertEquals(repo.absoluteURI, url);
+    assertEquals(repo.describe(), `ZipRepo (${url})`);
     const packages = repo.listPackages();
 
     LevainAsserts.assertPackageNames(packages, [
@@ -83,6 +86,17 @@ Deno.test("ZipRepository should list packages from a zip url", async () => {
   } finally {
     getStub.restore();
   }
+});
+
+Deno.test("ZipRepository should preserve remote URL without path.resolve when rejecting non-zip URL", async () => {
+  await assertRejects(
+    async () => {
+      const repo = getRepo("https://example.org/repos/not-a-zip");
+      await repo.init();
+    },
+    Error,
+    "Zip not found: https://example.org/repos/not-a-zip",
+  );
 });
 
 async function getInitedRepo(rootDir: string = "./testdata/zip_repository/zipRepo.zip"): Promise<Repository> {

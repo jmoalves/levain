@@ -21,8 +21,7 @@ export default class HomePaths {
       return path.resolve(homedrive, homepath);
     }
   
-    // What else?
-    throw "No home for levain. Do you have a refrigerator?";
+    throw new Error("Home directory not found (checked HOME, USERPROFILE, and HOMEDRIVE/HOMEPATH)");
   }
 
   static get levainConfigFile(): string {

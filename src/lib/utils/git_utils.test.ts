@@ -506,7 +506,7 @@ Deno.test({
     );
 
     const lastMessage = testLogger.messages[testLogger.messages.length - 1];
-    assertMatch(lastMessage, /^ERROR git error - try 3 - Error 128/m);
+    assertMatch(lastMessage, /^ERROR git error - try 3 - Error: Error 128/m);
     // assertMatch(lastMessage, /fatal: not in a git directory/)
   },
 });

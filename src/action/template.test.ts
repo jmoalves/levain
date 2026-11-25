@@ -1,4 +1,4 @@
-import { assert, assertFalse, assertStringIncludes } from "@std/assert";
+import { assert, assertFalse, assertRejects, assertStringIncludes } from "@std/assert";
 import * as path from "@std/path";
 
 import TestHelper from "../lib/test/test_helper.ts";
@@ -64,5 +64,30 @@ Deno.test("Template should preserve $$, $&, $1 literally in replacements and sup
   assert(
     rendered === `pw=${specialPw} ${specialPw}=${specialPw} raw=${specialPw}`,
     `unexpected rendered output: ${rendered}`,
+  );
+});
+
+Deno.test("Template should throw Error on missing or mismatched arguments", async () => {
+  const action = new Template(TestHelper.getConfig());
+
+  await assertRejects(
+    async () => await action.execute(undefined, ["src.txt", "dst.txt"]),
+    Error,
+    "What do you need to replace?",
+  );
+  await assertRejects(
+    async () => await action.execute(undefined, ["--replace=A", "src.txt", "dst.txt"]),
+    Error,
+    "What do you need to replace with?",
+  );
+  await assertRejects(
+    async () => await action.execute(undefined, ["--replace=A", "--replace=B", "--with=1", "src.txt", "dst.txt"]),
+    Error,
+    "There is a mismatch between --replace and --with",
+  );
+  await assertRejects(
+    async () => await action.execute(undefined, ["--replace=A", "--with=1", "onlySrc.txt"]),
+    Error,
+    "Inform the template file and the destination file.",
   );
 });

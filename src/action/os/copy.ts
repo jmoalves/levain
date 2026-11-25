@@ -32,11 +32,11 @@ export default class CopyAction implements Action {
     const src = args._.map((element: string) => FileUtils.resolve(pkg.pkgDir, element));
 
     if (!dst) {
-      throw "Action - copy - You must inform the destination";
+      throw new Error("Action - copy - You must inform the destination");
     }
 
     if (!src || src?.length < 1) {
-      throw "Action - copy - You must inform the source(s)";
+      throw new Error("Action - copy - You must inform the source(s)");
     }
 
     let copyToDir = false;
@@ -52,7 +52,7 @@ export default class CopyAction implements Action {
 
     const len = src?.length || 0;
     if (len > 1 && !copyToDir) {
-      throw "Action - copy - Unable to copy multiple sources to a single file";
+      throw new Error("Action - copy - Unable to copy multiple sources to a single file");
     }
 
     await this.copy(src, dst, copyToDir, args);

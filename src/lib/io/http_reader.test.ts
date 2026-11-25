@@ -28,7 +28,7 @@ Deno.test("HttpReader.rewind should read body on HTTP 200 and close cleanly", as
   try {
     await reader.rewind();
     assertEquals(reader.size, payload.length);
-    assertEquals(reader.motificationTime?.toUTCString(), "Wed, 21 Oct 2015 07:28:00 GMT");
+    assertEquals(reader.modificationTime?.toUTCString(), "Wed, 21 Oct 2015 07:28:00 GMT");
 
     const buf = new Uint8Array(64);
     const n = await reader.read(buf);
