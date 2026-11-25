@@ -78,6 +78,8 @@ Deno.test("StringUtils - humanizeBytes", () => {
   assertEquals(StringUtils.humanizeBytes(500), " 500.000  B");
   assertEquals(StringUtils.humanizeBytes(1024), "   1.000 KB");
   assertEquals(StringUtils.humanizeBytes(1025), "   1.001 KB");
+  assertEquals(StringUtils.humanizeBytes(1536), "   1.500 KB");
+  assertEquals(StringUtils.humanizeBytes(1638), "   1.600 KB");
   assertEquals(StringUtils.humanizeBytes(2048), "   2.000 KB");
   assertEquals(StringUtils.humanizeBytes(2050), "   2.002 KB");
   assertEquals(StringUtils.humanizeBytes(1024 * 1024), "   1.000 MB");

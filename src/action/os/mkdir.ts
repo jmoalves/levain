@@ -23,7 +23,7 @@ export default class Mkdir implements Action {
     });
 
     if (args._.length != 1) {
-      throw "Action - mkdir - You should inform a single directory";
+      throw new Error("Action - mkdir - You should inform a single directory");
     }
 
     const dirname = pkg ? path.resolve(pkg.baseDir, args._[0]) : path.resolve(args._[0]);
@@ -69,7 +69,7 @@ export default class Mkdir implements Action {
       }
 
       if (fileInfo) {
-        throw `Action - mkdir - ${dirname} already exists and it is not a directory`;
+        throw new Error(`Action - mkdir - ${dirname} already exists and it is not a directory`);
       }
     } catch (err) {
       if (!isNotFoundFileError(err)) {

@@ -80,3 +80,15 @@ Deno.test("should not set undefined var when --saveVar is omitted", async () => 
 
   assertEquals(config.getVar("undefined"), undefined);
 });
+
+Deno.test("should throw Error when no directories are informed", async () => {
+  const action = new CheckChainDirExists(TestHelper.getConfig());
+
+  await assertRejects(
+    async () => {
+      await action.execute(TestHelper.mockPackage(), []);
+    },
+    Error,
+    "Inform the dirs that at least one should exist",
+  );
+});

@@ -5,6 +5,7 @@ import { ensureDirSync, existsSync } from "@std/fs";
 import type Package from "../package/package.ts";
 import type Config from "../config.ts";
 import FileCache from "../fs/file_cache.ts";
+import { FileUtils } from "../fs/file_utils.ts";
 import { type Extractor } from "../extract/extractor.ts";
 
 import type Repository from "./repository.ts";
@@ -15,26 +16,27 @@ import ReaderFactory from "../io/reader_factory.ts";
 import { ExtractorFactory } from "../extract/extractor_factory.ts";
 
 export class ZipRepository extends AbstractRepository {
-
-  private readonly localZip: string;
   private readonly localDir: string;
   private localRepo: Repository | undefined;
 
   constructor(private config: Config, public readonly rootUrl: string, private rootOnly: boolean = false) {
-    super(`ZipRepo`, path.resolve(rootUrl));
+    const isLocal = FileUtils.isFileSystemUrl(rootUrl);
+    super(`ZipRepo`, isLocal ? path.resolve(rootUrl) : rootUrl);
 
     if (!rootUrl.endsWith(".zip")) {
       let message = `Zip not found: ${this.absoluteURI}`;
       if (rootUrl !== this.absoluteURI) {
         message += ` resolved from ${rootUrl}`;
       }
-      throw Error(message);
+      throw new Error(message);
     }
 
     log.debug(`ZipRepo: Root=${this.rootUrl}`);
 
-    this.localZip = path.resolve(this.config.configPaths.levainCacheDir, "zipRepos", "zips", path.basename(this.rootUrl));
-    this.localDir = path.resolve(this.config.configPaths.levainCacheDir, "zipRepos", "dirs", path.basename(this.rootUrl, ".zip"));
+    const zipName = isLocal
+      ? path.basename(this.rootUrl, ".zip")
+      : path.basename(new URL(this.rootUrl).pathname, ".zip");
+    this.localDir = path.resolve(this.config.configPaths.levainCacheDir, "zipRepos", "dirs", zipName);
   }
 
   override describe(): string {

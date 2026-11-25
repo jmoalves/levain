@@ -14,6 +14,27 @@ Deno.test("CopyAction should be obtainable with action factory", () => {
 
   assert(action instanceof CopyAction);
 });
+Deno.test("CopyAction should throw Error on missing destination, missing source, or multiple sources to single file", async () => {
+  const action = getCopyAction();
+  const tempDir = TestHelper.getNewTempDir();
+  const dstFile = path.join(tempDir, "single.txt");
+
+  await assertRejects(
+    async () => await action.execute(TestHelper.mockPackage(), []),
+    Error,
+    "Action - copy - You must inform the destination",
+  );
+  await assertRejects(
+    async () => await action.execute(TestHelper.mockPackage(), [dstFile]),
+    Error,
+    "Action - copy - You must inform the source(s)",
+  );
+  await assertRejects(
+    async () => await action.execute(TestHelper.mockPackage(), [TestHelper.emptyFile, TestHelper.fileWithContent, dstFile]),
+    Error,
+    "Action - copy - Unable to copy multiple sources to a single file",
+  );
+});
 Deno.test("CopyAction should replace file", async () => {
   const tempDir = TestHelper.getNewTempDir();
   const dstFile = path.resolve(tempDir, "newFile.txt");

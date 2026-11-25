@@ -149,10 +149,11 @@ export default class VersionNumber {
           return VersionNumber.NEWER;
         }
 
-        // log.debug(`Element[STR] = mine: ${myComp} - other: ${otherComp}`)
-        const compCompare = myComp.localeCompare(otherComp);
-        if (compCompare != 0) {
-          return compCompare;
+        // 11.4.2. Identifiers with letters or hyphens are compared lexically in ASCII sort order.
+        if (myComp < otherComp) {
+          return VersionNumber.OLDER;
+        } else if (myComp > otherComp) {
+          return VersionNumber.NEWER;
         }
       }
     }

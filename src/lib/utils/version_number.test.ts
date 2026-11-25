@@ -51,6 +51,12 @@ Deno.test("VersionNumber - compare", () => {
   assertEquals(versionNumber("10.0.1").compareTo(versionNumber("10.0.1-beta.2")), VersionNumber.NEWER);
   assertEquals(versionNumber("10.0.1-beta.2").compareTo(versionNumber("10.0.1-beta.1")), VersionNumber.NEWER);
   assertEquals(versionNumber("10.0.1-beta.2").compareTo(versionNumber("10.0.1-alpha.3")), VersionNumber.NEWER);
+  assertEquals(versionNumber("10.0.1-alpha.3").compareTo(versionNumber("10.0.1-beta.2")), VersionNumber.OLDER);
+  assert(versionNumber("10.0.1-alpha.3").isOlderThan(versionNumber("10.0.1-beta.2")));
+  assert(versionNumber("10.0.1-beta.2").isNewerThan(versionNumber("10.0.1-alpha.3")));
+  // SemVer 11.4.2 ASCII lexical sort order ("Z" < "a")
+  assertEquals(versionNumber("1.0.0-Z").compareTo(versionNumber("1.0.0-a")), VersionNumber.OLDER);
+  assertEquals(versionNumber("1.0.0-a").compareTo(versionNumber("1.0.0-Z")), VersionNumber.NEWER);
 
   assert(versionNumber("10.0.1").isSameAs(versionNumber("10.0.1")));
   assert(versionNumber("10.0.1").isNewerThan(versionNumber("9.1.2")));

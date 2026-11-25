@@ -12,7 +12,7 @@ export default class ShellPath implements Action {
   // deno-lint-ignore require-await
   async execute(_pkg: Package | undefined, parameters: string[]): Promise<void> {
     if (parameters.length != 1) {
-      throw `You must inform the shell path ${parameters}`;
+      throw new Error(`You must inform the shell path ${parameters}`);
     }
 
     const shellPath = parameters[0];

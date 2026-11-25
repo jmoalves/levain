@@ -80,21 +80,20 @@ export default class Template implements Action {
   }
 
   private verifyArgs(args: any): void {
-    log.debug;
     if (!args.replace || args.replace.length == 0) {
-      throw "What do you need to replace?";
+      throw new Error("What do you need to replace?");
     }
 
     if (!args.with || args.with.length == 0) {
-      throw "What do you need to replace with?";
+      throw new Error("What do you need to replace with?");
     }
 
     if (args.replace.length != args.with.length) {
-      throw "There is a mismatch between --replace and --with";
+      throw new Error("There is a mismatch between --replace and --with");
     }
 
     if (!args._ || args._.length != 2) {
-      throw `Inform the template file and the destination file. ${args._}`;
+      throw new Error(`Inform the template file and the destination file. ${args._}`);
     }
   }
 }

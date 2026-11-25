@@ -51,24 +51,24 @@ export default class Inspect implements Action {
 
   private verifyArgs(args: any): void {
     if (!args.regExp || args.regExp.length == 0) {
-      throw "What do you need to search?";
+      throw new Error("What do you need to search?");
     }
 
     if (!args.saveVar || args.saveVar.length == 0) {
-      throw "Where should we put the result?";
+      throw new Error("Where should we put the result?");
     }
 
     if (args.regExp.length != args.saveVar.length) {
-      throw "There is a mismatch between --regExp and --saveVar";
+      throw new Error("There is a mismatch between --regExp and --saveVar");
     }
 
     if (!args._ || args._.length != 1) {
-      throw "Inform the source file";
+      throw new Error("Inform the source file");
     }
 
     for (const x in args.regExp) {
       if (args.regExp[x].search(/^\/(.+)\/([a-z]*)$/) == -1) {
-        throw "You must use regExps - " + args.regExp[x];
+        throw new Error("You must use regExps - " + args.regExp[x]);
       }
     }
   }

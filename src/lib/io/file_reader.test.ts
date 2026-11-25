@@ -23,7 +23,7 @@ Deno.test("FileReader should read, track progress, rewind, and close idempotentl
   assertEquals(reader.name, path.resolve(tempFile));
   assertEquals(reader.title, `- FROM ${path.basename(tempFile)}`);
   assertEquals(reader.size, payload.length);
-  assert(reader.motificationTime instanceof Date);
+  assert(reader.modificationTime instanceof Date);
   assertThrows(
     () => {
       reader.size = 10;

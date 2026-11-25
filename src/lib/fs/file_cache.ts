@@ -35,9 +35,9 @@ export default class FileCache {
       log.debug(`filePathInCache ${filePathInCache}`);
       if (this.cacheValid(r, filePathInCache)) {
         log.debug(`fromCache ${filePathInCache}`);
-        if (r.motificationTime) {
+        if (r.modificationTime) {
           try {
-            Deno.utimeSync(filePathInCache, new Date(), r.motificationTime);
+            Deno.utimeSync(filePathInCache, new Date(), r.modificationTime);
           } catch (err) {
             log.debug(`Could not touch cached file ${filePathInCache}: ${err}`);
           }
@@ -91,8 +91,8 @@ export default class FileCache {
       return false;
     }
 
-    if (src.motificationTime?.getTime() != cacheInfo.mtime?.getTime()) {
-      log.debug(`Cache - mtime does not match - ${src.motificationTime?.getTime()} != ${cacheInfo.mtime?.getTime()}`);
+    if (src.modificationTime?.getTime() != cacheInfo.mtime?.getTime()) {
+      log.debug(`Cache - mtime does not match - ${src.modificationTime?.getTime()} != ${cacheInfo.mtime?.getTime()}`);
       return false;
     }
 

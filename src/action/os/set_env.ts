@@ -19,7 +19,7 @@ export default class SetEnv implements Action {
     });
 
     if (myArgs?._?.length !== 2) {
-      throw "You must inform the var and the value";
+      throw new Error("You must inform the var and the value");
     }
 
     if (!this.config.context.action) {

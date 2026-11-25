@@ -1,4 +1,4 @@
-import { assertEquals, assertRejects, fail } from "@std/assert";
+import { assertEquals, assertRejects } from "@std/assert";
 
 import TestHelper from "../../lib/test/test_helper.ts";
 import OsUtils from "../../lib/os/os_utils.ts";
@@ -7,17 +7,17 @@ import Action from "../action.ts";
 import SetEnv from "./set_env.ts";
 
 Deno.test("SetEnv should tell you which params are expected", async () => {
-  try {
-    const config = TestHelper.getConfig();
-    const action: Action = new SetEnv(config);
-    const mockPackage = TestHelper.mockPackage();
+  const config = TestHelper.getConfig();
+  const action: Action = new SetEnv(config);
+  const mockPackage = TestHelper.mockPackage();
 
-    await action.execute(mockPackage, []);
-
-    fail();
-  } catch (err) {
-    assertEquals(err, "You must inform the var and the value");
-  }
+  await assertRejects(
+    async () => {
+      await action.execute(mockPackage, []);
+    },
+    Error,
+    "You must inform the var and the value",
+  );
 });
 Deno.test("SetEnv should setEnv in config", async () => {
   const config = TestHelper.getConfig();

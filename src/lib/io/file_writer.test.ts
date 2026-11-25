@@ -13,7 +13,7 @@ Deno.test("FileWriter should write to temp file, update progress, and atomically
   const writer = new FileWriter(target);
 
   assertEquals(writer.title, "- TO output.txt");
-  assertEquals(writer.motificationTime, null);
+  assertEquals(writer.modificationTime, null);
   writer.size = 11;
   assertEquals(writer.size, 11);
 
@@ -37,7 +37,7 @@ Deno.test("FileWriter should write to temp file, update progress, and atomically
   assert(existsSync(target), "target should exist after close()");
   assertEquals(await Deno.readTextFile(target), "hello world");
   assertEquals(writer.size, 11);
-  assert(writer.motificationTime instanceof Date);
+  assert(writer.modificationTime instanceof Date);
 });
 
 Deno.test("FileWriter.close should overwrite an existing destination file", async () => {

@@ -12,7 +12,7 @@ export default class DefaultPackage implements Action {
   // deno-lint-ignore require-await
   async execute(_pkg: Package | undefined, parameters: string[]): Promise<void> {
     if (parameters.length != 1) {
-      throw `You must inform one package ${parameters}`;
+      throw new Error(`You must inform one package ${parameters}`);
     }
 
     const pkgName = parameters[0];

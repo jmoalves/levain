@@ -22,7 +22,7 @@ export default class ContextMenuAction implements Action {
     log.debug(`CONTEXT-MENU ${parameters}`);
 
     if (!parameters || parameters.length < 1 || parameters[0] != "folders") {
-      throw "contextMenu - You must inform the 'folders' sub action";
+      throw new Error("contextMenu - You must inform the 'folders' sub action");
     }
 
     parameters.shift(); // remove the folders sub action
@@ -39,19 +39,19 @@ export default class ContextMenuAction implements Action {
     log.debug(`- ARGS: ${JSON.stringify(args)}`);
 
     if (!args.id || args.id.length == 0) {
-      throw "contextMenu - You must inform the 'id' option";
+      throw new Error("contextMenu - You must inform the 'id' option");
     }
 
     if (!args.name || args.name.length == 0) {
-      throw "contextMenu - You must inform the 'name' option";
+      throw new Error("contextMenu - You must inform the 'name' option");
     }
 
     if (!args.cmd || args.cmd.length == 0) {
-      throw "contextMenu - You must inform the 'cmd' option";
+      throw new Error("contextMenu - You must inform the 'cmd' option");
     }
 
     if (args.id.includes(" ")) {
-      throw "contextMenu - The 'id' option must NOT contain spaces";
+      throw new Error("contextMenu - The 'id' option must NOT contain spaces");
     }
 
     if (!VALID_ID_REGEX.test(args.id)) {

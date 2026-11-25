@@ -4,7 +4,7 @@ export default class GeneralPaths {
   static mvnCliPath(suffix: string=""): string {
     const m2home = Deno.env.get("M2_HOME");
     if (!m2home) {
-      throw "M2_HOME not found";
+      throw new Error("M2_HOME not found");
     }
     const mavenCli = path.resolve(m2home, "bin", "mvn");
     if (suffix) {

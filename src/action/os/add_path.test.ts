@@ -1,4 +1,4 @@
-import { assert, assertArrayIncludes } from "@std/assert";
+import { assert, assertArrayIncludes, assertRejects } from "@std/assert";
 import OsUtils from "../../lib/os/os_utils.ts";
 
 import TestHelper from "../../lib/test/test_helper.ts";
@@ -8,6 +8,17 @@ Deno.test("AddPathAction should be obtainable with action factory", () => {
   const action = TestHelper.getActionFromFactory("addPath");
 
   assert(action instanceof AddPathAction);
+});
+Deno.test("AddPathAction should throw Error when path argument is missing", async () => {
+  const action = new AddPathAction(TestHelper.getConfig());
+
+  await assertRejects(
+    async () => {
+      await action.execute(TestHelper.mockPackage(), []);
+    },
+    Error,
+    "You must inform the path",
+  );
 });
 Deno.test("AddPathAction should add to path config", async () => {
   const config = TestHelper.getConfig();

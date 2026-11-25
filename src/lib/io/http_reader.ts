@@ -123,7 +123,7 @@ export default class HttpReader implements ProgressReader {
   }
 
   // Timestamps
-  get motificationTime(): Date | null {
+  get modificationTime(): Date | null {
     return this.lastModified;
   }
 }

@@ -294,6 +294,17 @@ Deno.test({
   },
 });
 
+Deno.test("OsUtils.runAndLog should throw Error on invalid command type", async () => {
+  await assertRejects(
+    async () => {
+      // @ts-ignore testing runtime guard for non-string/non-array command
+      await OsUtils.runAndLog(123);
+    },
+    Error,
+    "Unknown command type number",
+  );
+});
+
 Deno.test("OsUtils.sanitizeUserPath should skip setUserPath when PATH has no changes", async () => {
   const isWinStub = stub(OsUtils, "isWindows", () => true);
   const getStub = stub(OsUtils, "getUserPath", () => Promise.resolve(["C:\\Windows", "C:\\Tools"]));

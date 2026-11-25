@@ -59,7 +59,7 @@ export class FileProgress {
         await r.close();
         await dst.close({
           expectedSize: r.size,
-          mtime: r.motificationTime,
+          mtime: r.modificationTime,
         });
 
         log.debug(`Size ok for ${dstFile}`);
