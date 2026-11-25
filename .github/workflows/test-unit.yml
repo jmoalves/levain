@@ -26,7 +26,6 @@ jobs:
 
     env:
       DEFAULT_DENO_VERSION: "2.9.8"
-      DENO_DIR: ${{ runner.temp }}/deno-cache
 
     steps:
       - name: Checkout
@@ -44,11 +43,12 @@ jobs:
             exit 1
           fi
           echo "version=${INPUT_DENO_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "DENO_DIR=${RUNNER_TEMP}/deno-cache" >> "$GITHUB_ENV"
 
       - name: Cache Deno dependencies
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: ${{ env.DENO_DIR }}
+          path: ${{ runner.temp }}/deno-cache
           key: deno-cache-test-unit-${{ runner.os }}-${{ steps.deno_ver.outputs.version }}-${{ hashFiles('deno.lock') }}
 
       - name: Get Deno
@@ -75,7 +75,6 @@ jobs:
 
     env:
       DEFAULT_DENO_VERSION: "2.9.8"
-      DENO_DIR: ${{ runner.temp }}\deno-cache
 
     steps:
       - name: Checkout
@@ -93,11 +92,12 @@ jobs:
             throw "Invalid DENO_VERSION: $env:INPUT_DENO_VERSION"
           }
           Add-Content -Path $env:GITHUB_OUTPUT -Value "version=$env:INPUT_DENO_VERSION"
+          Add-Content -Path $env:GITHUB_ENV -Value "DENO_DIR=$env:RUNNER_TEMP\deno-cache"
 
       - name: Cache Deno dependencies
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: ${{ env.DENO_DIR }}
+          path: ${{ runner.temp }}\deno-cache
           key: deno-cache-test-unit-${{ runner.os }}-${{ steps.deno_ver.outputs.version }}-${{ hashFiles('deno.lock') }}
 
       - name: Get Deno
