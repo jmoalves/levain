@@ -16,6 +16,7 @@ import { assertFind } from "./lib/test/more_asserts.ts";
 import { UserInfo } from "./lib/user_info/user_info.ts";
 import UserInfoUtil from "./lib/user_info/userinfo_util.ts";
 import DateUtils from "./lib/utils/date_utils.ts";
+import { InstanceLock, InstanceLockError } from "./lib/fs/instance_lock.ts";
 
 Deno.test("LevainCli with no command should print CLI help and not save config", async () => {
   const logger = await TestHelper.setupTestLogger();
@@ -418,5 +419,52 @@ Deno.test("LevainCli should skip update checks/regular repos/sanitizeUserPath on
     } else {
       Deno.env.set("LEVAIN_PROFILE", prevProfile);
     }
+  }
+});
+
+Deno.test("LevainCli should acquire InstanceLock for mutating commands and let read-only commands bypass it", async () => {
+  const prevConfig = ConsoleAndFileLogger.config;
+  const tempHome = TestHelper.getNewTempDir();
+  const lockCalls: string[] = [];
+
+  const acquireStub = stub(InstanceLock, "acquire", (lockPath: string, opts) => {
+    lockCalls.push(`${opts.command}@${lockPath}`);
+    if (opts.command === "clean") {
+      return Promise.reject(new InstanceLockError("busy"));
+    }
+    return Promise.resolve({ release: () => {} } as unknown as InstanceLock);
+  });
+  const sanitizeStub = stub(OsUtils, "sanitizeUserPath", () => Promise.resolve());
+  const repoInitStub = stub(RepositoryManager.prototype, "init", () => Promise.resolve([]));
+  const saveStub = stub(Config.prototype, "save", () => {});
+  const loaderCmdStub = stub(Loader.prototype, "command", () => Promise.resolve());
+
+  try {
+    const cli = new LevainCli();
+
+    // Read-only commands must NOT acquire the instance lock
+    await cli.execute({ _: ["actions"], levainHome: [tempHome], "skip-levain-updates": true });
+    await cli.execute({ _: ["list"], levainHome: [tempHome], "skip-levain-updates": true });
+    assertEquals(lockCalls.length, 0);
+
+    // Mutating command must propagate InstanceLockError without saving config
+    await assertRejects(
+      async () => await cli.execute({ _: ["clean"], levainHome: [tempHome], "skip-levain-updates": true }),
+      InstanceLockError,
+      "busy",
+    );
+    assertEquals(lockCalls.length, 1);
+
+    // `_activate-machine pre` also acquires the lock
+    await cli.execute({ _: ["_activate-machine", "pre"], levainHome: [tempHome], "skip-levain-updates": true });
+    assertEquals(lockCalls.length, 2);
+    assert(lockCalls[1].startsWith("activate@"));
+  } finally {
+    loaderCmdStub.restore();
+    saveStub.restore();
+    repoInitStub.restore();
+    sanitizeStub.restore();
+    acquireStub.restore();
+    ConsoleAndFileLogger.config = prevConfig;
   }
 });

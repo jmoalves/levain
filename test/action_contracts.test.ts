@@ -171,6 +171,7 @@ Deno.test("Contract recipe: contract-fs-and-data executes all cross-platform act
   config.setVar("CONTRACT_GIT_REPO", bareGitRepo);
   config.setVar("CONTRACT_SHELL_FILE", fakeShellFile);
 
+  await Deno.mkdir(config.configPaths.levainRegistryDir, { recursive: true });
   const dummyRegFile = path.join(config.configPaths.levainRegistryDir, "contract-dummy-installed.levain.yaml");
   await Deno.writeTextFile(dummyRegFile, "version: 0.0.1\n");
   await config.levainRegistry.init();

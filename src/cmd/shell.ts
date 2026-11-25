@@ -4,10 +4,13 @@ import t from "../lib/i18n.ts";
 
 import type Config from "../lib/config.ts";
 import { OsShell } from "../lib/os/os_shell.ts";
+import OsUtils from "../lib/os/os_utils.ts";
 import Loader from "../lib/loader.ts";
 
 import type Command from "./command.ts";
 import type Package from "../lib/package/package.ts";
+import { resolvePackageActions } from "../lib/package/package_actions.ts";
+import { InstanceLock } from "../lib/fs/instance_lock.ts";
 
 export default class Shell implements Command {
   private loader: Loader;
@@ -33,12 +36,9 @@ export default class Shell implements Command {
       curDirPkg = await this.config.repositoryManager.currentDirPackage();
       if (curDirPkg && curDirPkg.dependencies && curDirPkg.dependencies.length > 0) {
         pkgNames = curDirPkg.dependencies;
-        const shellActions = curDirPkg.yamlItem("cmd.shell");
-        const envActions = curDirPkg.yamlItem("cmd.env");
-        const combined = [
-          ...(Array.isArray(shellActions) ? shellActions : []),
-          ...(Array.isArray(envActions) ? envActions : []),
-        ];
+        const shellActions = resolvePackageActions(curDirPkg, "cmd.shell");
+        const envActions = resolvePackageActions(curDirPkg, "cmd.env");
+        const combined = [...shellActions, ...envActions];
         pkgActions = combined.length > 0 ? combined : undefined;
       } else {
         pkgNames = [this.config.defaultPackage];
@@ -50,12 +50,18 @@ export default class Shell implements Command {
 
   async installPackages(pkgNames: string[]) {
     log.debug(t("cmd.shell.checkUpdates", { shouldCheck: this.config.shellCheckForUpdate }));
-    if (this.config.shellCheckForUpdate) {
-      await this.loader.command("install", pkgNames);
-    } else {
-      await this.loader.command("install", ["--noUpdate"].concat(pkgNames));
+    const lock = await InstanceLock.acquire(this.config.configPaths.levainLockPath, { command: "shell" });
+    try {
+      await OsUtils.sanitizeUserPath();
+      if (this.config.shellCheckForUpdate) {
+        await this.loader.command("install", pkgNames);
+      } else {
+        await this.loader.command("install", ["--noUpdate"].concat(pkgNames));
+      }
+      await this.config.repositoryManager.reload();
+    } finally {
+      lock.release();
     }
-    await this.config.repositoryManager.reload();
   }
 
   async runShell(osShell: OsShell, curDirPkg: Package | undefined, pkgActions: string[] | undefined, openShell: boolean) {

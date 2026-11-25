@@ -432,6 +432,23 @@ Deno.test("OsUtils.findInPath should locate binaries on absolute PATH entries an
   }
 });
 
+if (!OsUtils.isWindows()) {
+  Deno.test("OsUtils.createShortcut on POSIX should create and replace a symlink inside the destination directory", async () => {
+    const dstDir = TestHelper.getNewTempDir();
+    const targetFile = TestHelper.getNewTempFile();
+    const expectedLink = path.join(dstDir, path.basename(targetFile));
+
+    const firstLink = await OsUtils.createShortcut(targetFile, dstDir);
+    assertEquals(firstLink, expectedLink);
+    assertEquals(Deno.lstatSync(expectedLink).isSymlink, true);
+
+    // Calling createShortcut again replaces the existing symlink cleanly without EEXIST
+    const secondLink = await OsUtils.createShortcut(targetFile, dstDir);
+    assertEquals(secondLink, expectedLink);
+    assertEquals(Deno.readLinkSync(expectedLink), targetFile);
+  });
+}
+
 if (OsUtils.isWindows()) {
   Deno.test("OsUtils.setEnvPermanent should persist dash-prefixed values via PowerShell fallback", async () => {
     const varName = `LEVAIN_TEST_PS_ENV_${crypto.randomUUID().replaceAll("-", "").slice(0, 8)}`;

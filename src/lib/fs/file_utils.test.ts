@@ -197,3 +197,24 @@ Deno.test("FileUtils - isFileSystemUrl", () => {
   assert(FileUtils.isFileSystemUrl("src\\lib\\fs\\file_utils.test.ts"));
   assert(FileUtils.isFileSystemUrl("src/lib/fs/file_utils.test.ts"));
 });
+
+Deno.test("FileUtils.writeTextFileAtomicSync should write/replace atomically without leaving temp files behind", () => {
+  const dir = TestHelper.getNewTempDir();
+  const target = path.join(dir, "nested", "config.json");
+
+  FileUtils.writeTextFileAtomicSync(target, '{"v":1}');
+  assertEquals(Deno.readTextFileSync(target), '{"v":1}');
+
+  FileUtils.writeTextFileAtomicSync(target, '{"v":2}');
+  assertEquals(Deno.readTextFileSync(target), '{"v":2}');
+
+  const entries = [...Deno.readDirSync(path.dirname(target))].map((e) => e.name);
+  assertEquals(entries, ["config.json"]);
+
+  // Replacing a directory path fails cleanly and removes its temporary file
+  const dirTarget = path.join(dir, "existing-dir");
+  Deno.mkdirSync(dirTarget);
+  assertThrows(() => FileUtils.writeTextFileAtomicSync(dirTarget, "fail"));
+  const rootEntries = [...Deno.readDirSync(dir)].map((e) => e.name);
+  assert(!rootEntries.some((name) => name.endsWith(".tmp")));
+});

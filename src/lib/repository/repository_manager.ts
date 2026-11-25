@@ -1,4 +1,5 @@
 import * as log from "@std/log";
+import { existsSync } from "@std/fs";
 
 import t from "../i18n.ts";
 
@@ -248,8 +249,13 @@ export default class RepositoryManager {
   }
 
   private addLevainRegistryRepo(repos: string[]) {
-    log.debug(`addRepo DEFAULT ${this.config.configPaths.levainRegistryDir} --> Levain registry dir`);
-    repos.push(this.config.configPaths.levainRegistryDir);
+    const registryDir = this.config.configPaths.levainRegistryDir;
+    if (!existsSync(registryDir)) {
+      log.debug(`Levain registry dir does not exist yet: ${registryDir}`);
+      return;
+    }
+    log.debug(`addRepo DEFAULT ${registryDir} --> Levain registry dir`);
+    repos.push(registryDir);
   }
 
   private addExtraRepos(repos: string[]) {

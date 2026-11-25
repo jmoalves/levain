@@ -20,8 +20,11 @@ async function setupConfigWithRecipes(
   }
   const config = TestHelper.getConfig();
   const registryDir = config.configPaths.levainRegistryDir;
-  for (const [filename, content] of Object.entries(installedRecipes)) {
-    await Deno.writeTextFile(path.join(registryDir, filename), content);
+  if (Object.keys(installedRecipes).length > 0) {
+    await Deno.mkdir(registryDir, { recursive: true });
+    for (const [filename, content] of Object.entries(installedRecipes)) {
+      await Deno.writeTextFile(path.join(registryDir, filename), content);
+    }
   }
   await config.repositoryManager.init({ extraRepos: [], tempRepos: [repoDir] });
   return { config, repoDir };

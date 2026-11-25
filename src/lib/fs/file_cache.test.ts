@@ -1,10 +1,12 @@
 import * as path from "@std/path";
 import { assertEquals } from "@std/assert";
+import { stub } from "@std/testing/mock";
 import type ProgressBar from "@deno-library/progress";
 
 import TestHelper from "../test/test_helper.ts";
 import { assertFolderIncludes, assertStringEndsWith } from "../test/more_asserts.ts";
 import type ProgressReader from "../io/progress_reader.ts";
+import { FileProgress } from "../io/file_progress.ts";
 
 import FileCache from "./file_cache.ts";
 
@@ -112,4 +114,27 @@ Deno.test("FileCache.get rewinds only once on cache miss and closes reader on ca
   assertEquals(hitPath, cachedPath);
   assertEquals(hitReader.rewindCount, 1);
   assertEquals(hitReader.closeCount, 1);
+});
+
+Deno.test("FileCache.copyToCache should reuse valid cache file populated concurrently by another instance", async () => {
+  const config = TestHelper.getConfig();
+  config.configPaths.levainCacheDir = path.join(TestHelper.getNewTempDir(), "nested-cache");
+  const fileCache = new FileCache(config);
+  const fixedMtime = new Date("2025-02-02T00:00:00.000Z");
+  const reader = new SpyProgressReader("https://example.org/shared.zip", "concurrent-payload", fixedMtime);
+  const target = fileCache.cachedFilePath(reader.name);
+
+  const copyStub = stub(FileProgress, "copyWithProgress", () => {
+    Deno.writeTextFileSync(target, "concurrent-payload");
+    Deno.utimeSync(target, new Date(), fixedMtime);
+    return Promise.reject(new Error("simulated concurrent rename contention"));
+  });
+
+  try {
+    const result = await fileCache.copyToCache(reader, true);
+    assertEquals(result, target);
+    assertEquals(Deno.readTextFileSync(result), "concurrent-payload");
+  } finally {
+    copyStub.restore();
+  }
 });

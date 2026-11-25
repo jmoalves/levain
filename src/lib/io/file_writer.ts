@@ -79,19 +79,39 @@ export default class FileWriter implements Writer, Progress, Timestamps, Closer 
   }
 
   // deno-lint-ignore require-await
-  async close() {
+  async close(options?: { expectedSize?: number; mtime?: Date | null }) {
     log.debug(`Closing ${this.tempPath}`);
     if (!this.closed) {
       this.closed = true;
       this.file.close();
     }
-    if (OsUtils.removeFile(this.filePath)) {
-      log.debug(`Removing ${this.filePath}`);
-    }
-    log.debug(`Moving ${this.tempPath} => ${this.filePath}`);
-    FileUtils.renameSync(this.tempPath, this.filePath);
 
-    this.fileInfo = FileUtils.getFileInfoSync(this.filePath);
+    try {
+      const tempInfo = FileUtils.getFileInfoSync(this.tempPath);
+      if (options?.expectedSize && tempInfo.size !== options.expectedSize) {
+        throw new Error(`Copy size does not match ${options.expectedSize} => ${tempInfo.size}`);
+      }
+
+      if (options?.mtime instanceof Date) {
+        try {
+          Deno.utimeSync(this.tempPath, new Date(), options.mtime);
+          log.debug(`Timestamps preserved - ${this.tempPath}`);
+        } catch (err) {
+          log.debug(`Could not preserve timestamps on ${this.tempPath}: ${err}`);
+        }
+      }
+
+      log.debug(`Moving ${this.tempPath} => ${this.filePath}`);
+      FileUtils.renameSync(this.tempPath, this.filePath);
+      this.fileInfo = FileUtils.getFileInfoSync(this.filePath);
+    } catch (err) {
+      try {
+        OsUtils.removeFile(this.tempPath);
+      } catch {
+        // ignore temp cleanup error
+      }
+      throw err;
+    }
   }
 
   abort() {

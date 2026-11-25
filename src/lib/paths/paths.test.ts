@@ -1,6 +1,6 @@
 import * as path from "@std/path";
 import { existsSync } from "@std/fs";
-import { assert, assertEquals, assertThrows } from "@std/assert";
+import { assert, assertEquals, assertFalse, assertThrows } from "@std/assert";
 import { stub } from "@std/testing/mock";
 
 import TestHelper from "../test/test_helper.ts";
@@ -18,33 +18,34 @@ Deno.test("LevainPaths should resolve project root, recipes dir, and levain reci
   assert(existsSync(LevainPaths.levainRecipePath), "levain.levain.yaml should exist");
 });
 
-Deno.test("ConfigPaths should resolve and create standard directories inside levainHome", () => {
+Deno.test("ConfigPaths should resolve standard directories purely without creating them on disk", () => {
   const tempHome = TestHelper.getNewTempDir();
   const cp = new ConfigPaths(tempHome);
 
   assertEquals(cp.levainBaseDir, path.resolve(tempHome, "levain"));
   assertEquals(cp.levainConfigDir, path.resolve(tempHome, ".levain"));
-  assert(existsSync(cp.levainConfigDir));
+  assertFalse(existsSync(cp.levainConfigDir));
   assertEquals(cp.oldLevainConfigFile, path.resolve(cp.levainConfigDir, "config.json"));
   assertEquals(cp.levainRegistryDir, path.resolve(cp.levainConfigDir, "registry"));
-  assert(existsSync(cp.levainRegistryDir));
+  assertFalse(existsSync(cp.levainRegistryDir));
   assertEquals(cp.levainSafeTempDir, path.resolve(cp.levainConfigDir, "temp"));
-  assert(existsSync(cp.levainSafeTempDir));
+  assertFalse(existsSync(cp.levainSafeTempDir));
   assertEquals(cp.levainBackupDir, path.resolve(cp.levainConfigDir, "backup"));
-  assert(existsSync(cp.levainBackupDir));
+  assertFalse(existsSync(cp.levainBackupDir));
   assertEquals(cp.levainCacheDir, path.resolve(tempHome, ".levainCache"));
-  assert(existsSync(cp.levainCacheDir));
+  assertFalse(existsSync(cp.levainCacheDir));
   assertEquals(cp.levainHookPath, path.join(cp.levainConfigDir, "levain-hook.cmd"));
+  assertEquals(cp.levainLockPath, path.join(cp.levainConfigDir, "levain.lock"));
 
-  // Custom setters override default backup/cache locations
+  // Custom setters override default backup/cache locations without filesystem side effects
   const customBackup = path.join(tempHome, "custom-backup");
   const customCache = path.join(tempHome, "custom-cache");
   cp.levainBackupDir = customBackup;
   cp.levainCacheDir = customCache;
   assertEquals(cp.levainBackupDir, customBackup);
   assertEquals(cp.levainCacheDir, customCache);
-  assert(existsSync(customBackup));
-  assert(existsSync(customCache));
+  assertFalse(existsSync(customBackup));
+  assertFalse(existsSync(customCache));
 });
 
 Deno.test("HomePaths.homedir should follow HOME -> userprofile -> homedrive+homepath -> throw", () => {

@@ -95,10 +95,15 @@ export default class ConsoleAndFileLogger {
   }
 
   getLogFileHandler(logFile: string, options = {}): FileHandler {
+    const resolvedLog = path.resolve(logFile);
+    const resolvedHomeLog = path.resolve(HomePaths.levainLog);
+    const isSharedHomeLog = OsUtils.isWindows()
+      ? resolvedLog.toLowerCase() === resolvedHomeLog.toLowerCase()
+      : resolvedLog === resolvedHomeLog;
     const fullOptions = {
       filename: logFile,
       formatter: LogFormatterFactory.getFormatterWithDatetimeAndLevel(() => ConsoleAndFileLogger.config),
-      mode: "w",
+      mode: isSharedHomeLog ? "a" : "w",
       ...options,
     };
     return new AutoFlushLogFileHandler("DEBUG", fullOptions);

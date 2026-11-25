@@ -16,6 +16,7 @@ import { retry } from "../lib/utils/utils.ts";
 
 import type Command from "./command.ts";
 import { FileUtils } from "../lib/fs/file_utils.ts";
+import { resolvePackageActions } from "../lib/package/package_actions.ts";
 
 export interface InstallOptions {
   force?: boolean;
@@ -220,8 +221,7 @@ export default class Install implements Command {
     const actions: Array<{ pkg: Package; action: string }> = [];
 
     if (shouldInstall) {
-      const rawInstallActions = pkg.yamlItem("cmd.install");
-      const installActions = Array.isArray(rawInstallActions) ? [...rawInstallActions] : [];
+      const installActions = resolvePackageActions(pkg, "cmd.install");
       if (!pkg.skipInstallDir()) {
         installActions.unshift("mkdir ${baseDir}");
       }
@@ -237,11 +237,9 @@ export default class Install implements Command {
     }
 
     // Standard actions - Env - At the rear (push), they are in normal order (like a QUEUE)
-    const envActions = envPkg.yamlItem("cmd.env");
-    if (Array.isArray(envActions)) {
-      for (const action of envActions) {
-        actions.push({ pkg: envPkg, action });
-      }
+    const envActions = resolvePackageActions(envPkg, "cmd.env");
+    for (const action of envActions) {
+      actions.push({ pkg: envPkg, action });
     }
 
     if (shouldInstall) {
