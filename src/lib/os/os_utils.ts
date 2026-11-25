@@ -295,7 +295,7 @@ export default class OsUtils {
         try {
           const stat = Deno.statSync(fullPath);
           if (!stat.isFile) continue;
-          if (!isWin && stat.mode !== null && (stat.mode & 0o111) === 0) continue;
+          if (Deno.build.os !== "windows" && !isWin && stat.mode != null && (stat.mode & 0o111) === 0) continue;
           return fullPath;
         } catch {
           continue;
@@ -373,17 +373,21 @@ export default class OsUtils {
       "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8",
       "$key = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Environment', $false)",
       "try {",
-      "  if ($null -eq $key) { Write-Output '{\"exists\":false,\"type\":\"ExpandString\",\"value\":\"\"}' }",
-      "  else {",
+      "  if ($null -eq $key) {",
+      "    [PSCustomObject]@{ exists = $false; type = 'ExpandString'; value = '' } | ConvertTo-Json -Compress",
+      "  } else {",
       "    $val = $key.GetValue('Path', $null, [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)",
-      "    if ($null -eq $val) { Write-Output '{\"exists\":false,\"type\":\"ExpandString\",\"value\":\"\"}' }",
-      "    else {",
+      "    if ($null -eq $val) {",
+      "      [PSCustomObject]@{ exists = $false; type = 'ExpandString'; value = '' } | ConvertTo-Json -Compress",
+      "    } else {",
       "      $kind = $key.GetValueKind('Path').ToString()",
       "      [PSCustomObject]@{ exists = $true; type = $kind; value = [string]$val } | ConvertTo-Json -Compress",
       "    }",
       "  }",
-      "} finally { if ($null -ne $key) { $key.Dispose() } }",
-    ].join("; ");
+      "} finally {",
+      "  if ($null -ne $key) { $key.Dispose() }",
+      "}",
+    ].join("\n");
 
     const psCmd = new Deno.Command(OsUtils.windowsPowershellExe(), {
       args: ["-NoLogo", "-NonInteractive", "-NoProfile", "-Command", psScript],
@@ -428,8 +432,10 @@ export default class OsUtils {
       "  }",
       "  $newVal = if ($null -eq $env:__LEVAIN_USER_PATH) { '' } else { $env:__LEVAIN_USER_PATH }",
       "  $key.SetValue('Path', $newVal, $kind)",
-      "} finally { $key.Dispose() }",
-    ].join("; ");
+      "} finally {",
+      "  $key.Dispose()",
+      "}",
+    ].join("\n");
 
     const psCmd = new Deno.Command(OsUtils.windowsPowershellExe(), {
       args: ["-NoLogo", "-NonInteractive", "-NoProfile", "-Command", psScript],
@@ -469,7 +475,7 @@ export default class OsUtils {
         "$s.WorkingDirectory = $env:__LEVAIN_SHORTCUT_WORKDIR",
         "$s.TargetPath = $env:__LEVAIN_SHORTCUT_TARGET",
         "$s.Save()",
-      ].join("; ");
+      ].join("\n");
 
       const psCmd = new Deno.Command(OsUtils.windowsPowershellExe(), {
         args: ["-NoLogo", "-NonInteractive", "-NoProfile", "-Command", psScript],

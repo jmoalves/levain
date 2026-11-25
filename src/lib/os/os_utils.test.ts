@@ -401,8 +401,8 @@ Deno.test("OsUtils.findInPath should locate binaries on absolute PATH entries an
     // Relative "." must not match files in CWD (e.g. deno.json)
     assertEquals(OsUtils.findInPath("deno.json"), undefined);
     // On POSIX, non-executable file in dir1 is skipped and executable in dir2 is returned;
-    // on Windows (where mode is null), dir1 matches first.
-    const expectedPosix = Deno.statSync(nonExecFile).mode === null ? nonExecFile : execFile;
+    // on Windows (where NTFS has no POSIX exec bits), dir1 matches first.
+    const expectedPosix = Deno.build.os === "windows" ? nonExecFile : execFile;
     assertEquals(OsUtils.findInPath("mytool"), expectedPosix);
     assertEquals(OsUtils.findInPath("does-not-exist-xyz"), undefined);
 
