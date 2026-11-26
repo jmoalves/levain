@@ -23,6 +23,8 @@ export interface InstallOptions {
   noUpdate?: boolean;
   promptForUpdates?: boolean;
   strictMinVersion?: boolean;
+  skipUnneededEnv?: boolean;
+  isolateFailures?: boolean;
 }
 
 export default class Install implements Command {
@@ -88,6 +90,8 @@ export default class Install implements Command {
     const noUpdate = force ? false : !!options.noUpdate;
     const promptForUpdates = options.promptForUpdates ?? true;
     const strictMinVersion = !!options.strictMinVersion;
+    const skipUnneededEnv = !!options.skipUnneededEnv;
+    const isolateFailures = !!options.isolateFailures;
 
     let shouldUpdate = !noUpdate;
 
@@ -131,13 +135,46 @@ export default class Install implements Command {
     }
 
     const pkgNameSet = new Set(pkgNames);
+    const neededEnvPkgs = skipUnneededEnv
+      ? this.computeNeededEnvPackages(pkgs, pkgNameSet, force, shouldUpdate)
+      : undefined;
     const bkpTag = this.bkpTag();
     let anyChanged = false;
+    const failedPkgs: Array<{ pkg: string; error: string }> = [];
+    const failedSet = new Set<string>();
+
     for (const pkg of pkgs) {
-      const forcePkg = force && pkgNameSet.has(pkg.name);
-      if (await this.installPackage(bkpTag, pkg, forcePkg, shouldUpdate, strictMinVersion)) {
-        anyChanged = true;
+      if (isolateFailures) {
+        const failedDep = pkg.dependencies?.find((dep) => failedSet.has(dep));
+        if (failedDep) {
+          const skipMsg = t("cmd.update.skippedFailedDep", { pkg: pkg.name, dep: failedDep });
+          log.warn(skipMsg);
+          failedPkgs.push({ pkg: pkg.name, error: skipMsg });
+          failedSet.add(pkg.name);
+          continue;
+        }
       }
+
+      const forcePkg = force && pkgNameSet.has(pkg.name);
+      const runEnv = !neededEnvPkgs || neededEnvPkgs.has(pkg.name);
+      try {
+        if (await this.installPackage(bkpTag, pkg, forcePkg, shouldUpdate, strictMinVersion, runEnv)) {
+          anyChanged = true;
+        }
+      } catch (err) {
+        if (!isolateFailures) {
+          throw err;
+        }
+        const msg = err instanceof Error ? err.message : String(err);
+        log.error(t("cmd.update.pkgFailed", { pkg: pkg.name, error: msg }));
+        failedPkgs.push({ pkg: pkg.name, error: msg });
+        failedSet.add(pkg.name);
+      }
+    }
+
+    if (failedPkgs.length > 0) {
+      const details = failedPkgs.map((f) => `${f.pkg}: ${f.error}`).join("; ");
+      throw new Error(t("cmd.update.failedSummary", { count: failedPkgs.length, details }));
     }
 
     log.debug("");
@@ -146,12 +183,49 @@ export default class Install implements Command {
     return anyChanged;
   }
 
+  private computeNeededEnvPackages(
+    pkgs: Package[],
+    pkgNameSet: Set<string>,
+    force: boolean,
+    shouldUpdate: boolean,
+  ): Set<string> {
+    const byName = new Map(pkgs.map((p) => [p.name, p]));
+    const needed = new Set<string>();
+    const markDeps = (pkg: Package) => {
+      if (!pkg.dependencies) {
+        return;
+      }
+      for (const depName of pkg.dependencies) {
+        if (needed.has(depName)) {
+          continue;
+        }
+        needed.add(depName);
+        const depPkg = byName.get(depName);
+        if (depPkg) {
+          markDeps(depPkg);
+        }
+      }
+    };
+
+    for (const pkg of pkgs) {
+      const willMutate = !pkg.installed ||
+        (!pkg.skipInstallDir() && !existsSync(pkg.baseDir)) ||
+        (shouldUpdate && pkg.updateAvailable) ||
+        (force && pkgNameSet.has(pkg.name));
+      if (willMutate) {
+        markDeps(pkg);
+      }
+    }
+    return needed;
+  }
+
   private async installPackage(
     bkpTag: string,
     pkg: Package,
     force: boolean = false,
     shouldUpdate: boolean = true,
     strictMinVersion: boolean = false,
+    runEnv: boolean = true,
   ): Promise<boolean> {
     if (!this.config) {
       return false;
@@ -241,9 +315,11 @@ export default class Install implements Command {
     }
 
     // Standard actions - Env - At the rear (push), they are in normal order (like a QUEUE)
-    const envActions = resolvePackageActions(envPkg, "cmd.env");
-    for (const action of envActions) {
-      actions.push({ pkg: envPkg, action });
+    if (runEnv) {
+      const envActions = resolvePackageActions(envPkg, "cmd.env");
+      for (const action of envActions) {
+        actions.push({ pkg: envPkg, action });
+      }
     }
 
     if (shouldInstall) {

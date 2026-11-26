@@ -207,3 +207,159 @@ Deno.test("Update should fail with error when levain.minVersion is newer than cu
   assertEquals(existsSync(path.join(levainHome, "future-update", "blocked")), false);
   assert(existsSync(path.join(levainHome, "future-update", "v1")));
 });
+
+Deno.test("Update with no args skips unneeded cmd.env for implicit cross-package env vars while still providing dependency cmd.env (Issue #200)", async () => {
+  // Regression for Issue #200:
+  // `addon-features` sorts before `runtime-v1` and references `${RUNTIME_HOME}` in cmd.env
+  // without declaring `runtime-v1` in dependencies (because any `runtime-*` variant may be installed).
+  // Meanwhile, `build-tool` explicitly depends on `base-sdk` and needs `${BASE_SDK_HOME}` during cmd.install.
+  const { config, repoDir, levainHome } = await setupConfigWithRecipes({
+    "addon-features.levain.yaml": [
+      "version: 1.0.0",
+      "cmd.install:",
+      "  - mkdir ${baseDir}/v1",
+      "cmd.env:",
+      "  - setEnv ADDON_RUNTIME ${RUNTIME_HOME}/features",
+    ].join("\n"),
+    "runtime-v1.levain.yaml": [
+      "version: 1.0.0",
+      "cmd.install:",
+      "  - mkdir ${baseDir}/bin",
+      "cmd.env:",
+      "  - setEnv RUNTIME_HOME ${baseDir}",
+    ].join("\n"),
+    "base-sdk.levain.yaml": [
+      "version: 1.0.0",
+      "cmd.install:",
+      "  - mkdir ${baseDir}/lib",
+      "cmd.env:",
+      "  - setEnv BASE_SDK_HOME ${baseDir}",
+    ].join("\n"),
+    "build-tool.levain.yaml": [
+      "version: 1.0.0",
+      "dependencies:",
+      "  - base-sdk",
+      "cmd.install:",
+      "  - mkdir ${baseDir}/v1",
+    ].join("\n"),
+  });
+
+  // Initial install in valid order (runtime-v1 before addon-features, base-sdk before build-tool)
+  await new Install(config).execute(["runtime-v1", "addon-features", "build-tool"]);
+
+  // Bump BOTH addon-features and build-tool (which reads ${BASE_SDK_HOME} from up-to-date base-sdk's cmd.env)
+  await Deno.writeTextFile(
+    path.join(repoDir, "addon-features.levain.yaml"),
+    [
+      "version: 2.0.0",
+      "cmd.install:",
+      "  - mkdir ${baseDir}/v2",
+      "cmd.env:",
+      "  - setEnv ADDON_RUNTIME ${RUNTIME_HOME}/features",
+    ].join("\n"),
+  );
+  await Deno.writeTextFile(
+    path.join(repoDir, "build-tool.levain.yaml"),
+    [
+      "version: 2.0.0",
+      "dependencies:",
+      "  - base-sdk",
+      "cmd.install:",
+      "  - mkdir ${baseDir}/v2",
+      "  - setVar USED_SDK ${BASE_SDK_HOME}",
+    ].join("\n"),
+  );
+
+  // Bare `levain update` must succeed without aborting on undefined ${RUNTIME_HOME},
+  // update both addon-features and build-tool, AND run base-sdk's cmd.env for build-tool!
+  const config2 = await createConfigForHome(levainHome, repoDir);
+  await new Update(config2).execute([]);
+
+  assert(existsSync(path.join(levainHome, "addon-features", "v2")), "addon-features should update to v2");
+  assert(existsSync(path.join(levainHome, "build-tool", "v2")), "build-tool should update to v2");
+  assertEquals(config2.getVar("USED_SDK"), path.join(levainHome, "base-sdk"));
+});
+
+Deno.test("Update with no args isolates single-package failures, skips dependent packages, warns on missing upstream recipes, and updates unaffected packages", async () => {
+  const logger = await TestHelper.setupTestLogger();
+  const { config, repoDir, levainHome } = await setupConfigWithRecipes({
+    "aaa-broken.levain.yaml": [
+      "version: 1.0.0",
+      "cmd.install:",
+      "  - mkdir ${baseDir}/v1",
+    ].join("\n"),
+    "bbb-depends-broken.levain.yaml": [
+      "version: 1.0.0",
+      "dependencies:",
+      "  - aaa-broken",
+      "cmd.install:",
+      "  - mkdir ${baseDir}/v1",
+    ].join("\n"),
+    "ccc-removed-upstream.levain.yaml": [
+      "version: 1.0.0",
+      "cmd.install:",
+      "  - mkdir ${baseDir}/v1",
+    ].join("\n"),
+    "zzz-healthy.levain.yaml": [
+      "version: 1.0.0",
+      "cmd.install:",
+      "  - mkdir ${baseDir}/v1",
+    ].join("\n"),
+  });
+
+  await new Install(config).execute(["bbb-depends-broken", "ccc-removed-upstream", "zzz-healthy"]);
+
+  // Break aaa-broken's v2, remove ccc-removed-upstream from repo, and bump zzz-healthy & bbb-depends-broken to v2
+  await Deno.writeTextFile(
+    path.join(repoDir, "aaa-broken.levain.yaml"),
+    [
+      "version: 2.0.0",
+      "cmd.install:",
+      "  - echo ${UNDEFINED_BROKEN_VAR}",
+    ].join("\n"),
+  );
+  await Deno.writeTextFile(
+    path.join(repoDir, "bbb-depends-broken.levain.yaml"),
+    [
+      "version: 2.0.0",
+      "dependencies:",
+      "  - aaa-broken",
+      "cmd.install:",
+      "  - mkdir ${baseDir}/v2",
+    ].join("\n"),
+  );
+  await Deno.remove(path.join(repoDir, "ccc-removed-upstream.levain.yaml"));
+  await Deno.writeTextFile(
+    path.join(repoDir, "zzz-healthy.levain.yaml"),
+    [
+      "version: 2.0.0",
+      "cmd.install:",
+      "  - mkdir ${baseDir}/v2",
+    ].join("\n"),
+  );
+
+  const config2 = await createConfigForHome(levainHome, repoDir);
+  await assertRejects(
+    () => new Update(config2).execute([]),
+    Error,
+    "aaa-broken",
+  );
+
+  // Healthy independent package WAS updated despite aaa-broken failing and ccc-removed-upstream missing!
+  assert(existsSync(path.join(levainHome, "zzz-healthy", "v2")), "unaffected zzz-healthy should still update to v2");
+  // Dependent of broken package was skipped (not updated to v2)
+  assertEquals(existsSync(path.join(levainHome, "bbb-depends-broken", "v2")), false);
+  // Warning emitted for missing upstream recipe and skipped dependent
+  assertFind(logger.messages, (m) => m.includes("ccc-removed-upstream"));
+  assertFind(logger.messages, (m) => m.includes("bbb-depends-broken"));
+
+  // When ALL installed recipes are missing upstream, update warns and returns cleanly without throwing noPackages
+  const onlyMissing = await setupConfigWithRecipes({}, { seedLevain: false });
+  await Deno.mkdir(onlyMissing.config.configPaths.levainRegistryDir, { recursive: true });
+  await Deno.writeTextFile(
+    path.join(onlyMissing.config.configPaths.levainRegistryDir, "orphan.levain.yaml"),
+    "version: 1.0.0\n",
+  );
+  const onlyMissingCfg2 = await createConfigForHome(onlyMissing.levainHome, onlyMissing.repoDir);
+  await new Update(onlyMissingCfg2).execute([]);
+});

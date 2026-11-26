@@ -1,3 +1,4 @@
+import * as log from "@std/log";
 import t from "../lib/i18n.ts";
 
 import type Config from "../lib/config.ts";
@@ -19,11 +20,24 @@ export default class Update implements Command {
     });
 
     let pkgNames: string[] = myArgs._;
+    const isUpdateAll = pkgNames.length == 0;
 
-    if (pkgNames.length == 0) {
+    if (isUpdateAll) {
       const installedPkgs = this.config.repositoryManager.repositoryInstalled.listPackages();
       if (installedPkgs?.length > 0) {
-        pkgNames = installedPkgs.map((pkg) => pkg.name);
+        const regularRepo = this.config.repositoryManager.repository;
+        const availableNames: string[] = [];
+        for (const pkg of installedPkgs) {
+          if (regularRepo.resolvePackage(pkg.name)) {
+            availableNames.push(pkg.name);
+          } else {
+            log.warn(t("cmd.update.missingUpstream", { pkg: pkg.name }));
+          }
+        }
+        if (availableNames.length === 0) {
+          return;
+        }
+        pkgNames = availableNames;
       }
     }
 
@@ -33,6 +47,8 @@ export default class Update implements Command {
       noUpdate: false,
       promptForUpdates: false,
       strictMinVersion: true,
+      skipUnneededEnv: isUpdateAll,
+      isolateFailures: isUpdateAll,
     });
   }
 

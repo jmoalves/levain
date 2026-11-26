@@ -385,6 +385,10 @@
       "example": "  install <package name> ... <package name>"
     },
     "update": {
+      "missingUpstream": "Skipping installed package '{{pkg}}' because it was not found in the configured repositories.",
+      "pkgFailed": "Failed to update package '{{pkg}}': {{error}}",
+      "skippedFailedDep": "Skipping '{{pkg}}' because dependency '{{dep}}' failed to update.",
+      "failedSummary": "Update completed with {{count}} failed package(s): {{details}}",
       "example": "  update <package name> ... <package name>"
     },
     "list_command": {
