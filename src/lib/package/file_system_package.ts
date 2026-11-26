@@ -1,11 +1,14 @@
+import * as log from "@std/log";
 import * as path from "@std/path";
 import * as yaml from "@std/yaml";
 import { existsSync } from "@std/fs";
 
+import t from "../i18n.ts";
 import type Repository from "../repository/repository.ts";
 import type Config from "../config.ts";
 import { FileUtils } from "../fs/file_utils.ts";
 import OsUtils from "../os/os_utils.ts";
+import { isReservedPackageName, isUnknownReservedYamlKey } from "../reserved_words.ts";
 import { isNotFoundFileError } from "../utils/error_utils.ts";
 import AbstractPackage from "./abstract_package.ts";
 import VersionNumber from "../utils/version_number.ts";
@@ -45,6 +48,22 @@ export default class FileSystemPackage extends AbstractPackage {
     this.rawYaml = yamlStr;
 
     this.yamlStruct = yaml.parse(yamlStr);
+
+    if (this.yamlStruct && typeof this.yamlStruct === "object") {
+      const keysToCheck: string[] = [];
+      for (const [key, val] of Object.entries(this.yamlStruct)) {
+        if (key === "levain" && val && typeof val === "object" && !Array.isArray(val)) {
+          FileSystemPackage.collectYamlPaths("levain", val as Record<string, unknown>, keysToCheck);
+        } else {
+          keysToCheck.push(key);
+        }
+      }
+      for (const key of keysToCheck) {
+        if (isUnknownReservedYamlKey(key)) {
+          log.warn(t("lib.reserved_words.unknownYamlKey", { key, pkg: this.name, file: this.filePath }));
+        }
+      }
+    }
 
     const versionStr = this.yamlStruct?.version;
     this.version = versionStr ? new VersionNumber(versionStr) : undefined;
@@ -125,8 +144,19 @@ export default class FileSystemPackage extends AbstractPackage {
       "]";
   }
 
+  private static collectYamlPaths(prefix: string, obj: Record<string, unknown>, out: string[]): void {
+    for (const [subKey, subVal] of Object.entries(obj)) {
+      const fullKey = `${prefix}.${subKey}`;
+      if (subVal && typeof subVal === "object" && !Array.isArray(subVal)) {
+        FileSystemPackage.collectYamlPaths(fullKey, subVal as Record<string, unknown>, out);
+      } else {
+        out.push(fullKey);
+      }
+    }
+  }
+
   private normalizeDeps(deps: string[] | undefined): string[] | undefined {
-    if (this.name == "levain") {
+    if (isReservedPackageName(this.name)) {
       return undefined;
     }
 

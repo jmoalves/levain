@@ -5,6 +5,7 @@ import { existsSync } from "@std/fs";
 import type Package from "../../lib/package/package.ts";
 import type Config from "../../lib/config.ts";
 import { parseArgs } from "../../lib/parse_args.ts";
+import { assertNotReservedVarName } from "../../lib/reserved_words.ts";
 
 import type Action from "../action.ts";
 
@@ -25,6 +26,9 @@ export default class CheckChainDirExists implements Action {
     });
 
     this.verifyArgs(args); // throws
+    if (args.saveVar) {
+      assertNotReservedVarName(args.saveVar, "checkChainDirExists");
+    }
 
     const dirs: string[] = args._;
     const defaultValue = args.default;

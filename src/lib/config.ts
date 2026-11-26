@@ -14,6 +14,7 @@ import { isNotFoundFileError } from "./utils/error_utils.ts";
 import LevainPaths from "./paths/levain_paths.ts";
 import HomePaths from "./paths/home_paths.ts";
 import ConfigPaths from "./paths/config_paths.ts";
+import { canonicalizeVarName } from "./reserved_words.ts";
 
 export default class Config {
   packageManager: PackageManager;
@@ -190,10 +191,11 @@ export default class Config {
   }
 
   setVar(name: string, value: string): void {
-    if (name == "levainHome") {
+    const canonicalName = canonicalizeVarName(name);
+    if (canonicalName == "levainHome") {
       this.setLevainHome(value);
     }
-    this._env[name] = value;
+    this._env[canonicalName] = value;
   }
 
   getVar(name: string): string | undefined {

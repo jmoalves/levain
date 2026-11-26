@@ -50,3 +50,17 @@ Deno.test("RemoveFromRegistry should remove multiple packages", async () => {
 
   assertEquals(registry.size(), 0);
 });
+
+Deno.test("RemoveFromRegistry should reject removing reserved 'levain' package (case-insensitive) atomically", async () => {
+  const registry = await TestHelper.getNewInitedTempRegistry();
+  const pkg = TestHelper.getTestFilePackage();
+  await registry.add(pkg);
+  assertEquals(registry.size(), 1);
+
+  const action = new RemoveFromRegistry(registry);
+  await assertRejects(() => action.execute(new MockPackage(), ["levain"]), Error);
+  await assertRejects(() => action.execute(new MockPackage(), [pkg.name, "LeVaIn"]), Error);
+
+  // Atomicity: pkg must still be in registry after rejected multi-package call
+  assertEquals(registry.size(), 1);
+});

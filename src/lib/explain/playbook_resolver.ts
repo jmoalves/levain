@@ -3,6 +3,7 @@ import t from "../i18n.ts";
 import LogUtils from "../logger/log_utils.ts";
 import type Package from "../package/package.ts";
 import HomePaths from "../paths/home_paths.ts";
+import { isReservedEnvPrefix } from "../reserved_words.ts";
 import StringUtils from "../utils/string_utils.ts";
 import VarResolver from "../var_resolver.ts";
 
@@ -63,7 +64,7 @@ export class PlaybookVarResolver {
     const filters = parts.map((f) => f.trim()).filter((f) => f.length > 0);
     const hasUrlEncode = filters.includes("urlEncode");
 
-    if (varName === "levain.password") {
+    if (varName.toLowerCase() === "levain.password") {
       return hasUrlEncode
         ? t("cmd.explain.placeholder.passwordUrlEncoded")
         : t("cmd.explain.placeholder.password");
@@ -91,17 +92,18 @@ export class PlaybookVarResolver {
   }
 
   private lookupVar(varName: string, pkg: Package | undefined, depth: number): string | undefined {
-    if (varName.startsWith("levain.")) {
-      switch (varName) {
+    const lowerName = varName.toLowerCase();
+    if (lowerName === "levain" || lowerName.startsWith("levain.")) {
+      switch (lowerName) {
         case "levain.login":
           return this.config.login || t("cmd.explain.placeholder.login");
         case "levain.email":
           return this.config.email || t("cmd.explain.placeholder.email");
         case "levain.fullname":
           return this.config.fullname || t("cmd.explain.placeholder.fullname");
-        case "levain.homeDir":
+        case "levain.homedir":
           return this.config.configPaths.levainHome;
-        case "levain.cacheDir":
+        case "levain.cachedir":
           return this.config.configPaths.levainCacheDir;
         default:
           return undefined;
@@ -116,8 +118,16 @@ export class PlaybookVarResolver {
       }
     }
 
-    if (varName === "levainHome") {
+    if (lowerName === "levainhome") {
       return this.config.configPaths.levainHome;
+    }
+
+    if (lowerName === "levaincache") {
+      return this.config.getVar("levainCache");
+    }
+
+    if (isReservedEnvPrefix(varName)) {
+      return Deno.env.get(varName);
     }
 
     const pkgRefMatch = varName.match(/^pkg\.(.+)\.([^.]*)$/);

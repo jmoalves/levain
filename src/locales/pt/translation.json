@@ -549,6 +549,13 @@
       "errorReading": "Erro ao ler o config - {{filename}}",
       "noHomeValid": "Não há um levainHome válido na sua lista"
     },
+    "reserved_words": {
+      "packageNotAllowed": "O nome de pacote '{{name}}' é reservado pelo Levain e não pode ser definido na receita externa '{{file}}'.",
+      "packageCannotBeRemoved": "O pacote '{{name}}' é reservado pelo Levain e não pode ser removido do registro.",
+      "varNotAllowed": "O nome de variável '{{name}}' é reservado pelo Levain e não pode ser gravado pela ação '{{action}}'.",
+      "envNotAllowed": "O nome de variável de ambiente '{{name}}' é reservado pelo Levain e não pode ser gravado pela ação '{{action}}'.",
+      "unknownYamlKey": "Chave YAML reservada desconhecida '{{key}}' no pacote '{{pkg}}' ({{file}}). O namespace 'levain' ('levain', 'levain.*', 'levainHome', 'levainCache', 'levain_*', '_levain_*', '__levain_*') é reservado para diretivas do Levain."
+    },
     "utils": {
       "error_utils": {
         "fileError": "Erro ao tentar {{operation}} {{filePath}}: {{err}}"

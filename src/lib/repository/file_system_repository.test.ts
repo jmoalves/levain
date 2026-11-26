@@ -224,3 +224,29 @@ Deno.test("FileSystemRepository handles double-init, non-dir root, depth limit, 
     isDirStub.restore();
   }
 });
+
+Deno.test("FileSystemRepository rejects reserved 'levain' package name in external repos (case-insensitive) while allowing registry", async () => {
+  const config = TestHelper.getConfig();
+  const extRepoDir = TestHelper.getNewTempDir();
+  Deno.writeTextFileSync(path.join(extRepoDir, "LeVaIn.levain.yaml"), "version: 9.9.9\n");
+
+  const extRepo = new FileSystemRepository(config, extRepoDir);
+  await assertRejects(() => extRepo.init(), Error);
+
+  // Anonymous project .levain.yaml and prefixed levain-context-menu.levain.yaml remain allowed in external repos
+  const okRepoDir = TestHelper.getNewTempDir();
+  Deno.writeTextFileSync(path.join(okRepoDir, ".levain.yaml"), "version: 1.0.0\n");
+  Deno.writeTextFileSync(path.join(okRepoDir, "levain-context-menu.levain.yaml"), "version: 1.0.0\n");
+  const okRepo = new FileSystemRepository(config, okRepoDir);
+  await okRepo.init();
+  assertEquals(okRepo.resolvePackage("")?.name, "");
+  assertEquals(okRepo.resolvePackage("levain-context-menu")?.name, "levain-context-menu");
+
+  // Allowed inside levainRegistryDir
+  const regDir = config.configPaths.levainRegistryDir;
+  ensureDirSync(regDir);
+  Deno.writeTextFileSync(path.join(regDir, "levain.levain.yaml"), "version: 1.1.0\n");
+  const regRepo = new FileSystemRepository(config, regDir);
+  await regRepo.init();
+  assertEquals(regRepo.resolvePackage("levain")?.name, "levain");
+});

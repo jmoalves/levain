@@ -4,6 +4,7 @@ import type Action from "../action.ts";
 import type Package from "../../lib/package/package.ts";
 import type Config from "../../lib/config.ts";
 import { parseArgs } from "../../lib/parse_args.ts";
+import { assertNotReservedVarName } from "../../lib/reserved_words.ts";
 import JsonUtils from "../../lib/utils/json_utils.ts";
 
 export default class JsonGet implements Action {
@@ -31,6 +32,7 @@ export default class JsonGet implements Action {
     if (!myArgs?.setVar) {
       throw Error("Missing parameters. jsonGet --setVar=VAR filename property");
     }
+    assertNotReservedVarName(myArgs.setVar, "jsonGet");
 
     const filename = myArgs._[0];
     if (filename.startsWith("--")) {
