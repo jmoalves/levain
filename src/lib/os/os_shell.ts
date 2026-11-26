@@ -6,6 +6,7 @@ import type Config from "../config.ts";
 import type Package from "../package/package.ts";
 import { resolvePackageActions } from "../package/package_actions.ts";
 import Loader from "../loader.ts";
+import LogUtils from "../logger/log_utils.ts";
 
 import OsUtils from "./os_utils.ts";
 import StringUtils from "../utils/string_utils.ts";
@@ -119,14 +120,15 @@ export class OsShell {
 
     if (this.saveVar) {
       const { success, stdout, stderr, code } = await pcommand.output();
+      const rawStdout = new TextDecoder().decode(stdout);
+      const rawStderr = new TextDecoder().decode(stderr);
+      OsShell.logCapturedText(rawStdout, (line) => log.debug(line), this.config);
       if (!this.ignoreErrors && !success) {
-        const errOutput = new TextDecoder().decode(stderr).trim();
-        if (errOutput) {
-          log.error(errOutput);
-        }
+        OsShell.logCapturedText(rawStderr, (line) => log.error(line), this.config);
         throw new Error("CMD terminated with code " + code);
       }
-      let cmdOutput = new TextDecoder().decode(stdout);
+      OsShell.logCapturedText(rawStderr, (line) => log.debug(line), this.config);
+      let cmdOutput = rawStdout;
       if (this.stripCRLF) {
         cmdOutput = cmdOutput
           .replace(/\r\n$/, "")
@@ -136,10 +138,63 @@ export class OsShell {
       this.config.setVar(this.saveVar, cmdOutput);
     } else {
       const child = pcommand.spawn();
-      const status = await child.status;
+      const status = !this.interactive
+        ? (await Promise.all([
+          OsShell.streamToLog(child.stdout, (line) => log.info(line), this.config),
+          OsShell.streamToLog(child.stderr, (line) => log.error(line), this.config),
+          child.status,
+        ]))[2]
+        : await child.status;
       if (!this.ignoreErrors && !status.success) {
         throw new Error("CMD terminated with code " + status.code);
       }
+    }
+  }
+
+  static logCapturedText(
+    text: string,
+    logFn: (line: string) => void,
+    config: Config | null,
+  ): void {
+    const trimmed = text.replace(/\r?\n$/, "");
+    if (!trimmed) {
+      return;
+    }
+    for (const line of trimmed.split(/\r?\n/)) {
+      logFn(LogUtils.hidePassword(config, line));
+    }
+  }
+
+  static async streamToLog(
+    stream: ReadableStream<Uint8Array> | undefined,
+    logFn: (line: string) => void,
+    config: Config | null,
+  ): Promise<void> {
+    if (!stream) {
+      return;
+    }
+    const reader = stream.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    try {
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) {
+          break;
+        }
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split(/\r?\n/);
+        buffer = lines.pop() ?? "";
+        for (const line of lines) {
+          logFn(LogUtils.hidePassword(config, line));
+        }
+      }
+      buffer += decoder.decode();
+      if (buffer.length > 0) {
+        logFn(LogUtils.hidePassword(config, buffer));
+      }
+    } finally {
+      reader.releaseLock();
     }
   }
 
@@ -234,9 +289,12 @@ export class OsShell {
     opt.cmd = cmd;
     [opt.exec_cmd, ...opt.args] = cmd;
 
-    if (this.saveVar) {
+    if (this.saveVar || !this.interactive) {
       opt.stdout = "piped";
       opt.stderr = "piped";
+      if (!this.saveVar) {
+        opt.stdin = "inherit";
+      }
     } else {
       opt.stdout = "inherit";
       opt.stderr = "inherit";
