@@ -123,9 +123,10 @@ jobs:
         run: |
           levain --skip-levain-updates list
 
-      - name: Run Microsoft Security DevOps
-        uses: microsoft/security-devops-action@cf28f87c67770dbaa208cce3665fafc849f77507 # v1.12.1
-        id: msdo-levain
+      - name: Scan installed Levain with Windows Defender
+        shell: cmd
+        run: |
+          call "%GITHUB_WORKSPACE%\scripts\msDefender.cmd" "%USERPROFILE%\levain\levain"
 
       - name: Levain install packages
         shell: pwsh
@@ -180,10 +181,6 @@ jobs:
           if ($LASTEXITCODE -ne 0) {
             throw "levain install failed with exit code $LASTEXITCODE"
           }
-
-      - name: Run Microsoft Security DevOps
-        uses: microsoft/security-devops-action@cf28f87c67770dbaa208cce3665fafc849f77507 # v1.12.1
-        id: msdo-install
 
       - name: Levain update
         shell: cmd
@@ -240,7 +237,3 @@ jobs:
           if ($LASTEXITCODE -ne 0) {
             throw "verify-e2e.ts failed with exit code $LASTEXITCODE"
           }
-
-      - name: Run Microsoft Security DevOps
-        uses: microsoft/security-devops-action@cf28f87c67770dbaa208cce3665fafc849f77507 # v1.12.1
-        id: msdo-update
