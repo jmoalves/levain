@@ -40,6 +40,49 @@ Deno.test("ActivateCmd.emitEnv should safely quote environment variables for cmd
   }
 });
 
+Deno.test("ActivateCmd.emitEnv converts Windows PATH to POSIX colon-delimited paths for Git Bash", () => {
+  assertEquals(
+    ActivateCmd.windowsPathListToBash(
+      `C:\\Users\\dev\\jdk\\bin;"D:\\Program Files\\Git\\bin";E:;\\\\server\\share\\bin;/usr/bin;;`,
+    ),
+    "/c/Users/dev/jdk/bin:/d/Program Files/Git/bin:/e://server/share/bin:/usr/bin",
+  );
+
+  const action = new ActivateCmd(TestHelper.getConfig());
+  const lines: string[] = [];
+  const origLog = console.log;
+
+  const winStub = stub(OsUtils, "isWindows", () => true);
+  try {
+    console.log = (...args: unknown[]) => lines.push(args.join(" "));
+    action.emitEnv(
+      {
+        Path: "C:\\levain\\jdk\\bin;C:\\levain\\git\\bin",
+        JAVA_HOME: "C:\\levain\\jdk",
+      },
+      "bash",
+    );
+    assertEquals(lines, [
+      "export PATH='/c/levain/jdk/bin:/c/levain/git/bin'",
+      "export JAVA_HOME='C:\\levain\\jdk'",
+    ]);
+  } finally {
+    console.log = origLog;
+    winStub.restore();
+  }
+
+  lines.length = 0;
+  const posixStub = stub(OsUtils, "isWindows", () => false);
+  try {
+    console.log = (...args: unknown[]) => lines.push(args.join(" "));
+    action.emitEnv({ PATH: "/opt/jdk/bin:/usr/bin" }, "bash");
+    assertEquals(lines, ["export PATH='/opt/jdk/bin:/usr/bin'"]);
+  } finally {
+    console.log = origLog;
+    posixStub.restore();
+  }
+});
+
 Deno.test("ActivateCmd.emitEnv should reject newlines, NULs, invalid variable names, and unsupported shells", () => {
   const action = new ActivateCmd(TestHelper.getConfig());
 

@@ -2,6 +2,9 @@
 
 SETLOCAL
 
+:: Clear PSModulePath so Windows PowerShell 5.1 does not inherit PowerShell 7 (pwsh) modules
+set "PSModulePath="
+
 set "denoDST=%~1"
 set "denoVersion=%~2"
 

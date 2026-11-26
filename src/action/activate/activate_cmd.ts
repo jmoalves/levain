@@ -3,6 +3,7 @@ import type Config from "../../lib/config.ts";
 import type Action from "../action.ts";
 import { parseArgs } from "../../lib/parse_args.ts";
 import { OsShell } from "../../lib/os/os_shell.ts";
+import OsUtils from "../../lib/os/os_utils.ts";
 import Shell from "../../cmd/shell.ts";
 
 export default class ActivateCmd implements Action {
@@ -88,7 +89,10 @@ export default class ActivateCmd implements Action {
           if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(key)) {
             throw new Error(`Invalid environment variable name for bash: ${key}`);
           }
-          console.log(`export ${key}='${value.replaceAll("'", "'\\''")}'`);
+          const isWindowsPath = OsUtils.isWindows() && key.toUpperCase() === "PATH";
+          const bashKey = isWindowsPath ? "PATH" : key;
+          const bashVal = isWindowsPath ? ActivateCmd.windowsPathListToBash(value) : value;
+          console.log(`export ${bashKey}='${bashVal.replaceAll("'", "'\\''")}'`);
           break;
         }
 
@@ -96,5 +100,27 @@ export default class ActivateCmd implements Action {
           throw new Error(`Unsupported shell: ${shell}`);
       }
     }
+  }
+
+  /**
+   * Converts a Windows semicolon-delimited PATH string into a POSIX colon-delimited
+   * PATH suitable for Git Bash / MSYS2 (e.g. `C:\tools\bin;D:\jdk\bin` -> `/c/tools/bin:/d/jdk/bin`).
+   */
+  static windowsPathListToBash(pathValue: string): string {
+    return pathValue
+      .split(";")
+      .map((raw) => raw.trim().replace(/^"+|"+$/g, ""))
+      .filter((entry) => entry.length > 0)
+      .map((entry) => {
+        const forward = entry.replaceAll("\\", "/");
+        const driveMatch = /^([A-Za-z]):(\/.*)?$/.exec(forward);
+        if (driveMatch) {
+          const drive = driveMatch[1].toLowerCase();
+          const rest = driveMatch[2] ?? "";
+          return `/${drive}${rest}`;
+        }
+        return forward;
+      })
+      .join(":");
   }
 }

@@ -130,10 +130,11 @@ export default class OsUtils {
         "-Command",
         "[Environment]::SetEnvironmentVariable($env:__LEVAIN_SETENV_KEY, $env:__LEVAIN_SETENV_VAL, 'User')",
       ],
-      env: {
+      clearEnv: true,
+      env: OsUtils.windowsPowershellEnv({
         __LEVAIN_SETENV_KEY: key,
         __LEVAIN_SETENV_VAL: value,
-      },
+      }),
       stdout: "piped",
       stderr: "piped",
     });
@@ -269,6 +270,29 @@ export default class OsUtils {
     return fs.existsSync(candidate) ? candidate : "powershell.exe";
   }
 
+  /**
+   * Builds the child environment for Windows PowerShell 5.1 (`powershell.exe`),
+   * stripping `PSModulePath` so a parent PowerShell 7 (`pwsh`) session does not
+   * break built-in 5.1 modules (`ConvertTo-Json`, `New-Object`, etc.).
+   */
+  static windowsPowershellEnv(
+    extraEnv?: Record<string, string>,
+    baseEnv: Record<string, string> = Deno.env.toObject(),
+  ): Record<string, string> {
+    const cleanEnv: Record<string, string> = {};
+    for (const [k, v] of Object.entries(baseEnv)) {
+      if (k.toLowerCase() !== "psmodulepath") {
+        cleanEnv[k] = v;
+      }
+    }
+    if (extraEnv) {
+      for (const [k, v] of Object.entries(extraEnv)) {
+        cleanEnv[k] = v;
+      }
+    }
+    return cleanEnv;
+  }
+
   static findInPath(
     binaryName: string,
     windowsAllowedExtensions: string[] = [".EXE", ".COM", ".CMD", ".BAT"],
@@ -400,6 +424,8 @@ export default class OsUtils {
 
     const psCmd = new Deno.Command(OsUtils.windowsPowershellExe(), {
       args: ["-NoLogo", "-NonInteractive", "-NoProfile", "-Command", psScript],
+      clearEnv: true,
+      env: OsUtils.windowsPowershellEnv(),
       stdout: "piped",
       stderr: "piped",
     });
@@ -448,9 +474,10 @@ export default class OsUtils {
 
     const psCmd = new Deno.Command(OsUtils.windowsPowershellExe(), {
       args: ["-NoLogo", "-NonInteractive", "-NoProfile", "-Command", psScript],
-      env: {
+      clearEnv: true,
+      env: OsUtils.windowsPowershellEnv({
         __LEVAIN_USER_PATH: sanitizedPath,
-      },
+      }),
       stdout: "piped",
       stderr: "piped",
     });
@@ -488,11 +515,12 @@ export default class OsUtils {
 
       const psCmd = new Deno.Command(OsUtils.windowsPowershellExe(), {
         args: ["-NoLogo", "-NonInteractive", "-NoProfile", "-Command", psScript],
-        env: {
+        clearEnv: true,
+        env: OsUtils.windowsPowershellEnv({
           __LEVAIN_SHORTCUT_TARGET: oldPathResolved,
           __LEVAIN_SHORTCUT_WORKDIR: targetDir,
           __LEVAIN_SHORTCUT_FILE: shortcutFile,
-        },
+        }),
         stdout: "piped",
         stderr: "piped",
       });
