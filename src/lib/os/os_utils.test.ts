@@ -752,3 +752,17 @@ Deno.test("OsUtils cross-platform unit tests for Windows env, PATH, and shortcut
     isWinStub.restore();
   }
 });
+
+Deno.test("OsUtils.windowsPowershellEnv strips PSModulePath case-insensitively and merges extra vars", () => {
+  const cleaned = OsUtils.windowsPowershellEnv(
+    { __LEVAIN_TEST: "1" },
+    { PATH: "C:\\Windows", PSModulePath: "C:\\Program Files\\PowerShell\\7\\Modules", psmodulepath: "dup" },
+  );
+  assertEquals(cleaned, { PATH: "C:\\Windows", __LEVAIN_TEST: "1" });
+
+  const defaultCleaned = OsUtils.windowsPowershellEnv();
+  assert(
+    !Object.keys(defaultCleaned).some((k) => k.toLowerCase() === "psmodulepath"),
+    "default windowsPowershellEnv must strip PSModulePath",
+  );
+});

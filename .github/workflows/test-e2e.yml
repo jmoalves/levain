@@ -65,11 +65,13 @@ jobs:
           & cmd.exe /c "scripts\devLevain.cmd" $denoVer
           if ($LASTEXITCODE -ne 0) { throw "devLevain.cmd failed with exit code $LASTEXITCODE" }
 
-          & cmd.exe /c "scripts\levain-build.cmd" "target"
+          $targetDir = Join-Path $env:GITHUB_WORKSPACE "target"
+          & cmd.exe /c "scripts\levain-build.cmd" $targetDir
           if ($LASTEXITCODE -ne 0) { throw "levain-build.cmd failed with exit code $LASTEXITCODE" }
 
           $levainHome = Join-Path $HOME "levain"
-          & "target\build\levain.exe" --addRepo "https://github.com/$($env:REPOSITORY)-pkgs.git" --levainHome $levainHome --skip-levain-updates --skip-auto-clean install --force levain
+          $builtExe = Join-Path $targetDir "build\levain.exe"
+          & $builtExe --addRepo "https://github.com/$($env:REPOSITORY)-pkgs.git" --levainHome $levainHome --skip-levain-updates --skip-auto-clean install --force levain
           if ($LASTEXITCODE -ne 0) { throw "levain install failed with exit code $LASTEXITCODE" }
 
           Add-Content -Path $env:GITHUB_PATH -Value (Join-Path $levainHome "levain")
