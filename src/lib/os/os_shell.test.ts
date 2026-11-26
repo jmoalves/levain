@@ -315,21 +315,72 @@ Deno.test("OsShell.openShell and execute handle saveVar, stripCRLF, spawn, and i
     await shell2.openShell(["bad"]);
     assertEquals(config.getVar("ERR_VAR"), "partial");
 
-    // 3. Non-saveVar uses spawn(): success, error, and ignoreErrors
+    // 3. Non-interactive spawn pipes stdout/stderr into logger (redacting passwords) while interactive uses inherit
+    const logger = await TestHelper.setupTestLogger();
+    config.password = "TopSecret#9";
+    const makeStream = (chunks: string[]) =>
+      new ReadableStream<Uint8Array>({
+        start(controller) {
+          for (const chunk of chunks) {
+            controller.enqueue(encoder.encode(chunk));
+          }
+          controller.close();
+        },
+      });
+
     let spawnSuccess = true;
     (Deno as { Command: unknown }).Command = class FakeCommand {
       spawn() {
-        return { status: Promise.resolve({ success: spawnSuccess, code: spawnSuccess ? 0 : 9 }) };
+        return {
+          stdout: makeStream(["first ", "line\r\npass=TopSecret#9\ntrailing"]),
+          stderr: makeStream(["'yarn' is not recognized\r\n"]),
+          status: Promise.resolve({ success: spawnSuccess, code: spawnSuccess ? 0 : 9 }),
+        };
       }
     };
     const shell3 = new OsShell(config, ["abc"], true);
+    const nonInteractiveOpt = await shell3.prepareShellOptions(["yarn", "--version"]);
+    assertEquals(nonInteractiveOpt.stdout, "piped");
+    assertEquals(nonInteractiveOpt.stderr, "piped");
+    assertEquals(nonInteractiveOpt.stdin, "inherit");
+
     await shell3.openShell(["ok"]);
+    assert(logger.messages.some((m) => m === "INFO first line"));
+    assert(logger.messages.some((m) => m === "INFO pass=******"));
+    assert(logger.messages.some((m) => m === "INFO trailing"));
+    assert(logger.messages.some((m) => m === "ERROR 'yarn' is not recognized"));
+    assertEquals(logger.messages.some((m) => m.includes("TopSecret#9")), false);
 
     spawnSuccess = false;
     await assertRejects(() => shell3.openShell(["fail"]), Error, "CMD terminated with code 9");
 
     shell3.ignoreErrors = true;
     await shell3.openShell(["fail"]);
+
+    // 4. Interactive shell keeps inherit stdio and does not read piped streams
+    const interactiveShell = new OsShell(config, ["abc"], true);
+    interactiveShell.interactive = true;
+    const interactiveOpt = await interactiveShell.prepareShellOptions([]);
+    assertEquals(interactiveOpt.stdout, "inherit");
+    assertEquals(interactiveOpt.stderr, "inherit");
+    assertEquals(interactiveOpt.stdin, "inherit");
+    (Deno as { Command: unknown }).Command = class FakeCommand {
+      spawn() {
+        return {
+          get stdout() {
+            throw new TypeError("stdout is not piped");
+          },
+          get stderr() {
+            throw new TypeError("stderr is not piped");
+          },
+          status: Promise.resolve({ success: true, code: 0 }),
+        };
+      }
+    };
+    await interactiveShell.openShell([]);
+
+    // Undefined stream is a safe no-op
+    await OsShell.streamToLog(undefined, () => {}, config);
   } finally {
     (Deno as { Command: unknown }).Command = OrigCommand;
     winStub.restore();
