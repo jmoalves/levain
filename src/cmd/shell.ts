@@ -8,6 +8,7 @@ import OsUtils from "../lib/os/os_utils.ts";
 import Loader from "../lib/loader.ts";
 
 import type Command from "./command.ts";
+import Install from "./install.ts";
 import type Package from "../lib/package/package.ts";
 import { resolvePackageActions } from "../lib/package/package_actions.ts";
 import { InstanceLock } from "../lib/fs/instance_lock.ts";
@@ -53,12 +54,16 @@ export default class Shell implements Command {
     const lock = await InstanceLock.acquire(this.config.configPaths.levainLockPath, { command: "shell" });
     try {
       await OsUtils.sanitizeUserPath();
-      if (this.config.shellCheckForUpdate) {
-        await this.loader.command("install", pkgNames);
-      } else {
-        await this.loader.command("install", ["--noUpdate"].concat(pkgNames));
+      const installer = new Install(this.config);
+      const changed = await installer.installPackages(pkgNames, {
+        force: false,
+        noUpdate: !this.config.shellCheckForUpdate,
+        promptForUpdates: true,
+        strictMinVersion: false,
+      });
+      if (changed) {
+        await this.config.repositoryManager.reloadInstalled();
       }
-      await this.config.repositoryManager.reload();
     } finally {
       lock.release();
     }

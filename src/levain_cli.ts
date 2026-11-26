@@ -138,8 +138,8 @@ export default class LevainCli {
         );
       }
 
-      // Sanitize user PATH only for locked mutating commands (shell sanitizes inside its install lock)
-      if (myArgs["levain-upgrade"] || isActivatePre || LevainCli.SANITIZE_PATH_COMMANDS.has(cmd)) {
+      // Sanitize user PATH only for locked mutating commands (shell and activatePre sanitize inside Shell.installPackages)
+      if (myArgs["levain-upgrade"] || LevainCli.SANITIZE_PATH_COMMANDS.has(cmd)) {
         await measurePhase("sanitizeUserPath", () => OsUtils.sanitizeUserPath());
       }
 

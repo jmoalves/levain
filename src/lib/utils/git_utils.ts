@@ -149,32 +149,22 @@ export default class GitUtils {
       workingDir,
     );
 
-    const headSha = (
+    const counts = (
       await OsUtils.runAndLog(
-        [this.gitCmd, "rev-parse", "HEAD"],
+        [this.gitCmd, "rev-list", "--left-right", "--count", "HEAD...FETCH_HEAD"],
         workingDir,
       )
     ).trim();
+    const [aheadStr, behindStr] = counts.split(/\s+/);
+    const ahead = Number(aheadStr);
+    const behind = Number(behindStr);
 
-    const remoteSha = (
-      await OsUtils.runAndLog(
-        [this.gitCmd, "rev-parse", "FETCH_HEAD"],
-        workingDir,
-      )
-    ).trim();
-
-    if (headSha === remoteSha) {
+    if (ahead === 0 && behind === 0) {
       return false;
     }
 
-    // Is local behind remote?
-    try {
-      await OsUtils.runAndLog(
-        [this.gitCmd, "merge-base", "--is-ancestor", "HEAD", "FETCH_HEAD"],
-        workingDir,
-      );
-
-      log.debug(t("lib.utils.git_utils.updating", { workingDir, branchName, headSha, remoteSha }));
+    if (ahead === 0 && behind > 0) {
+      log.debug(t("lib.utils.git_utils.updating", { workingDir, branchName, behind }));
 
       // Fast-forward only. Never rewrite or merge.
       await OsUtils.runAndLog(
@@ -183,32 +173,13 @@ export default class GitUtils {
       );
 
       return true;
-    } catch {
-      // HEAD is not an ancestor of FETCH_HEAD
     }
 
-    // Is remote behind local?
-    let message = t("lib.utils.git_utils.commits_diverged", { workingDir, remoteName, branchName });
-    try {
-      await OsUtils.runAndLog(
-        [this.gitCmd, "merge-base", "--is-ancestor", "FETCH_HEAD", "HEAD"],
-        workingDir,
-      );
-
-
-      throw new NonRetryableGitError(message);
-    } catch (error) {
-      if (
-        error instanceof NonRetryableGitError &&
-        error.message.includes(message)
-      ) {
-        throw error;
-      }
+    if (behind === 0) {
+      throw new NonRetryableGitError(t("lib.utils.git_utils.commits_diverged", { workingDir, remoteName, branchName }));
     }
 
-    // Neither side is ancestor of the other => diverged
-    message =  t("lib.utils.git_utils.commits_diverged", { workingDir, remoteName, branchName });
-    throw new NonRetryableGitError(message);
+    throw new NonRetryableGitError(t("lib.utils.git_utils.branched_diverged", { workingDir, remoteName, branchName }));
   }
 
   async update(workingDir: string) {

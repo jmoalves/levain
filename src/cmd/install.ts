@@ -59,7 +59,7 @@ export default class Install implements Command {
     });
   }
 
-  async installPackages(pkgNames: string[], options: InstallOptions = {}) {
+  async installPackages(pkgNames: string[], options: InstallOptions = {}): Promise<boolean> {
     if (pkgNames.length == 0) {
       throw new Error(t("cmd.install.noPackages"));
     }
@@ -132,14 +132,18 @@ export default class Install implements Command {
 
     const pkgNameSet = new Set(pkgNames);
     const bkpTag = this.bkpTag();
+    let anyChanged = false;
     for (const pkg of pkgs) {
       const forcePkg = force && pkgNameSet.has(pkg.name);
-      await this.installPackage(bkpTag, pkg, forcePkg, shouldUpdate, strictMinVersion);
+      if (await this.installPackage(bkpTag, pkg, forcePkg, shouldUpdate, strictMinVersion)) {
+        anyChanged = true;
+      }
     }
 
     log.debug("");
     log.debug("-----------------");
     log.debug(t("cmd.install.finished", { pkgNames: pkgNames }));
+    return anyChanged;
   }
 
   private async installPackage(
@@ -148,9 +152,9 @@ export default class Install implements Command {
     force: boolean = false,
     shouldUpdate: boolean = true,
     strictMinVersion: boolean = false,
-  ) {
+  ): Promise<boolean> {
     if (!this.config) {
-      return;
+      return false;
     }
 
     const timer = new Timer();
@@ -258,6 +262,7 @@ export default class Install implements Command {
     }
 
     log.debug(t("cmd.install.pkgTook", { pkg: pkg.name, timer: timer.humanize() }));
+    return shouldInstall;
   }
 
   private async savePreviousInstall(bkpTag: string, pkg: Package): Promise<void> {
