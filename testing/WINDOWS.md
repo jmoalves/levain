@@ -36,7 +36,7 @@ Automated workflows in `.github/workflows/`:
 
 * **`test-unit.yml`** (every push, PR, weekly, and manual): runs fast `static-checks` on `ubuntu-latest` (`deno check`, `deno lint`, `deno task check:i18n`, tooling tests) and `unit-win` on `windows-latest` (`scripts\test.cmd --coverage --checkSources` + Codecov upload).
 * **`checkSources.yml`** (weekly and manual): runs `scripts\check-sources.cmd` with a clean `DENO_DIR`.
-* **`test-e2e.yml`** (on release published, weekly, and manual with optional `levainVersion`): installs Levain via `install.ps1`, installs recipes from `levain-pkgs`, runs `levain update`, and executes Microsoft Security DevOps scans.
+* **`test-e2e.yml`** (on release published, weekly, and manual via `workflow_dispatch` with optional `levainVersion`, `buildFromRef`, and `packages`): installs Levain via `install.ps1` (or compiles `levain.exe` from the current branch when `buildFromRef=true`), installs recipes from `levain-pkgs`, runs `levain update`, executes real-effect verification via `testing/e2e/verify-e2e.ts` (compiled CLI commands, `levain activate` in PowerShell/CMD/Git Bash, real tool execution, `explain`/`explain --uninstall`, and 2-process `InstanceLock` concurrency), and runs Microsoft Security DevOps scans.
 
 ---
 
@@ -93,6 +93,28 @@ deno task test:windows -- --keep-remote
    * Prepends the isolated `bin` and `extra-bin\windows\git\cmd` directories to `PATH` for the session.
    * Executes `deno check levain.ts`, `deno lint`, and `deno test --allow-all --parallel` (plus any forwarded test arguments).
 5. Removes the temporary archive, script, and remote working directory (unless `--keep-remote` is set) and exits with the remote test exit code.
+
+### Running Synthetic End-to-End Tests Over SSH (`deno task test:e2e:windows`)
+
+Using the **exact same** `LEVAIN_TEST_SSH_CONFIG` and `LEVAIN_TEST_HOST` contract (and skipping cleanly with exit 0 when unset), `testing/run-windows-e2e.ts` compiles or installs a real `levain.exe` into an isolated remote directory, installs recipes, runs `levain update`, and executes `testing/e2e/verify-e2e.ts` (CLI commands, `levain activate` across PowerShell/CMD/Git Bash, real tool probes, `explain --uninstall`, and 2-process `InstanceLock` concurrency):
+
+```bash
+# Build and validate the current branch end-to-end against default levain-pkgs (git, jdk-21, maven)
+deno task test:e2e:windows
+
+# Validate a specific published pre-release via install.ps1
+deno task test:e2e:windows -- --levain-version 1.1.0
+
+# Validate external/custom recipe catalogs and packages with an optional custom TypeScript verification script
+deno task test:e2e:windows -- \
+  --repo https://github.com/jmoalves/levain-pkgs.git \
+  --repo https://example.org/org/custom-recipes.git \
+  --packages git,jdk-21,maven \
+  --verify /path/to/custom-verify.ts
+
+# Run locally on a Windows workstation (uses an isolated temporary levainHome)
+deno task test:e2e:windows -- --local --packages git,jdk-21,maven
+```
 
 ---
 

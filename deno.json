@@ -68,6 +68,7 @@
     "dev": "deno run --allow-all --watch levain.ts",
     "test": "deno test --allow-all",
     "test:windows": "deno run --allow-all testing/run-windows-tests.ts",
+    "test:e2e:windows": "deno run --allow-all testing/run-windows-e2e.ts",
     "check:i18n": "deno run --frozen --allow-all scripts/integrate.ts --check-i18n",
     "integrate": "deno run --allow-all scripts/integrate.ts",
     "integrate:quick": "deno run --allow-all scripts/integrate.ts --quick",

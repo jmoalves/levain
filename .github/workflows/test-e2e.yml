@@ -7,8 +7,20 @@ on:
   workflow_dispatch:
     inputs:
       levainVersion:
-        description: "Levain version (optional - Default=latest)"
+        description: "Published Levain version (optional - Default=latest; ignored when buildFromRef=true)"
         required: false
+      buildFromRef:
+        description: "Build and test levain.exe from the current branch/ref before tagging a release"
+        required: false
+        type: boolean
+        default: false
+      packages:
+        description: "Optional package subset to install (space/comma separated; empty = full levain-pkgs set)"
+        required: false
+      denoVersion:
+        description: "Deno version for buildFromRef and verification script (optional - Default=2.9.8)"
+        required: false
+        default: "2.9.8"
 
   release:
     types: [published]
@@ -21,50 +33,86 @@ jobs:
   e2e-win:
     runs-on: windows-latest
     timeout-minutes: 120
+    permissions:
+      contents: read
 
     steps:
       - name: Echo
         shell: pwsh
         env:
           GITHUB_REF_VALUE: ${{ github.ref }}
-        run: Write-Output "REF=$env:GITHUB_REF_VALUE"
+          BUILD_FROM_REF: ${{ github.event.inputs.buildFromRef }}
+        run: Write-Output "REF=$env:GITHUB_REF_VALUE BUILD_FROM_REF=$env:BUILD_FROM_REF"
 
-      - name: Install Levain
+      - name: Checkout repository (for verification script and optional branch build)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Levain from current branch (buildFromRef)
+        if: ${{ github.event.inputs.buildFromRef == 'true' }}
+        shell: pwsh
+        env:
+          INPUT_DENO_VERSION: ${{ github.event.inputs.denoVersion }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          $ErrorActionPreference = "Stop"
+          $denoVer = if ($env:INPUT_DENO_VERSION) { $env:INPUT_DENO_VERSION.Trim() } else { "2.9.8" }
+          if ($denoVer -notmatch '^[0-9]+\.[0-9]+\.[0-9]+$') {
+            throw "Invalid denoVersion: $denoVer"
+          }
+          & cmd.exe /c "scripts\devLevain.cmd" $denoVer
+          if ($LASTEXITCODE -ne 0) { throw "devLevain.cmd failed with exit code $LASTEXITCODE" }
+
+          & cmd.exe /c "scripts\levain-build.cmd" "target"
+          if ($LASTEXITCODE -ne 0) { throw "levain-build.cmd failed with exit code $LASTEXITCODE" }
+
+          $levainHome = Join-Path $HOME "levain"
+          & "target\build\levain.exe" --addRepo "https://github.com/$($env:REPOSITORY)-pkgs.git" --levainHome $levainHome --skip-levain-updates --skip-auto-clean install --force levain
+          if ($LASTEXITCODE -ne 0) { throw "levain install failed with exit code $LASTEXITCODE" }
+
+          Add-Content -Path $env:GITHUB_PATH -Value (Join-Path $levainHome "levain")
+
+      - name: Install Levain from published release
+        if: ${{ github.event.inputs.buildFromRef != 'true' }}
+        shell: pwsh
         env:
           INPUT_LEVAIN_VERSION: ${{ github.event.inputs.levainVersion }}
           RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
           REPOSITORY: ${{ github.repository }}
         run: |
+          $ErrorActionPreference = "Stop"
           # Which levain version?
           # The manual input wins. When triggered by a published release, use
           # that release - it is still flagged as a pre-release at this point,
           # so the "latest" URL would point to the PREVIOUS release.
-          $levainVersion = $env:INPUT_LEVAIN_VERSION
-          if (! $levainVersion) {
+          $levainVersion = if ($env:INPUT_LEVAIN_VERSION) { $env:INPUT_LEVAIN_VERSION.Trim() } else { "" }
+          if (-not $levainVersion -and $env:RELEASE_TAG_NAME) {
             $levainVersion = $env:RELEASE_TAG_NAME -replace '^v', ''
           }
           if ($levainVersion -and $levainVersion -notmatch '^[0-9]+\.[0-9]+\.[0-9]+$') {
             throw "Invalid levainVersion: $levainVersion"
           }
 
-          # Install script - from the release itself when a version is known.
-          # Otherwise use the script from master, because the
-          # releases/latest URL may not exist for branches/forks running e2e.
-          $scriptUrl = if ($levainVersion) {
-            "https://github.com/$($env:REPOSITORY)/releases/download/v${levainVersion}/install.ps1"
-          } else {
-            "https://raw.githubusercontent.com/$($env:REPOSITORY)/master/install/install.ps1"
-          }
-          Write-Output "=== install.ps1 from $scriptUrl"
-
-          # Headless
           $levainHeadless = "true"
-
-          # Install
-          iwr $scriptUrl | iex
+          if ($levainVersion) {
+            $scriptUrl = "https://github.com/$($env:REPOSITORY)/releases/download/v${levainVersion}/install.ps1"
+            Write-Output "=== install.ps1 from $scriptUrl"
+            $tmpInstall = Join-Path $env:TEMP "levain-e2e-install.ps1"
+            try {
+              Invoke-WebRequest -Uri $scriptUrl -OutFile $tmpInstall -UseBasicParsing
+              & $tmpInstall
+            } finally {
+              Remove-Item -LiteralPath $tmpInstall -Force -ErrorAction SilentlyContinue
+            }
+          } else {
+            $localInstall = Join-Path $env:GITHUB_WORKSPACE "install\install.ps1"
+            Write-Output "=== install.ps1 from local checkout $localInstall"
+            & $localInstall
+          }
 
           # Workaround - ADD Levain to GitHub PATH
-          Add-Content $env:GITHUB_PATH "$HOME\levain\levain"
+          Add-Content -Path $env:GITHUB_PATH -Value "$HOME\levain\levain"
 
       - name: Levain list
         shell: cmd
@@ -75,36 +123,50 @@ jobs:
         uses: microsoft/security-devops-action@cf28f87c67770dbaa208cce3665fafc849f77507 # v1.12.1
         id: msdo-levain
 
-      - name: Levain install EVERYTHING
-        shell: cmd
+      - name: Levain install packages
+        shell: pwsh
+        env:
+          INPUT_PACKAGES: ${{ github.event.inputs.packages }}
         run: |
-          @echo off
-
-          SETLOCAL EnableDelayedExpansion
-
-          set pkgList=
-          for /f "usebackq tokens=*" %%a in (`powershell "levain list | Select-String -Pattern '^   [a-zA-Z0-9]' | foreach{ $_.ToString().Trim() }"`) do (
-              REM Remove packages known to be problematic in headless installation
-              REM However, beware they can be installed as dependencies
-              set ignore=false
-              :: prompt for name, email, etc
-              if "%%a" == "git-config" set ignore=true
-              :: bug in some eclipse recipes - perhaps they have been removed from mirror
-              if "%%a" == "eclipse-2019-12" set ignore=true
-              if "%%a" == "eclipse-2020-09" set ignore=true
-              if "%%a" == "eclipse-2021-03" set ignore=true
-              if "%%a" == "eclipse-2021-06" set ignore=true
-              :: access denied
-              if "%%a" == "postman" set ignore=true
-              :: corrupted file
-              if "%%a" == "tomcat-9" set ignore=true
-
-              if not "!ignore!" == "true" set "pkgList=!pkgList! %%a"
+          $ErrorActionPreference = "Stop"
+          $ignored = @(
+            # prompt for name, email, etc
+            "git-config",
+            # bug in some eclipse recipes - perhaps they have been removed from mirror
+            "eclipse-2019-12",
+            "eclipse-2020-09",
+            "eclipse-2021-03",
+            "eclipse-2021-06",
+            # access denied
+            "postman",
+            # corrupted file
+            "tomcat-9"
           )
 
-          levain install %pkgList%
+          $pkgList = @()
+          if ($env:INPUT_PACKAGES -and $env:INPUT_PACKAGES.Trim()) {
+            $pkgList = @($env:INPUT_PACKAGES -split '[,\s]+' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+          } else {
+            $listed = levain list | Select-String -Pattern '^   [a-zA-Z0-9]' | ForEach-Object { $_.ToString().Trim() }
+            $pkgList = @($listed | Where-Object { $ignored -notcontains $_ })
+          }
 
-          ENDLOCAL
+          if ($pkgList.Count -eq 0) {
+            throw "No packages resolved to install."
+          }
+
+          foreach ($pkg in $pkgList) {
+            if ($pkg -notmatch '^[a-zA-Z0-9._-]+$') {
+              throw "Invalid package name: $pkg"
+            }
+          }
+
+          Write-Output "=== Installing packages ($($pkgList.Count)): $($pkgList -join ' ')"
+          $levainExe = Join-Path $HOME "levain\levain\build\levain.exe"
+          & $levainExe --skip-levain-updates --skip-auto-clean install @pkgList
+          if ($LASTEXITCODE -ne 0) {
+            throw "levain install failed with exit code $LASTEXITCODE"
+          }
 
       - name: Run Microsoft Security DevOps
         uses: microsoft/security-devops-action@cf28f87c67770dbaa208cce3665fafc849f77507 # v1.12.1
@@ -114,6 +176,54 @@ jobs:
         shell: cmd
         run: |
           levain update
+
+      - name: Verify real Levain effects (CLI, activate in CMD/PowerShell/Git Bash, tools, concurrency)
+        shell: pwsh
+        env:
+          INPUT_LEVAIN_VERSION: ${{ github.event.inputs.levainVersion }}
+          RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
+          BUILD_FROM_REF: ${{ github.event.inputs.buildFromRef }}
+          INPUT_PACKAGES: ${{ github.event.inputs.packages }}
+          INPUT_DENO_VERSION: ${{ github.event.inputs.denoVersion }}
+        run: |
+          $ErrorActionPreference = "Stop"
+          $denoVer = if ($env:INPUT_DENO_VERSION) { $env:INPUT_DENO_VERSION.Trim() } else { "2.9.8" }
+          if ($denoVer -notmatch '^[0-9]+\.[0-9]+\.[0-9]+$') {
+            throw "Invalid denoVersion: $denoVer"
+          }
+
+          $denoBinDir = Join-Path $env:GITHUB_WORKSPACE "bin"
+          $denoExe = Join-Path $denoBinDir "deno.exe"
+          if (-not (Test-Path -LiteralPath $denoExe -PathType Leaf)) {
+            New-Item -ItemType Directory -Path $denoBinDir -Force | Out-Null
+            & cmd.exe /c (Join-Path $env:GITHUB_WORKSPACE "githubScripts\get-deno.cmd") $denoBinDir $denoVer
+            if ($LASTEXITCODE -ne 0) { throw "get-deno.cmd failed with exit code $LASTEXITCODE" }
+          }
+
+          $verifyScript = Join-Path $env:GITHUB_WORKSPACE "testing\e2e\verify-e2e.ts"
+          $verifyArgs = @("run", "--allow-all", $verifyScript, "--levain-home", "$HOME\levain")
+
+          if ($env:BUILD_FROM_REF -ne "true") {
+            $expectedVer = if ($env:INPUT_LEVAIN_VERSION) { $env:INPUT_LEVAIN_VERSION.Trim() } else { "" }
+            if (-not $expectedVer -and $env:RELEASE_TAG_NAME) {
+              $expectedVer = $env:RELEASE_TAG_NAME -replace '^v', ''
+            }
+            if ($expectedVer) {
+              $verifyArgs += @("--expected-version", $expectedVer)
+            }
+          }
+
+          if ($env:INPUT_PACKAGES -and $env:INPUT_PACKAGES.Trim()) {
+            $pkgs = @($env:INPUT_PACKAGES -split '[,\s]+' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+            if ($pkgs.Count -gt 0) {
+              $verifyArgs += @("--packages", ($pkgs -join ","))
+            }
+          }
+
+          & $denoExe @verifyArgs
+          if ($LASTEXITCODE -ne 0) {
+            throw "verify-e2e.ts failed with exit code $LASTEXITCODE"
+          }
 
       - name: Run Microsoft Security DevOps
         uses: microsoft/security-devops-action@cf28f87c67770dbaa208cce3665fafc849f77507 # v1.12.1
