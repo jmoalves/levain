@@ -99,6 +99,8 @@ Deno.test("cli_parser should route every public command, subcommand flags, globa
     { input: ["info", "--", "jdk"], expectedPositional: ["info", "--", "jdk"] },
     { input: ["explain"], expectedPositional: ["explain"] },
     { input: ["explain", "--raw", "jdk"], expectedPositional: ["explain", "--raw", "jdk"] },
+    { input: ["explain", "--uninstall"], expectedPositional: ["explain", "--uninstall"] },
+    { input: ["explain", "--uninstall", "jdk"], expectedPositional: ["explain", "--uninstall", "jdk"] },
     { input: ["explain", "jdk"], expectedPositional: ["explain", "jdk"] },
     { input: ["explain", "jdk", "--", "-extra"], expectedPositional: ["explain", "jdk", "--", "-extra"] },
     {
@@ -195,11 +197,26 @@ Deno.test("cli_parser should reject unknown commands, unknown options, and inval
   );
   assertEquals(shortOptErr.message.includes("--force"), false);
 
-  // Unknown option suggestion for explain (--raw) and required arity checks for clone
+  // Unknown option suggestion for explain (--raw, --uninstall) and required arity checks for clone
   await assertRejects(
     async () => await parseCliArgs(["explain", "--ra", "jdk"]),
     CliValidationError,
     "--raw",
+  );
+  await assertRejects(
+    async () => await parseCliArgs(["explain", "--uninstal", "jdk"]),
+    CliValidationError,
+    "--uninstall",
+  );
+  await assertRejects(
+    async () => await parseCliArgs(["explain", "--raw", "--uninstall", "jdk"]),
+    CliValidationError,
+    t("cmd.explain.uninstall.rawConflict"),
+  );
+  await assertRejects(
+    async () => await parseCliArgs(["uninstall", "jdk"]),
+    CliValidationError,
+    "levain explain --uninstall",
   );
   await assertRejects(async () => await parseCliArgs(["clone"]), CliValidationError);
   await assertRejects(

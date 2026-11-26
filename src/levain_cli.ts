@@ -101,6 +101,9 @@ export default class LevainCli {
     const isActivateCmd = cmd === "_activate-machine" && myArgs._[0] === "cmd";
     const isActivatePre = cmd === "_activate-machine" && myArgs._[0] === "pre";
     const isActivateInit = cmd === "_activate-machine" && myArgs._[0] === "init";
+    const isExplainFullUninstall = cmd === "explain" &&
+      myArgs._.includes("--uninstall") &&
+      myArgs._.filter((arg: string) => !arg.startsWith("-")).length === 0;
     const needsLock = Boolean(
       myArgs["levain-upgrade"] || isActivatePre || isActivateInit || LevainCli.LOCKED_COMMANDS.has(cmd),
     );
@@ -130,7 +133,7 @@ export default class LevainCli {
             extraRepos: myArgs.addRepo,
             tempRepos: myArgs.tempRepo,
             forceRefresh: cmd === "update",
-            installedOnly: isActivateCmd,
+            installedOnly: isActivateCmd || isExplainFullUninstall,
           })
         );
       }

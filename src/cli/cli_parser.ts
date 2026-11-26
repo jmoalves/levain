@@ -279,16 +279,23 @@ export function createLevainCommand(
   const explainCmd = new Command()
     .description(t("cli.cmd.explain.description"))
     .option("--raw", t("cli.cmd.explain.raw"))
+    .option("--uninstall", t("cli.cmd.explain.uninstall"))
     .example(t("cli.example.explain.project"), "levain explain")
     .example(t("cli.example.explain.playbook"), "levain explain maven")
     .example(t("cli.example.explain.markdown"), "levain explain maven > setup-guide.md")
     .example(t("cli.example.explain.raw"), "levain explain --raw maven")
+    .example(t("cli.example.explain.uninstallAll"), "levain explain --uninstall > cleanup.md")
+    .example(t("cli.example.explain.uninstallPackage"), "levain explain --uninstall maven")
     .arguments("[packages...:string]")
     .action((opts, ...packages: string[]) => {
-      assertNoUnknownOptionTokens(packages, ["--raw"]);
+      assertNoUnknownOptionTokens(packages, ["--raw", "--uninstall"]);
+      if (opts.raw && opts.uninstall) {
+        throw new ValidationError(t("cmd.explain.uninstall.rawConflict"));
+      }
       const literal = explainCmd.getLiteralArgs();
       const subArgs: string[] = [];
       if (opts.raw) subArgs.push("--raw");
+      if (opts.uninstall) subArgs.push("--uninstall");
       subArgs.push(...packages);
       if (literal.length > 0) subArgs.push("--", ...literal);
       const myArgs = mapGlobalOptions(opts);
@@ -337,7 +344,7 @@ const SUBCOMMAND_OPTIONS: Record<string, string[]> = {
   activate: ["--skip-pre"],
   clean: ["--cache", "--backup", "--temp", "--logs", "--all", "--deep"],
   info: ["--verbose"],
-  explain: ["--raw"],
+  explain: ["--raw", "--uninstall"],
   clone: ["--dirs"],
 };
 
@@ -345,6 +352,9 @@ function localizeValidationError(err: ValidationError, cmdArgs: string[]): Valid
   const unknownCmdMatch = err.message.match(/^Unknown command "([^"]+)"/);
   if (unknownCmdMatch) {
     const unknownCmd = unknownCmdMatch[1];
+    if (unknownCmd === "uninstall" || unknownCmd === "remove") {
+      return new ValidationError(t("cli.error.uninstallHint", { cmd: unknownCmd }));
+    }
     const similar = [...StringUtils.findSimilar(unknownCmd, PUBLIC_COMMAND_NAMES, 5)];
     const base = t("cmd.command_factory.notFound", { cmd: unknownCmd });
     const hint = similar.length > 0 ? ` ${t("cli.error.didYouMean", { suggestions: similar.join(", ") })}` : "";
