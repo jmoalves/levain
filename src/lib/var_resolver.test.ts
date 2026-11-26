@@ -324,3 +324,60 @@ Deno.test("VarResolver.getVarValue prompts missing levain.* user attributes, res
     loginStub.restore();
   }
 });
+
+Deno.test("VarResolver resolves reserved levain variables case-insensitively and protects mixed-case levain.password", async () => {
+  const config = new Config({ levainCache: "custom-cache/" });
+  config.login = "jdoe";
+  config.password = "pw${shouldNotExpand}$&!";
+  config.email = "jdoe@example.org";
+  config.fullname = "John Doe";
+
+  assertEquals(await VarResolver.getVarValue("LEVAIN.LOGIN", undefined, config), "jdoe");
+  assertEquals(await VarResolver.getVarValue("LeVaIn.Email", undefined, config), "jdoe@example.org");
+  assertEquals(await VarResolver.getVarValue("LeVaIn.FullName", undefined, config), "John Doe");
+  assertEquals(await VarResolver.getVarValue("LEVAIN.HOMEDIR", undefined, config), config.configPaths.levainHome);
+  assertEquals(await VarResolver.getVarValue("LeVaIn.CacheDir", undefined, config), config.configPaths.levainCacheDir);
+  assertEquals(await VarResolver.getVarValue("LEVAINHOME", undefined, config), config.configPaths.levainHome);
+  assertEquals(await VarResolver.getVarValue("LeVaInCaChE", undefined, config), "custom-cache/");
+
+  // Mixed-case levain.password must still use deferred sentinel (never re-expanding ${shouldNotExpand})
+  assertEquals(
+    await VarResolver.replaceVars("p=${LeVaIn.PaSsWoRd}", undefined, config),
+    "p=pw${shouldNotExpand}$&!",
+  );
+  assertEquals(
+    await VarResolver.replaceVars("${LeVaIn.PaSsWoRd | urlEncode}", undefined, config),
+    StringUtils.encodeUrlComponent("pw${shouldNotExpand}$&!"),
+  );
+
+  // Reserved LEVAIN_* / _LEVAIN_* / __LEVAIN_* prefixes resolve exclusively from OS env (never shadowed by YAML/config)
+  config.setVar("LEVAIN_SHADOW_TEST", "spoofed-config");
+  const shadowPkg = new MockPackage("shadow-pkg");
+  shadowPkg.yamlItem = (key: string) =>
+    key === "LEVAIN_SHADOW_TEST" ? "spoofed-yaml" : key === "indirectPw" ? "${LeVaIn.PaSsWoRd}" : undefined;
+  const pkgStub = stub(config.packageManager, "package", (name: string) => name === "shadow-pkg" ? shadowPkg : undefined);
+  const origEnvGet = Deno.env.get.bind(Deno.env);
+  const envStub = stub(Deno.env, "get", (key: string) =>
+    key === "LEVAIN_SHADOW_TEST" ? "real-env" : key === "_LEVAIN_OLD_PROMPT" ? "$P$G" : origEnvGet(key)
+  );
+  try {
+    assertEquals(await VarResolver.getVarValue("LEVAIN_SHADOW_TEST", "shadow-pkg", config), "real-env");
+    assertEquals(await VarResolver.getVarValue("_LEVAIN_OLD_PROMPT", "shadow-pkg", config), "$P$G");
+    assertEquals(await VarResolver.getVarValue("__LEVAIN_UNSET_ENV", "shadow-pkg", config), undefined);
+    assertEquals(await VarResolver.replaceVars("p=${indirectPw}", "shadow-pkg", config), "p=pw${shouldNotExpand}$&!");
+  } finally {
+    envStub.restore();
+    pkgStub.restore();
+  }
+
+  await assertRejects(
+    () => VarResolver.getVarValue("LEVAIN", undefined, config),
+    Error,
+    "Levain attribute LEVAIN is undefined",
+  );
+  await assertRejects(
+    () => VarResolver.getVarValue("LeVaIn.Unknown", undefined, config),
+    Error,
+    "Levain attribute LeVaIn.Unknown is undefined",
+  );
+});

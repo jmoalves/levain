@@ -1,6 +1,7 @@
 import UserInfoUtil from "./user_info/userinfo_util.ts";
 import type Config from "./config.ts";
 import HomePaths from "./paths/home_paths.ts";
+import { isReservedEnvPrefix } from "./reserved_words.ts";
 import StringUtils from "./utils/string_utils.ts";
 
 export interface VarResolutionContext {
@@ -98,7 +99,7 @@ export default class VarResolver {
 
         const varValue = VarResolver.applyFilters(resolvedInput, filters, myVar.name);
 
-        if (varName === "levain.password" || hadSecret) {
+        if (varName.toLowerCase() === "levain.password" || hadSecret) {
           const sentinel = `__LEVAIN_SECRET_${deferredSecrets.size}_${crypto.randomUUID()}__`;
           deferredSecrets.set(sentinel, varValue);
           replacedText = replacedText.replace(varText, () => sentinel);
@@ -141,9 +142,10 @@ export default class VarResolver {
   ): Promise<string | undefined> {
     // TODO: Refactor this... Use ChainOfResponsibility Pattern...
 
-    // We handle reserved words first
-    if (vName.match(/^levain\./)) {
-      switch (vName) {
+    // We handle reserved words first (case-insensitive)
+    const lowerName = vName.toLowerCase();
+    if (lowerName === "levain" || lowerName.startsWith("levain.")) {
+      switch (lowerName) {
         case "levain.login":
           if (!config.login) {
             await new UserInfoUtil().askLogin(config);
@@ -168,15 +170,21 @@ export default class VarResolver {
           }
           return config.fullname;
 
-        case "levain.homeDir":
+        case "levain.homedir":
           return config.configPaths.levainHome;
 
-        case "levain.cacheDir":
+        case "levain.cachedir":
           return config.configPaths.levainCacheDir;
 
         default:
           throw new Error(`Levain attribute ${vName} is undefined`);
       }
+    } else if (lowerName === "levainhome") {
+      return config.configPaths.levainHome;
+    } else if (lowerName === "levaincache") {
+      return config.getVar("levainCache");
+    } else if (isReservedEnvPrefix(vName)) {
+      return Deno.env.get(vName);
     } else if (vName == "home") {
       return HomePaths.homedir();
     } else if (vName.search(/^pkg\.(.+)\.([^.]*)/) != -1) {

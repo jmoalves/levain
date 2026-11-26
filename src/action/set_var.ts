@@ -2,6 +2,7 @@ import * as log from "@std/log";
 
 import type Config from "../lib/config.ts";
 import type Package from "../lib/package/package.ts";
+import { assertNotReservedVarName } from "../lib/reserved_words.ts";
 
 import type Action from "./action.ts";
 
@@ -18,6 +19,7 @@ export default class SetVarAction implements Action {
     }
 
     const varName = parameters[0];
+    assertNotReservedVarName(varName, "setVar");
     const value = parameters[1];
     log.debug(`SAVE VAR ${varName} <= ${value}`);
 

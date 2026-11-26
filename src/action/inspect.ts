@@ -4,6 +4,7 @@ import * as path from "@std/path";
 import type Config from "../lib/config.ts";
 import type Package from "../lib/package/package.ts";
 import { parseArgs } from "../lib/parse_args.ts";
+import { assertNotReservedVarName } from "../lib/reserved_words.ts";
 
 import type Action from "./action.ts";
 import { FileUtils } from "../lib/fs/file_utils.ts";
@@ -70,6 +71,10 @@ export default class Inspect implements Action {
       if (args.regExp[x].search(/^\/(.+)\/([a-z]*)$/) == -1) {
         throw new Error("You must use regExps - " + args.regExp[x]);
       }
+    }
+
+    for (const varName of args.saveVar) {
+      assertNotReservedVarName(varName, "inspect");
     }
   }
 }

@@ -549,6 +549,13 @@
       "errorReading": "Error reading config - {{filename}}",
       "noHomeValid": "No valid levainHome in your list"
     },
+    "reserved_words": {
+      "packageNotAllowed": "Package name '{{name}}' is reserved by Levain and cannot be defined in external recipe '{{file}}'.",
+      "packageCannotBeRemoved": "Package '{{name}}' is reserved by Levain and cannot be removed from the registry.",
+      "varNotAllowed": "Variable name '{{name}}' is reserved by Levain and cannot be set by action '{{action}}'.",
+      "envNotAllowed": "Environment variable name '{{name}}' is reserved by Levain and cannot be set by action '{{action}}'.",
+      "unknownYamlKey": "Unknown reserved YAML key '{{key}}' in package '{{pkg}}' ({{file}}). The 'levain' namespace ('levain', 'levain.*', 'levainHome', 'levainCache', 'levain_*', '_levain_*', '__levain_*') is reserved for Levain directives."
+    },
     "utils": {
       "error_utils": {
         "fileError": "Error while trying to {{operation}} {{filePath}}: {{err}}"

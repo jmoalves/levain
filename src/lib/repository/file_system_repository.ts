@@ -10,6 +10,8 @@ import FileSystemPackage from "../package/file_system_package.ts";
 import { Timer } from "../timer.ts";
 import ConsoleFeedback from "../utils/console_feedback.ts";
 import OsUtils from "../os/os_utils.ts";
+import LevainPaths from "../paths/levain_paths.ts";
+import { assertAllowedPackageName, isReservedPackageName } from "../reserved_words.ts";
 
 import AbstractRepository from "./abstract_repository.ts";
 import DirUtils from "../fs/dir_utils.ts";
@@ -223,6 +225,15 @@ export class FileSystemRepository extends AbstractRepository {
   }
 
   private async readPackage(yamlFile: string, installedRecipes: Set<string>): Promise<Package | undefined> {
+    const baseName = path.basename(yamlFile);
+    const packageName = baseName.replace(/\.levain(\.ya?ml)?/, "");
+    if (isReservedPackageName(packageName)) {
+      assertAllowedPackageName(packageName, yamlFile, [
+        LevainPaths.levainSrcDir,
+        this.config.configPaths.levainRegistryDir,
+      ]);
+    }
+
     let yamlStr: string | undefined = undefined;
     try {
       yamlStr = await Deno.readTextFile(yamlFile);
@@ -231,8 +242,6 @@ export class FileSystemRepository extends AbstractRepository {
       return undefined;
     }
 
-    const baseName = path.basename(yamlFile);
-    const packageName = baseName.replace(/\.levain(\.ya?ml)?/, "");
     log.debug(`readPackage ${packageName} ${yamlFile}`);
 
     const packageHome = path.join(this.config.configPaths.levainHome, packageName);

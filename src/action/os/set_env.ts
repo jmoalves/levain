@@ -3,6 +3,7 @@ import * as log from "@std/log";
 import type Config from "../../lib/config.ts";
 import type Package from "../../lib/package/package.ts";
 import { parseArgs } from "../../lib/parse_args.ts";
+import { assertNotReservedEnvVarName } from "../../lib/reserved_words.ts";
 import OsUtils from "../../lib/os/os_utils.ts";
 
 import type Action from "../action.ts";
@@ -36,6 +37,7 @@ export default class SetEnv implements Action {
 
     const key = myArgs?._[0];
     const value = myArgs?._[1];
+    assertNotReservedEnvVarName(key, "setEnv");
     log.debug(`ENV ${key} = ${value}`);
     this.config.setVar(key, value);
     this.config.context.action.setEnv.env[key] = value;

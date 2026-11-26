@@ -3,6 +3,7 @@ import * as log from "@std/log";
 import type Config from "../lib/config.ts";
 import type Package from "../lib/package/package.ts";
 import { parseArgs } from "../lib/parse_args.ts";
+import { assertNotReservedVarName } from "../lib/reserved_words.ts";
 import { OsShell } from "../lib/os/os_shell.ts";
 
 import type Action from "./action.ts";
@@ -27,6 +28,10 @@ export default class LevainShell implements Action {
         "ignoreErrors",
       ],
     });
+
+    if (myArgs.saveVar) {
+      assertNotReservedVarName(myArgs.saveVar, "levainShell");
+    }
 
     const osShell: OsShell = new OsShell(this.config, [pkg.name]);
     osShell.saveVar = myArgs.saveVar;

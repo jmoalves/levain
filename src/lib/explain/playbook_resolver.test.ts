@@ -161,3 +161,62 @@ Deno.test("PlaybookVarResolver should terminate cleanly on cyclic variable defin
   const result = resolver.resolve("prefix-${a}", cyclicPkg);
   assertStringIncludes(result, "prefix-");
 });
+
+Deno.test("PlaybookVarResolver resolves reserved levain variables case-insensitively and masks mixed-case passwords", () => {
+  const config = TestHelper.getConfig();
+  config.login = "alice";
+  config.password = "TopSecret!42";
+  config.email = "alice@example.org";
+  config.fullname = "Alice Doe";
+
+  const resolver = new PlaybookVarResolver(config);
+
+  // Mixed-case password must always render as placeholder (never expose raw secret)
+  const rawPw = resolver.resolve("${LeVaIn.PaSsWoRd}");
+  assertFalse(rawPw.includes("TopSecret!42"));
+  assertEquals(rawPw, t("cmd.explain.placeholder.password"));
+
+  const encodedPw = resolver.resolve("${LEVAIN.PASSWORD | urlEncode}");
+  assertFalse(encodedPw.includes("TopSecret!42"));
+  assertEquals(encodedPw, t("cmd.explain.placeholder.passwordUrlEncoded"));
+
+  // Reserved attributes and aliases are case-insensitive
+  assertEquals(resolver.resolve("${LEVAIN.LOGIN}"), "alice");
+  assertEquals(resolver.resolve("${LeVaIn.Email}"), "alice@example.org");
+  assertEquals(resolver.resolve("${LEVAIN.FULLNAME}"), "Alice Doe");
+  assertEquals(resolver.resolve("${LEVAIN.HOMEDIR}"), config.configPaths.levainHome);
+  assertEquals(resolver.resolve("${LeVaIn.CacheDir}"), config.configPaths.levainCacheDir);
+  assertEquals(resolver.resolve("${LEVAINHOME}"), config.configPaths.levainHome);
+  assertEquals(resolver.resolve("${LeVaInCaChE}"), config.getVar("levainCache"));
+
+  // Unknown reserved attributes render as runtime placeholders
+  assertEquals(
+    resolver.resolve("${LEVAIN}"),
+    t("cmd.explain.placeholder.runtimeVar", { name: "LEVAIN" }),
+  );
+  assertEquals(
+    resolver.resolve("${LeVaIn.Unknown}"),
+    t("cmd.explain.placeholder.runtimeVar", { name: "LeVaIn.Unknown" }),
+  );
+
+  // Unset mixed-case user identity renders placeholders without prompting
+  const unsetConfig = TestHelper.getConfig();
+  const unsetResolver = new PlaybookVarResolver(unsetConfig);
+  assertEquals(unsetResolver.resolve("${LEVAIN.LOGIN}"), t("cmd.explain.placeholder.login"));
+  assertEquals(unsetResolver.resolve("${LeVaIn.Email}"), t("cmd.explain.placeholder.email"));
+  assertEquals(unsetResolver.resolve("${LEVAIN.FULLNAME}"), t("cmd.explain.placeholder.fullname"));
+
+  // Reserved env prefixes resolve only from Deno.env (cannot be shadowed by scopedVars or YAML)
+  const { pkg: shadowPkg } = makePkg("shadow", "LEVAIN_CURRENT: spoofed-yaml\n");
+  resolver.setScopedVar("LEVAIN_CURRENT", "spoofed-scoped");
+  const origEnvGet = Deno.env.get.bind(Deno.env);
+  const envStub = stub(Deno.env, "get", (key: string) =>
+    key === "LEVAIN_CURRENT" ? "real-current" : key === "_LEVAIN_OLD_PROMPT" ? "$P$G" : origEnvGet(key)
+  );
+  try {
+    assertEquals(resolver.resolve("${LEVAIN_CURRENT}", shadowPkg), "real-current");
+    assertEquals(resolver.resolve("${_LEVAIN_OLD_PROMPT}", shadowPkg), "$P$G");
+  } finally {
+    envStub.restore();
+  }
+});
