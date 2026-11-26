@@ -385,6 +385,10 @@
       "example": "  install <pacote> ... <pacote>"
     },
     "update": {
+      "missingUpstream": "Pulando o pacote instalado '{{pkg}}' porque ele não foi encontrado nos repositórios configurados.",
+      "pkgFailed": "Falha ao atualizar o pacote '{{pkg}}': {{error}}",
+      "skippedFailedDep": "Pulando '{{pkg}}' porque a dependência '{{dep}}' falhou ao atualizar.",
+      "failedSummary": "Atualização concluída com {{count}} pacote(s) com falha: {{details}}",
       "example": "  update <pacote> ... <pacote>"
     },
     "list_command": {
