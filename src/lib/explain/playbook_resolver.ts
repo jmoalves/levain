@@ -122,7 +122,22 @@ export class PlaybookVarResolver {
 
     const pkgRefMatch = varName.match(/^pkg\.(.+)\.([^.]*)$/);
     if (pkgRefMatch) {
-      const targetPkg = this.config.packageManager.package(pkgRefMatch[1]);
+      const refName = pkgRefMatch[1];
+      let targetPkg = this.config.packageManager.package(refName);
+      if (!targetPkg) {
+        try {
+          targetPkg = this.config.repositoryManager.repositoryInstalled.resolvePackage(refName);
+        } catch {
+          // Installed repository may not be initialized in isolated tests
+        }
+      }
+      if (!targetPkg) {
+        try {
+          targetPkg = this.config.repositoryManager.repository.resolvePackage(refName);
+        } catch {
+          // Regular repository may not be initialized in isolated tests
+        }
+      }
       if (targetPkg) {
         return this.lookupPackageAttr(targetPkg, pkgRefMatch[2], depth);
       }

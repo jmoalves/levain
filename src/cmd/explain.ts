@@ -4,9 +4,16 @@ import type Config from "../lib/config.ts";
 import OsUtils from "../lib/os/os_utils.ts";
 import { parseArgs } from "../lib/parse_args.ts";
 import type Package from "../lib/package/package.ts";
+import PackageManager from "../lib/package/package_manager.ts";
 import { findDefinedActionPlatforms, resolvePackageActions } from "../lib/package/package_actions.ts";
 import { explainActionLine } from "../lib/explain/action_explainer.ts";
 import { PlaybookVarResolver } from "../lib/explain/playbook_resolver.ts";
+import {
+  buildLevainFinalCleanupSteps,
+  buildPackageUninstallPlan,
+  findInstalledDependents,
+  orderPackagesForUninstall,
+} from "../lib/explain/uninstall_explainer.ts";
 
 import type Command from "./command.ts";
 
@@ -20,12 +27,21 @@ export default class ExplainCommand implements Command {
 
   async render(args: string[]): Promise<string> {
     const myArgs = parseArgs(args, {
-      boolean: ["raw"],
+      boolean: ["raw", "uninstall"],
       stopEarly: false,
     });
 
     const rawMode = Boolean(myArgs.raw);
+    const uninstallMode = Boolean(myArgs.uninstall);
     const explicitArgs: string[] = [...(myArgs._ ?? [])];
+
+    if (uninstallMode) {
+      if (rawMode) {
+        throw new Error(t("cmd.explain.uninstall.rawConflict"));
+      }
+      return this.renderUninstall(explicitArgs);
+    }
+
     let pkgNames: string[] = [...explicitArgs];
     let curDirPkg: Package | undefined;
 
@@ -253,6 +269,181 @@ export default class ExplainCommand implements Command {
         lines.push(`${prefix} ${explained.text}`);
       }
     });
+  }
+
+  private renderUninstall(explicitArgs: string[]): string {
+    const installedRepo = this.config.repositoryManager.repositoryInstalled;
+    const regularRepo = this.config.repositoryManager.repository;
+    const installedPackages = installedRepo.listPackages();
+
+    const fullCleanup = explicitArgs.length === 0;
+    let targetPackages: Package[] = [];
+
+    if (fullCleanup) {
+      if (installedPackages.length === 0) {
+        throw new Error(t("cmd.explain.uninstall.noInstalled"));
+      }
+      targetPackages = orderPackagesForUninstall(installedPackages);
+    } else {
+      const requestedNames = [...explicitArgs];
+      PackageManager.removeExtension(requestedNames);
+
+      const missing: string[] = [];
+      const seen = new Set<string>();
+      for (const name of requestedNames) {
+        if (seen.has(name)) continue;
+        seen.add(name);
+        const pkg = installedRepo.resolvePackage(name) ?? regularRepo.resolvePackage(name);
+        if (!pkg) {
+          missing.push(name);
+        } else {
+          targetPackages.push(pkg);
+        }
+      }
+
+      if (missing.length > 0) {
+        console.error("");
+        console.error(t("cmd.install.unableToFind", { pkgNames: missing.join(", ") }));
+
+        const suggestionLines: string[] = [];
+        for (const name of missing) {
+          const installedSuggestions = [...this.config.packageManager.getSimilarNames(name, true)];
+          const regularSuggestions = [...this.config.packageManager.getSimilarNames(name, false)];
+          const suggestions = [...new Set([...installedSuggestions, ...regularSuggestions])].filter((s) => s !== name);
+          if (suggestions.length > 0) {
+            suggestionLines.push(`${name} => ${suggestions.join(", ")}`);
+          }
+        }
+        if (suggestionLines.length > 0) {
+          console.error("");
+          console.error(t("cmd.install.similar"));
+          for (const line of suggestionLines) {
+            console.error(line);
+          }
+        }
+        console.error("");
+        throw new Error(t("cmd.explain.errorNotFound", { pkgNames: missing.join(", ") }));
+      }
+
+      targetPackages = orderPackagesForUninstall(targetPackages);
+    }
+
+    const includesLevain = fullCleanup || targetPackages.some((pkg) => pkg.name === "levain");
+    const title = fullCleanup
+      ? t("cmd.explain.uninstall.titleAll")
+      : t("cmd.explain.uninstall.title", { packages: targetPackages.map((pkg) => pkg.name).join(", ") });
+
+    const lines: string[] = [];
+    lines.push(`# ${title}`);
+    lines.push("");
+    lines.push(t("cmd.explain.uninstall.subtitle"));
+    lines.push("");
+
+    const orderSummary = targetPackages
+      .map((pkg, idx) => `${idx + 1}. ${pkg.name}${pkg.version ? `@${pkg.version}` : ""}`)
+      .join(" → ");
+    lines.push(`- ${t("cmd.explain.uninstall.order", { order: orderSummary })}`);
+    lines.push(`- ${t("cmd.explain.baseDir", { dir: this.config.configPaths.levainHome })}`);
+
+    if (OsUtils.isWindows()) {
+      lines.push("");
+      lines.push(`> ${t("cmd.explain.uninstall.windowsShellNote")}`);
+    }
+
+    if (!fullCleanup) {
+      const targetSet = new Set(targetPackages.map((pkg) => pkg.name));
+      const dependents = findInstalledDependents(installedPackages, targetSet);
+      const otherInstalled = installedPackages
+        .filter((pkg) => !targetSet.has(pkg.name))
+        .map((pkg) => pkg.name)
+        .sort();
+
+      if (includesLevain && otherInstalled.length > 0) {
+        lines.push("");
+        lines.push(
+          `> ${t("cmd.explain.uninstall.levainFullRemovalWarning", {
+            packages: otherInstalled.map((name) => `\`${name}\``).join(", "),
+          })}`,
+        );
+      } else if (dependents.size > 0) {
+        lines.push("");
+        for (const [depName, users] of dependents.entries()) {
+          lines.push(
+            `> ${t("cmd.explain.uninstall.dependentWarning", {
+              pkg: depName,
+              dependents: users.map((u) => `\`${u}\``).join(", "),
+            })}`,
+          );
+        }
+      }
+    }
+
+    const resolver = new PlaybookVarResolver(this.config);
+
+    targetPackages.forEach((pkg, index) => {
+      lines.push("");
+      lines.push("---");
+      lines.push("");
+
+      const status = pkg.installed
+        ? t("cmd.explain.uninstall.statusInstalled")
+        : t("cmd.explain.statusNotInstalled");
+      const header = pkg.version
+        ? t("cmd.explain.stepHeader", { index: index + 1, name: pkg.name, version: pkg.version, status })
+        : t("cmd.explain.stepHeaderNoVersion", { index: index + 1, name: pkg.name, status });
+      lines.push(`## ${header}`);
+      lines.push("");
+      lines.push(`- ${t("cmd.explain.recipeSource", { path: pkg.filePath })}`);
+      if (!pkg.skipInstallDir()) {
+        lines.push(`- ${t("cmd.explain.installDir", { dir: pkg.baseDir })}`);
+      }
+
+      const plan = buildPackageUninstallPlan(pkg, this.config, resolver, { fullCleanup: includesLevain });
+
+      if (plan.steps.length === 0 && plan.manualReview.length === 0) {
+        lines.push("");
+        if (plan.otherOsOnly.length > 0) {
+          lines.push(
+            t("cmd.explain.otherOsOnly", { os: OsUtils.getOs(), platforms: plan.otherOsOnly.join(", ") }),
+          );
+        } else {
+          lines.push(t("cmd.explain.uninstall.noSteps"));
+        }
+        return;
+      }
+
+      if (plan.steps.length > 0) {
+        lines.push("");
+        lines.push(`### ${t("cmd.explain.uninstall.sectionSteps")}`);
+        lines.push("");
+        plan.steps.forEach((step, idx) => {
+          lines.push(`${idx + 1}. ${step}`);
+        });
+      }
+
+      if (plan.manualReview.length > 0) {
+        lines.push("");
+        lines.push(`### ${t("cmd.explain.uninstall.sectionReview")}`);
+        lines.push("");
+        for (const item of plan.manualReview) {
+          lines.push(`- ${item}`);
+        }
+      }
+    });
+
+    if (includesLevain) {
+      lines.push("");
+      lines.push("---");
+      lines.push("");
+      lines.push(`## ${t("cmd.explain.uninstall.sectionFinalCleanup")}`);
+      lines.push("");
+      const finalSteps = buildLevainFinalCleanupSteps(this.config);
+      finalSteps.forEach((step, idx) => {
+        lines.push(`${idx + 1}. ${step}`);
+      });
+    }
+
+    return lines.join("\n");
   }
 
   readonly oneLineExample = t("cmd.explain.example");

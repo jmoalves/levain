@@ -75,8 +75,9 @@
         "verbose": "Show detailed paths and repository information."
       },
       "explain": {
-        "description": "Generate a step-by-step manual setup guide (playbook) for packages (defaults to current .levain.yaml).",
-        "raw": "Show raw recipe action lines without translating to manual steps."
+        "description": "Generate a step-by-step manual setup or uninstall guide (defaults to current .levain.yaml without --uninstall).",
+        "raw": "Show raw recipe action lines without translating to manual steps.",
+        "uninstall": "Generate a manual cleanup/uninstall checklist (defaults to all installed packages when no packages are given)."
       },
       "clone": {
         "description": "Clone a git repository and open its Levain shell.",
@@ -132,7 +133,9 @@
         "project": "Generate a manual guide for ./.levain.yaml",
         "playbook": "Generate a manual step-by-step guide",
         "markdown": "Save the guide as a Markdown file",
-        "raw": "Show raw YAML recipe directives"
+        "raw": "Show raw YAML recipe directives",
+        "uninstallAll": "Generate a full Levain uninstall & cleanup guide",
+        "uninstallPackage": "Generate an uninstall guide for a specific package"
       },
       "clone": {
         "basic": "Clone a repository and open its Levain shell",
@@ -141,7 +144,8 @@
     },
     "error": {
       "unknownOption": "Unknown option \"{{option}}\".",
-      "didYouMean": "Did you mean: {{suggestions}}?"
+      "didYouMean": "Did you mean: {{suggestions}}?",
+      "uninstallHint": "Command '{{cmd}}' not found. Levain does not run automatic uninstalls — run \"levain explain --uninstall [packages...]\" to generate a manual step-by-step cleanup guide."
     }
   },
   "action": {
@@ -222,7 +226,7 @@
       "noPackages": "No packages specified and no .levain.yaml found in the current directory. Pass package names (e.g. \"levain explain maven\") or run inside a project folder.",
       "errorNotFound": "Could not resolve package(s): {{pkgNames}}.",
       "errorMissingDep": "Could not resolve all dependencies for: {{pkgNames}}.",
-      "example": "  explain [--raw] [package...]",
+      "example": "  explain [--raw | --uninstall] [package...]",
       "title": "Manual setup guide: {{packages}}",
       "rawTitle": "Raw recipe directives: {{packages}}",
       "subtitle": "Follow these steps in order if you want to set up the environment manually without Levain.",
@@ -305,6 +309,48 @@
         "activateInternal": "Internal shell activation step (`{{action}}`).",
         "saveConfig": "Save configuration changes.",
         "fallback": "Run recipe action: `{{line}}`"
+      },
+      "uninstall": {
+        "rawConflict": "Cannot combine --raw and --uninstall. Use --uninstall to generate a manual cleanup guide.",
+        "noInstalled": "No installed packages found in Levain's registry. Pass package names explicitly (e.g. \"levain explain --uninstall maven\" or \"levain explain --uninstall levain\").",
+        "titleAll": "Manual uninstall & cleanup guide (all installed packages)",
+        "title": "Manual uninstall guide: {{packages}}",
+        "subtitle": "Follow these steps in order to manually remove the selected packages, environment entries, shortcuts, and registry keys. Review commands before running them.",
+        "windowsShellNote": "**Note:** Run the commands below in **Windows PowerShell** (not CMD or Git Bash), unless stated otherwise.",
+        "order": "Removal order (dependents first): {{order}}",
+        "statusInstalled": "installed",
+        "dependentWarning": "**Warning:** Installed package(s) {{dependents}} depend on `{{pkg}}`. Removing `{{pkg}}` may break them.",
+        "levainFullRemovalWarning": "**Warning:** Other packages are still installed ({{packages}}). Removing Levain's root directory will delete their install folders without cleaning up their environment variables, `PATH`, shortcuts, or Registry entries. Run `levain explain --uninstall` (without arguments) for a complete cleanup guide.",
+        "sectionSteps": "Cleanup steps",
+        "sectionReview": "Manual review",
+        "sectionFinalCleanup": "Final Levain cleanup",
+        "noSteps": "No persistent files, environment variables, or registry entries to remove for this package.",
+        "stepActivateCmd": "Remove CMD activation hook file `{{hookPath}}` (`{{removeHookCmd}}`), then inspect `HKCU\\Software\\Microsoft\\Command Processor\\AutoRun` via `reg query \"HKCU\\Software\\Microsoft\\Command Processor\" /v AutoRun`. If the `@IF EXIST \"{{hookPath}}\" CALL \"{{hookPath}}\"` hook is the only value, delete it with `reg delete \"HKCU\\Software\\Microsoft\\Command Processor\" /v AutoRun /f` (otherwise remove only the Levain segment in `regedit`).",
+        "stepActivatePowershell": "Open your PowerShell profile (`notepad $PROFILE.CurrentUserCurrentHost`, if it exists) and remove the block between `# >>> levain initialize >>>` and `# <<< levain initialize <<<`.",
+        "stepActivatePowershellCustom": "In PowerShell profile `{{profile}}`, remove the block between `# >>> levain initialize >>>` and `# <<< levain initialize <<<`.",
+        "stepActivateBash": "In your Bash profile ({{profiles}}, whichever exists), remove the block between `# >>> levain initialize >>>` and `# <<< levain initialize <<<`.",
+        "stepActivateCmder": "In Cmder config directory `{{configDir}}`, delete `levain_prompt.lua` and remove the block between `# >>> levain initialize >>>` and `# <<< levain initialize <<<` from `user_profile.ps1`.",
+        "stepContextMenu": "Remove Windows Explorer context menu item {{label}}:\n   - `{{cmd1}}`\n   - `{{cmd2}}`",
+        "stepRemoveShortcut": "Remove shortcut `{{shortcut}}`: `{{cmd}}`",
+        "stepRemovePermanentPath": "Remove `{{dir}}` from your permanent user `PATH` (via Environment Variables UI or PowerShell): `{{cmd}}`",
+        "stepRemovePermanentEnv": "Remove permanent user environment variable `{{key}}`: `{{cmd}}`",
+        "stepRemoveInstallDir": "Remove package install directory `{{dir}}`: `{{cmd}}`",
+        "stepRemoveRegistryEntry": "Remove package from Levain installed registry `{{file}}`: `{{cmd}}`",
+        "reviewExternalDir": "Review directory created outside the package folder at `{{dir}}` — check for files owned by other tools before removing it.",
+        "reviewExternalClone": "Review Git repository cloned outside the package folder at `{{dir}}` — check for uncommitted or unpushed work before removing it.",
+        "reviewExternalFile": "Review and remove files created/copied outside the package folder at `{{target}}`.",
+        "reviewJsonSet": "In JSON file `{{file}}`, review or revert property `{{property}}`.",
+        "reviewPropertySet": "In properties file `{{file}}`, review or revert property `{{property}}`.",
+        "reviewBackupFile": "Check for timestamped backup files (`{{file}}.*.bkp`) and restore or delete them if no longer needed.",
+        "reviewShellCommand": "Review side effects of shell command run during installation: `{{command}}`",
+        "reviewCmdConfigReg": "Optional CMD ergonomics imported from `cmd-config.reg` under `HKCU\\Software\\Microsoft\\Command Processor`: `CompletionChar`, `PathCompletionChar`, `EnableExtensions`, `DisableUNCCheck` (revert only if you do not want tab completion / UNC support).",
+        "reviewWin11ContextMenu": "Optional Windows 11 classic context menu override installed with `contextMenu`: to restore the default Windows 11 menu, run `reg delete \"HKCU\\Software\\Classes\\CLSID\\{86ca1aa0-34aa-4e8b-a509-50c95bae2a2}\" /f` and restart Windows Explorer.",
+        "finalRemoveHome": "Remove the Levain root directory (includes `.levain` registry, backups, temp files, and `levain` binaries) `{{dir}}`: `{{cmd}}`",
+        "finalRemoveCache": "Remove the Levain download cache directory `{{dir}}`: `{{cmd}}`",
+        "finalRemoveConfigFile": "Remove the Levain user configuration file `{{file}}`: `{{cmd}}`",
+        "finalRemoveUserInfo": "Remove saved Levain user profile/info file (if present) `{{file}}`: `{{cmd}}`",
+        "finalCleanTemp": "Optionally delete temporary Levain logs and upgrade folders (`levain-*.log`, `levain-temp-*`, `levain`) inside your OS temp directory (`%TEMP%` or `/tmp`).",
+        "finalRestartShells": "Close and reopen all open terminals (CMD, PowerShell, Git Bash, Cmder, IDEs) so removed `PATH` and environment variables take effect."
       }
     },
     "info": {

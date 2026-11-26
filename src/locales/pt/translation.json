@@ -75,8 +75,9 @@
         "verbose": "Mostra caminhos detalhados e informações dos repositórios."
       },
       "explain": {
-        "description": "Gera um roteiro manual passo a passo para instalar e configurar pacotes (usa o .levain.yaml atual se omitido).",
-        "raw": "Mostra as diretivas originais da receita sem traduzir para passos manuais."
+        "description": "Gera um roteiro manual passo a passo para instalar ou desinstalar pacotes (sem --uninstall, usa o .levain.yaml atual).",
+        "raw": "Mostra as diretivas originais da receita sem traduzir para passos manuais.",
+        "uninstall": "Gera um roteiro manual de limpeza/desinstalação (inclui todos os pacotes instalados se nenhum pacote for informado)."
       },
       "clone": {
         "description": "Clona um repositório git e abre seu shell Levain.",
@@ -132,7 +133,9 @@
         "project": "Gerar roteiro manual para o ./.levain.yaml",
         "playbook": "Gerar um roteiro manual passo a passo",
         "markdown": "Salvar o roteiro em um arquivo Markdown",
-        "raw": "Ver diretivas originais da receita YAML"
+        "raw": "Ver diretivas originais da receita YAML",
+        "uninstallAll": "Gerar roteiro completo de desinstalação e limpeza do Levain",
+        "uninstallPackage": "Gerar roteiro de desinstalação para um pacote específico"
       },
       "clone": {
         "basic": "Clonar repositório e abrir seu shell Levain",
@@ -141,7 +144,8 @@
     },
     "error": {
       "unknownOption": "Opção desconhecida \"{{option}}\".",
-      "didYouMean": "Você quis dizer: {{suggestions}}?"
+      "didYouMean": "Você quis dizer: {{suggestions}}?",
+      "uninstallHint": "Comando '{{cmd}}' não encontrado. O Levain não desinstala automaticamente — execute \"levain explain --uninstall [pacotes...]\" para gerar um roteiro manual passo a passo de limpeza."
     }
   },
   "action": {
@@ -222,7 +226,7 @@
       "noPackages": "Nenhum pacote informado e nenhum .levain.yaml encontrado no diretório atual. Informe os pacotes (ex.: \"levain explain maven\") ou execute na pasta de um projeto.",
       "errorNotFound": "Não foi possível encontrar o(s) pacote(s): {{pkgNames}}.",
       "errorMissingDep": "Não foi possível resolver todas as dependências de: {{pkgNames}}.",
-      "example": "  explain [--raw] [pacote...]",
+      "example": "  explain [--raw | --uninstall] [pacote...]",
       "title": "Roteiro manual: {{packages}}",
       "rawTitle": "Diretivas originais da receita: {{packages}}",
       "subtitle": "Siga estes passos em ordem caso queira montar o ambiente manualmente sem o Levain.",
@@ -305,6 +309,48 @@
         "activateInternal": "Passo interno de ativação do shell (`{{action}}`).",
         "saveConfig": "Salve as alterações de configuração.",
         "fallback": "Execute a diretiva da receita: `{{line}}`"
+      },
+      "uninstall": {
+        "rawConflict": "Não é possível combinar --raw com --uninstall. Use --uninstall para gerar o roteiro manual de limpeza.",
+        "noInstalled": "Nenhum pacote instalado encontrado no registro do Levain. Informe os pacotes explicitamente (ex.: \"levain explain --uninstall maven\" ou \"levain explain --uninstall levain\").",
+        "titleAll": "Roteiro manual de desinstalação e limpeza (todos os pacotes instalados)",
+        "title": "Roteiro manual de desinstalação: {{packages}}",
+        "subtitle": "Siga estes passos em ordem para remover manualmente os pacotes selecionados, variáveis de ambiente, atalhos e chaves do Registro. Revise os comandos antes de executar.",
+        "windowsShellNote": "**Nota:** Execute os comandos abaixo no **Windows PowerShell** (não no CMD ou Git Bash), salvo indicação em contrário.",
+        "order": "Ordem de remoção (dependentes primeiro): {{order}}",
+        "statusInstalled": "instalado",
+        "dependentWarning": "**Atenção:** O(s) pacote(s) instalado(s) {{dependents}} dependem de `{{pkg}}`. Remover `{{pkg}}` pode afetá-los.",
+        "levainFullRemovalWarning": "**Atenção:** Ainda há outros pacotes instalados ({{packages}}). Remover a pasta raiz do Levain apagará as pastas de instalação deles sem limpar suas variáveis de ambiente, `PATH`, atalhos ou chaves do Registro. Execute `levain explain --uninstall` (sem argumentos) para o roteiro completo de limpeza.",
+        "sectionSteps": "Passos de limpeza",
+        "sectionReview": "Revisão manual",
+        "sectionFinalCleanup": "Limpeza final do Levain",
+        "noSteps": "Nenhum arquivo persistente, variável de ambiente ou chave do Registro para remover neste pacote.",
+        "stepActivateCmd": "Remova o arquivo de hook do CMD `{{hookPath}}` (`{{removeHookCmd}}`) e consulte `HKCU\\Software\\Microsoft\\Command Processor\\AutoRun` com `reg query \"HKCU\\Software\\Microsoft\\Command Processor\" /v AutoRun`. Se `@IF EXIST \"{{hookPath}}\" CALL \"{{hookPath}}\"` for a única entrada, exclua com `reg delete \"HKCU\\Software\\Microsoft\\Command Processor\" /v AutoRun /f` (caso contrário, remova apenas o trecho do Levain no `regedit`).",
+        "stepActivatePowershell": "Abra seu perfil do PowerShell (`notepad $PROFILE.CurrentUserCurrentHost`, se existir) e remova o bloco entre `# >>> levain initialize >>>` e `# <<< levain initialize <<<`.",
+        "stepActivatePowershellCustom": "No perfil do PowerShell `{{profile}}`, remova o bloco entre `# >>> levain initialize >>>` e `# <<< levain initialize <<<`.",
+        "stepActivateBash": "No seu perfil do Bash ({{profiles}}, no arquivo que existir), remova o bloco entre `# >>> levain initialize >>>` e `# <<< levain initialize <<<`.",
+        "stepActivateCmder": "Na pasta de configuração do Cmder `{{configDir}}`, exclua `levain_prompt.lua` e remova o bloco entre `# >>> levain initialize >>>` e `# <<< levain initialize <<<` de `user_profile.ps1`.",
+        "stepContextMenu": "Remova o item {{label}} do menu de contexto do Windows Explorer:\n   - `{{cmd1}}`\n   - `{{cmd2}}`",
+        "stepRemoveShortcut": "Remova o atalho `{{shortcut}}`: `{{cmd}}`",
+        "stepRemovePermanentPath": "Remova `{{dir}}` do seu `PATH` permanente do usuário (pela interface de Variáveis de Ambiente ou PowerShell): `{{cmd}}`",
+        "stepRemovePermanentEnv": "Remova a variável de ambiente permanente do usuário `{{key}}`: `{{cmd}}`",
+        "stepRemoveInstallDir": "Remova a pasta de instalação do pacote `{{dir}}`: `{{cmd}}`",
+        "stepRemoveRegistryEntry": "Remova o pacote do registro de instalados do Levain `{{file}}`: `{{cmd}}`",
+        "reviewExternalDir": "Revise o diretório criado fora da pasta do pacote em `{{dir}}` — verifique se há arquivos de outras ferramentas antes de removê-lo.",
+        "reviewExternalClone": "Revise o repositório Git clonado fora da pasta do pacote em `{{dir}}` — verifique se há alterações não comitadas ou não enviadas antes de removê-lo.",
+        "reviewExternalFile": "Revise e remova arquivos criados/copiados fora da pasta do pacote em `{{target}}`.",
+        "reviewJsonSet": "No arquivo JSON `{{file}}`, revise ou reverta a propriedade `{{property}}`.",
+        "reviewPropertySet": "No arquivo de propriedades `{{file}}`, revise ou reverta a propriedade `{{property}}`.",
+        "reviewBackupFile": "Verifique se existem arquivos de backup com timestamp (`{{file}}.*.bkp`) e restaure ou remova se não forem mais necessários.",
+        "reviewShellCommand": "Revise os efeitos do comando executado durante a instalação: `{{command}}`",
+        "reviewCmdConfigReg": "Ajustes opcionais do CMD importados de `cmd-config.reg` em `HKCU\\Software\\Microsoft\\Command Processor`: `CompletionChar`, `PathCompletionChar`, `EnableExtensions`, `DisableUNCCheck` (reverta apenas se não quiser autocompletar / suporte UNC).",
+        "reviewWin11ContextMenu": "Ajuste opcional do menu de contexto clássico no Windows 11 instalado com `contextMenu`: para restaurar o menu padrão do Windows 11, execute `reg delete \"HKCU\\Software\\Classes\\CLSID\\{86ca1aa0-34aa-4e8b-a509-50c95bae2a2}\" /f` e reinicie o Windows Explorer.",
+        "finalRemoveHome": "Remova a pasta raiz do Levain (inclui registro `.levain`, backups, temporários e binários em `levain`) `{{dir}}`: `{{cmd}}`",
+        "finalRemoveCache": "Remova a pasta de cache de downloads do Levain `{{dir}}`: `{{cmd}}`",
+        "finalRemoveConfigFile": "Remova o arquivo de configuração do usuário `{{file}}`: `{{cmd}}`",
+        "finalRemoveUserInfo": "Remova o arquivo salvo com dados do usuário (se existir) `{{file}}`: `{{cmd}}`",
+        "finalCleanTemp": "Opcionalmente exclua logs temporários e pastas temporárias de atualização do Levain (`levain-*.log`, `levain-temp-*`, `levain`) na pasta temporária do sistema (`%TEMP%` ou `/tmp`).",
+        "finalRestartShells": "Feche e reabra todos os terminais abertos (CMD, PowerShell, Git Bash, Cmder, IDEs) para que a remoção de `PATH` e variáveis de ambiente entre em vigor."
       }
     },
     "info": {

@@ -397,6 +397,15 @@ Deno.test("LevainCli should skip update checks/regular repos/sanitizeUserPath on
     });
     assertEquals(releaseStub.calls.length, 0, "explain must skip update check");
 
+    // explain --uninstall without args uses installedOnly=true so it works offline without remote repo fetches
+    repoInitCalls.length = 0;
+    await cli.execute({
+      _: ["explain", "--uninstall"],
+      levainHome: [tempHome],
+    });
+    assertEquals(repoInitCalls, [{ forceRefresh: false, installedOnly: true }]);
+    assertEquals(releaseStub.calls.length, 0);
+
     // actions and clean must skip repositoryManager.init and sanitizeUserPath
     repoInitCalls.length = 0;
     await cli.execute({ _: ["actions"], levainHome: [tempHome], "skip-levain-updates": true });

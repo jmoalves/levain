@@ -257,3 +257,130 @@ Deno.test("ExplainCommand should support current-dir .levain.yaml with dependenc
     envOnlyStub.restore();
   }
 });
+
+Deno.test("ExplainCommand --uninstall validates conflicts, empty registry, and unknown packages", async () => {
+  const config = await setupConfigWithRecipes({
+    "my-tool.levain.yaml": "version: 1.0.0\n",
+  });
+  const cmd = new ExplainCommand(config);
+
+  await assertRejects(
+    () => cmd.render(["--raw", "--uninstall", "my-tool"]),
+    Error,
+    t("cmd.explain.uninstall.rawConflict"),
+  );
+
+  await assertRejects(
+    () => cmd.render(["--uninstall"]),
+    Error,
+    t("cmd.explain.uninstall.noInstalled"),
+  );
+
+  const errLines: string[] = [];
+  const errStub = stub(console, "error", (...args: unknown[]) => errLines.push(args.map(String).join(" ")));
+  try {
+    await assertRejects(
+      () => cmd.render(["--uninstall", "my-tol"]),
+      Error,
+      t("cmd.explain.errorNotFound", { pkgNames: "my-tol" }),
+    );
+    assert(errLines.some((line) => line.includes("my-tool")));
+  } finally {
+    errStub.restore();
+  }
+});
+
+Deno.test("ExplainCommand --uninstall generates full cleanup guide in reverse dependency order with levain last", async () => {
+  const config = await setupConfigWithRecipes(
+    {},
+    {
+      "levain.levain.yaml": [
+        "version: 1.1.0",
+        "cmd.install:",
+        "  - activateInit",
+        "  - addPath --permanent ${baseDir}",
+      ].join("\n"),
+      "jdk.levain.yaml": [
+        "version: 21.0.0",
+        "cmd.install:",
+        "  - setEnv --permanent JAVA_HOME ${baseDir}",
+      ].join("\n"),
+      "maven.levain.yaml": [
+        "version: 3.9.0",
+        "dependencies:",
+        "  - jdk",
+        "cmd.install:",
+        "  - addPath --permanent ${baseDir}/bin",
+      ].join("\n"),
+      "ctx-menu.levain.yaml": [
+        "version: 1.0.0",
+        "levain.pkg.skipInstallDir: true",
+        "cmd.install:",
+        '  - contextMenu folders --id="levain-shell" --name="Levain Shell" --cmd="${pkg.levain.baseDir}\\levain shell"',
+      ].join("\n"),
+    },
+  );
+
+  const cmd = new ExplainCommand(config);
+  const md = await cmd.render(["--uninstall"]);
+
+  assertStringIncludes(md, `# ${t("cmd.explain.uninstall.titleAll")}`);
+  // Reverse dependency order: maven before jdk, levain last
+  const mavenIdx = md.indexOf("maven@3.9.0");
+  const jdkIdx = md.indexOf("jdk@21.0.0");
+  const levainIdx = md.indexOf("levain@1.1.0");
+  assert(mavenIdx > 0 && jdkIdx > mavenIdx && levainIdx > jdkIdx, `unexpected order in:\n${md}`);
+
+  // Context menu, permanent PATH, permanent env, and Final Levain cleanup section included
+  assertStringIncludes(md, "levain-shell");
+  assertStringIncludes(md, "JAVA_HOME");
+  assertStringIncludes(md, `## ${t("cmd.explain.uninstall.sectionFinalCleanup")}`);
+  // Partial registry entry step should NOT appear during full cleanup
+  assertFalse(md.includes("maven.levain.yaml`:"));
+});
+
+Deno.test("ExplainCommand --uninstall for specific package warns about installed dependents and supports meta/other-OS packages", async () => {
+  const otherOs = OsUtils.isWindows() ? "linux" : "windows";
+  const config = await setupConfigWithRecipes(
+    {
+      "meta-only.levain.yaml": "levain.pkg.skipInstallDir: true\nlevain.pkg.skipRegistry: true\n",
+      "other-os.levain.yaml": `levain.pkg.skipInstallDir: true\nlevain.pkg.skipRegistry: true\ncmd.install.${otherOs}:\n  - echo hi\n`,
+    },
+    {
+      "jdk.levain.yaml": "version: 21.0.0\ncmd.install:\n  - setEnv --permanent JAVA_HOME ${baseDir}\n",
+      "maven.levain.yaml": "version: 3.9.0\ndependencies:\n  - jdk\n",
+    },
+  );
+
+  const cmd = new ExplainCommand(config);
+  const md = await cmd.render(["--uninstall", "jdk.levain.yaml"]);
+
+  assertStringIncludes(md, `# ${t("cmd.explain.uninstall.title", { packages: "jdk" })}`);
+  assertStringIncludes(md, t("cmd.explain.uninstall.dependentWarning", { pkg: "jdk", dependents: "`maven`" }));
+  assertStringIncludes(md, `[${t("cmd.explain.uninstall.statusInstalled")}]`);
+  assertStringIncludes(md, "JAVA_HOME");
+  assertStringIncludes(md, path.resolve(config.configPaths.levainRegistryDir, "jdk.levain.yaml"));
+  assertFalse(md.includes(`## ${t("cmd.explain.uninstall.sectionFinalCleanup")}`));
+
+  // Explicitly uninstalling levain while other packages remain installed warns clearly and includes final cleanup
+  const levainMd = await cmd.render(["--uninstall", "levain"]);
+  assertStringIncludes(
+    levainMd,
+    t("cmd.explain.uninstall.levainFullRemovalWarning", { packages: "`jdk`, `maven`" }),
+  );
+  assertStringIncludes(levainMd, `## ${t("cmd.explain.uninstall.sectionFinalCleanup")}`);
+
+  // Windows shell note appears when running on Windows
+  const isWinStub = stub(OsUtils, "isWindows", () => true);
+  try {
+    const winMd = await cmd.render(["--uninstall", "jdk"]);
+    assertStringIncludes(winMd, t("cmd.explain.uninstall.windowsShellNote"));
+  } finally {
+    isWinStub.restore();
+  }
+
+  // Meta-package and other-OS-only package messages
+  const metaMd = await cmd.render(["--uninstall", "meta-only", "other-os"]);
+  assertStringIncludes(metaMd, t("cmd.explain.uninstall.noSteps"));
+  assertStringIncludes(metaMd, t("cmd.explain.otherOsOnly", { os: OsUtils.getOs(), platforms: otherOs }));
+});
