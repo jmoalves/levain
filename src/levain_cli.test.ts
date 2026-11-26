@@ -471,10 +471,11 @@ Deno.test("LevainCli should acquire InstanceLock for mutating commands and let r
     );
     assertEquals(lockCalls.length, 1);
 
-    // `_activate-machine pre` also acquires the lock
+    // `_activate-machine pre` acquires the lock, but defers sanitizeUserPath to Shell.installPackages (avoiding duplicate PowerShell spawn)
     await cli.execute({ _: ["_activate-machine", "pre"], levainHome: [tempHome], "skip-levain-updates": true });
     assertEquals(lockCalls.length, 2);
     assert(lockCalls[1].startsWith("activate@"));
+    assertEquals(sanitizeStub.calls.length, 0);
   } finally {
     loaderCmdStub.restore();
     saveStub.restore();

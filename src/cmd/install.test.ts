@@ -102,7 +102,8 @@ Deno.test("Install should install recipe from repository, run cmd.install and cm
   });
 
   const cmd = new Install(config);
-  await cmd.execute(["sample-pkg"]);
+  const firstChanged = await cmd.installPackages(["sample-pkg"]);
+  assertEquals(firstChanged, true);
 
   const baseDir = path.join(levainHome, "sample-pkg");
   assert(existsSync(path.join(baseDir, "sub")), "cmd.install mkdir should create subdir");
@@ -111,6 +112,11 @@ Deno.test("Install should install recipe from repository, run cmd.install and cm
     existsSync(path.join(config.configPaths.levainRegistryDir, "sample-pkg.levain.yaml")),
     "recipe should be copied into levainRegistryDir",
   );
+
+  // Subsequent install when package is already installed and up to date reports false
+  await config.repositoryManager.reload();
+  const secondChanged = await cmd.installPackages(["sample-pkg"]);
+  assertEquals(secondChanged, false);
 });
 
 Deno.test("Install should respect levain.pkg.skipInstallDir and levain.pkg.skipRegistry", async () => {

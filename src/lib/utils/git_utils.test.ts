@@ -546,8 +546,25 @@ Deno.test("GitUtils.update fast-forwards when remote advances and handles invali
   await OsUtils.runAndLog(["git", "commit", "-m", "v2"], clone1);
   await OsUtils.runAndLog(["git", "push"], clone1);
 
-  await new GitUtils().update(clone2);
-  assertEquals(await Deno.readTextFile(path.join(clone2, "v2.txt")), "2");
+  const origRunAndLog = OsUtils.runAndLog.bind(OsUtils);
+  const updateCalls: (string | string[])[] = [];
+  const spyRun = stub(OsUtils, "runAndLog", (cmd: string | string[], cwd?: string) => {
+    updateCalls.push(cmd);
+    return origRunAndLog(cmd, cwd);
+  });
+  try {
+    // Fast-forward uses 4 git subprocesses (rev-parse @{u}, fetch, rev-list --count, merge --ff-only)
+    await new GitUtils().update(clone2);
+    assertEquals(await Deno.readTextFile(path.join(clone2, "v2.txt")), "2");
+    assertEquals(updateCalls.length, 4);
+
+    // Already up to date uses 3 git subprocesses (rev-parse @{u}, fetch, rev-list --count)
+    updateCalls.length = 0;
+    await new GitUtils().update(clone2);
+    assertEquals(updateCalls.length, 3);
+  } finally {
+    spyRun.restore();
+  }
 
   // 2. Invalid upstream without '/' falls back to current branch, and detached HEAD (empty branch) fails without retry
   const runStub = stub(OsUtils, "runAndLog", (cmd: string | string[]) => {

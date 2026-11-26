@@ -11,6 +11,7 @@ import { PackageManagerMock } from "../lib/package/package_manager_mock.ts";
 import TestHelper from "../lib/test/test_helper.ts";
 
 import CommandFactory from "./command_factory.ts";
+import Install, { type InstallOptions } from "./install.ts";
 import Shell from "./shell.ts";
 
 Deno.test("Shell should be registered in CommandFactory", () => {
@@ -107,37 +108,53 @@ Deno.test("Shell.readPackages should fall back to config.defaultPackage when no 
   }
 });
 
-Deno.test("Shell.installPackages should acquire and release InstanceLock around install and reload", async () => {
+Deno.test("Shell.installPackages should acquire and release InstanceLock, skip reload when unchanged, and reloadInstalled only when changed", async () => {
   const config = TestHelper.getConfig();
-  const commandCalls: Array<{ cmd: string; args: string[] }> = [];
+  const installCalls: Array<{ pkgNames: string[]; options: InstallOptions | undefined }> = [];
   let lockExistedDuringInstall = false;
+  let nextReturn = false;
   const sanitizeStub = stub(OsUtils, "sanitizeUserPath", () => Promise.resolve());
-  const loaderCmdStub = stub(Loader.prototype, "command", (cmd: string, args: string[]) => {
+  const installStub = stub(Install.prototype, "installPackages", (pkgNames: string[], options?: InstallOptions) => {
     lockExistedDuringInstall = existsSync(config.configPaths.levainLockPath);
-    commandCalls.push({ cmd, args });
-    return Promise.resolve();
+    installCalls.push({ pkgNames, options });
+    return Promise.resolve(nextReturn);
   });
   const reloadStub = stub(config.repositoryManager, "reload", () => Promise.resolve());
+  const reloadInstalledStub = stub(config.repositoryManager, "reloadInstalled", () => Promise.resolve());
 
   try {
     const cmd = new Shell(config);
 
+    // Unchanged install (all packages already installed) -> must skip both reload and reloadInstalled
     config.shellCheckForUpdate = true;
+    nextReturn = false;
     await cmd.installPackages(["pkgA"]);
     assert(lockExistedDuringInstall, "lock should be held while install runs");
     assertFalse(existsSync(config.configPaths.levainLockPath), "lock must be released before interactive shell opens");
+    assertEquals(reloadStub.calls.length, 0);
+    assertEquals(reloadInstalledStub.calls.length, 0);
 
+    // Changed install -> reloads only installed registry, never full regular repos
     config.shellCheckForUpdate = false;
+    nextReturn = true;
     await cmd.installPackages(["pkgA", "pkgB"]);
 
-    assertEquals(commandCalls, [
-      { cmd: "install", args: ["pkgA"] },
-      { cmd: "install", args: ["--noUpdate", "pkgA", "pkgB"] },
+    assertEquals(installCalls, [
+      {
+        pkgNames: ["pkgA"],
+        options: { force: false, noUpdate: false, promptForUpdates: true, strictMinVersion: false },
+      },
+      {
+        pkgNames: ["pkgA", "pkgB"],
+        options: { force: false, noUpdate: true, promptForUpdates: true, strictMinVersion: false },
+      },
     ]);
-    assertEquals(reloadStub.calls.length, 2);
+    assertEquals(reloadStub.calls.length, 0);
+    assertEquals(reloadInstalledStub.calls.length, 1);
   } finally {
+    reloadInstalledStub.restore();
     reloadStub.restore();
-    loaderCmdStub.restore();
+    installStub.restore();
     sanitizeStub.restore();
   }
 });

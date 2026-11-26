@@ -56,6 +56,14 @@ export default class RepositoryManager {
     await this.initRepositories();
   }
 
+  async reloadInstalled(): Promise<void> {
+    const prevInstalled = this.repositories.installed;
+    const installedRepo = await this.createInstalledRepo();
+    if (installedRepo === prevInstalled) {
+      await installedRepo.reload();
+    }
+  }
+
   async reloadCurrentDir(): Promise<void> {
     await (await this.createCurrentDirRepo()).init();
   }

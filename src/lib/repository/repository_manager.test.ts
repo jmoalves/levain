@@ -135,6 +135,36 @@ Deno.test("RepositoryManager.reload should await repo.reload on all managed repo
   assert(repositoryManager.repository.resolvePackage("added-later"));
 });
 
+Deno.test("RepositoryManager.reloadInstalled refreshes newly created and existing registry without reloading regular repos", async () => {
+  const config = TestHelper.getConfig();
+  const rm = new RepositoryManager(config);
+  const tempRepo = TestHelper.getNewTempDir();
+  await Deno.writeTextFile(path.join(tempRepo, "regular-pkg.levain.yaml"), "version: 1.0.0\n");
+
+  await rm.init({ extraRepos: [], tempRepos: [tempRepo] });
+  assertEquals(rm.repositoryInstalled.name, "EmptyRepo");
+
+  // Track reload on regular repository to prove reloadInstalled does not touch it
+  const regularReloadStub = stub(rm.repository, "reload", () => Promise.resolve());
+  try {
+    // 1. Registry dir created during first install -> EmptyRepo replaced by FileSystemRepo
+    const registryDir = config.configPaths.levainRegistryDir;
+    await Deno.mkdir(registryDir, { recursive: true });
+    await Deno.writeTextFile(path.join(registryDir, "first-pkg.levain.yaml"), "version: 1.0.0\n");
+    await rm.reloadInstalled();
+    assertEquals(rm.repositoryInstalled.resolvePackage("first-pkg")?.name, "first-pkg");
+    assertEquals(regularReloadStub.calls.length, 0);
+
+    // 2. Subsequent package installed into existing registry -> existing repo reloaded in place
+    await Deno.writeTextFile(path.join(registryDir, "second-pkg.levain.yaml"), "version: 2.0.0\n");
+    await rm.reloadInstalled();
+    assertEquals(rm.repositoryInstalled.resolvePackage("second-pkg")?.name, "second-pkg");
+    assertEquals(regularReloadStub.calls.length, 0);
+  } finally {
+    regularReloadStub.restore();
+  }
+});
+
 Deno.test("RepositoryManager.init with installedOnly skips regular repositories", async () => {
   const config = TestHelper.getConfig();
   const repositoryManager = new RepositoryManager(config);
