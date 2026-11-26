@@ -203,7 +203,7 @@ export function buildPowerShellCheckScript(probes: ToolProbes): string {
   }
   if (probes.mvnPkg) {
     lines.push(
-      'mvn -version 2>&1 | Select-Object -First 3 | ForEach-Object { "$_" }',
+      'mvn -version 2>&1 | ForEach-Object { "$_" }',
       'if ($LASTEXITCODE -ne 0) { throw "mvn -version failed in activated PowerShell" }',
     );
   }
@@ -272,7 +272,7 @@ export function buildBashCheckScript(probes: ToolProbes): string {
     lines.push('test -n "${JAVA_HOME:-}"', "java -version 2>&1");
   }
   if (probes.mvnPkg) {
-    lines.push("mvn -version 2>&1 | head -n 3");
+    lines.push("mvn -version 2>&1");
   }
   if (probes.gitPkg) {
     lines.push("git --version 2>&1");

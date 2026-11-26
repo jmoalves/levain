@@ -193,6 +193,7 @@ jobs:
 
       - name: Verify real Levain effects (CLI, activate in CMD/PowerShell/Git Bash, tools, concurrency)
         shell: pwsh
+        working-directory: ${{ runner.temp }}
         env:
           INPUT_LEVAIN_VERSION: ${{ github.event.inputs.levainVersion }}
           RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
