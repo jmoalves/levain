@@ -66,7 +66,7 @@ export default class ConsoleAndFileLogger {
       handler.formatter = formatter;
       return handler;
     }
-    return new ConsoleHandler("INFO", { formatter });
+    return new ConsoleHandler("INFO", { formatter, useColors: Deno.stdout.isTerminal() });
   }
 
   static getLogFileInTempFolder(): string {

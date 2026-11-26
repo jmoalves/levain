@@ -8,11 +8,13 @@ import {
   buildRemoteE2eCmdScript,
   BUILTIN_VERIFY_SCRIPT,
   DEFAULT_E2E_PACKAGES,
+  DEFAULT_E2E_PACKAGES_FILE,
   DEFAULT_E2E_REPO,
   DEFAULT_E2E_REPOSITORY,
   GET_DENO_CMD,
   main,
   parseE2eArgs,
+  parsePackagesFileContent,
   runWindowsE2e,
 } from "./run-windows-e2e.ts";
 import { CONTRACT_DOCS, type RunnerDeps, SSH_CONFIG_ENV, SSH_HOST_ENV } from "./run-windows-tests.ts";
@@ -111,6 +113,48 @@ Deno.test("run-windows-e2e - parseE2eArgs", async (t) => {
     assertThrows(() => parseE2eArgs(["--repository", "not-a-repo"]), Error, "Invalid --repository");
     assertThrows(() => parseE2eArgs(["--deno-version", "bad"]), Error, "Invalid --deno-version");
     assertThrows(() => parseE2eArgs(["--packages", "git;whoami"]), Error, "Invalid package name");
+  });
+
+  await t.step("parses --packages-file (comments, commas, whitespace) and keeps default-packages.txt in sync", () => {
+    assertEquals(
+      parsePackagesFileContent("# header\n\ngit # inline comment\njdk-21, maven\r\n  deno  \n"),
+      ["git", "jdk-21", "maven", "deno"],
+    );
+
+    // Ensure testing/e2e/default-packages.txt stays in sync with DEFAULT_E2E_PACKAGES
+    const fromDefaultFile = parseE2eArgs(["--packages-file", DEFAULT_E2E_PACKAGES_FILE]);
+    assertEquals(fromDefaultFile.packages, DEFAULT_E2E_PACKAGES);
+
+    const files: Record<string, string> = {
+      "/tmp/a.txt": "# curated list\ngit\njdk-21-ibm-latest\n",
+      "/tmp/b.txt": "maven-latest, vscode # editor\n",
+      "/tmp/empty.txt": "# only comments\n   \n",
+      "/tmp/bad.txt": "bad;pkg\n",
+    };
+    const fakeRead = (p: string) => {
+      if (!(p in files)) throw new Error("ENOENT");
+      return files[p];
+    };
+
+    const combined = parseE2eArgs(
+      ["--packages-file", "/tmp/a.txt", "--packages-file=/tmp/b.txt", "--packages", "jq"],
+      "2.9.8",
+      fakeRead,
+    );
+    assertEquals(combined.packages, ["git", "jdk-21-ibm-latest", "maven-latest", "vscode", "jq"]);
+
+    assertThrows(() => parseE2eArgs(["--packages-file", "/tmp/missing.txt"], "2.9.8", fakeRead), Error, "Could not read");
+    assertThrows(() => parseE2eArgs(["--packages-file", "/tmp/empty.txt"], "2.9.8", fakeRead), Error, "No packages found");
+    assertThrows(() => parseE2eArgs(["--packages-file", "/tmp/bad.txt"], "2.9.8", fakeRead), Error, "Invalid package name");
+    assertThrows(() => parseE2eArgs(["--packages-file"], "2.9.8", fakeRead), Error, "Missing value");
+    assertThrows(
+      () =>
+        parseE2eArgs(["--packages-file", "/tmp/err.txt"], "2.9.8", () => {
+          throw "non-error";
+        }),
+      Error,
+      "non-error",
+    );
   });
 });
 

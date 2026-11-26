@@ -15,7 +15,7 @@ on:
         type: boolean
         default: false
       packages:
-        description: "Optional package subset to install (space/comma separated; empty = full levain-pkgs set)"
+        description: "Optional package subset to install (space/comma separated; empty = curated default list in testing/e2e/default-packages.txt)"
         required: false
       denoVersion:
         description: "Deno version for buildFromRef and verification script (optional - Default=2.9.8)"
@@ -119,8 +119,9 @@ jobs:
 
       - name: Levain list
         shell: cmd
+        working-directory: ${{ runner.temp }}
         run: |
-          levain list
+          levain --skip-levain-updates list
 
       - name: Run Microsoft Security DevOps
         uses: microsoft/security-devops-action@cf28f87c67770dbaa208cce3665fafc849f77507 # v1.12.1
@@ -128,30 +129,25 @@ jobs:
 
       - name: Levain install packages
         shell: pwsh
+        working-directory: ${{ runner.temp }}
         env:
           INPUT_PACKAGES: ${{ github.event.inputs.packages }}
         run: |
           $ErrorActionPreference = "Stop"
-          $ignored = @(
-            # prompt for name, email, etc
-            "git-config",
-            # bug in some eclipse recipes - perhaps they have been removed from mirror
-            "eclipse-2019-12",
-            "eclipse-2020-09",
-            "eclipse-2021-03",
-            "eclipse-2021-06",
-            # access denied
-            "postman",
-            # corrupted file
-            "tomcat-9"
-          )
+          $defaultPkgFile = Join-Path $env:GITHUB_WORKSPACE "testing\e2e\default-packages.txt"
 
           $pkgList = @()
           if ($env:INPUT_PACKAGES -and $env:INPUT_PACKAGES.Trim()) {
             $pkgList = @($env:INPUT_PACKAGES -split '[,\s]+' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
           } else {
-            $listed = levain list | Select-String -Pattern '^   [a-zA-Z0-9]' | ForEach-Object { $_.ToString().Trim() }
-            $pkgList = @($listed | Where-Object { $ignored -notcontains $_ })
+            $pkgList = @(
+              Get-Content -LiteralPath $defaultPkgFile |
+                ForEach-Object { ($_ -replace '#.*$', '').Trim() } |
+                Where-Object { $_ } |
+                ForEach-Object { $_ -split '[,\s]+' } |
+                ForEach-Object { $_.Trim() } |
+                Where-Object { $_ }
+            )
           }
 
           if ($pkgList.Count -eq 0) {
@@ -164,8 +160,22 @@ jobs:
             }
           }
 
-          Write-Output "=== Installing packages ($($pkgList.Count)): $($pkgList -join ' ')"
+          # Verify piped `levain list` outputs clean ANSI-free lines and resolves all target packages
           $levainExe = Join-Path $HOME "levain\levain\build\levain.exe"
+          $listOutput = & $levainExe --skip-levain-updates --skip-auto-clean list
+          if ($LASTEXITCODE -ne 0) {
+            throw "levain list failed with exit code $LASTEXITCODE"
+          }
+          $listed = @($listOutput | Select-String -Pattern '^   [a-zA-Z0-9]' | ForEach-Object { $_.ToString().Trim() })
+          if ($listed.Count -eq 0) {
+            throw "Piped 'levain list' produced no parseable package lines (possible ANSI escape regression)."
+          }
+          $missing = @($pkgList | Where-Object { $listed -notcontains $_ })
+          if ($missing.Count -gt 0) {
+            throw "Target E2E packages not found in repository: $($missing -join ', ')"
+          }
+
+          Write-Output "=== Installing packages ($($pkgList.Count)): $($pkgList -join ' ')"
           & $levainExe --skip-levain-updates --skip-auto-clean install @pkgList
           if ($LASTEXITCODE -ne 0) {
             throw "levain install failed with exit code $LASTEXITCODE"
@@ -177,8 +187,9 @@ jobs:
 
       - name: Levain update
         shell: cmd
+        working-directory: ${{ runner.temp }}
         run: |
-          levain update
+          levain --skip-levain-updates update
 
       - name: Verify real Levain effects (CLI, activate in CMD/PowerShell/Git Bash, tools, concurrency)
         shell: pwsh

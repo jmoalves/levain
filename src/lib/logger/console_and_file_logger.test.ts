@@ -1,6 +1,7 @@
 import { assertEquals, assertFalse, assertStringIncludes } from "@std/assert";
 import * as log from "@std/log";
 import * as path from "@std/path";
+import { stub } from "@std/testing/mock";
 
 import Config from "../config.ts";
 import ConsoleFeedback from "../utils/console_feedback.ts";
@@ -190,5 +191,32 @@ Deno.test("should setup logger in errors-only console mode to keep stdout clean 
     } catch {
       // ignore temp cleanup error
     }
+  }
+});
+
+Deno.test("getConsoleHandler disables ANSI colors when stdout is piped and enables them on a terminal", () => {
+  const logger = new ConsoleAndFileLogger();
+  const record = TestHelper.logRecord("   git");
+
+  const nonTtyStub = stub(Deno.stdout, "isTerminal", () => false);
+  try {
+    const pipedHandler = logger.getConsoleHandler(false);
+    const pipedLine = pipedHandler.format(record);
+    assertFalse(pipedLine.includes("\x1b["), `Expected no ANSI escape codes when piped, got: ${JSON.stringify(pipedLine)}`);
+    assertEquals(pipedLine, "   git");
+  } finally {
+    nonTtyStub.restore();
+  }
+
+  const ttyStub = stub(Deno.stdout, "isTerminal", () => true);
+  try {
+    const ttyHandler = logger.getConsoleHandler(false);
+    const ttyLine = ttyHandler.format(record);
+    assertStringIncludes(ttyLine, "   git");
+    if (!Deno.noColor) {
+      assertStringIncludes(ttyLine, "\x1b[");
+    }
+  } finally {
+    ttyStub.restore();
   }
 });

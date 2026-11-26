@@ -29,7 +29,17 @@ import {
 } from "./run-windows-tests.ts";
 
 export const DEFAULT_E2E_REPO = "https://github.com/jmoalves/levain-pkgs.git";
-export const DEFAULT_E2E_PACKAGES = ["git", "jdk-21", "maven"];
+export const DEFAULT_E2E_PACKAGES_FILE = path.join("testing", "e2e", "default-packages.txt");
+export const DEFAULT_E2E_PACKAGES = [
+  "git",
+  "jdk-21-ibm-latest",
+  "maven-latest",
+  "node-runtime-latest",
+  "openliberty-runtime-latest",
+  "vscode",
+  "deno",
+  "jq",
+];
 export const DEFAULT_E2E_REPOSITORY = "jmoalves/levain";
 export const BUILTIN_VERIFY_SCRIPT = path.join("testing", "e2e", "verify-e2e.ts");
 export const GET_DENO_CMD = path.join("githubScripts", "get-deno.cmd");
@@ -76,7 +86,25 @@ function splitPackageArg(raw: string): string[] {
     .filter((p) => p.length > 0);
 }
 
-export function parseE2eArgs(args: string[], defaultDenoVersion = DEFAULT_DENO_VERSION): E2eRunnerOptions {
+/**
+ * Parses a curated package list file (supports `#` line comments, blank lines, and
+ * whitespace/comma-separated package names) for public or external/private catalogs.
+ */
+export function parsePackagesFileContent(content: string): string[] {
+  const packages: string[] = [];
+  for (const rawLine of content.split(/\r?\n/)) {
+    const line = rawLine.replace(/#.*$/, "").trim();
+    if (!line) continue;
+    packages.push(...splitPackageArg(line));
+  }
+  return packages;
+}
+
+export function parseE2eArgs(
+  args: string[],
+  defaultDenoVersion = DEFAULT_DENO_VERSION,
+  readTextFile: (filePath: string) => string = Deno.readTextFileSync,
+): E2eRunnerOptions {
   let local = false;
   let explicitFromSource = false;
   let levainVersion: string | undefined;
@@ -87,6 +115,23 @@ export function parseE2eArgs(args: string[], defaultDenoVersion = DEFAULT_DENO_V
   let denoVersion = defaultDenoVersion;
   let keepRemote = false;
   let testConcurrency = true;
+
+  const loadPackagesFile = (filePath: string) => {
+    const safePath = assertSafeValue(filePath, "--packages-file");
+    let content: string;
+    try {
+      content = readTextFile(safePath);
+    } catch (err) {
+      throw new Error(
+        `Could not read --packages-file '${safePath}': ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+    const parsed = parsePackagesFileContent(content);
+    if (parsed.length === 0) {
+      throw new Error(`No packages found in --packages-file '${safePath}'.`);
+    }
+    packages.push(...parsed);
+  };
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
@@ -124,6 +169,10 @@ export function parseE2eArgs(args: string[], defaultDenoVersion = DEFAULT_DENO_V
       packages.push(...splitPackageArg(assertSafeValue(readNextValue("--packages"), "--packages")));
     } else if (arg.startsWith("--packages=")) {
       packages.push(...splitPackageArg(assertSafeValue(arg.slice("--packages=".length), "--packages")));
+    } else if (arg === "--packages-file") {
+      loadPackagesFile(readNextValue("--packages-file"));
+    } else if (arg.startsWith("--packages-file=")) {
+      loadPackagesFile(arg.slice("--packages-file=".length));
     } else if (arg === "--verify") {
       verifyScript = assertSafeValue(readNextValue("--verify"), "--verify");
     } else if (arg.startsWith("--verify=")) {

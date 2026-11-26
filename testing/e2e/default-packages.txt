@@ -1,0 +1,17 @@
+# Curated default package set for Levain Windows E2E verification against jmoalves/levain-pkgs.
+#
+# Covers:
+#   - .7z.exe SFX extraction via bundled 7-Zip + Git Bash activation (`git`)
+#   - Large .zip extraction with --strip + JAVA_HOME / java -version (`jdk-21-ibm-latest`)
+#   - Meta-packages (skipInstallDir + dependencies) + setVar/setEnv/mvn -version (`maven-latest`, `node-runtime-latest`, `openliberty-runtime-latest`)
+#   - Extensionless HTTP redirect with explicit `extract --type zip` (`vscode`)
+#   - Standard .zip extraction without --strip (`deno`)
+#   - Direct HTTP binary download via `copy` (`jq`)
+git
+jdk-21-ibm-latest
+maven-latest
+node-runtime-latest
+openliberty-runtime-latest
+vscode
+deno
+jq
