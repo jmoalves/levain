@@ -189,6 +189,69 @@ Deno.test("buildPackageUninstallPlan adapts commands for Windows and omits redun
   }
 });
 
+Deno.test("buildPackageUninstallPlan covers POSIX formatting, skipInstallDir, placeholders, malformed actions, and fallbacks", () => {
+  const config = TestHelper.getConfig();
+  const resolver = new PlaybookVarResolver(config);
+  const extDir = TestHelper.getNewTempDir();
+
+  const skipDirPkg = makePkg(
+    "skip-dir-pkg",
+    [
+      "version: 1.0.0",
+      "levain.pkg.skipInstallDir: true",
+      "cmd.install:",
+      '  - ""',
+      "  - echo informational note",
+      `  - mkdir ${extDir}/shared-dir`,
+      "  - mkdir ${UNDEFINED_RUNTIME_DIR}/sub",
+      `  - clone https://example.org/r.git ${extDir}/shared-dir`,
+      "  - addToStartMenu ${baseDir}/tool.sh",
+      '  - contextMenu folders --id="nameless-menu" --cmd="${baseDir}/run"',
+      "  - activateInit --cmder --bash",
+      '  - levainShell echo "hello with spaces"',
+      "  - setEnv --bad-flag x y",
+      "  - addPath --permanent ${UNDEFINED_PATH}",
+      "  - addToDesktop ${UNDEFINED_SHORTCUT}",
+    ].join("\n"),
+  );
+
+  // Explicitly test POSIX mode so POSIX branches execute on Windows CI as well
+  const posixStub = stub(OsUtils, "isWindows", () => false);
+  try {
+    const plan = buildPackageUninstallPlan(skipDirPkg, config, resolver, { fullCleanup: false });
+    const joinedSteps = plan.steps.join("\n");
+    const joinedReview = plan.manualReview.join("\n");
+
+    assertStringIncludes(joinedSteps, "rm -f '");
+    assertStringIncludes(joinedSteps, "nameless-menu");
+    assertStringIncludes(joinedSteps, "%CMDER_ROOT%\\config");
+    assertStringIncludes(joinedSteps, "tool.sh");
+    assertFalse(joinedSteps.includes("tool.sh.lnk"));
+    assertStringIncludes(joinedReview, 'echo "hello with spaces"');
+    assertStringIncludes(joinedReview, path.resolve(extDir, "shared-dir"));
+
+    // Also test POSIX removeDirCommand on a regular package with baseDir
+    const regularPkg = makePkg("posix-pkg", "version: 1.0.0\n");
+    const regularPlan = buildPackageUninstallPlan(regularPkg, config, resolver, { fullCleanup: false });
+    assertStringIncludes(regularPlan.steps.join("\n"), `rm -rf '${regularPkg.baseDir}'`);
+  } finally {
+    posixStub.restore();
+  }
+
+  // Fallback paths when HomePaths.homedir throws (e.g., stripped environment)
+  const homeErrStub = stub(HomePaths, "homedir", () => {
+    throw new Error("no home");
+  });
+  try {
+    const planNoHome = buildPackageUninstallPlan(skipDirPkg, config, resolver, { fullCleanup: true });
+    assertStringIncludes(planNoHome.steps.join("\n"), "`~/.bashrc`");
+    const finalStepsNoHome = buildLevainFinalCleanupSteps(config);
+    assert(finalStepsNoHome.length >= 3);
+  } finally {
+    homeErrStub.restore();
+  }
+});
+
 Deno.test("buildLevainFinalCleanupSteps includes home, separate cache dir, config files, temp, and restart note", () => {
   const config = TestHelper.getConfig();
   const externalCache = TestHelper.getNewTempDir();

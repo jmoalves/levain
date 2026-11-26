@@ -353,7 +353,7 @@ Deno.test("ExplainCommand --uninstall for specific package warns about installed
   );
 
   const cmd = new ExplainCommand(config);
-  const md = await cmd.render(["--uninstall", "jdk.levain.yaml"]);
+  const md = await cmd.render(["--uninstall", "jdk.levain.yaml", "jdk"]);
 
   assertStringIncludes(md, `# ${t("cmd.explain.uninstall.title", { packages: "jdk" })}`);
   assertStringIncludes(md, t("cmd.explain.uninstall.dependentWarning", { pkg: "jdk", dependents: "`maven`" }));
