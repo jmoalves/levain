@@ -4,8 +4,10 @@ import { stub } from "@std/testing/mock";
 import {
   assertValidPackageName,
   buildBashCheckScript,
+  buildChildEnv,
   buildCmdCheckScript,
   buildPowerShellCheckScript,
+  buildProcessCommandOptions,
   createDefaultVerifyDeps,
   findGitBashExecutable,
   main,
@@ -300,4 +302,35 @@ Deno.test("verify-e2e - createDefaultVerifyDeps and main error handling", async 
     logStub.restore();
     if (argsProp) Object.defineProperty(Deno, "args", argsProp);
   }
+});
+
+Deno.test("verify-e2e - buildChildEnv and buildProcessCommandOptions strip PSModulePath for Windows PowerShell", () => {
+  assertEquals(
+    buildChildEnv({ PATH: "/bin", PSModulePath: "C:\\pwsh\\Modules", psmodulepath: "dup" }, { EXTRA: "1" }, [
+      "PSModulePath",
+    ]),
+    { PATH: "/bin", EXTRA: "1" },
+  );
+  assertEquals(buildChildEnv({ A: "1" }), { A: "1" });
+
+  const psOpts = buildProcessCommandOptions(
+    "PowerShell.EXE",
+    ["-NoProfile"],
+    { FOO: "bar" },
+    () => ({ PATH: "C:\\Windows", PSModulePath: "C:\\Program Files\\PowerShell\\7\\Modules" }),
+  );
+  assertEquals(psOpts.clearEnv, true);
+  assertEquals(psOpts.env, { PATH: "C:\\Windows", FOO: "bar" });
+
+  // Also cover default getBaseEnv callback
+  const psDefaultOpts = buildProcessCommandOptions("powershell.exe", ["-NoProfile"]);
+  assertEquals(psDefaultOpts.clearEnv, true);
+  assert(
+    !Object.keys(psDefaultOpts.env ?? {}).some((k) => k.toLowerCase() === "psmodulepath"),
+    "default env builder must strip PSModulePath for powershell.exe",
+  );
+
+  const cmdOpts = buildProcessCommandOptions("cmd.exe", ["/c", "echo hi"], { A: "1" });
+  assertEquals(cmdOpts.clearEnv, undefined);
+  assertEquals(cmdOpts.env, { A: "1" });
 });

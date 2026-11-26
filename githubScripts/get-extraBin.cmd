@@ -2,6 +2,9 @@
 
 SETLOCAL
 
+:: Clear PSModulePath so Windows PowerShell 5.1 does not inherit PowerShell 7 (pwsh) modules
+set "PSModulePath="
+
 set "myPath=%~dp0"
 set "myPath=%myPath:~0,-1%"
 set "levainRoot=%myPath%\.."

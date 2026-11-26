@@ -499,6 +499,51 @@ export async function runVerification(opts: VerifyOptions, deps: VerifyDeps): Pr
   logger.log("\n=== ALL E2E VERIFICATIONS PASSED ===");
 }
 
+export function buildChildEnv(
+  baseEnv: Record<string, string>,
+  overrides?: Record<string, string>,
+  stripKeys: string[] = [],
+): Record<string, string> {
+  const stripSet = new Set(stripKeys.map((k) => k.toLowerCase()));
+  const result: Record<string, string> = {};
+  for (const [k, v] of Object.entries(baseEnv)) {
+    if (!stripSet.has(k.toLowerCase())) {
+      result[k] = v;
+    }
+  }
+  if (overrides) {
+    for (const [k, v] of Object.entries(overrides)) {
+      result[k] = v;
+    }
+  }
+  return result;
+}
+
+export function buildProcessCommandOptions(
+  cmd: string,
+  args: string[],
+  env?: Record<string, string>,
+  getBaseEnv: () => Record<string, string> = () => Deno.env.toObject(),
+): Deno.CommandOptions {
+  // Windows PowerShell 5.1 fails to load built-in modules (e.g. Select-Object, Get-FileHash)
+  // if it inherits PowerShell 7's PSModulePath from a parent `pwsh` shell.
+  if (cmd.toLowerCase() === "powershell.exe") {
+    return {
+      args,
+      clearEnv: true,
+      env: buildChildEnv(getBaseEnv(), env, ["PSModulePath"]),
+      stdout: "piped",
+      stderr: "piped",
+    };
+  }
+  return {
+    args,
+    env,
+    stdout: "piped",
+    stderr: "piped",
+  };
+}
+
 export function createDefaultVerifyDeps(): VerifyDeps {
   return {
     pathExists: (targetPath: string, kind: "file" | "dir") => {
@@ -540,12 +585,7 @@ export function createDefaultVerifyDeps(): VerifyDeps {
       }
     },
     runProcess: async (cmd: string, args: string[], env?: Record<string, string>) => {
-      const command = new Deno.Command(cmd, {
-        args,
-        env,
-        stdout: "piped",
-        stderr: "piped",
-      });
+      const command = new Deno.Command(cmd, buildProcessCommandOptions(cmd, args, env));
       const out = await command.output();
       return {
         code: out.code,

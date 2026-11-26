@@ -55,6 +55,7 @@ jobs:
         env:
           INPUT_DENO_VERSION: ${{ github.event.inputs.denoVersion }}
           REPOSITORY: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           $ErrorActionPreference = "Stop"
           $denoVer = if ($env:INPUT_DENO_VERSION) { $env:INPUT_DENO_VERSION.Trim() } else { "2.9.8" }
@@ -185,6 +186,7 @@ jobs:
           BUILD_FROM_REF: ${{ github.event.inputs.buildFromRef }}
           INPUT_PACKAGES: ${{ github.event.inputs.packages }}
           INPUT_DENO_VERSION: ${{ github.event.inputs.denoVersion }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           $ErrorActionPreference = "Stop"
           $denoVer = if ($env:INPUT_DENO_VERSION) { $env:INPUT_DENO_VERSION.Trim() } else { "2.9.8" }
