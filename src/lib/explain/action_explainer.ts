@@ -258,12 +258,27 @@ function translateAction(
       return t("cmd.explain.step.backupFile", { file });
     }
 
+    case "checkEnvExists": {
+      if (args.length === 0) return undefined;
+      return args.length === 1
+        ? t("cmd.explain.step.checkEnvExists", { name: args[0] })
+        : t("cmd.explain.step.checkAnyEnvExists", { names: formatCodeList(args) });
+    }
+
     case "checkFileExists": {
       if (args.length === 0) return undefined;
       const normalized = args.map((f) => normalizeAbsolutePath(f));
       return normalized.length === 1
         ? t("cmd.explain.step.checkFileExists", { file: normalized[0] })
         : t("cmd.explain.step.checkAnyFileExists", { files: formatCodeList(normalized) });
+    }
+
+    case "checkPathContains": {
+      if (args.length === 0) return undefined;
+      const normalized = args.map((d) => normalizeAbsolutePath(d));
+      return normalized.length === 1
+        ? t("cmd.explain.step.checkPathContains", { dir: normalized[0] })
+        : t("cmd.explain.step.checkAnyPathContains", { dirs: formatCodeList(normalized) });
     }
 
     case "checkChainDirExists": {

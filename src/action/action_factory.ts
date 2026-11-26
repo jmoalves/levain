@@ -1,6 +1,8 @@
 import type Action from "./action.ts";
 import AddPathAction from "./os/add_path.ts";
+import CheckEnvExists from "./check/check_env_exists.ts";
 import CheckFileExists from "./check/check_file_exists.ts";
+import CheckPathContains from "./check/check_path_contains.ts";
 import CopyAction from "./os/copy.ts";
 import ContextMenuAction from "./os/context_menu.ts";
 import DefaultPackage from "./defaultPackage.ts";
@@ -53,7 +55,9 @@ const actionMap = new Map<string, (config: Config) => Action>([
     "checkChainDirExists",
     (config: Config) => new CheckChainDirExists(config),
   ],
+  ["checkEnvExists", (config: Config) => new CheckEnvExists(config)],
   ["checkFileExists", (config: Config) => new CheckFileExists(config)],
+  ["checkPathContains", (config: Config) => new CheckPathContains(config)],
   ["checkPort", (config: Config) => new CheckPort(config)],
   ["checkUrl", (config: Config) => new CheckUrl(config)],
   ["copy", (config: Config) => new CopyAction(config)],

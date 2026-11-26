@@ -153,6 +153,16 @@
       "notFound": "Action '{{action}}' not found - Aborting...",
       "didYouMean": "Did you mean: {{suggestions}}?"
     },
+    "check_env_exists": {
+      "missingArgs": "Which environment variables should be checked?",
+      "notFound": "Expected environment variable '{{name}}' to be defined.",
+      "noneFound": "Expected at least one of the following environment variables to be defined: {{names}}"
+    },
+    "check_path_contains": {
+      "missingArgs": "Which directories should be checked in PATH?",
+      "notFound": "Expected PATH to contain '{{dir}}'.",
+      "noneFound": "Expected PATH to contain at least one of: {{dirs}}"
+    },
     "docs": {
       "activateCmd": "Emit shell commands to activate packages in the current terminal (internal).",
       "activateInit": "Configure shell profiles/hooks so \"levain activate\" works in your terminal.",
@@ -164,7 +174,9 @@
       "assertContains": "Verify that a text snippet appears inside another string.",
       "backupFile": "Create a timestamped backup copy of an existing file.",
       "checkChainDirExists": "Verify that at least one candidate directory exists (optionally saving it).",
+      "checkEnvExists": "Verify that at least one of the listed environment variables is defined.",
       "checkFileExists": "Verify that at least one of the listed files exists.",
+      "checkPathContains": "Verify that at least one of the listed directories is present in PATH.",
       "checkPort": "Verify that a local TCP/UDP port is free and available.",
       "checkUrl": "Verify that an HTTP/HTTPS URL responds with status 200.",
       "clone": "Clone a Git repository into a target directory (skips if non-empty).",
@@ -285,8 +297,12 @@
         "propertyGet": "Read `{{property}}` from properties file `{{file}}` as `{{varName}}`{{suffix}}.",
         "mavenCopy": "Download Maven artifact `{{coordinates}}` into `{{dst}}`{{suffix}}.",
         "backupFile": "Back up existing file `{{file}}` before modifying it.",
+        "checkEnvExists": "Verify that environment variable `{{name}}` is defined.",
+        "checkAnyEnvExists": "Verify that at least one of these environment variables is defined: {{names}}.",
         "checkFileExists": "Verify that file `{{file}}` exists.",
         "checkAnyFileExists": "Verify that at least one of these files exists: {{files}}.",
+        "checkPathContains": "Verify that `PATH` contains `{{dir}}`.",
+        "checkAnyPathContains": "Verify that `PATH` contains at least one of: {{dirs}}.",
         "checkChainDir": "Verify that at least one of these directories exists: {{dirs}}.",
         "checkChainDirSaveVar": "Find the first existing directory among {{dirs}} and note it as `{{varName}}`{{suffix}}.",
         "checkPort": "Verify that {{transport}} port `{{port}}` is free.",
