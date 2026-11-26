@@ -58,9 +58,19 @@ const ACTION_DOCS_LIST: readonly ActionDoc[] = [
     summaryKey: "action.docs.checkChainDirExists",
   },
   {
+    name: "checkEnvExists",
+    usage: "checkEnvExists <env1> [env2...]",
+    summaryKey: "action.docs.checkEnvExists",
+  },
+  {
     name: "checkFileExists",
     usage: "checkFileExists <file1> [file2...]",
     summaryKey: "action.docs.checkFileExists",
+  },
+  {
+    name: "checkPathContains",
+    usage: "checkPathContains <dir1> [dir2...]",
+    summaryKey: "action.docs.checkPathContains",
   },
   {
     name: "checkPort",

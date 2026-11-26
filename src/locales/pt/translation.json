@@ -153,6 +153,16 @@
       "notFound": "Ação '{{action}}' não encontrada - Abortando...",
       "didYouMean": "Você quis dizer: {{suggestions}}?"
     },
+    "check_env_exists": {
+      "missingArgs": "Quais variáveis de ambiente devem ser verificadas?",
+      "notFound": "Era esperado que a variável de ambiente '{{name}}' estivesse definida.",
+      "noneFound": "Era esperado que ao menos uma das seguintes variáveis de ambiente estivesse definida: {{names}}"
+    },
+    "check_path_contains": {
+      "missingArgs": "Quais diretórios devem ser verificados no PATH?",
+      "notFound": "Era esperado que o PATH contivesse '{{dir}}'.",
+      "noneFound": "Era esperado que o PATH contivesse ao menos um dos diretórios: {{dirs}}"
+    },
     "docs": {
       "activateCmd": "Emite comandos de shell para ativar pacotes no terminal atual (interno).",
       "activateInit": "Configura perfis/hooks de shell para que \"levain activate\" funcione no terminal.",
@@ -164,7 +174,9 @@
       "assertContains": "Verifica se um trecho de texto aparece dentro de outra string.",
       "backupFile": "Cria uma cópia de backup com data e hora no nome de um arquivo existente.",
       "checkChainDirExists": "Verifica se ao menos um diretório candidato existe (opcionalmente salvando em variável).",
+      "checkEnvExists": "Verifica se ao menos uma das variáveis de ambiente informadas está definida.",
       "checkFileExists": "Verifica se ao menos um dos arquivos informados existe.",
+      "checkPathContains": "Verifica se ao menos um dos diretórios informados está presente no PATH.",
       "checkPort": "Verifica se uma porta TCP/UDP local está livre e disponível.",
       "checkUrl": "Verifica se uma URL HTTP/HTTPS responde com status 200.",
       "clone": "Clona um repositório Git em um diretório de destino (pula se não estiver vazio).",
@@ -285,8 +297,12 @@
         "propertyGet": "Leia `{{property}}` do arquivo de propriedades `{{file}}` como `{{varName}}`{{suffix}}.",
         "mavenCopy": "Baixe o artefato Maven `{{coordinates}}` para `{{dst}}`{{suffix}}.",
         "backupFile": "Faça backup do arquivo existente `{{file}}` antes de modificá-lo.",
+        "checkEnvExists": "Verifique se a variável de ambiente `{{name}}` está definida.",
+        "checkAnyEnvExists": "Verifique se ao menos uma destas variáveis de ambiente está definida: {{names}}.",
         "checkFileExists": "Verifique se o arquivo `{{file}}` existe.",
         "checkAnyFileExists": "Verifique se ao menos um destes arquivos existe: {{files}}.",
+        "checkPathContains": "Verifique se o `PATH` contém `{{dir}}`.",
+        "checkAnyPathContains": "Verifique se o `PATH` contém ao menos um destes diretórios: {{dirs}}.",
         "checkChainDir": "Verifique se ao menos um destes diretórios existe: {{dirs}}.",
         "checkChainDirSaveVar": "Encontre o primeiro diretório existente entre {{dirs}} e anote como `{{varName}}`{{suffix}}.",
         "checkPort": "Verifique se a porta {{transport}} `{{port}}` está livre.",

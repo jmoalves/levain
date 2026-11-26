@@ -270,6 +270,17 @@ Deno.test("explainActionLine should translate env, var, shell, template, json, a
 Deno.test("explainActionLine should translate checks, OS integration, and internal actions", () => {
   const { pkg, resolver } = setup();
 
+  // checkEnvExists
+  assertEquals(
+    explainActionLine(pkg, "checkEnvExists JAVA_HOME", resolver).text,
+    t("cmd.explain.step.checkEnvExists", { name: "JAVA_HOME" }),
+  );
+  assertEquals(
+    explainActionLine(pkg, "checkEnvExists JAVA_HOME JDK_HOME", resolver).text,
+    t("cmd.explain.step.checkAnyEnvExists", { names: "`JAVA_HOME`, `JDK_HOME`" }),
+  );
+  assertStringIncludes(explainActionLine(pkg, "checkEnvExists", resolver).text, "checkEnvExists");
+
   // checkFileExists
   assertEquals(
     explainActionLine(pkg, "checkFileExists /tmp/a", resolver).text,
@@ -282,6 +293,19 @@ Deno.test("explainActionLine should translate checks, OS integration, and intern
     }),
   );
   assertStringIncludes(explainActionLine(pkg, "checkFileExists", resolver).text, "checkFileExists");
+
+  // checkPathContains
+  assertEquals(
+    explainActionLine(pkg, "checkPathContains /tmp/bin", resolver).text,
+    t("cmd.explain.step.checkPathContains", { dir: path.normalize("/tmp/bin") }),
+  );
+  assertEquals(
+    explainActionLine(pkg, "checkPathContains /tmp/a /tmp/b", resolver).text,
+    t("cmd.explain.step.checkAnyPathContains", {
+      dirs: `\`${path.normalize("/tmp/a")}\`, \`${path.normalize("/tmp/b")}\``,
+    }),
+  );
+  assertStringIncludes(explainActionLine(pkg, "checkPathContains", resolver).text, "checkPathContains");
 
   // checkChainDirExists
   const dir1 = path.normalize("/dir1");

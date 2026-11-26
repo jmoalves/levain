@@ -47,7 +47,9 @@ cmd.install:
 
   # checks & assertions
   - assertContains --message="contract version mismatch" 4.2.0 "version=${CONTRACT_VER}"
+  - checkEnvExists CONTRACT_MISSING_ENV CONTRACT_NODE_OPTS
   - checkFileExists ${baseDir}/work/copied.txt
+  - checkPathContains ${baseDir}/work
   - checkChainDirExists --saveVar=CONTRACT_FOUND_DIR --default=none ${baseDir}/missing-dir ${baseDir}/work
   - checkChainDirExists --saveVar=CONTRACT_DEFAULT_DIR --default=fallback-dir ${baseDir}/missing-dir-only
   - checkPort --port=0 --transport=tcp --address=127.0.0.1
