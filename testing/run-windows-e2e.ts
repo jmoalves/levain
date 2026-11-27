@@ -206,7 +206,7 @@ export function parseE2eArgs(
   const finalPackages = packages.length > 0 ? packages : [...DEFAULT_E2E_PACKAGES];
 
   for (const pkg of finalPackages) {
-    if (!/^[a-zA-Z0-9._-]+$/.test(pkg)) {
+    if (!/^[a-zA-Z0-9._+-]+$/.test(pkg)) {
       throw new Error(`Invalid package name '${pkg}' in --packages.`);
     }
   }

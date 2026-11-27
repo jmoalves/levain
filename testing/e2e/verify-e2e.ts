@@ -57,7 +57,7 @@ export interface VerifyDeps {
   logger: { log: (...args: unknown[]) => void };
 }
 
-export const SAFE_PKG_NAME_RE = /^[a-zA-Z0-9._-]+$/;
+export const SAFE_PKG_NAME_RE = /^[a-zA-Z0-9._+-]+$/;
 export const SEMVER_RE = /^[0-9]+\.[0-9]+\.[0-9]+$/;
 
 export function splitPackages(raw: string): string[] {

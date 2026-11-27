@@ -112,14 +112,14 @@ Deno.test("verify-e2e - parseVerifyArgs and selectActivationPlan", () => {
     "--levain-home",
     "/opt/levain",
     "--packages",
-    "git,jdk-21",
+    "git,jdk-21,notepad++",
     "--packages=maven",
     "--expected-version",
     "1.1.0",
     "--skip-concurrency",
   ]);
   assertEquals(parsed.levainHome, path.resolve("/opt/levain"));
-  assertEquals(parsed.packages, ["git", "jdk-21", "maven"]);
+  assertEquals(parsed.packages, ["git", "jdk-21", "notepad++", "maven"]);
   assertEquals(parsed.expectedVersion, "1.1.0");
   assertEquals(parsed.skipConcurrency, true);
 
