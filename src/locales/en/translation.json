@@ -36,7 +36,8 @@
       "skipLevainUpdates": "Skip checking for newer Levain releases.",
       "skipAutoClean": "Skip the automatic daily cleanup.",
       "levainUpgrade": "Internal Levain self-upgrade flow.",
-      "isCompiledBinary": "Internal compiled-binary marker."
+      "isCompiledBinary": "Internal compiled-binary marker.",
+      "isBundledJs": "Internal bundled-JS marker."
     },
     "cmd": {
       "install": {

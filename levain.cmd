@@ -7,6 +7,7 @@ set "myPath=%myPath:~0,-1%"
 
 set "levainExe="
 set "levainCall="
+set "levainBundle="
 
 :: 1. Use LEVAIN_EXE if it is defined and exists
 if defined LEVAIN_EXE if exist "%LEVAIN_EXE%" (
@@ -18,7 +19,13 @@ if not defined levainExe if exist "%myPath%\build\levain.exe" (
     set "levainExe=%myPath%\build\levain.exe"
 )
 
-:: 3. Otherwise fall back to the Deno launcher
+:: 3. Otherwise use the official Deno runtime with the bundled JS release if it exists
+if not defined levainExe if exist "%myPath%\build\deno.exe" if exist "%myPath%\build\levain.bundle.js" (
+    set "levainExe=%myPath%\build\deno.exe"
+    set "levainBundle=%myPath%\build\levain.bundle.js"
+)
+
+:: 4. Otherwise fall back to the Deno launcher
 if not defined levainExe (
     set "levainExe=%myPath%\scripts\levain-deno.cmd"
     set "levainCall=call "
@@ -48,8 +55,12 @@ ENDLOCAL & exit /b %rc%
 SETLOCAL
 set "DENO_NO_UPDATE_CHECK=true"
 set "NO_COLOR=true"
-set "DENO_DIR=%myPath%\build"
-%levainCall%"%levainExe%" %*
+if defined levainBundle (
+    "%levainExe%" run --no-check --cached-only --allow-all "%levainBundle%" --is_bundled_js %*
+) else (
+    set "DENO_DIR=%myPath%\build"
+    %levainCall%"%levainExe%" %*
+)
 set "runRc=%ERRORLEVEL%"
 ENDLOCAL & exit /b %runRc%
 

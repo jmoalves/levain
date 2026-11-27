@@ -4,9 +4,11 @@ set -euo pipefail
 myDeno=${1:-}
 levainSrcDir=${2:-}
 targetDir=${3:-}
+buildMode=${4:-compile}
+windowsDenoExe=${5:-}
 
 if [ -z "$myDeno" ] || [ -z "$levainSrcDir" ] || [ -z "$targetDir" ]; then
-    echo "Usage: $0 <deno-executable> <levain-src-dir> <target-dir>" >&2
+    echo "Usage: $0 <deno-executable> <levain-src-dir> <target-dir> [compile|bundle] [windows-deno-exe]" >&2
     exit 1
 fi
 
@@ -14,6 +16,22 @@ if [ ! -x "$myDeno" ]; then
     echo "Cannot execute deno binary at '$myDeno'" >&2
     exit 1
 fi
+
+if [ "$buildMode" != "compile" ] && [ "$buildMode" != "bundle" ]; then
+    echo "Invalid buildMode '${buildMode}'. Expected 'compile' or 'bundle'." >&2
+    exit 1
+fi
+
+if [ "$buildMode" = "bundle" ]; then
+    if [ -z "$windowsDenoExe" ] || [ ! -f "$windowsDenoExe" ]; then
+        echo "Bundle mode requires a valid Windows deno.exe path as 5th argument (got: '${windowsDenoExe}')." >&2
+        exit 1
+    fi
+fi
+
+levainSrcDir="$(cd "${levainSrcDir}" && pwd)"
+mkdir -p "$(dirname "${targetDir}")"
+targetDir="$(cd "$(dirname "${targetDir}")" && pwd)/$(basename "${targetDir}")"
 
 levainCompile() {
     # https://stackoverflow.com/questions/16654607/using-getopts-inside-a-bash-function
@@ -55,7 +73,21 @@ levainCompile() {
 rm -rf "${targetDir}"
 mkdir -p "${targetDir}/build"
 
-levainCompile -t x86_64-pc-windows-msvc -o "${targetDir}/build/levain.exe"
+if [ "$buildMode" = "bundle" ]; then
+    echo "Building bundled JS release (no levain.exe) using official Windows deno.exe"
+    (
+        cd "${levainSrcDir}"
+        "${myDeno}" bundle \
+            --platform deno \
+            --packages bundle \
+            --output "${targetDir}/build/levain.bundle.js" \
+            "${levainSrcDir}/levain.ts"
+    )
+    cp -v "${windowsDenoExe}" "${targetDir}/build/deno.exe"
+else
+    levainCompile -t x86_64-pc-windows-msvc -o "${targetDir}/build/levain.exe"
+fi
+
 cp -rv "${levainSrcDir}/levain.cmd" "${targetDir}/"
 cp -rv "${levainSrcDir}/levain.ps1" "${targetDir}/"
 cp -rv "${levainSrcDir}/levain.sh" "${targetDir}/"
@@ -66,10 +98,19 @@ if [ -d "${levainSrcDir}/extra-bin" ]; then
     cp -rv "${levainSrcDir}/extra-bin/." "${targetDir}/build/extra-bin/"
 fi
 
-# Binary SHA256
+# Artifact SHA256
 (
     cd "${targetDir}/build"
-    sha256sum levain.exe > levain.exe.sha256
-    echo "levain.exe.sha256"
-    cat levain.exe.sha256
+    if [ "$buildMode" = "bundle" ]; then
+        sha256sum deno.exe > deno.exe.sha256
+        echo "deno.exe.sha256"
+        cat deno.exe.sha256
+        sha256sum levain.bundle.js > levain.bundle.js.sha256
+        echo "levain.bundle.js.sha256"
+        cat levain.bundle.js.sha256
+    else
+        sha256sum levain.exe > levain.exe.sha256
+        echo "levain.exe.sha256"
+        cat levain.exe.sha256
+    fi
 )

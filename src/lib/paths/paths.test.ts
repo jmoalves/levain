@@ -16,6 +16,25 @@ Deno.test("LevainPaths should resolve project root, recipes dir, and levain reci
   assertEquals(LevainPaths.levainRecipesDir, path.resolve(LevainPaths.levainSrcDir, "recipes"));
   assertEquals(LevainPaths.levainRecipePath, path.resolve(LevainPaths.levainRecipesDir, "levain.levain.yaml"));
   assert(existsSync(LevainPaths.levainRecipePath), "levain.levain.yaml should exist");
+
+  const execPath = path.resolve("/opt/levain/build/levain.exe");
+  const bundlePath = path.resolve("/opt/levain/build/levain.bundle.js");
+  const bundleUrl = path.toFileUrl(bundlePath).href;
+  const sourcePath = path.resolve("/opt/levain/src/lib/paths/levain_paths.ts");
+  const sourceUrl = path.toFileUrl(sourcePath).href;
+
+  assertEquals(
+    LevainPaths.resolveRootFile(["--is_compiled_binary", "list"], execPath, sourceUrl),
+    execPath,
+  );
+  assertEquals(
+    LevainPaths.resolveRootFile(["--is_bundled_js", "list"], execPath, bundleUrl),
+    bundlePath,
+  );
+  assertEquals(
+    LevainPaths.resolveRootFile(["list"], execPath, sourceUrl),
+    path.resolve("/opt/levain/levain.ts"),
+  );
 });
 
 Deno.test("ConfigPaths should resolve standard directories purely without creating them on disk", () => {

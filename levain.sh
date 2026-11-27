@@ -62,6 +62,14 @@ __levain_run() {
         "$script_dir/build/levain" "$@"
     elif [[ -f "$script_dir/build/levain.exe" ]]; then
         "$script_dir/build/levain.exe" "$@"
+    elif [[ -f "$script_dir/build/deno.exe" && -f "$script_dir/build/levain.bundle.js" ]]; then
+        local bundle_path="$script_dir/build/levain.bundle.js"
+        if command -v cygpath >/dev/null 2>&1; then
+            bundle_path="$(cygpath -w "$bundle_path")"
+        fi
+        DENO_NO_UPDATE_CHECK=true "$script_dir/build/deno.exe" run --no-check --cached-only --allow-all "$bundle_path" --is_bundled_js "$@"
+    elif [[ -f "$script_dir/build/levain.bundle.js" ]] && command -v deno >/dev/null 2>&1; then
+        DENO_NO_UPDATE_CHECK=true deno run --no-check --cached-only --allow-all "$script_dir/build/levain.bundle.js" --is_bundled_js "$@"
     elif command -v deno >/dev/null 2>&1; then
         if [[ -f "$script_dir/deno.json" ]]; then
             deno run --allow-all --config "$script_dir/deno.json" "$script_dir/levain.ts" "$@"

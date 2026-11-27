@@ -7,6 +7,7 @@ set "myPath=%myPath:~0,-1%"
 set "levainRoot=%myPath%\.."
 
 set "myDenoDir="
+set "buildMode=compile"
 
 :getOpts
 if "%~1"=="" goto endGetOpts
@@ -20,6 +21,12 @@ if /I "%~1"=="--denoDir" (
 
     set "myDenoDir=%~2"
     shift
+    shift
+    goto getOpts
+)
+
+if /I "%~1"=="--bundle" (
+    set "buildMode=bundle"
     shift
     goto getOpts
 )
@@ -60,27 +67,43 @@ set "levainOutputDir=%~1"
 if not defined levainOutputDir (
     set "levainOutputDir=%levainRoot%\target"
 )
+for %%I in ("%levainOutputDir%") do set "levainOutputDir=%%~fI"
 
 echo.
-echo Building Levain at %levainOutputDir%
+echo Building Levain (%buildMode%) at %levainOutputDir%
 
 if exist "%levainOutputDir%" rmdir /q /s "%levainOutputDir%"
+mkdir "%levainOutputDir%\build" || exit /b 1
 
-:: COMPILE Levain
-"%myDenoExe%" compile ^
-    --frozen ^
-    --allow-all ^
-    --target x86_64-pc-windows-msvc ^
-    --output "%levainOutputDir%\build\levain.exe" ^
-    "%levainRoot%\levain.ts" ^
-    --is_compiled_binary
+if /I "%buildMode%"=="bundle" (
+    :: BUNDLE Levain with official deno.exe (no levain.exe)
+    pushd "%levainRoot%"
+    "%myDenoExe%" bundle ^
+        --platform deno ^
+        --packages bundle ^
+        --output "%levainOutputDir%\build\levain.bundle.js" ^
+        "%levainRoot%\levain.ts"
+    set "bundleRc=!ERRORLEVEL!"
+    popd
+    if !bundleRc! neq 0 exit /b !bundleRc!
+    copy /y "%myDenoExe%" "%levainOutputDir%\build\deno.exe" >nul || exit /b 1
+) else (
+    :: COMPILE Levain
+    "%myDenoExe%" compile ^
+        --frozen ^
+        --allow-all ^
+        --target x86_64-pc-windows-msvc ^
+        --output "%levainOutputDir%\build\levain.exe" ^
+        "%levainRoot%\levain.ts" ^
+        --is_compiled_binary
 
     @REM --is_compiled_binary - Workaround for Levain compile vs uncompiled
     @REM https://stackoverflow.com/questions/76647896/determine-if-running-uncompiled-ts-script-or-compiled-deno-executable
     @REM SEE ALSO: scripts/levain-build.cmd
     @REM SEE ALSO: githubScripts/levain-build.sh
     @REM SEE ALSO: src/lib/paths/levain_paths.ts
-if errorlevel 1 exit /b 1
+    if errorlevel 1 exit /b 1
+)
 
 :: Copy auxiliary files
 echo.
