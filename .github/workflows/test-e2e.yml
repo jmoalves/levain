@@ -79,8 +79,11 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "devLevain.cmd failed with exit code $LASTEXITCODE" }
 
           $targetDir = Join-Path $env:GITHUB_WORKSPACE "target"
-          $buildArgs = if ($buildMode -eq "bundle") { @("--bundle", $targetDir) } else { @($targetDir) }
-          & cmd.exe /c "scripts\levain-build.cmd" @buildArgs
+          if ($buildMode -eq "bundle") {
+            & cmd.exe /c "scripts\levain-build.cmd" --bundle $targetDir
+          } else {
+            & cmd.exe /c "scripts\levain-build.cmd" $targetDir
+          }
           if ($LASTEXITCODE -ne 0) { throw "levain-build.cmd failed with exit code $LASTEXITCODE" }
 
           $levainHome = Join-Path $HOME "levain"
