@@ -15,8 +15,18 @@ zipParentDir="$(cd "$(dirname "${levainZipFile}")" && pwd)"
 zipBaseName="$(basename "${levainZipFile}")"
 absZipFile="${zipParentDir}/${zipBaseName}"
 
-# Copy levain.exe SHA256
-cp -v "${levainDir}/build/levain.exe.sha256" "${zipParentDir}/"
+# Copy runtime artifact SHA256 files (compiled levain.exe or bundled deno.exe + levain.bundle.js)
+copiedSha=0
+for shaFile in levain.exe.sha256 deno.exe.sha256 levain.bundle.js.sha256; do
+    if [ -f "${levainDir}/build/${shaFile}" ]; then
+        cp -v "${levainDir}/build/${shaFile}" "${zipParentDir}/"
+        copiedSha=$((copiedSha + 1))
+    fi
+done
+if [ "$copiedSha" -eq 0 ]; then
+    echo "ERROR: No build SHA256 checksum file found in '${levainDir}/build'" >&2
+    exit 1
+fi
 
 # Create Levain zip
 rm -f "${absZipFile}"

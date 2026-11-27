@@ -70,7 +70,6 @@ function mapGlobalOptions(rawOpts: unknown): Record<string, any> {
   if (opts.emailDomain !== undefined) myArgs["email-domain"] = opts.emailDomain;
   if (opts.levainCache !== undefined) myArgs.levainCache = opts.levainCache;
   if (opts.shellPath !== undefined) myArgs.shellPath = opts.shellPath;
-  if (opts["is_compiled_binary"]) myArgs["is_compiled_binary"] = true;
 
   if (opts.levainHome !== undefined) myArgs.levainHome = opts.levainHome;
   if (opts.addRepo !== undefined) myArgs.addRepo = opts.addRepo;
@@ -121,7 +120,6 @@ export function createLevainCommand(
     .globalOption("--ask-password", t("cli.option.askPassword"))
     .globalOption("--wait-to-begin", t("cli.option.waitToBegin"), { hidden: true })
     .globalOption("--levain-upgrade", t("cli.option.levainUpgrade"), { hidden: true })
-    .globalOption("--is_compiled_binary", t("cli.option.isCompiledBinary"), { hidden: true })
     .example(t("cli.example.root.list"), "levain list")
     .example(t("cli.example.root.install"), "levain install jdk maven")
     .example(t("cli.example.root.activate"), "levain activate")

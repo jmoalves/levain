@@ -35,8 +35,7 @@
       "waitAfterEnd": "Aguarda ENTER ao finalizar.",
       "skipLevainUpdates": "Ignora a verificação de novas versões do Levain.",
       "skipAutoClean": "Ignora a limpeza automática diária.",
-      "levainUpgrade": "Fluxo interno de atualização do Levain.",
-      "isCompiledBinary": "Marcador interno de binário compilado."
+      "levainUpgrade": "Fluxo interno de atualização do Levain."
     },
     "cmd": {
       "install": {

@@ -12,6 +12,7 @@ import {
   findGitBashExecutable,
   main,
   parseVerifyArgs,
+  resolveLevainInvocation,
   runVerification,
   selectActivationPlan,
   type VerifyDeps,
@@ -189,7 +190,38 @@ Deno.test("verify-e2e - runVerification runs all phases, cleans lock safely, and
   assert(full.removed.some((p) => p.endsWith("levain.lock")), "lock file with matching token must be removed");
   assert(full.logs.some((l) => l.includes("ALL E2E VERIFICATIONS PASSED")));
 
-  // 2. Without Git Bash, only levain installed, --skip-concurrency
+  // 2. Bundled release layout (official deno.exe + levain.bundle.js, no levain.exe)
+  const bundled = makeMockDeps({
+    pathExists: (p, kind) => {
+      if (p.endsWith("levain.exe")) return false;
+      return kind === "file" || kind === "dir";
+    },
+  });
+  await runVerification(
+    parseVerifyArgs(["--levain-home", "/fake/home", "--expected-version", "1.1.0", "--skip-concurrency"]),
+    bundled.deps,
+  );
+  assert(
+    bundled.runCalls.some((c) => c.cmd.endsWith("deno.exe") && c.args.some((a) => a.endsWith("levain.bundle.js"))),
+    "bundled layout must invoke deno.exe with levain.bundle.js",
+  );
+  assertEquals(
+    resolveLevainInvocation("/fake/home/levain", { pathExists: () => false }),
+    undefined,
+  );
+  const missingRuntime = makeMockDeps({
+    pathExists: (p, kind) => {
+      if (p.endsWith("levain.exe") || p.endsWith("deno.exe") || p.endsWith("levain.bundle.js")) return false;
+      return kind === "file" || kind === "dir";
+    },
+  });
+  await assertRejects(
+    () => runVerification(parseVerifyArgs(["--levain-home", "/fake/home", "--skip-concurrency"]), missingRuntime.deps),
+    Error,
+    "neither build/levain.exe nor build/deno.exe + build/levain.bundle.js",
+  );
+
+  // 3. Without Git Bash, only levain installed, --skip-concurrency
   const noBash = makeMockDeps({
     pathExists: (p, kind) => {
       if (p.endsWith("bash.exe")) return false;

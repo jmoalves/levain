@@ -2,17 +2,26 @@ import * as path from "@std/path";
 
 // Paths based on levain executable directory
 export default class LevainPaths {
-  static get levainRootFile(): string {
-    //https://stackoverflow.com/questions/76647896/determine-if-running-uncompiled-ts-script-or-compiled-deno-executable
-    // SEE ALSO: scripts\levain-compile.cmd
-
-    const isCompiled = Deno.args.includes("--is_compiled_binary");
-    if (isCompiled) {
-      return Deno.execPath();
+  static resolveRootFile(
+    execPath: string,
+    moduleUrl: string,
+    isStandalone: boolean = Deno.build.standalone,
+  ): string {
+    if (isStandalone) {
+      return execPath;
     }
-    // Considering src\lib\paths\levain_paths.ts
-    const projectRoot = new URL("../../", import.meta.url);
-    return path.resolve(path.join(path.fromFileUrl(projectRoot), "..", "levain.ts"));
+    const modulePath = path.resolve(path.fromFileUrl(moduleUrl));
+    // Source checkout layout: <root>/src/lib/paths/levain_paths.ts
+    if (modulePath.replaceAll("\\", "/").endsWith("/src/lib/paths/levain_paths.ts")) {
+      const projectRoot = new URL("../../", moduleUrl);
+      return path.resolve(path.join(path.fromFileUrl(projectRoot), "..", "levain.ts"));
+    }
+    // Bundled JS layout: <installDir>/build/levain.bundle.js
+    return modulePath;
+  }
+
+  static get levainRootFile(): string {
+    return LevainPaths.resolveRootFile(Deno.execPath(), import.meta.url, Deno.build.standalone);
   }
 
   static get levainRootDir(): string {

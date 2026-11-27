@@ -73,6 +73,8 @@ jobs:
           rm -rf "$DENO_ROOT_PATH" && mkdir -p "$DENO_ROOT_PATH"
           echo "Deno Linux"
           bash "$GITHUB_WORKSPACE/githubScripts/get-deno.sh" "$DENO_ROOT_PATH/linux" Linux "$INPUT_DENO_VERSION"
+          echo "Deno Windows (for bundle release)"
+          bash "$GITHUB_WORKSPACE/githubScripts/get-deno.sh" "$DENO_ROOT_PATH/windows" Windows "$INPUT_DENO_VERSION"
         env:
           DENO_ROOT_PATH: ${{ runner.temp }}/deno
           INPUT_DENO_VERSION: ${{ github.event.inputs.denoVersion }}
@@ -105,23 +107,37 @@ jobs:
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }}
           LEVAIN_RELEASE_SRC_PATH: ${{ runner.temp }}/src/levain-${{ env.RELEASE_VERSION }}
 
-      - name: Levain build
+      - name: Levain build (compiled levain.exe + bundled deno.exe/levain.bundle.js)
         run: |
-          bash "$GITHUB_WORKSPACE/githubScripts/levain-build.sh" "$DENO_ROOT_PATH/linux/deno" "$LEVAIN_RELEASE_SRC_PATH" "$LEVAIN_RELEASE_BIN_PATH"
+          bash "$GITHUB_WORKSPACE/githubScripts/levain-build.sh" \
+            "$DENO_ROOT_PATH/linux/deno" \
+            "$LEVAIN_RELEASE_SRC_PATH" \
+            "$LEVAIN_RELEASE_BIN_PATH" \
+            compile
+          bash "$GITHUB_WORKSPACE/githubScripts/levain-build.sh" \
+            "$DENO_ROOT_PATH/linux/deno" \
+            "$LEVAIN_RELEASE_SRC_PATH" \
+            "$LEVAIN_BUNDLE_BIN_PATH" \
+            bundle \
+            "$DENO_ROOT_PATH/windows/deno.exe"
         env:
           DENO_ROOT_PATH: ${{ runner.temp }}/deno
           DENO_DIR: ${{ runner.temp }}/deno-release-cache
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }}
           LEVAIN_RELEASE_SRC_PATH: ${{ runner.temp }}/src/levain-${{ env.RELEASE_VERSION }}
           LEVAIN_RELEASE_BIN_PATH: ${{ runner.temp }}/bin/levain-${{ env.RELEASE_VERSION }}
+          LEVAIN_BUNDLE_BIN_PATH: ${{ runner.temp }}/bin-bundle/levain-${{ env.RELEASE_VERSION }}
 
       - name: Levain embedded binaries
         run: |
           bash "$GITHUB_WORKSPACE/githubScripts/levain-embedded-binaries.sh" "$LEVAIN_RELEASE_BIN_PATH/build"
+          rm -rf "$LEVAIN_BUNDLE_BIN_PATH/build/extra-bin"
+          cp -r "$LEVAIN_RELEASE_BIN_PATH/build/extra-bin" "$LEVAIN_BUNDLE_BIN_PATH/build/extra-bin"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }}
           LEVAIN_RELEASE_BIN_PATH: ${{ runner.temp }}/bin/levain-${{ env.RELEASE_VERSION }}
+          LEVAIN_BUNDLE_BIN_PATH: ${{ runner.temp }}/bin-bundle/levain-${{ env.RELEASE_VERSION }}
 
       - name: Changelog
         run: |
@@ -151,6 +167,20 @@ jobs:
         env:
           LEVAIN_VERSION: ${{ env.RELEASE_VERSION }}
           LEVAIN_RELEASE_BIN_PATH: ${{ runner.temp }}/bin/levain-${{ env.RELEASE_VERSION }}
+
+      - name: Levain bundle package
+        run: |
+          bash "$GITHUB_WORKSPACE/githubScripts/levain-package.sh" "$LEVAIN_BUNDLE_BIN_PATH" "$RUNNER_TEMP/levain-bundle-windows-x86_64.zip" STRIP
+        env:
+          LEVAIN_VERSION: ${{ env.RELEASE_VERSION }}
+          LEVAIN_BUNDLE_BIN_PATH: ${{ runner.temp }}/bin-bundle/levain-${{ env.RELEASE_VERSION }}
+
+      - name: Levain bundle package - with version
+        run: |
+          bash "$GITHUB_WORKSPACE/githubScripts/levain-package.sh" "$LEVAIN_BUNDLE_BIN_PATH" "$RUNNER_TEMP/levain-bundle-v${LEVAIN_VERSION}-windows-x86_64.zip"
+        env:
+          LEVAIN_VERSION: ${{ env.RELEASE_VERSION }}
+          LEVAIN_BUNDLE_BIN_PATH: ${{ runner.temp }}/bin-bundle/levain-${{ env.RELEASE_VERSION }}
 
       - name: Levain package binaries
         run: |
@@ -191,10 +221,16 @@ jobs:
           fail_on_unmatched_files: true
           files: |
             ${{ runner.temp }}/levain.exe.sha256
+            ${{ runner.temp }}/deno.exe.sha256
+            ${{ runner.temp }}/levain.bundle.js.sha256
             ${{ runner.temp }}/levain-v${{ env.RELEASE_VERSION }}-windows-x86_64.zip
             ${{ runner.temp }}/levain-v${{ env.RELEASE_VERSION }}-windows-x86_64.zip.sha256
             ${{ runner.temp }}/levain-windows-x86_64.zip
             ${{ runner.temp }}/levain-windows-x86_64.zip.sha256
+            ${{ runner.temp }}/levain-bundle-v${{ env.RELEASE_VERSION }}-windows-x86_64.zip
+            ${{ runner.temp }}/levain-bundle-v${{ env.RELEASE_VERSION }}-windows-x86_64.zip.sha256
+            ${{ runner.temp }}/levain-bundle-windows-x86_64.zip
+            ${{ runner.temp }}/levain-bundle-windows-x86_64.zip.sha256
             ${{ runner.temp }}/levain-extra-bin-windows-x86_64.zip
             ${{ runner.temp }}/levain-extra-bin-windows-x86_64.zip.sha256
             ${{ runner.temp }}/install.ps1
@@ -220,18 +256,40 @@ jobs:
 
   install-win:
     runs-on: windows-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     needs: createRelease
     permissions:
       contents: read
 
     steps:
-      - name: Install Levain
+      - name: Install Levain (bundle variant - no levain.exe)
         shell: pwsh
         env:
           REPOSITORY: ${{ github.repository }}
           LEVAIN_RELEASE: ${{ needs.createRelease.outputs.levainRelease }}
         run: |
+          $ErrorActionPreference = "Stop"
+          $levainVersion = $env:LEVAIN_RELEASE
+          $levainBundle = "true"
+          $levainHeadless = "true"
+          $scriptUrl = "https://github.com/$($env:REPOSITORY)/releases/download/v${levainVersion}/install.ps1"
+
+          iwr $scriptUrl -UseBasicParsing | iex
+
+          $levainDir = "$HOME\levain\levain"
+          if (-not (Test-Path "$levainDir\build\deno.exe" -PathType Leaf)) { throw "Missing bundled deno.exe" }
+          if (-not (Test-Path "$levainDir\build\levain.bundle.js" -PathType Leaf)) { throw "Missing levain.bundle.js" }
+          if (Test-Path "$levainDir\build\levain.exe" -PathType Leaf) { throw "Bundle release must not include levain.exe" }
+          & "$levainDir\levain.cmd" --skip-levain-updates list
+          if ($LASTEXITCODE -ne 0) { throw "Bundled levain list failed with exit code $LASTEXITCODE" }
+
+      - name: Install Levain (compiled levain.exe over bundle)
+        shell: pwsh
+        env:
+          REPOSITORY: ${{ github.repository }}
+          LEVAIN_RELEASE: ${{ needs.createRelease.outputs.levainRelease }}
+        run: |
+          $ErrorActionPreference = "Stop"
           # Which levain version?
           $levainVersion = $env:LEVAIN_RELEASE
 
@@ -241,11 +299,15 @@ jobs:
           # Headless
           $levainHeadless = "true"
 
-          # Install
-          iwr $scriptUrl | iex
+          # Install (exercises in-place switch from bundle -> compiled on the same version)
+          iwr $scriptUrl -UseBasicParsing | iex
+
+          $levainDir = "$HOME\levain\levain"
+          if (-not (Test-Path "$levainDir\build\levain.exe" -PathType Leaf)) { throw "Missing compiled levain.exe" }
+          if (Test-Path "$levainDir\build\levain.bundle.js" -PathType Leaf) { throw "Stale levain.bundle.js remained after switching to compiled" }
 
           # Workaround - ADD Levain to GitHub PATH
-          Add-Content $env:GITHUB_PATH "$HOME\levain\levain"
+          Add-Content $env:GITHUB_PATH "$levainDir"
 
       - name: Levain list
         shell: cmd

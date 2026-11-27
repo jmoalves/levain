@@ -10,10 +10,18 @@ on:
         description: "Published Levain version (optional - Default=latest; ignored when buildFromRef=true)"
         required: false
       buildFromRef:
-        description: "Build and test levain.exe from the current branch/ref before tagging a release"
+        description: "Build and test Levain from the current branch/ref before tagging a release"
         required: false
         type: boolean
         default: false
+      buildMode:
+        description: "Runtime variant to test ('compile' = levain.exe, 'bundle' = official deno.exe + levain.bundle.js)"
+        required: false
+        type: choice
+        default: compile
+        options:
+          - compile
+          - bundle
       packages:
         description: "Optional package subset to install (space/comma separated; empty = curated default list in testing/e2e/default-packages.txt)"
         required: false
@@ -54,6 +62,7 @@ jobs:
         shell: pwsh
         env:
           INPUT_DENO_VERSION: ${{ github.event.inputs.denoVersion }}
+          INPUT_BUILD_MODE: ${{ github.event.inputs.buildMode || 'compile' }}
           REPOSITORY: ${{ github.repository }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -62,16 +71,31 @@ jobs:
           if ($denoVer -notmatch '^[0-9]+\.[0-9]+\.[0-9]+$') {
             throw "Invalid denoVersion: $denoVer"
           }
+          $buildMode = if ($env:INPUT_BUILD_MODE) { $env:INPUT_BUILD_MODE.Trim() } else { "compile" }
+          if ($buildMode -ne "compile" -and $buildMode -ne "bundle") {
+            throw "Invalid buildMode: $buildMode"
+          }
           & cmd.exe /c "scripts\devLevain.cmd" $denoVer
           if ($LASTEXITCODE -ne 0) { throw "devLevain.cmd failed with exit code $LASTEXITCODE" }
 
           $targetDir = Join-Path $env:GITHUB_WORKSPACE "target"
-          & cmd.exe /c "scripts\levain-build.cmd" $targetDir
+          if ($buildMode -eq "bundle") {
+            & cmd.exe /c "scripts\levain-build.cmd" --bundle $targetDir
+          } else {
+            & cmd.exe /c "scripts\levain-build.cmd" $targetDir
+          }
           if ($LASTEXITCODE -ne 0) { throw "levain-build.cmd failed with exit code $LASTEXITCODE" }
 
           $levainHome = Join-Path $HOME "levain"
-          $builtExe = Join-Path $targetDir "build\levain.exe"
-          & $builtExe --addRepo "https://github.com/$($env:REPOSITORY)-pkgs.git" --levainHome $levainHome --skip-levain-updates --skip-auto-clean install --force levain
+          $installArgs = @("--addRepo", "https://github.com/$($env:REPOSITORY)-pkgs.git", "--levainHome", $levainHome, "--skip-levain-updates", "--skip-auto-clean", "install", "--force", "levain")
+          if ($buildMode -eq "bundle") {
+            $builtDeno = Join-Path $targetDir "build\deno.exe"
+            $builtBundle = Join-Path $targetDir "build\levain.bundle.js"
+            & $builtDeno run --no-check --cached-only --allow-all $builtBundle @installArgs
+          } else {
+            $builtExe = Join-Path $targetDir "build\levain.exe"
+            & $builtExe @installArgs
+          }
           if ($LASTEXITCODE -ne 0) { throw "levain install failed with exit code $LASTEXITCODE" }
 
           Add-Content -Path $env:GITHUB_PATH -Value (Join-Path $levainHome "levain")
@@ -81,6 +105,7 @@ jobs:
         shell: pwsh
         env:
           INPUT_LEVAIN_VERSION: ${{ github.event.inputs.levainVersion }}
+          INPUT_BUILD_MODE: ${{ github.event.inputs.buildMode || 'compile' }}
           RELEASE_TAG_NAME: ${{ github.event.release.tag_name }}
           REPOSITORY: ${{ github.repository }}
         run: |
@@ -96,8 +121,13 @@ jobs:
           if ($levainVersion -and $levainVersion -notmatch '^[0-9]+\.[0-9]+\.[0-9]+$') {
             throw "Invalid levainVersion: $levainVersion"
           }
+          $buildMode = if ($env:INPUT_BUILD_MODE) { $env:INPUT_BUILD_MODE.Trim() } else { "compile" }
+          if ($buildMode -ne "compile" -and $buildMode -ne "bundle") {
+            throw "Invalid buildMode: $buildMode"
+          }
 
           $levainHeadless = "true"
+          $levainBundle = if ($buildMode -eq "bundle") { "true" } else { "false" }
           if ($levainVersion) {
             $scriptUrl = "https://github.com/$($env:REPOSITORY)/releases/download/v${levainVersion}/install.ps1"
             Write-Output "=== install.ps1 from $scriptUrl"
@@ -163,7 +193,19 @@ jobs:
 
           # Verify piped `levain list` outputs clean ANSI-free lines and resolves all target packages
           $levainExe = Join-Path $HOME "levain\levain\build\levain.exe"
-          $listOutput = & $levainExe --skip-levain-updates --skip-auto-clean list
+          $levainDeno = Join-Path $HOME "levain\levain\build\deno.exe"
+          $levainBundle = Join-Path $HOME "levain\levain\build\levain.bundle.js"
+          if (Test-Path -LiteralPath $levainExe -PathType Leaf) {
+            $runtimeBin = $levainExe
+            $runtimePrefix = @()
+          } elseif ((Test-Path -LiteralPath $levainDeno -PathType Leaf) -and (Test-Path -LiteralPath $levainBundle -PathType Leaf)) {
+            $runtimeBin = $levainDeno
+            $runtimePrefix = @("run", "--no-check", "--cached-only", "--allow-all", $levainBundle)
+          } else {
+            throw "Neither compiled levain.exe nor bundled deno.exe + levain.bundle.js found under $HOME\levain\levain\build"
+          }
+
+          $listOutput = & $runtimeBin @runtimePrefix --skip-levain-updates --skip-auto-clean list
           if ($LASTEXITCODE -ne 0) {
             throw "levain list failed with exit code $LASTEXITCODE"
           }
@@ -177,7 +219,7 @@ jobs:
           }
 
           Write-Output "=== Installing packages ($($pkgList.Count)): $($pkgList -join ' ')"
-          & $levainExe --skip-levain-updates --skip-auto-clean install @pkgList
+          & $runtimeBin @runtimePrefix --skip-levain-updates --skip-auto-clean install @pkgList
           if ($LASTEXITCODE -ne 0) {
             throw "levain install failed with exit code $LASTEXITCODE"
           }

@@ -5,14 +5,40 @@ param(
 
 $scriptDir = Split-Path -Parent $PSCommandPath
 
+$levainPreArgs = @()
 if ($env:LEVAIN_EXE -and (Test-Path $env:LEVAIN_EXE -PathType Leaf)) {
     $levainExe = $env:LEVAIN_EXE
 }
 elseif (Test-Path (Join-Path $scriptDir "build\levain.exe") -PathType Leaf) {
     $levainExe = Join-Path $scriptDir "build\levain.exe"
 }
+elseif ((Test-Path (Join-Path $scriptDir "build\deno.exe") -PathType Leaf) -and (Test-Path (Join-Path $scriptDir "build\levain.bundle.js") -PathType Leaf)) {
+    $levainExe = Join-Path $scriptDir "build\deno.exe"
+    $levainPreArgs = @(
+        "run",
+        "--no-check",
+        "--cached-only",
+        "--allow-all",
+        (Join-Path $scriptDir "build\levain.bundle.js")
+    )
+}
 else {
     $levainExe = Join-Path $scriptDir "scripts\levain-deno.cmd"
+}
+
+function Invoke-LevainRuntime {
+    param([string[]]$RuntimeArgs = @())
+    $prevUpdateCheck = $env:DENO_NO_UPDATE_CHECK
+    $env:DENO_NO_UPDATE_CHECK = "true"
+    try {
+        & $levainExe @levainPreArgs @RuntimeArgs
+    } finally {
+        if ($null -eq $prevUpdateCheck) {
+            Remove-Item Env:DENO_NO_UPDATE_CHECK -ErrorAction SilentlyContinue
+        } else {
+            $env:DENO_NO_UPDATE_CHECK = $prevUpdateCheck
+        }
+    }
 }
 
 
@@ -60,7 +86,7 @@ function Invoke-LevainUpgrade {
 }
 
 if ($Args.Count -eq 0) {
-    & $levainExe
+    Invoke-LevainRuntime
     $rc = if ($null -ne $LASTEXITCODE) { [int]$LASTEXITCODE } else { 0 }
     if ($rc -eq 42) {
         $rc = Invoke-LevainUpgrade -BaseDir $scriptDir
@@ -77,7 +103,7 @@ switch ($Args[0]) {
             @()
         }
         if ($rawActivateArgs -contains "--help" -or $rawActivateArgs -contains "-h") {
-            & $levainExe @Args
+            Invoke-LevainRuntime -RuntimeArgs $Args
             break
         }
         $skipPre = $false
@@ -90,7 +116,7 @@ switch ($Args[0]) {
             }
         }
         if (-not $skipPre) {
-            & $levainExe _activate-machine pre @activateArgs
+            Invoke-LevainRuntime -RuntimeArgs (@("_activate-machine", "pre") + $activateArgs)
             if ($LASTEXITCODE -eq 42) {
                 $rc = Invoke-LevainUpgrade -BaseDir $scriptDir
                 if (-not $isDotSourced) { exit $rc }
@@ -102,7 +128,7 @@ switch ($Args[0]) {
                 return
             }
         }
-        $script = & $levainExe _activate-machine cmd --shell powershell @activateArgs
+        $script = Invoke-LevainRuntime -RuntimeArgs (@("_activate-machine", "cmd", "--shell", "powershell") + $activateArgs)
         if ($LASTEXITCODE -ne 0) {
             $rc = [int]$LASTEXITCODE
             if (-not $isDotSourced) { exit $rc }
@@ -114,7 +140,7 @@ switch ($Args[0]) {
     }
 
     default {
-        & $levainExe @Args
+        Invoke-LevainRuntime -RuntimeArgs $Args
         if ($LASTEXITCODE -eq 42) {
             $rc = Invoke-LevainUpgrade -BaseDir $scriptDir
             if (-not $isDotSourced) { exit $rc }

@@ -34,7 +34,6 @@ Deno.test("cli_parser should parse all global flags and map them to Levain myArg
     "--skip-levain-updates",
     "--skip-auto-clean",
     "--levain-upgrade",
-    "--is_compiled_binary",
   ]);
 
   assertEquals(result.kind, "run");
@@ -59,15 +58,7 @@ Deno.test("cli_parser should parse all global flags and map them to Levain myArg
     assertEquals(result.myArgs["skip-levain-updates"], true);
     assertEquals(result.myArgs["skip-auto-clean"], true);
     assertEquals(result.myArgs["levain-upgrade"], true);
-    assertEquals(result.myArgs["is_compiled_binary"], true);
     assertEquals(result.myArgs._, []);
-  }
-
-  const compiledCmd = await parseCliArgs(["--is_compiled_binary", "install", "jdk"]);
-  assertEquals(compiledCmd.kind, "run");
-  if (compiledCmd.kind === "run") {
-    assertEquals(compiledCmd.myArgs["is_compiled_binary"], true);
-    assertEquals(compiledCmd.myArgs._, ["install", "jdk"]);
   }
 });
 
@@ -149,7 +140,6 @@ Deno.test("cli_parser should handle --version and --help without dispatching com
     assertStringIncludes(renderedHelp, "clean");
     assertEquals(renderedHelp.includes("_activate-machine"), false);
     assertEquals(renderedHelp.includes("--levain-upgrade"), false);
-    assertEquals(renderedHelp.includes("--is_compiled_binary"), false);
   } finally {
     logStub.restore();
   }

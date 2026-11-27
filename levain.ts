@@ -110,7 +110,7 @@ export default class Levain {
 // https://deno.land/manual/tools/script_installer
 if (import.meta.main) {
   const levain = new Levain();
-  await levain.runLevinWithLog(Deno.args.filter((it) => it != "--is_compiled_binary"));
+  await levain.runLevinWithLog(Deno.args);
   if (levain.error) {
     Deno.exit(1);
   }

@@ -34,6 +34,7 @@ fi
 
 echo
 echo '**WARNING:** Some security software may block `levain.exe`. Ask your Systems Administrator for advice.'
+echo '**TIP:** To test this release without `levain.exe` (using official upstream `deno.exe` + `levain.bundle.js`), set `$levainBundle="true"` before running `install.ps1` or download `levain-bundle-windows-x86_64.zip`.'
 
 echo
 echo '# Support binaries'

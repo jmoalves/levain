@@ -294,6 +294,39 @@ export function findGitBashExecutable(levainHome: string, deps: VerifyDeps): str
   return candidates.find((candidate) => deps.pathExists(candidate, "file"));
 }
 
+export interface LevainInvocation {
+  mode: "compiled" | "bundled";
+  cmd: string;
+  prefixArgs: string[];
+  label: string;
+}
+
+export function resolveLevainInvocation(
+  levainDir: string,
+  deps: Pick<VerifyDeps, "pathExists">,
+): LevainInvocation | undefined {
+  const levainExe = path.join(levainDir, "build", "levain.exe");
+  if (deps.pathExists(levainExe, "file")) {
+    return {
+      mode: "compiled",
+      cmd: levainExe,
+      prefixArgs: [],
+      label: `compiled levain.exe at ${levainExe}`,
+    };
+  }
+  const denoExe = path.join(levainDir, "build", "deno.exe");
+  const levainBundle = path.join(levainDir, "build", "levain.bundle.js");
+  if (deps.pathExists(denoExe, "file") && deps.pathExists(levainBundle, "file")) {
+    return {
+      mode: "bundled",
+      cmd: denoExe,
+      prefixArgs: ["run", "--no-check", "--cached-only", "--allow-all", levainBundle],
+      label: `bundled deno.exe + levain.bundle.js at ${path.join(levainDir, "build")}`,
+    };
+  }
+  return undefined;
+}
+
 export async function runVerification(opts: VerifyOptions, deps: VerifyDeps): Promise<void> {
   const { logger } = deps;
   const levainHome = opts.levainHome;
@@ -301,7 +334,6 @@ export async function runVerification(opts: VerifyOptions, deps: VerifyDeps): Pr
   const levainCmd = path.join(levainDir, "levain.cmd");
   const levainPs1 = path.join(levainDir, "levain.ps1");
   const levainSh = path.join(levainDir, "levain.sh");
-  const levainExe = path.join(levainDir, "build", "levain.exe");
   const registryDir = path.join(levainHome, ".levain", "registry");
   const lockFile = path.join(levainHome, ".levain", "levain.lock");
 
@@ -310,7 +342,15 @@ export async function runVerification(opts: VerifyOptions, deps: VerifyDeps): Pr
   assertOk(deps.pathExists(levainCmd, "file"), `levain.cmd exists at ${levainCmd}`, logger);
   assertOk(deps.pathExists(levainPs1, "file"), `levain.ps1 exists at ${levainPs1}`, logger);
   assertOk(deps.pathExists(levainSh, "file"), `levain.sh exists at ${levainSh}`, logger);
-  assertOk(deps.pathExists(levainExe, "file"), `compiled levain.exe exists at ${levainExe}`, logger);
+  const invocation = resolveLevainInvocation(levainDir, deps);
+  assertOk(
+    invocation !== undefined,
+    invocation
+      ? `runtime present (${invocation.label})`
+      : `neither build/levain.exe nor build/deno.exe + build/levain.bundle.js exists under ${levainDir}`,
+    logger,
+  );
+  const runLevain = (args: string[]) => deps.runProcess(invocation!.cmd, [...invocation!.prefixArgs, ...args]);
   assertOk(deps.pathExists(registryDir, "dir"), `registry dir exists at ${registryDir}`, logger);
   assertOk(
     deps.pathExists(path.join(registryDir, "levain.levain.yaml"), "file"),
@@ -326,11 +366,11 @@ export async function runVerification(opts: VerifyOptions, deps: VerifyDeps): Pr
   logger.log(`  Installed packages (${installedRecipes.length}): ${installedRecipes.join(", ")}`);
   assertOk(installedRecipes.includes("levain"), "installed registry includes 'levain'", logger);
 
-  // 2. Core compiled CLI commands
-  logger.log("\n=== E2E VERIFY: Core CLI commands on compiled levain.exe");
+  // 2. Core CLI commands
+  logger.log(`\n=== E2E VERIFY: Core CLI commands (${invocation!.mode})`);
   const baseArgs = ["--levainHome", levainHome, "--skip-levain-updates", "--skip-auto-clean"];
 
-  const verRes = await deps.runProcess(levainExe, ["--version"]);
+  const verRes = await runLevain(["--version"]);
   assertOk(verRes.code === 0, `levain --version exits 0 (${verRes.stdout.trim()})`, logger);
   assertOk(/\d+\.\d+\.\d+/.test(verRes.stdout), "levain --version prints semver", logger);
   if (opts.expectedVersion) {
@@ -341,26 +381,26 @@ export async function runVerification(opts: VerifyOptions, deps: VerifyDeps): Pr
     );
   }
 
-  const actionsRes = await deps.runProcess(levainExe, [...baseArgs, "actions", "copy"]);
+  const actionsRes = await runLevain([...baseArgs, "actions", "copy"]);
   assertOk(actionsRes.code === 0, "levain actions copy exits 0", logger);
   assertOk((actionsRes.stdout + actionsRes.stderr).includes("copy"), "levain actions copy describes copy", logger);
 
-  const listRes = await deps.runProcess(levainExe, [...baseArgs, "list"]);
+  const listRes = await runLevain([...baseArgs, "list"]);
   assertOk(listRes.code === 0, "levain list exits 0", logger);
   assertOk((listRes.stdout + listRes.stderr).includes("levain"), "levain list includes levain", logger);
 
-  const infoRes = await deps.runProcess(levainExe, [...baseArgs, "info", "--verbose"]);
+  const infoRes = await runLevain([...baseArgs, "info", "--verbose"]);
   assertOk(infoRes.code === 0, "levain info --verbose exits 0", logger);
   assertOk((infoRes.stdout + infoRes.stderr).includes("levain"), "levain info --verbose reports levain", logger);
 
   const explainTarget = installedRecipes.find((p) => p !== "levain") ?? "levain";
-  const explainRes = await deps.runProcess(levainExe, [...baseArgs, "explain", explainTarget]);
+  const explainRes = await runLevain([...baseArgs, "explain", explainTarget]);
   assertOk(explainRes.code === 0, `levain explain ${explainTarget} exits 0`, logger);
   assertOk(explainRes.stdout.trimStart().startsWith("# "), "levain explain stdout is clean Markdown", logger);
   assertOk(explainRes.stdout.includes(explainTarget), `levain explain mentions '${explainTarget}'`, logger);
   assertOk(!/\[INFO\]|\[DEBUG\]/.test(explainRes.stdout), "levain explain stdout has no log pollution", logger);
 
-  const uninstallRes = await deps.runProcess(levainExe, [...baseArgs, "explain", "--uninstall"]);
+  const uninstallRes = await runLevain([...baseArgs, "explain", "--uninstall"]);
   assertOk(uninstallRes.code === 0, "levain explain --uninstall exits 0", logger);
   assertOk(uninstallRes.stdout.trimStart().startsWith("# "), "levain explain --uninstall stdout is clean Markdown", logger);
   assertOk(uninstallRes.stdout.includes("levain"), "levain explain --uninstall includes levain", logger);
@@ -373,7 +413,7 @@ export async function runVerification(opts: VerifyOptions, deps: VerifyDeps): Pr
     );
   }
 
-  const cleanRes = await deps.runProcess(levainExe, [...baseArgs, "clean"]);
+  const cleanRes = await runLevain([...baseArgs, "clean"]);
   assertOk(cleanRes.code === 0, "levain clean exits 0", logger);
 
   // 3. Shell activation (PowerShell, CMD, Git Bash) + real tool probes
@@ -466,10 +506,10 @@ export async function runVerification(opts: VerifyOptions, deps: VerifyDeps): Pr
       deps.createExclusiveTextFile(lockFile, lockJson);
       lockCreated = true;
 
-      const readOnlyRes = await deps.runProcess(levainExe, [...baseArgs, "actions"]);
+      const readOnlyRes = await runLevain([...baseArgs, "actions"]);
       assertOk(readOnlyRes.code === 0, "read-only 'levain actions' succeeds while lock is held", logger);
 
-      const mutatingRes = await deps.runProcess(levainExe, [...baseArgs, "clean"]);
+      const mutatingRes = await runLevain([...baseArgs, "clean"]);
       const combined = `${mutatingRes.stdout}\n${mutatingRes.stderr}`;
       assertOk(mutatingRes.code !== 0, "mutating 'levain clean' is blocked while lock is held", logger);
       assertOk(

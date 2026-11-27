@@ -36,7 +36,7 @@ Read the relevant context first:
 2. **Architecture & invariants:**
    - Execution flow: `levain.ts` → `src/levain_cli.ts` → `Loader` → `CommandFactory` (`src/cmd/`) / `ActionFactory` (`src/action/`).
    - Path resolution stays centralized in `src/lib/paths/` (`LevainPaths`, `ConfigPaths`, `HomePaths`, `GeneralPaths`, `ExtraBin`) without reintroducing circular imports.
-   - Compiled vs. source bootstrap stays in sync across `levain.ts`, `src/lib/paths/levain_paths.ts`, `githubScripts/levain-build.sh`, and `scripts/levain-build.cmd` (`--is_compiled_binary`).
+   - Compiled vs. bundled vs. source bootstrap stays in sync across `src/lib/paths/levain_paths.ts`, `levain.{cmd,ps1,sh}`, `githubScripts/levain-build.sh`, and `scripts/levain-build.cmd` (`Deno.build.standalone` + `import.meta.url`).
    - `Config` remains the threaded context; inspect `src/lib/parse_args.ts` and action option parsing critically for edge-case bugs, inconsistent option handling, or silent failures.
    - Watch for **unnecessary Windows coupling** (`OsUtils.onlyInWindows()`, hardcoded backslashes, `cmd.exe`-only assumptions) in modules that could support macOS and Linux, and scrutinize `levainShell` / `os_shell.ts` and incomplete commands in `src/cmd/`.
 3. **Test quality & reliability:**
