@@ -1,13 +1,18 @@
 import { assert, assertEquals, assertFalse, assertRejects } from "@std/assert";
 import { existsSync } from "@std/fs";
+import * as path from "@std/path";
 import { stub } from "@std/testing/mock";
 
 import t from "../lib/i18n.ts";
+import LevainVersion from "../levain_version.ts";
 import Loader from "../lib/loader.ts";
 import { OsShell } from "../lib/os/os_shell.ts";
 import OsUtils from "../lib/os/os_utils.ts";
 import FileSystemPackage from "../lib/package/file_system_package.ts";
 import { PackageManagerMock } from "../lib/package/package_manager_mock.ts";
+import ChainRepository from "../lib/repository/chain_repository.ts";
+import { FileSystemRepository } from "../lib/repository/file_system_repository.ts";
+import MockRepository from "../lib/repository/mock_repository.ts";
 import TestHelper from "../lib/test/test_helper.ts";
 
 import CommandFactory from "./command_factory.ts";
@@ -228,5 +233,112 @@ Deno.test("Shell.execute orchestrates readPackages, installPackages, and interac
   } finally {
     runStub.restore();
     installStub.restore();
+  }
+});
+
+Deno.test("Shell.execute loads newly installed project dependencies on the first and subsequent runs", async () => {
+  for (const registryExists of [false, true]) {
+    const config = TestHelper.getConfig();
+    const repoDir = TestHelper.getNewTempDir();
+    await Deno.writeTextFile(
+      path.join(repoDir, "dependency.levain.yaml"),
+      [
+        "version: 1.0.0",
+        "cmd.env:",
+        "  - setEnv SHELL_DEPENDENCY loaded",
+      ].join("\n"),
+    );
+
+    const registryDir = config.configPaths.levainRegistryDir;
+    if (registryExists) {
+      await Deno.mkdir(registryDir, { recursive: true });
+    }
+
+    await config.repositoryManager.init({ extraRepos: [], tempRepos: [repoDir] });
+    const regularRepo = new FileSystemRepository(config, repoDir);
+    await regularRepo.init();
+    // Provide a lightweight no-op `levain` package in a separate repo (external FileSystemRepository skips reserved `levain`)
+    const levainStubDir = TestHelper.getNewTempDir();
+    const levainStubFile = path.join(levainStubDir, "levain.levain.yaml");
+    const levainStubYaml = `version: ${LevainVersion.levainVersion}\n`;
+    await Deno.writeTextFile(levainStubFile, levainStubYaml);
+    const buildLevainPkg = () =>
+      new FileSystemPackage(
+        config,
+        "levain",
+        config.configPaths.levainBaseDir,
+        levainStubFile,
+        levainStubYaml,
+      );
+    const levainStubPackages = [buildLevainPkg()];
+    const levainStubRepo = new MockRepository("levain-stub", levainStubPackages);
+    const chainRepo = new ChainRepository(config, [levainStubRepo, regularRepo]);
+    await chainRepo.init();
+    config.repositoryManager.repository = chainRepo;
+
+    const project = new FileSystemPackage(
+      config,
+      "project",
+      repoDir,
+      "project.levain.yaml",
+      [
+        "version: 1.0.0",
+        "levain.config.noBaseDir: true",
+        "dependencies:",
+        "  - dependency",
+      ].join("\n"),
+    );
+    const currentDirStub = stub(config.repositoryManager, "currentDirPackage", () => Promise.resolve(project));
+    const sanitizeStub = stub(OsUtils, "sanitizeUserPath", () => Promise.resolve());
+    const setEnvStub = stub(OsUtils, "setEnv", () => {});
+    const cmd = new Shell(config);
+    let shellRuns = 0;
+    const runStub = stub(cmd, "runShell", async (osShell: OsShell) => {
+      shellRuns++;
+      config.setVar("SHELL_DEPENDENCY", "not loaded");
+      await osShell.execute([], false);
+      assertEquals(config.getVar("SHELL_DEPENDENCY"), "loaded");
+    });
+
+    const refreshStarted = Promise.withResolvers<void>();
+    const finishRefresh = Promise.withResolvers<void>();
+    const installedRepo = config.repositoryManager.repositoryInstalled;
+    const reload = installedRepo.reload.bind(installedRepo);
+    const reloadStub = registryExists
+      ? stub(installedRepo, "reload", async () => {
+        refreshStarted.resolve();
+        await finishRefresh.promise;
+        await reload();
+      })
+      : undefined;
+
+    try {
+      const firstRun = cmd.execute([]);
+      if (registryExists) {
+        await Promise.race([refreshStarted.promise, firstRun]);
+        assertEquals(reloadStub?.calls.length, 1);
+        assertEquals(shellRuns, 0);
+        finishRefresh.resolve();
+      }
+      await firstRun;
+      assertEquals(shellRuns, 1);
+      assertEquals(config.repositoryManager.repositoryInstalled.resolvePackage("dependency")?.name, "dependency");
+      assertEquals(config.getVar("SHELL_DEPENDENCY"), "loaded");
+
+      levainStubPackages[0] = buildLevainPkg();
+      await regularRepo.reload();
+      await cmd.execute([]);
+      assertEquals(shellRuns, 2);
+      if (reloadStub) {
+        assertEquals(reloadStub.calls.length, 1);
+      }
+    } finally {
+      finishRefresh.resolve();
+      reloadStub?.restore();
+      runStub.restore();
+      setEnvStub.restore();
+      sanitizeStub.restore();
+      currentDirStub.restore();
+    }
   }
 });

@@ -214,6 +214,32 @@ if (OsUtils.isWindows()) {
     ]);
     assertEquals(config.getVar("NO_LEAK_OUT"), "safe ^!__LEVAIN_SECRET_0^!");
   });
+
+  Deno.test("OsShell.openShell on Windows should not hang when a script leaves a background process holding pipes open", async () => {
+    const config = TestHelper.getConfig();
+    config.packageManager = new PackageManagerMock(config);
+    const logger = await TestHelper.setupTestLogger();
+
+    const tempDir = TestHelper.getNewTempDir();
+    const scriptPath = path.join(tempDir, "launch-daemon.cmd");
+    // Launches a ~7s background process inheriting stdout/stderr handles while the parent .cmd exits immediately
+    await Deno.writeTextFile(
+      scriptPath,
+      [
+        "@echo off",
+        "echo daemon-launching",
+        'start "" /b ping -n 8 127.0.0.1',
+      ].join("\r\n") + "\r\n",
+    );
+
+    const osShell = new OsShell(config, ["abc"], true);
+    const startMs = Date.now();
+    await osShell.openShell([scriptPath]);
+    const elapsedMs = Date.now() - startMs;
+
+    assert(elapsedMs < 3500, `openShell should return promptly after parent .cmd exits, took ${elapsedMs}ms`);
+    assert(logger.messages.some((m) => m.includes("daemon-launching")));
+  });
 }
 
 Deno.test("OsShell constructor throws when dependencies cannot be resolved and execute blocks recursive levainShell", async () => {
@@ -381,6 +407,90 @@ Deno.test("OsShell.openShell and execute handle saveVar, stripCRLF, spawn, and i
 
     // Undefined stream is a safe no-op
     await OsShell.streamToLog(undefined, () => {}, config);
+
+    // 5. Background daemon keeping stdout/stderr pipes open must not hang openShell after process exits
+    const prevDrainMs = OsShell.streamDrainAfterExitMs;
+    OsShell.streamDrainAfterExitMs = 20;
+    let stdoutCancelled = false;
+    let stderrCancelled = false;
+    try {
+      (Deno as { Command: unknown }).Command = class FakeDaemonCommand {
+        spawn() {
+          return {
+            stdout: new ReadableStream<Uint8Array>({
+              start(controller) {
+                controller.enqueue(encoder.encode("daemon started\r\npartial-tail"));
+                // Intentionally never closed (simulates detached background child holding pipe)
+              },
+              cancel() {
+                stdoutCancelled = true;
+              },
+            }),
+            stderr: new ReadableStream<Uint8Array>({
+              start() {
+                // Intentionally open with no data
+              },
+              cancel() {
+                stderrCancelled = true;
+              },
+            }),
+            status: Promise.resolve({ success: true, code: 0 }),
+          };
+        }
+      };
+
+      const daemonShell = new OsShell(config, ["abc"], true);
+      await daemonShell.openShell(["start-daemon.cmd"]);
+      assertEquals(stdoutCancelled, true);
+      assertEquals(stderrCancelled, true);
+      assert(logger.messages.some((m) => m === "INFO daemon started"));
+      assert(logger.messages.some((m) => m === "INFO partial-tail"));
+
+      // Pre-aborted signal cancels immediately without hanging
+      const preAborted = new AbortController();
+      preAborted.abort();
+      let preCancelled = false;
+      const openStream = new ReadableStream<Uint8Array>({
+        start() {},
+        cancel() {
+          preCancelled = true;
+        },
+      });
+      await OsShell.streamToLog(openStream, () => {}, config, preAborted.signal);
+      assertEquals(preCancelled, true);
+
+      // Read error while aborted (e.g. pipe closed on Windows) is ignored and buffered text is flushed
+      const abortErrCtrl = new AbortController();
+      const abortErrLines: string[] = [];
+      let pulledOnce = false;
+      const abortErrStream = new ReadableStream<Uint8Array>({
+        pull(controller) {
+          if (!pulledOnce) {
+            pulledOnce = true;
+            controller.enqueue(encoder.encode("buffered-before-cancel"));
+            return;
+          }
+          abortErrCtrl.abort();
+          controller.error(new Deno.errors.Interrupted("pipe closed"));
+        },
+      });
+      await OsShell.streamToLog(abortErrStream, (line) => abortErrLines.push(line), config, abortErrCtrl.signal);
+      assertEquals(abortErrLines, ["buffered-before-cancel"]);
+
+      // Unexpected read error without abort must still propagate
+      const unexpectedErrStream = new ReadableStream<Uint8Array>({
+        pull(controller) {
+          controller.error(new Error("unexpected stream failure"));
+        },
+      });
+      await assertRejects(
+        () => OsShell.streamToLog(unexpectedErrStream, () => {}, config),
+        Error,
+        "unexpected stream failure",
+      );
+    } finally {
+      OsShell.streamDrainAfterExitMs = prevDrainMs;
+    }
   } finally {
     (Deno as { Command: unknown }).Command = OrigCommand;
     winStub.restore();

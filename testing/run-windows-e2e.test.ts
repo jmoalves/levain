@@ -137,11 +137,11 @@ Deno.test("run-windows-e2e - parseE2eArgs", async (t) => {
     };
 
     const combined = parseE2eArgs(
-      ["--packages-file", "/tmp/a.txt", "--packages-file=/tmp/b.txt", "--packages", "jq"],
+      ["--packages-file", "/tmp/a.txt", "--packages-file=/tmp/b.txt", "--packages", "jq,notepad++"],
       "2.9.8",
       fakeRead,
     );
-    assertEquals(combined.packages, ["git", "jdk-21-ibm-latest", "maven-latest", "vscode", "jq"]);
+    assertEquals(combined.packages, ["git", "jdk-21-ibm-latest", "maven-latest", "vscode", "jq", "notepad++"]);
 
     assertThrows(() => parseE2eArgs(["--packages-file", "/tmp/missing.txt"], "2.9.8", fakeRead), Error, "Could not read");
     assertThrows(() => parseE2eArgs(["--packages-file", "/tmp/empty.txt"], "2.9.8", fakeRead), Error, "No packages found");

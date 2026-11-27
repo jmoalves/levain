@@ -107,6 +107,8 @@ export class OsShell {
     }
   }
 
+  static streamDrainAfterExitMs = 250;
+
   async openShell(args: string[]) {
     // TODO: Handle other os's
     OsUtils.onlyInWindows();
@@ -138,13 +140,44 @@ export class OsShell {
       this.config.setVar(this.saveVar, cmdOutput);
     } else {
       const child = pcommand.spawn();
-      const status = !this.interactive
-        ? (await Promise.all([
-          OsShell.streamToLog(child.stdout, (line) => log.info(line), this.config),
-          OsShell.streamToLog(child.stderr, (line) => log.error(line), this.config),
-          child.status,
-        ]))[2]
-        : await child.status;
+      let status: Deno.CommandStatus;
+      if (!this.interactive) {
+        const drainController = new AbortController();
+        const stdoutDone = OsShell.streamToLog(
+          child.stdout,
+          (line) => log.info(line),
+          this.config,
+          drainController.signal,
+        );
+        const stderrDone = OsShell.streamToLog(
+          child.stderr,
+          (line) => log.error(line),
+          this.config,
+          drainController.signal,
+        );
+        status = await child.status;
+        // Wait briefly for remaining buffered output/EOF, then cancel open pipes
+        // inherited by detached background child processes (e.g. proxy daemons).
+        let drainTimer: ReturnType<typeof setTimeout> | undefined;
+        try {
+          await Promise.race([
+            Promise.all([stdoutDone, stderrDone]),
+            new Promise<void>((resolve) => {
+              drainTimer = setTimeout(() => {
+                drainController.abort();
+                resolve();
+              }, OsShell.streamDrainAfterExitMs);
+            }),
+          ]);
+        } finally {
+          if (drainTimer !== undefined) {
+            clearTimeout(drainTimer);
+          }
+        }
+        await Promise.all([stdoutDone, stderrDone]);
+      } else {
+        status = await child.status;
+      }
       if (!this.ignoreErrors && !status.success) {
         throw new Error("CMD terminated with code " + status.code);
       }
@@ -169,11 +202,20 @@ export class OsShell {
     stream: ReadableStream<Uint8Array> | undefined,
     logFn: (line: string) => void,
     config: Config | null,
+    signal?: AbortSignal,
   ): Promise<void> {
     if (!stream) {
       return;
     }
     const reader = stream.getReader();
+    const onAbort = () => {
+      reader.cancel().catch(() => {});
+    };
+    if (signal?.aborted) {
+      onAbort();
+    } else {
+      signal?.addEventListener("abort", onAbort, { once: true });
+    }
     const decoder = new TextDecoder();
     let buffer = "";
     try {
@@ -189,11 +231,16 @@ export class OsShell {
           logFn(LogUtils.hidePassword(config, line));
         }
       }
+    } catch (err) {
+      if (!signal?.aborted) {
+        throw err;
+      }
+    } finally {
       buffer += decoder.decode();
       if (buffer.length > 0) {
         logFn(LogUtils.hidePassword(config, buffer));
       }
-    } finally {
+      signal?.removeEventListener("abort", onAbort);
       reader.releaseLock();
     }
   }
