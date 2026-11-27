@@ -94,14 +94,7 @@ if /I "%buildMode%"=="bundle" (
         --allow-all ^
         --target x86_64-pc-windows-msvc ^
         --output "%levainOutputDir%\build\levain.exe" ^
-        "%levainRoot%\levain.ts" ^
-        --is_compiled_binary
-
-    @REM --is_compiled_binary - Workaround for Levain compile vs uncompiled
-    @REM https://stackoverflow.com/questions/76647896/determine-if-running-uncompiled-ts-script-or-compiled-deno-executable
-    @REM SEE ALSO: scripts/levain-build.cmd
-    @REM SEE ALSO: githubScripts/levain-build.sh
-    @REM SEE ALSO: src/lib/paths/levain_paths.ts
+        "%levainRoot%\levain.ts"
     if errorlevel 1 exit /b 1
 )
 

@@ -54,14 +54,7 @@ levainCompile() {
         --allow-all \
         --target "${target}" \
         --output "${output}" \
-        "${levainSrcDir}/levain.ts" \
-        --is_compiled_binary
-
-    # --is_compiled_binary - Workaround for Levain compile vs uncompiled
-    # https://stackoverflow.com/questions/76647896/determine-if-running-uncompiled-ts-script-or-compiled-deno-executable
-    # SEE ALSO: scripts/levain-build.cmd
-    # SEE ALSO: githubScripts/levain-build.sh
-    # SEE ALSO: src/lib/paths/levain_paths.ts
+        "${levainSrcDir}/levain.ts"
 }
 
 # Create levain executable

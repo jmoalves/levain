@@ -35,9 +35,7 @@
       "waitAfterEnd": "Wait for ENTER after finishing.",
       "skipLevainUpdates": "Skip checking for newer Levain releases.",
       "skipAutoClean": "Skip the automatic daily cleanup.",
-      "levainUpgrade": "Internal Levain self-upgrade flow.",
-      "isCompiledBinary": "Internal compiled-binary marker.",
-      "isBundledJs": "Internal bundled-JS marker."
+      "levainUpgrade": "Internal Levain self-upgrade flow."
     },
     "cmd": {
       "install": {

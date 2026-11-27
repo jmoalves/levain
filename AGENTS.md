@@ -136,7 +136,7 @@ Composed via `ChainRepository` across installed (`registry`), regular (`recipes/
 
 **Version** is read at runtime from `recipes/levain.levain.yaml` (`LevainVersion.levainVersion`).
 
-**Compiled vs. source:** `LevainPaths.levainRootFile` branches on `--is_compiled_binary`, baked into the binary by `githubScripts/levain-build.sh` and `scripts/levain-build.cmd`. Keep those in sync when changing bootstrap/path resolution.
+**Compiled vs. bundled vs. source:** `LevainPaths.levainRootFile` auto-detects runtime layout via `Deno.build.standalone` (compiled `build/levain.exe` via `Deno.execPath()`) and `import.meta.url` (source checkout `/src/lib/paths/levain_paths.ts` vs. bundled `build/levain.bundle.js`), requiring no internal CLI flags. Keep `githubScripts/levain-build.sh`, `scripts/levain-build.cmd`, and the launchers in sync when changing bootstrap/path resolution.
 
 ---
 

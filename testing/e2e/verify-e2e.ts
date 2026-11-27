@@ -320,7 +320,7 @@ export function resolveLevainInvocation(
     return {
       mode: "bundled",
       cmd: denoExe,
-      prefixArgs: ["run", "--no-check", "--cached-only", "--allow-all", levainBundle, "--is_bundled_js"],
+      prefixArgs: ["run", "--no-check", "--cached-only", "--allow-all", levainBundle],
       label: `bundled deno.exe + levain.bundle.js at ${path.join(levainDir, "build")}`,
     };
   }

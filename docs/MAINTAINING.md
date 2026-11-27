@@ -30,7 +30,7 @@ Key subsystems:
 
 ## Compiled Binary vs. Source Mode
 
-`LevainPaths.levainRootFile` branches on `--is_compiled_binary`, which is baked into the executable by `githubScripts/levain-build.sh` and `scripts/levain-build.cmd`.
+`LevainPaths.levainRootFile` auto-detects compiled (`Deno.build.standalone` → `Deno.execPath()`), bundled (`build/levain.bundle.js` via `import.meta.url`), and source checkouts (`/src/lib/paths/levain_paths.ts`) without internal CLI flags.
 
 - In a release archive, recipes live under `build/recipes/` (which is why `recipes/levain.levain.yaml` copies `../../levain.cmd`, `../../levain.ps1`, `../../levain.sh`, and `../../build`).
 - Whenever you change bootstrap paths, wrappers (`levain.cmd`, `levain.ps1`, `levain.sh`), or `extra-bin` layout, keep `githubScripts/levain-build.sh`, `scripts/levain-build.cmd`, and `recipes/levain.levain.yaml` in sync.

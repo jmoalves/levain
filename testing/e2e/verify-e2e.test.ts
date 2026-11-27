@@ -202,8 +202,8 @@ Deno.test("verify-e2e - runVerification runs all phases, cleans lock safely, and
     bundled.deps,
   );
   assert(
-    bundled.runCalls.some((c) => c.cmd.endsWith("deno.exe") && c.args.includes("--is_bundled_js")),
-    "bundled layout must invoke deno.exe with --is_bundled_js",
+    bundled.runCalls.some((c) => c.cmd.endsWith("deno.exe") && c.args.some((a) => a.endsWith("levain.bundle.js"))),
+    "bundled layout must invoke deno.exe with levain.bundle.js",
   );
   assertEquals(
     resolveLevainInvocation("/fake/home/levain", { pathExists: () => false }),

@@ -88,7 +88,7 @@ jobs:
           if ($buildMode -eq "bundle") {
             $builtDeno = Join-Path $targetDir "build\deno.exe"
             $builtBundle = Join-Path $targetDir "build\levain.bundle.js"
-            & $builtDeno run --no-check --cached-only --allow-all $builtBundle --is_bundled_js @installArgs
+            & $builtDeno run --no-check --cached-only --allow-all $builtBundle @installArgs
           } else {
             $builtExe = Join-Path $targetDir "build\levain.exe"
             & $builtExe @installArgs
@@ -197,7 +197,7 @@ jobs:
             $runtimePrefix = @()
           } elseif ((Test-Path -LiteralPath $levainDeno -PathType Leaf) -and (Test-Path -LiteralPath $levainBundle -PathType Leaf)) {
             $runtimeBin = $levainDeno
-            $runtimePrefix = @("run", "--no-check", "--cached-only", "--allow-all", $levainBundle, "--is_bundled_js")
+            $runtimePrefix = @("run", "--no-check", "--cached-only", "--allow-all", $levainBundle)
           } else {
             throw "Neither compiled levain.exe nor bundled deno.exe + levain.bundle.js found under $HOME\levain\levain\build"
           }

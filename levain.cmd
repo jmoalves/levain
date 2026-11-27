@@ -56,7 +56,7 @@ SETLOCAL
 set "DENO_NO_UPDATE_CHECK=true"
 set "NO_COLOR=true"
 if defined levainBundle (
-    "%levainExe%" run --no-check --cached-only --allow-all "%levainBundle%" --is_bundled_js %*
+    "%levainExe%" run --no-check --cached-only --allow-all "%levainBundle%" %*
 ) else (
     set "DENO_DIR=%myPath%\build"
     %levainCall%"%levainExe%" %*

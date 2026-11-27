@@ -24,15 +24,15 @@ Deno.test("LevainPaths should resolve project root, recipes dir, and levain reci
   const sourceUrl = path.toFileUrl(sourcePath).href;
 
   assertEquals(
-    LevainPaths.resolveRootFile(["--is_compiled_binary", "list"], execPath, sourceUrl),
+    LevainPaths.resolveRootFile(execPath, sourceUrl, true),
     execPath,
   );
   assertEquals(
-    LevainPaths.resolveRootFile(["--is_bundled_js", "list"], execPath, bundleUrl),
+    LevainPaths.resolveRootFile(execPath, bundleUrl, false),
     bundlePath,
   );
   assertEquals(
-    LevainPaths.resolveRootFile(["list"], execPath, sourceUrl),
+    LevainPaths.resolveRootFile(execPath, sourceUrl, false),
     path.resolve("/opt/levain/levain.ts"),
   );
 });

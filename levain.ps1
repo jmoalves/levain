@@ -19,8 +19,7 @@ elseif ((Test-Path (Join-Path $scriptDir "build\deno.exe") -PathType Leaf) -and 
         "--no-check",
         "--cached-only",
         "--allow-all",
-        (Join-Path $scriptDir "build\levain.bundle.js"),
-        "--is_bundled_js"
+        (Join-Path $scriptDir "build\levain.bundle.js")
     )
 }
 else {
