@@ -258,14 +258,17 @@ export function createLevainCommand(
   const infoCmd = new Command()
     .description(t("cli.cmd.info.description"))
     .option("--verbose", t("cli.cmd.info.verbose"))
+    .option("--json", t("cli.cmd.info.json"))
     .example(t("cli.example.info.default"), "levain info maven")
     .example(t("cli.example.info.verbose"), "levain info --verbose jdk")
+    .example(t("cli.example.info.json"), "levain info --json jdk maven")
     .arguments("[packages...:string]")
     .action((opts, ...packages: string[]) => {
-      assertNoUnknownOptionTokens(packages, ["--verbose"]);
+      assertNoUnknownOptionTokens(packages, ["--verbose", "--json"]);
       const literal = infoCmd.getLiteralArgs();
       const subArgs: string[] = [];
       if (opts.verbose) subArgs.push("--verbose");
+      if (opts.json) subArgs.push("--json");
       subArgs.push(...packages);
       if (literal.length > 0) subArgs.push("--", ...literal);
       const myArgs = mapGlobalOptions(opts);
@@ -341,7 +344,7 @@ const SUBCOMMAND_OPTIONS: Record<string, string[]> = {
   update: ["--force"],
   activate: ["--skip-pre"],
   clean: ["--cache", "--backup", "--temp", "--logs", "--all", "--deep"],
-  info: ["--verbose"],
+  info: ["--verbose", "--json"],
   explain: ["--raw", "--uninstall"],
   clone: ["--dirs"],
 };

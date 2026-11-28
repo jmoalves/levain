@@ -71,7 +71,8 @@
       },
       "info": {
         "description": "Show package metadata, status, and dependency order.",
-        "verbose": "Show detailed paths and repository information."
+        "verbose": "Show detailed paths and repository information.",
+        "json": "Output structured JSON to stdout without decorative logs."
       },
       "explain": {
         "description": "Generate a step-by-step manual setup or uninstall guide (defaults to current .levain.yaml without --uninstall).",
@@ -126,7 +127,8 @@
       },
       "info": {
         "default": "Inspect Levain status and package dependencies",
-        "verbose": "Show installation paths and recipe sources"
+        "verbose": "Show installation paths and recipe sources",
+        "json": "Output machine-readable JSON for scripts"
       },
       "explain": {
         "project": "Generate a manual guide for ./.levain.yaml",
@@ -374,7 +376,7 @@
       "notInstalled": " - NOT installed",
       "needUpdate": " - need UPDATE",
       "installationOrder": "=== Installation order",
-      "example": "  info [--verbose] <package name> ... <package name>"
+      "example": "  info [--verbose] [--json] [package...]"
     },
     "install": {
       "noPackages": "What packages do you want to install? Aborting...",

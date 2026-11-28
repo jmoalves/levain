@@ -83,7 +83,10 @@ export default class Levain {
   async prepareLogs(myArgs: any): Promise<ConsoleAndFileLogger> {
     const isActivateCmd = myArgs?._?.length > 1 && (myArgs._[0] == "_activate-machine") && (myArgs._[1] == "cmd");
     const isExplain = myArgs?._?.[0] === "explain";
-    const consoleMode = isActivateCmd ? true : isExplain ? "errors-only" : false;
+    const infoArgs: string[] = myArgs?._?.[0] === "info" ? myArgs._.slice(1) : [];
+    const infoDoubleDash = infoArgs.indexOf("--");
+    const isInfoJson = (infoDoubleDash === -1 ? infoArgs : infoArgs.slice(0, infoDoubleDash)).includes("--json");
+    const consoleMode = isActivateCmd ? true : (isExplain || isInfoJson) ? "errors-only" : false;
     this.logFiles = this.getLogFiles(myArgs["add-log"], myArgs["add-log-dir"]);
     this.logger = await ConsoleAndFileLogger.setup(this.logFiles, consoleMode);
     this.logger.showLogFiles(this.logFiles);

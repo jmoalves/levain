@@ -71,7 +71,8 @@
       },
       "info": {
         "description": "Mostra metadados, status e ordem de dependências dos pacotes.",
-        "verbose": "Mostra caminhos detalhados e informações dos repositórios."
+        "verbose": "Mostra caminhos detalhados e informações dos repositórios.",
+        "json": "Emite JSON estruturado na saída padrão sem logs decorativos."
       },
       "explain": {
         "description": "Gera um roteiro manual passo a passo para instalar ou desinstalar pacotes (sem --uninstall, usa o .levain.yaml atual).",
@@ -126,7 +127,8 @@
       },
       "info": {
         "default": "Inspecionar status do Levain e dependências",
-        "verbose": "Mostrar caminhos de instalação e origem das receitas"
+        "verbose": "Mostrar caminhos de instalação e origem das receitas",
+        "json": "Emitir JSON estruturado para scripts"
       },
       "explain": {
         "project": "Gerar roteiro manual para o ./.levain.yaml",
@@ -374,7 +376,7 @@
       "notInstalled": " - NÃO instalado",
       "needUpdate": " - requer UPDATE",
       "installationOrder": "=== Ordem de instalação",
-      "example": "  info [--verbose] <pacote> ... <pacote>"
+      "example": "  info [--verbose] [--json] [pacote...]"
     },
     "install": {
       "noPackages": "Quais pacotes você quer instalar? Abortando...",

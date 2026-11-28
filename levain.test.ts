@@ -117,12 +117,20 @@ Deno.test("should handle --version immediately without creating logs or initiali
   }
 });
 
-Deno.test("should configure errors-only console logger for explain command so stdout stays pure Markdown", async () => {
+Deno.test("should configure errors-only console logger for explain and info --json so stdout stays pure", async () => {
   let logger;
   try {
     const levain = new Levain();
     logger = await levain.prepareLogs({ _: ["explain", "levain"] });
     assertEquals(logger.handlers["console"].levelName, "ERROR");
+    await logger.close();
+
+    logger = await levain.prepareLogs({ _: ["info", "--json", "levain"] });
+    assertEquals(logger.handlers["console"].levelName, "ERROR");
+    await logger.close();
+
+    logger = await levain.prepareLogs({ _: ["info", "--", "--json"] });
+    assertEquals(logger.handlers["console"].levelName, "INFO");
   } finally {
     await logger?.close();
   }

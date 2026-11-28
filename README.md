@@ -61,7 +61,7 @@ levain actions copy                  # Inspect recipe actions and their usage sy
 | `levain activate [packages...]` | Activate a Levain environment directly in your current shell (`cmd`, PowerShell, Git Bash, Cmder). |
 | `levain shell [packages...]` | Open a new configured interactive shell (defaults to `./.levain.yaml`). |
 | `levain explain [--raw \| --uninstall] [packages...]` | Emit a clean Markdown manual setup or uninstall playbook so you are never locked into Levain. |
-| `levain info [--verbose] [packages...]` | Inspect Levain status, repository paths, and dependency resolution order. |
+| `levain info [--verbose] [--json] [packages...]` | Inspect Levain status, repository paths, dependency order, or machine-readable JSON metadata. |
 | `levain actions [search...]` | Browse all recipe actions with descriptions and usage syntax. |
 | `levain clone [--dirs] <url>` | Clone a Git repository and open its configured Levain shell. |
 | `levain clean [--all] [--deep]` | Clean old backups, temporary files, logs, or download cache. |
