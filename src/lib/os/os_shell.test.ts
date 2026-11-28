@@ -194,7 +194,7 @@ Deno.test("OsShell.prepareShellOptionsFromTokens preserves attached operators fo
   const echoPipeOpt = await osShell.prepareShellOptionsFromTokens(echoPipeTokens);
   assertEquals(echoPipeOpt.windowsRawArguments, true);
   assertEquals(echoPipeOpt.args.slice(0, 4), ["/s", "/d", "/v:on", "/c"]);
-  assertEquals(echoPipeOpt.args[4], '"cmd /s /d /v:on /c "echo(^!__LEVAIN_SECRET_0^!)"| cntlm -H -d DOMAIN -u jdoe 2>nul"');
+  assertEquals(echoPipeOpt.args[4], '"cmd /s /d /v:on /c "echo(^!__LEVAIN_SECRET_0^!"| cntlm -H -d DOMAIN -u jdoe 2>nul"');
   assertEquals(echoPipeOpt.env["__LEVAIN_SECRET_0"], secret);
 
   // 2. Parenthesized `(echo <secret>) | cntlm -H`
@@ -202,7 +202,7 @@ Deno.test("OsShell.prepareShellOptionsFromTokens preserves attached operators fo
     t.value === "__PW__" ? { ...t, value: secret } : t
   );
   const parenOpt = await osShell.prepareShellOptionsFromTokens(parenTokens);
-  assertEquals(parenOpt.args[4], '"(cmd /s /d /v:on /c "echo(^!__LEVAIN_SECRET_0^!)") | cntlm -H"');
+  assertEquals(parenOpt.args[4], '"(cmd /s /d /v:on /c "echo(^!__LEVAIN_SECRET_0^!") | cntlm -H"');
 
   // 3. `echo prefix <secret>>out.txt` (non-piped echo with secret packs operands directly into `echo(!VAR!`)
   const multiEchoTokens = tokenizeShellArgs("echo prefix __PW__>out.txt").map((t) =>

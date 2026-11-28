@@ -364,7 +364,7 @@ export class OsShell {
               const envVar = `${SECRET_ENV_PREFIX}${secretIndex++}`;
               opt.env[envVar] = echoText;
               const echoExpr = hasPipe
-                ? `cmd /s /d /v:on /c "echo(^!${envVar}^!)"`
+                ? `cmd /s /d /v:on /c "echo(^!${envVar}^!"`
                 : `echo(!${envVar}!`;
               parts.push({ text: echoExpr, precededBySpace: token.precededBySpace });
               segmentCmd = token.value;
