@@ -1,6 +1,6 @@
 import { assertEquals, assertThrows } from "@std/assert";
 
-import { handleQuotes, parseArgs, tokenizeArgs } from "./parse_args.ts";
+import { handleQuotes, isShellOperatorToken, parseArgs, tokenizeArgs, tokenizeShellArgs } from "./parse_args.ts";
 
 Deno.test("should parse args", () => {
   const args = parseArgs([
@@ -222,4 +222,89 @@ Deno.test("tokenizeArgs should throw on unmatched double quote", () => {
 Deno.test("handleQuotes should remain backward compatible for pre-split tokens", () => {
   assertEquals(handleQuotes(['--name="Open', 'Shell"', "arg"]), ["--name=Open Shell", "arg"]);
   assertEquals(handleQuotes([]), []);
+});
+
+Deno.test("tokenizeShellArgs should split attached shell operators while preserving spacing, quotes, and ${...} filters", () => {
+  assertEquals(isShellOperatorToken("|"), true);
+  assertEquals(isShellOperatorToken("2>&1"), true);
+  assertEquals(isShellOperatorToken("echo"), false);
+
+  assertEquals(
+    tokenizeShellArgs("levainShell --saveVar=out echo ${levain.password}| cntlm -H -d DOMAIN -u ${levain.login} 2>nul"),
+    [
+      { value: "levainShell", isOperator: false, precededBySpace: true },
+      { value: "--saveVar=out", isOperator: false, precededBySpace: true },
+      { value: "echo", isOperator: false, precededBySpace: true },
+      { value: "${levain.password}", isOperator: false, precededBySpace: true },
+      { value: "|", isOperator: true, precededBySpace: false },
+      { value: "cntlm", isOperator: false, precededBySpace: true },
+      { value: "-H", isOperator: false, precededBySpace: true },
+      { value: "-d", isOperator: false, precededBySpace: true },
+      { value: "DOMAIN", isOperator: false, precededBySpace: true },
+      { value: "-u", isOperator: false, precededBySpace: true },
+      { value: "${levain.login}", isOperator: false, precededBySpace: true },
+      { value: "2>", isOperator: true, precededBySpace: true },
+      { value: "nul", isOperator: false, precededBySpace: false },
+    ],
+  );
+
+  // Parenthesized workaround: `(echo ${levain.password}) | cntlm`
+  assertEquals(
+    tokenizeShellArgs("(echo ${levain.password}) | cntlm 2>&1"),
+    [
+      { value: "(", isOperator: true, precededBySpace: true },
+      { value: "echo", isOperator: false, precededBySpace: false },
+      { value: "${levain.password}", isOperator: false, precededBySpace: true },
+      { value: ")", isOperator: true, precededBySpace: false },
+      { value: "|", isOperator: true, precededBySpace: true },
+      { value: "cntlm", isOperator: false, precededBySpace: true },
+      { value: "2>&1", isOperator: true, precededBySpace: true },
+    ],
+  );
+
+  // Quoted operators and `${var | filter}` must stay intact while trailing attached operators split cleanly
+  assertEquals(
+    tokenizeShellArgs('echo "-vm">>${baseDir}\\app.ini&&powershell -Command "& { param($p) $p }" ${pw | urlEncode}|tool'),
+    [
+      { value: "echo", isOperator: false, precededBySpace: true },
+      { value: "-vm", isOperator: false, precededBySpace: true },
+      { value: ">>", isOperator: true, precededBySpace: false },
+      { value: "${baseDir}\\app.ini", isOperator: false, precededBySpace: false },
+      { value: "&&", isOperator: true, precededBySpace: false },
+      { value: "powershell", isOperator: false, precededBySpace: false },
+      { value: "-Command", isOperator: false, precededBySpace: true },
+      { value: "& { param($p) $p }", isOperator: false, precededBySpace: true },
+      { value: "${pw | urlEncode}", isOperator: false, precededBySpace: true },
+      { value: "|", isOperator: true, precededBySpace: false },
+      { value: "tool", isOperator: false, precededBySpace: false },
+    ],
+  );
+
+  // Handle-prefixed redirects only split at token start (`foo2>bar` stays `foo2`, `>`, `bar`)
+  assertEquals(
+    tokenizeShellArgs("echo foo2>bar.txt||echo fallback<in.txt"),
+    [
+      { value: "echo", isOperator: false, precededBySpace: true },
+      { value: "foo2", isOperator: false, precededBySpace: true },
+      { value: ">", isOperator: true, precededBySpace: false },
+      { value: "bar.txt", isOperator: false, precededBySpace: false },
+      { value: "||", isOperator: true, precededBySpace: false },
+      { value: "echo", isOperator: false, precededBySpace: false },
+      { value: "fallback", isOperator: false, precededBySpace: true },
+      { value: "<", isOperator: true, precededBySpace: false },
+      { value: "in.txt", isOperator: false, precededBySpace: false },
+    ],
+  );
+
+  // Nested `${...}` + unmatched quote handling
+  assertEquals(
+    tokenizeShellArgs("echo ${a_${b} | urlEncode}|cat"),
+    [
+      { value: "echo", isOperator: false, precededBySpace: true },
+      { value: "${a_${b} | urlEncode}", isOperator: false, precededBySpace: true },
+      { value: "|", isOperator: true, precededBySpace: false },
+      { value: "cat", isOperator: false, precededBySpace: false },
+    ],
+  );
+  assertThrows(() => tokenizeShellArgs('echo "unclosed'), Error, "Quote mismatch");
 });

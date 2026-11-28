@@ -8,7 +8,7 @@ import type Action from "../action/action.ts";
 import type Package from "./package/package.ts"; 
 
 import type Config from "./config.ts";
-import { tokenizeArgs } from "./parse_args.ts";
+import { tokenizeArgs, tokenizeShellArgs } from "./parse_args.ts";
 
 export default class Loader {
   private commandFactory: CommandFactory | null = null;
@@ -60,6 +60,18 @@ export default class Loader {
     log.debug(`- ARG-TOKENS ${args}`);
     const actionFactory = await this.loadActionFactory();
     const handler: Action = actionFactory.get(action, this.config);
+
+    if (handler.executeShellTokens) {
+      const shellTokens = tokenizeShellArgs(cmdline);
+      shellTokens.shift();
+      for (const token of shellTokens) {
+        if (!token.isOperator) {
+          token.value = await this.config.replaceVars(token.value, pkg?.name);
+        }
+      }
+      await handler.executeShellTokens(pkg, shellTokens);
+      return;
+    }
 
     for (const index in args) {
       args[index] = await this.config.replaceVars(args[index], pkg?.name);

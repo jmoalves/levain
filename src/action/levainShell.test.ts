@@ -3,6 +3,7 @@ import { stub } from "@std/testing/mock";
 
 import { OsShell } from "../lib/os/os_shell.ts";
 import PackageManager from "../lib/package/package_manager.ts";
+import { type ShellToken, tokenizeShellArgs } from "../lib/parse_args.ts";
 import TestHelper from "../lib/test/test_helper.ts";
 import ActionFactory from "./action_factory.ts";
 import LevainShell from "./levainShell.ts";
@@ -65,6 +66,45 @@ Deno.test("LevainShell should configure OsShell options and pass remaining comma
       stripCRLF: true,
       ignoreErrors: true,
     }]);
+  } finally {
+    execStub.restore();
+    resolveStub.restore();
+  }
+});
+
+Deno.test("LevainShell.executeShellTokens should parse leading flags, handle --, and forward structured tokens", async () => {
+  const config = TestHelper.getConfig();
+  const pkg = TestHelper.mockPackage();
+  const action = new LevainShell(config);
+
+  await assertRejects(
+    async () => await action.executeShellTokens(undefined, tokenizeShellArgs("echo hi")),
+    Error,
+    "No package for action levainShell",
+  );
+
+  const captured: Array<{ args: string[]; tokens: ShellToken[] | undefined; saveVar: string | undefined; stripCRLF: boolean }> = [];
+  const resolveStub = stub(PackageManager.prototype, "resolvePackages", () => [pkg]);
+  const execStub = stub(OsShell.prototype, "execute", function (this: OsShell, args: string[]) {
+    captured.push({ args, tokens: this.shellTokens, saveVar: this.saveVar, stripCRLF: this.stripCRLF });
+    return Promise.resolve();
+  });
+
+  try {
+    await action.executeShellTokens(pkg, tokenizeShellArgs("--saveVar OUT --stripCRLF echo secret| cat"));
+    await action.executeShellTokens(pkg, tokenizeShellArgs("-- -flag-cmd| cat"));
+
+    assertEquals(captured[0].saveVar, "OUT");
+    assertEquals(captured[0].stripCRLF, true);
+    assertEquals(captured[0].args, ["echo", "secret", "|", "cat"]);
+    assertEquals(captured[0].tokens, [
+      { value: "echo", isOperator: false, precededBySpace: true },
+      { value: "secret", isOperator: false, precededBySpace: true },
+      { value: "|", isOperator: true, precededBySpace: false },
+      { value: "cat", isOperator: false, precededBySpace: true },
+    ]);
+    assertEquals(captured[1].tokens?.[0], { value: "-flag-cmd", isOperator: false, precededBySpace: true });
+    assertEquals(captured[1].tokens?.[1], { value: "|", isOperator: true, precededBySpace: false });
   } finally {
     execStub.restore();
     resolveStub.restore();

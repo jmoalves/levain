@@ -20,8 +20,8 @@ Deno.test("InputEmail.inputAndValidate should accept a default value", async () 
   await verifyInput(myInput, defaultValue, expectedValue);
 });
 
-Deno.test("InputEmail.inputAndValidate should reject an invalid value", () => {
-  assertRejects(
+Deno.test("InputEmail.inputAndValidate should reject an invalid value", async () => {
+  await assertRejects(
     async () => {
       await verifyInput("--invalid-email--", "defaultValue@server.com", "doesntMatter");
     },

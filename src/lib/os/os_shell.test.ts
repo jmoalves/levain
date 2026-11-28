@@ -7,6 +7,7 @@ import LevainVersion from "../../levain_version.ts";
 import FileSystemPackage from "../package/file_system_package.ts";
 import TestHelper from "../test/test_helper.ts";
 import { PackageManagerMock } from "../package/package_manager_mock.ts";
+import { tokenizeShellArgs } from "../parse_args.ts";
 import { assertArrayEndsWith } from "../test/more_asserts.ts";
 import StringUtils from "../utils/string_utils.ts";
 
@@ -174,9 +175,48 @@ Deno.test("OsShell.prepareShellOptions should reject CR/LF/NUL, guard .cmd/.bat 
   assert(opt.args[4].includes('"a ^^^!__LEVAIN_SECRET_0^^^!"'));
   assert(opt.args[4].includes("^^^^^^^^^^!bang"));
 
-  const redacted = OsShell.redactShellOptionsForLog(opt, [secretWithQuoteAndSlash]);
+    const redacted = OsShell.redactShellOptionsForLog(opt, [secretWithQuoteAndSlash]);
   assertEquals(redacted.env["__LEVAIN_SECRET_0"], "******");
   assertEquals(redacted.env["HTTP_PROXY"], "http://u:******@proxy");
+});
+
+Deno.test("OsShell.prepareShellOptionsFromTokens preserves attached operators for echo secrets and plain commands", async () => {
+  const config = TestHelper.getConfig();
+  const secret = 'p^a&s$s%o!r|d<1>2 (3)"\\';
+  config.password = secret;
+  config.packageManager = new PackageManagerMock(config);
+  const osShell = new OsShell(config, ["abc"], true);
+
+  // 1. `echo <secret>| cntlm -H -d DOMAIN -u jdoe 2>nul` -> unquoted `echo(!__LEVAIN_SECRET_0!|` with no trailing space
+  const echoPipeTokens = tokenizeShellArgs("echo __PW__| cntlm -H -d DOMAIN -u jdoe 2>nul").map((t) =>
+    t.value === "__PW__" ? { ...t, value: secret } : t
+  );
+  const echoPipeOpt = await osShell.prepareShellOptionsFromTokens(echoPipeTokens);
+  assertEquals(echoPipeOpt.windowsRawArguments, true);
+  assertEquals(echoPipeOpt.args.slice(0, 4), ["/s", "/d", "/v:on", "/c"]);
+  assertEquals(echoPipeOpt.args[4], '"echo(!__LEVAIN_SECRET_0!| cntlm -H -d DOMAIN -u jdoe 2>nul"');
+  assertEquals(echoPipeOpt.env["__LEVAIN_SECRET_0"], secret);
+
+  // 2. Parenthesized `(echo <secret>) | cntlm -H`
+  const parenTokens = tokenizeShellArgs("(echo __PW__) | cntlm -H").map((t) =>
+    t.value === "__PW__" ? { ...t, value: secret } : t
+  );
+  const parenOpt = await osShell.prepareShellOptionsFromTokens(parenTokens);
+  assertEquals(parenOpt.args[4], '"(echo(!__LEVAIN_SECRET_0!) | cntlm -H"');
+
+  // 3. `echo prefix <secret>| cntlm` (secret is second arg of echo)
+  const multiEchoTokens = tokenizeShellArgs("echo prefix __PW__| cntlm").map((t) =>
+    t.value === "__PW__" ? { ...t, value: secret } : t
+  );
+  const multiEchoOpt = await osShell.prepareShellOptionsFromTokens(multiEchoTokens);
+  assertEquals(multiEchoOpt.args[4], '"echo prefix !__LEVAIN_SECRET_0!| cntlm"');
+
+  // 4. Non-secret attached operators (with path containing spaces and empty arg)
+  const plainTokens = tokenizeShellArgs('echo "-vm">>"C:\\Program Files\\App\\app.ini"&&echo ""|cat');
+  const plainOpt = await osShell.prepareShellOptionsFromTokens(plainTokens);
+  assertEquals(plainOpt.windowsRawArguments, true);
+  assertEquals(plainOpt.args.slice(0, 3), ["/s", "/d", "/c"]);
+  assertEquals(plainOpt.args[3], '"echo -vm>>"C:\\Program Files\\App\\app.ini"&&echo ""|cat"');
 });
 
 if (OsUtils.isWindows()) {
@@ -239,6 +279,58 @@ if (OsUtils.isWindows()) {
 
     assert(elapsedMs < 3500, `openShell should return promptly after parent .cmd exits, took ${elapsedMs}ms`);
     assert(logger.messages.some((m) => m.includes("daemon-launching")));
+  });
+
+  Deno.test("OsShell.executeTokens on Windows pipes echo secret without trailing space or quotes and supports attached redirects", async () => {
+    const config = TestHelper.getConfig();
+    const specialPassword = 'p^a&s$s$$w%o!r|d<1>2 (3)"\\';
+    config.password = specialPassword;
+    config.packageManager = new PackageManagerMock(config);
+
+    // Pipe `echo <secret>| deno eval ...` reading raw stdin line
+    const readStdinJs = "const buf = await new Response(Deno.stdin.readable).text(); console.log(buf.replace(/\\r?\\n$/, ''));";
+    const pipeTokens = [
+      { value: "echo", isOperator: false, precededBySpace: true },
+      { value: specialPassword, isOperator: false, precededBySpace: true },
+      { value: "|", isOperator: true, precededBySpace: false },
+      { value: Deno.execPath(), isOperator: false, precededBySpace: true },
+      { value: "eval", isOperator: false, precededBySpace: true },
+      { value: readStdinJs, isOperator: false, precededBySpace: true },
+    ];
+    const shell1 = new OsShell(config, ["abc"], true);
+    shell1.saveVar = "PIPED_SECRET";
+    shell1.stripCRLF = true;
+    shell1.shellTokens = pipeTokens;
+    await shell1.execute(pipeTokens.map((t) => t.value), true);
+    assertEquals(config.getVar("PIPED_SECRET"), specialPassword);
+
+    // Parenthesized `(echo <secret>) | deno eval ...`
+    const parenTokens = [
+      { value: "(", isOperator: true, precededBySpace: true },
+      { value: "echo", isOperator: false, precededBySpace: false },
+      { value: specialPassword, isOperator: false, precededBySpace: true },
+      { value: ")", isOperator: true, precededBySpace: false },
+      { value: "|", isOperator: true, precededBySpace: true },
+      { value: Deno.execPath(), isOperator: false, precededBySpace: true },
+      { value: "eval", isOperator: false, precededBySpace: true },
+      { value: readStdinJs, isOperator: false, precededBySpace: true },
+    ];
+    const shell2 = new OsShell(config, ["abc"], true);
+    shell2.saveVar = "PAREN_SECRET";
+    shell2.stripCRLF = true;
+    shell2.shellTokens = parenTokens;
+    await shell2.execute(parenTokens.map((t) => t.value), true);
+    assertEquals(config.getVar("PAREN_SECRET"), specialPassword);
+
+    // Non-secret attached redirect into a path containing spaces (`echo "-vm">><file>`)
+    const dirWithSpaces = path.join(TestHelper.getNewTempDir(), "Program Files");
+    await Deno.mkdir(dirWithSpaces, { recursive: true });
+    const outFile = path.join(dirWithSpaces, "app.ini");
+    const redirTokens = tokenizeShellArgs(`echo "-vm">>"${outFile}"`);
+    const shell3 = new OsShell(config, ["abc"], true);
+    shell3.shellTokens = redirTokens;
+    await shell3.execute(redirTokens.map((t) => t.value), true);
+    assertEquals((await Deno.readTextFile(outFile)).trimEnd(), "-vm");
   });
 }
 
@@ -319,6 +411,9 @@ Deno.test("OsShell.openShell and execute handle saveVar, stripCRLF, spawn, and i
     shell1.saveVar = "OUT_VAR";
     shell1.stripCRLF = true;
     await shell1.execute(["echo", "hello"], true);
+    assertEquals(config.getVar("OUT_VAR"), "hello");
+    shell1.shellTokens = tokenizeShellArgs("echo hello| cat");
+    await shell1.execute(["echo", "hello", "|", "cat"], true);
     assertEquals(config.getVar("OUT_VAR"), "hello");
 
     // 2. saveVar failure throws with stderr logged when ignoreErrors=false, succeeds when ignoreErrors=true

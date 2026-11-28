@@ -150,6 +150,134 @@ export function tokenizeArgs(cmdline: string): string[] {
   return tokens;
 }
 
+export interface ShellToken {
+  value: string;
+  isOperator: boolean;
+  precededBySpace: boolean;
+}
+
+const MULTI_CHAR_SHELL_OPERATORS = ["2>&1", "1>&2", "2>>", "1>>", "2>", "1>", "||", "&&", ">>"];
+const SINGLE_CHAR_SHELL_OPERATORS = new Set(["|", "&", ">", "<", "(", ")"]);
+
+export function isShellOperatorToken(value: string): boolean {
+  return MULTI_CHAR_SHELL_OPERATORS.includes(value) || SINGLE_CHAR_SHELL_OPERATORS.has(value);
+}
+
+function matchShellOperator(cmdline: string, index: number, insideToken: boolean): string | undefined {
+  for (const op of MULTI_CHAR_SHELL_OPERATORS) {
+    // Handle-prefixed redirects (2>, 2>>, 2>&1, 1>, 1>>, 1>&2) only match at a token
+    // boundary so `foo2>bar` splits as `foo2` + `>` + `bar`.
+    if ((op[0] === "1" || op[0] === "2") && insideToken) {
+      continue;
+    }
+    if (cmdline.startsWith(op, index)) {
+      return op;
+    }
+  }
+  const ch = cmdline[index];
+  if (SINGLE_CHAR_SHELL_OPERATORS.has(ch)) {
+    return ch;
+  }
+  return undefined;
+}
+
+/**
+ * Shell-aware tokenizer for `levainShell` recipe lines.
+ *
+ * Splits on unquoted whitespace AND unquoted shell operators (`|`, `||`, `&`, `&&`,
+ * `>`, `>>`, `<`, `2>`, `2>>`, `2>&1`, `1>`, `1>>`, `1>&2`, `(`, `)`) outside `${...}`
+ * expressions, preserving whether whitespace preceded each token so cmd.exe pipelines
+ * like `echo ${levain.password}| cntlm ...` never add trailing spaces or swallow operators.
+ */
+export function tokenizeShellArgs(cmdline: string): ShellToken[] {
+  const tokens: ShellToken[] = [];
+  let current = "";
+  let inQuotes = false;
+  let varExprDepth = 0;
+  let hasToken = false;
+  let tokenPrecededBySpace = true;
+  let sawSpaceSinceLastEmit = true;
+
+  const flushCurrent = () => {
+    if (hasToken) {
+      tokens.push({
+        value: current,
+        isOperator: false,
+        precededBySpace: tokenPrecededBySpace,
+      });
+      current = "";
+      hasToken = false;
+      sawSpaceSinceLastEmit = false;
+    }
+  };
+
+  for (let i = 0; i < cmdline.length; i++) {
+    const ch = cmdline[i];
+
+    if (ch === '"') {
+      if (!hasToken) {
+        tokenPrecededBySpace = sawSpaceSinceLastEmit;
+      }
+      inQuotes = !inQuotes;
+      hasToken = true;
+      continue;
+    }
+
+    // Keep `${var | filter}` (including nested `${a_${b} | urlEncode}`) intact when unquoted
+    if (!inQuotes && ch === "$" && cmdline[i + 1] === "{" && cmdline.indexOf("}", i + 2) !== -1) {
+      if (!hasToken) {
+        tokenPrecededBySpace = sawSpaceSinceLastEmit;
+      }
+      varExprDepth++;
+      current += "${";
+      hasToken = true;
+      i++;
+      continue;
+    }
+
+    if (!inQuotes && varExprDepth > 0 && ch === "}") {
+      varExprDepth--;
+      current += ch;
+      hasToken = true;
+      continue;
+    }
+
+    if (!inQuotes && varExprDepth === 0) {
+      if (/\s/.test(ch)) {
+        flushCurrent();
+        sawSpaceSinceLastEmit = true;
+        continue;
+      }
+
+      const op = matchShellOperator(cmdline, i, hasToken);
+      if (op) {
+        flushCurrent();
+        tokens.push({
+          value: op,
+          isOperator: true,
+          precededBySpace: sawSpaceSinceLastEmit,
+        });
+        sawSpaceSinceLastEmit = false;
+        i += op.length - 1;
+        continue;
+      }
+    }
+
+    if (!hasToken) {
+      tokenPrecededBySpace = sawSpaceSinceLastEmit;
+    }
+    current += ch;
+    hasToken = true;
+  }
+
+  if (inQuotes) {
+    throw new Error(`Quote mismatch - ${cmdline}`);
+  }
+
+  flushCurrent();
+  return tokens;
+}
+
 /**
  * Backward-compatible wrapper for callers passing pre-split whitespace tokens.
  */

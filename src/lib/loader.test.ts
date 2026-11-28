@@ -1,9 +1,13 @@
 import { assert, assertEquals, assertRejects } from "@std/assert";
+import { stub } from "@std/testing/mock";
 
 import TestHelper from "./test/test_helper.ts";
 import { assertFind } from "./test/more_asserts.ts";
 import Loader from "./loader.ts";
 import { CommandNotFoundError } from "../cmd/command_factory.ts";
+import { OsShell } from "./os/os_shell.ts";
+import PackageManager from "./package/package_manager.ts";
+import type { ShellToken } from "./parse_args.ts";
 
 Deno.test("Loader.loadCommandFactory and loadActionFactory should cache factory instances", async () => {
   const loader = new Loader(TestHelper.getConfig());
@@ -53,4 +57,41 @@ Deno.test("Loader.action should throw when action name is unknown or empty", asy
     async () => await loader.action(undefined, ""),
     Error,
   );
+});
+
+Deno.test("Loader.action should tokenize attached levainShell operators before resolving variables", async () => {
+  const config = TestHelper.getConfig();
+  config.password = "p|w&>secret";
+  config.login = "jdoe";
+  const pkg = TestHelper.mockPackage();
+  const loader = new Loader(config);
+
+  let capturedTokens: ShellToken[] | undefined = [];
+  const resolveStub = stub(PackageManager.prototype, "resolvePackages", () => [pkg]);
+  const execStub = stub(OsShell.prototype, "execute", function (this: OsShell) {
+    capturedTokens = this.shellTokens;
+    return Promise.resolve();
+  });
+
+  try {
+    await loader.action(
+      pkg,
+      "levainShell --saveVar=out echo ${levain.password}| cntlm -u ${levain.login} 2>nul",
+    );
+
+    assertEquals(capturedTokens, [
+      { value: "echo", isOperator: false, precededBySpace: true },
+      // Operators inside the resolved password value are never treated as shell operators
+      { value: "p|w&>secret", isOperator: false, precededBySpace: true },
+      { value: "|", isOperator: true, precededBySpace: false },
+      { value: "cntlm", isOperator: false, precededBySpace: true },
+      { value: "-u", isOperator: false, precededBySpace: true },
+      { value: "jdoe", isOperator: false, precededBySpace: true },
+      { value: "2>", isOperator: true, precededBySpace: true },
+      { value: "nul", isOperator: false, precededBySpace: false },
+    ]);
+  } finally {
+    execStub.restore();
+    resolveStub.restore();
+  }
 });

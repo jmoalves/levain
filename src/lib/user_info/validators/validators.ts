@@ -27,7 +27,7 @@ export class MinLengthValidator implements Validator {
 }
 
 export class LatinUnicodeValidator implements Validator {
-  readonly latinUnicodeRegex = /^[\w\u00C0-\u00FF \.\-']*$/i;
+  readonly latinUnicodeRegex = /^[\p{L}\p{M}\p{N}_ .'-]*$/u;
 
   validate(text: string): ValidateResult {
     const hint = "Only valid characters, please";

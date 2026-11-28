@@ -7,11 +7,13 @@ import type Package from "../package/package.ts";
 import { resolvePackageActions } from "../package/package_actions.ts";
 import Loader from "../loader.ts";
 import LogUtils from "../logger/log_utils.ts";
+import { isShellOperatorToken, type ShellToken } from "../parse_args.ts";
 
 import OsUtils from "./os_utils.ts";
 import StringUtils from "../utils/string_utils.ts";
 
 const SECRET_ENV_PREFIX = "__LEVAIN_SECRET_";
+const SEGMENT_RESET_OPERATORS = new Set(["|", "||", "&", "&&", "(", ")"]);
 
 export class OsShell {
   private readonly dependencies: Package[];
@@ -19,6 +21,7 @@ export class OsShell {
   private _varName: string | undefined = undefined;
   private _ignoreErrors: boolean = false;
   private _stripCRLF: boolean = false;
+  private _shellTokens: ShellToken[] | undefined = undefined;
 
   constructor(
     private config: Config,
@@ -63,6 +66,14 @@ export class OsShell {
 
   get stripCRLF(): boolean {
     return this._stripCRLF;
+  }
+
+  set shellTokens(tokens: ShellToken[] | undefined) {
+    this._shellTokens = tokens;
+  }
+
+  get shellTokens(): ShellToken[] | undefined {
+    return this._shellTokens;
   }
 
   async execute(args: string[], openShell: boolean = true) {
@@ -112,8 +123,13 @@ export class OsShell {
   async openShell(args: string[]) {
     // TODO: Handle other os's
     OsUtils.onlyInWindows();
-    const opt = await this.prepareShellOptions(args);
+    const opt = this._shellTokens
+      ? await this.prepareShellOptionsFromTokens(this._shellTokens)
+      : await this.prepareShellOptions(args);
+    await this.runPreparedShell(opt);
+  }
 
+  private async runPreparedShell(opt: IShellOptions) {
     log.debug(
       `Deno.command: ${JSON.stringify(OsShell.redactShellOptionsForLog(opt, this.collectSecretCandidates()))}`,
     );
@@ -272,6 +288,15 @@ export class OsShell {
   }
 
   async prepareShellOptions(args: string[]): Promise<IShellOptions> {
+    const tokens: ShellToken[] = args.map((value) => ({
+      value,
+      isOperator: isShellOperatorToken(value),
+      precededBySpace: true,
+    }));
+    return await this.prepareShellOptionsFromTokens(tokens);
+  }
+
+  async prepareShellOptionsFromTokens(tokens: ShellToken[]): Promise<IShellOptions> {
     const opt: IShellOptions = {
       env: {},
       cmd: [],
@@ -290,44 +315,94 @@ export class OsShell {
         cmd = ["cmd", "/c", "start", "cmd", "/k", "prompt", "[%LEVAIN_CURRENT%]", "%_LEVAIN_OLD_PROMPT%"];
       }
     } else {
-      for (const arg of args) {
-        if (/[\r\n\0]/.test(arg)) {
+      for (const token of tokens) {
+        if (/[\r\n\0]/.test(token.value)) {
           throw new Error("Shell command arguments must not contain CR, LF, or NUL characters");
         }
       }
 
       const secretCandidates = this.collectSecretCandidates();
       const hasSecret = secretCandidates.length > 0 &&
-        args.some((arg) => secretCandidates.some((secret) => arg.includes(secret)));
+        tokens.some((token) => !token.isOperator && secretCandidates.some((secret) => token.value.includes(secret)));
+      const hasAttachedToken = tokens.some((token, index) => index > 0 && !token.precededBySpace);
 
       if (hasSecret) {
-        const target = args[0] ?? "";
-        const isBatchTarget = /\.(?:cmd|bat)$/i.test(target);
-
         let secretIndex = 0;
-        const escapedTokens = args.map((arg) => {
-          if (secretCandidates.some((secret) => arg.includes(secret))) {
-            if (isBatchTarget && arg.includes('"')) {
-              throw new Error(
-                "Cannot safely pass a secret containing double quotes to a .cmd/.bat script; use ${levain.password | urlEncode} instead",
-              );
-            }
-            const envVar = `${SECRET_ENV_PREFIX}${secretIndex++}`;
-            // Escape embedded `"` and trailing `\` for MSVCRT CommandLineToArgvW inside `"!VAR!"`
-            opt.env[envVar] = OsShell.escapeForWindowsQuotedArg(arg);
-            return `"!${envVar}!"`;
-          }
-          return OsShell.escapeNonSecretForDelayedCmd(arg);
-        });
+        let segmentCmd: string | undefined;
+        let echoFirstArgPending = false;
+        const parts: Array<{ text: string; precededBySpace: boolean }> = [];
 
+        for (const token of tokens) {
+          if (token.isOperator) {
+            parts.push({ text: token.value, precededBySpace: token.precededBySpace });
+            if (SEGMENT_RESET_OPERATORS.has(token.value)) {
+              segmentCmd = undefined;
+              echoFirstArgPending = false;
+            }
+            continue;
+          }
+
+          const containsSecret = secretCandidates.some((secret) => token.value.includes(secret));
+          if (containsSecret) {
+            const isEchoCmd = segmentCmd !== undefined && /^echo[.(]?$/i.test(segmentCmd);
+            const envVar = `${SECRET_ENV_PREFIX}${secretIndex++}`;
+
+            if (isEchoCmd) {
+              // cmd.exe builtin `echo` does not strip quotes; emit `echo(!VAR!` (unquoted
+              // delayed expansion) so raw secrets print verbatim even if they are `/?`, `on`,
+              // `off`, empty, or contain quotes/spaces/metacharacters.
+              opt.env[envVar] = token.value;
+              let precededBySpace = token.precededBySpace;
+              if (echoFirstArgPending && parts.length > 0) {
+                parts[parts.length - 1].text = "echo(";
+                precededBySpace = false;
+                echoFirstArgPending = false;
+              }
+              parts.push({ text: `!${envVar}!`, precededBySpace });
+            } else {
+              const isBatchTarget = segmentCmd !== undefined && /\.(?:cmd|bat)$/i.test(segmentCmd);
+              if (isBatchTarget && token.value.includes('"')) {
+                throw new Error(
+                  "Cannot safely pass a secret containing double quotes to a .cmd/.bat script; use ${levain.password | urlEncode} instead",
+                );
+              }
+              // Escape embedded `"` and trailing `\` for MSVCRT CommandLineToArgvW inside `"!VAR!"`
+              opt.env[envVar] = OsShell.escapeForWindowsQuotedArg(token.value);
+              parts.push({ text: `"!${envVar}!"`, precededBySpace: token.precededBySpace });
+            }
+            continue;
+          }
+
+          if (segmentCmd === undefined) {
+            segmentCmd = token.value;
+            echoFirstArgPending = /^echo$/i.test(segmentCmd);
+          } else if (echoFirstArgPending) {
+            echoFirstArgPending = false;
+          }
+          parts.push({
+            text: OsShell.escapeNonSecretForDelayedCmd(token.value),
+            precededBySpace: token.precededBySpace,
+          });
+        }
+
+        const joined = parts.map((p, i) => (i > 0 && p.precededBySpace ? " " : "") + p.text).join("");
         // `/s` unconditionally strips the outer quotes; `/d` disables AutoRun; `/v:on` expands
         // `!__LEVAIN_SECRET_N!` after cmd.exe operator/metacharacter parsing (`&`, `^`, `|`, `<`, `>`, `%`).
-        cmd = ["cmd", "/s", "/d", "/v:on", "/c", `"${escapedTokens.join(" ")}"`];
+        cmd = ["cmd", "/s", "/d", "/v:on", "/c", `"${joined}"`];
+        opt.windowsRawArguments = true;
+      } else if (hasAttachedToken) {
+        const joined = tokens
+          .map((token, i) => {
+            const text = token.isOperator ? token.value : OsShell.escapeForPlainCmd(token.value);
+            return (i > 0 && token.precededBySpace ? " " : "") + text;
+          })
+          .join("");
+        cmd = ["cmd", "/s", "/d", "/c", `"${joined}"`];
         opt.windowsRawArguments = true;
       } else {
         // `/d` disables registry AutoRun so captured `--saveVar` stdout is never polluted;
         // omit `/u` so cmd builtins emit normal text instead of UTF-16LE decoded as UTF-8.
-        cmd = ["cmd", "/d", "/c", ...args];
+        cmd = ["cmd", "/d", "/c", ...tokens.map((t) => t.value)];
       }
     }
 
@@ -349,6 +424,16 @@ export class OsShell {
     }
 
     return opt;
+  }
+
+  private static escapeForPlainCmd(arg: string): string {
+    if (arg === "") {
+      return '""';
+    }
+    if (/\s/.test(arg) || arg.includes('"')) {
+      return `"${OsShell.escapeForWindowsQuotedArg(arg)}"`;
+    }
+    return arg;
   }
 
   private static escapeForWindowsQuotedArg(value: string): string {
