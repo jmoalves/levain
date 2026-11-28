@@ -20,10 +20,17 @@ Deno.test("InputFullName.inputAndValidate should accept a default value", async 
 
   assertEquals(input, "Groku");
 });
-Deno.test("InputFullName.inputAndValidate should reject an invalid value", () => {
+Deno.test("InputFullName.inputAndValidate should accept accented names and normalize NFD", async () => {
+  CliffyTestHelper.inputResponse("João José Conceição");
+  assertEquals(await InputFullName.inputAndValidate("John Doe"), "João José Conceição");
+
+  CliffyTestHelper.inputResponse("Joa\u0303o");
+  assertEquals(await InputFullName.inputAndValidate("John Doe"), "João");
+});
+Deno.test("InputFullName.inputAndValidate should reject an invalid value", async () => {
   CliffyTestHelper.inputResponse("not-a-name!");
 
-  assertRejects(
+  await assertRejects(
     async () => {
       await InputFullName.inputAndValidate("Shazam");
     },

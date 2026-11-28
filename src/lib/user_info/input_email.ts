@@ -1,14 +1,16 @@
-import { Input } from '@cliffy/prompt';
+import { promptLine } from "./line_prompt.ts";
 import { EmailValidator } from "./validators/validators.ts";
 
 import t from "../i18n.ts";
 
 export class InputEmail {
-  static async inputAndValidate(defaultValue: string): Promise<string> {
-    return await Input.prompt({
-      message: t("lib.user_info.input_email.emailPrompt"),
-      default: defaultValue,
-      validate: EmailValidator.validate,
-    });
+  static inputAndValidate(defaultValue: string): Promise<string> {
+    return Promise.resolve(
+      promptLine({
+        message: t("lib.user_info.input_email.emailPrompt"),
+        defaultValue,
+        validate: EmailValidator.validate,
+      }),
+    );
   }
 }
