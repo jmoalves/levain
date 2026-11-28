@@ -9,6 +9,7 @@
 # $levainHome="C:\dev-env";iwr https://github.com/jmoalves/levain/releases/latest/download/install.ps1 -UseBasicParsing | iex
 # $levainUrlBase="http://nexus.local.net/nexus/repository/github-proxy/jmoalves/levain";iwr http://nexus.local.net/nexus/repository/github-proxy/jmoalves/levain/releases/latest/download/install.ps1 -UseBasicParsing | iex
 # $levainRepo="https://gitlab.local.net/grp-dev/levain-pkgs.git";iwr https://github.com/jmoalves/levain/releases/latest/download/install.ps1 -UseBasicParsing | iex
+# $levainProxy="http://proxy.local:8080";iwr https://github.com/jmoalves/levain/releases/latest/download/install.ps1 -UseBasicParsing -Proxy $levainProxy -ProxyUseDefaultCredentials | iex
 
 $ErrorActionPreference = 'Stop'
 
@@ -19,6 +20,8 @@ $ErrorActionPreference = 'Stop'
 # $levainBundle - Optional (when true, installs the bundled deno.exe + levain.bundle.js package instead of levain.exe)
 # $levainUrlBase - Optional
 # $levainRepo - Optional
+# $levainProxy - Optional (HTTP proxy URL used for downloading Levain archives, e.g. "http://proxy.local:8080")
+# $levainProxyUseDefaultCredentials - Optional (default: true when $levainProxy is set; set to "false" to disable)
 #
 
 if (! $levainHome) {
@@ -104,11 +107,20 @@ try {
   Write-Output ""
   Write-Output ""
 
+  $iwrParams = @{ UseBasicParsing = $true }
+  if ($levainProxy) {
+    $iwrParams.Proxy = $levainProxy
+    $useDefaultCreds = -not (($levainProxyUseDefaultCredentials -eq $false) -or ($levainProxyUseDefaultCredentials -is [string] -and $levainProxyUseDefaultCredentials -match '^(false|0|no)$'))
+    if ($useDefaultCreds) {
+      $iwrParams.ProxyUseDefaultCredentials = $true
+    }
+  }
+
   Write-Output "Downloading Levain SHA256 from $LevainUriSHA256"
-  Invoke-WebRequest $LevainUriSHA256 -OutFile $TempLevainSHA256 -UseBasicParsing
+  Invoke-WebRequest $LevainUriSHA256 -OutFile $TempLevainSHA256 @iwrParams
 
   Write-Output "Downloading Levain from $LevainUri"
-  Invoke-WebRequest $LevainUri -OutFile $TempLevainZip -UseBasicParsing
+  Invoke-WebRequest $LevainUri -OutFile $TempLevainZip @iwrParams
 
   $expectedHash=(Get-Content $TempLevainSHA256 -Delimiter ' ' -TotalCount 1).ToUpper().Trim()
   $actualHash=(Get-FileHash $TempLevainZip).Hash.ToUpper().Trim()

@@ -32,24 +32,21 @@ if [ "$vStart" = "LATEST" ] || [ "$vStart" = "latest" ]; then
     fi
 fi
 
-echo
-echo '**WARNING:** Some security software may block `levain.exe`. Ask your Systems Administrator for advice.'
-echo '**TIP:** To test this release without `levain.exe` (using official upstream `deno.exe` + `levain.bundle.js`), set `$levainBundle="true"` before running `install.ps1` or download `levain-bundle-windows-x86_64.zip`.'
+vStart="${vStart#v}"
+vEnd="${vEnd#v}"
 
-echo
-echo '# Support binaries'
-echo "| Software | version |"
-echo "| :----- | :------- |"
-echo "| Deno | $( "${denoDir}/deno" -V | sed 's/deno //ig' ) |"
-if [ -e "${levainDir}/extra-bin/windows/inventory.md" ]; then
-    cat "${levainDir}/extra-bin/windows/inventory.md"
-fi
-echo
+denoVer=$("${denoDir}/deno" -V | sed 's/deno //ig')
 
-echo
-echo "# Changes from ${vStart} to ${vEnd}"
-commits=$(git log "v${vStart}..v${vEnd}" --no-merges --dense --pretty="- %s")
-if [ -n "$commits" ]; then
-    printf '%s\n' "$commits" \
-        | grep -Ev "^- (vHEAD|v[0-9]+|\(skipChangelog\)|skip:|- skip:|chore\(release\):)" || true
-fi
+commitsFile=$(mktemp)
+trap 'rm -f "$commitsFile"' EXIT
+
+git log "v${vStart}..v${vEnd}" --first-parent --pretty="format:%s%x1f%b%x1e" > "$commitsFile"
+
+"${denoDir}/deno" run --no-config --allow-read \
+    "${scriptPath}/../scripts/generate_changelog.ts" \
+    --repo "${repoSlug}" \
+    --from "${vStart}" \
+    --to "${vEnd}" \
+    --deno-version "${denoVer}" \
+    --inventory "${levainDir}/extra-bin/windows/inventory.md" \
+    --commits-file "${commitsFile}"
