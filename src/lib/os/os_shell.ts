@@ -346,7 +346,8 @@ export class OsShell {
           // that `echo` into a single ephemeral env var and emit `echo(!VAR!` (unquoted).
           // On a pipe (`|`), parent `cmd /v:on` expands `!VAR!` BEFORE spawning the left-side
           // pipe sub-shell (which would re-parse `&`, `^`, `|`, `<`, `>` in the password!), so
-          // defer expansion into a dedicated `cmd /s /d /v:on /c "echo(^!VAR^!)"` sub-command.
+          // defer expansion into `cmd /s /d /v:on /c "echo(^!VAR^!&rem"` (`&rem` absorbs any
+          // trailing space `cmd.exe` appends when serializing `(echo ...) | ...` blocks).
           if (segmentCmd === undefined && /^echo[.(]?$/i.test(token.value)) {
             let end = i + 1;
             let echoHasSecret = false;
@@ -364,7 +365,7 @@ export class OsShell {
               const envVar = `${SECRET_ENV_PREFIX}${secretIndex++}`;
               opt.env[envVar] = echoText;
               const echoExpr = hasPipe
-                ? `cmd /s /d /v:on /c "echo(^!${envVar}^!"`
+                ? `cmd /s /d /v:on /c "echo(^!${envVar}^!&rem"`
                 : `echo(!${envVar}!`;
               parts.push({ text: echoExpr, precededBySpace: token.precededBySpace });
               segmentCmd = token.value;
