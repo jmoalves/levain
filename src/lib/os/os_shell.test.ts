@@ -187,14 +187,14 @@ Deno.test("OsShell.prepareShellOptionsFromTokens preserves attached operators fo
   config.packageManager = new PackageManagerMock(config);
   const osShell = new OsShell(config, ["abc"], true);
 
-  // 1. `echo <secret>| cntlm -H -d DOMAIN -u jdoe 2>nul` -> unquoted `echo(!__LEVAIN_SECRET_0!|` with no trailing space
+  // 1. Piped `echo <secret>| cntlm ...` defers expansion into sub-cmd so pipe child never re-parses secret metacharacters
   const echoPipeTokens = tokenizeShellArgs("echo __PW__| cntlm -H -d DOMAIN -u jdoe 2>nul").map((t) =>
     t.value === "__PW__" ? { ...t, value: secret } : t
   );
   const echoPipeOpt = await osShell.prepareShellOptionsFromTokens(echoPipeTokens);
   assertEquals(echoPipeOpt.windowsRawArguments, true);
   assertEquals(echoPipeOpt.args.slice(0, 4), ["/s", "/d", "/v:on", "/c"]);
-  assertEquals(echoPipeOpt.args[4], '"echo(!__LEVAIN_SECRET_0!| cntlm -H -d DOMAIN -u jdoe 2>nul"');
+  assertEquals(echoPipeOpt.args[4], '"cmd /s /d /v:on /c "echo(^!__LEVAIN_SECRET_0^!)"| cntlm -H -d DOMAIN -u jdoe 2>nul"');
   assertEquals(echoPipeOpt.env["__LEVAIN_SECRET_0"], secret);
 
   // 2. Parenthesized `(echo <secret>) | cntlm -H`
@@ -202,14 +202,15 @@ Deno.test("OsShell.prepareShellOptionsFromTokens preserves attached operators fo
     t.value === "__PW__" ? { ...t, value: secret } : t
   );
   const parenOpt = await osShell.prepareShellOptionsFromTokens(parenTokens);
-  assertEquals(parenOpt.args[4], '"(echo(!__LEVAIN_SECRET_0!) | cntlm -H"');
+  assertEquals(parenOpt.args[4], '"(cmd /s /d /v:on /c "echo(^!__LEVAIN_SECRET_0^!)") | cntlm -H"');
 
-  // 3. `echo prefix <secret>| cntlm` (secret is second arg of echo)
-  const multiEchoTokens = tokenizeShellArgs("echo prefix __PW__| cntlm").map((t) =>
+  // 3. `echo prefix <secret>>out.txt` (non-piped echo with secret packs operands directly into `echo(!VAR!`)
+  const multiEchoTokens = tokenizeShellArgs("echo prefix __PW__>out.txt").map((t) =>
     t.value === "__PW__" ? { ...t, value: secret } : t
   );
   const multiEchoOpt = await osShell.prepareShellOptionsFromTokens(multiEchoTokens);
-  assertEquals(multiEchoOpt.args[4], '"echo prefix !__LEVAIN_SECRET_0!| cntlm"');
+  assertEquals(multiEchoOpt.args[4], '"echo(!__LEVAIN_SECRET_0!>out.txt"');
+  assertEquals(multiEchoOpt.env["__LEVAIN_SECRET_0"], `prefix ${secret}`);
 
   // 4. Non-secret attached operators (with path containing spaces and empty arg)
   const plainTokens = tokenizeShellArgs('echo "-vm">>"C:\\Program Files\\App\\app.ini"&&echo ""|cat');
@@ -331,6 +332,16 @@ if (OsUtils.isWindows()) {
     shell3.shellTokens = redirTokens;
     await shell3.execute(redirTokens.map((t) => t.value), true);
     assertEquals((await Deno.readTextFile(outFile)).trimEnd(), "-vm");
+
+    // Non-piped secret redirect (`echo <secret>><file>`) without trailing space
+    const secretFile = path.join(dirWithSpaces, "secret.txt");
+    const secretRedirTokens = tokenizeShellArgs(`echo __PW__>"${secretFile}"`).map((t) =>
+      t.value === "__PW__" ? { ...t, value: specialPassword } : t
+    );
+    const shell4 = new OsShell(config, ["abc"], true);
+    shell4.shellTokens = secretRedirTokens;
+    await shell4.execute(secretRedirTokens.map((t) => t.value), true);
+    assertEquals((await Deno.readTextFile(secretFile)).replace(/\r?\n$/, ""), specialPassword);
   });
 }
 

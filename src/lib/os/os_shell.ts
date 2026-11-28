@@ -329,55 +329,67 @@ export class OsShell {
       if (hasSecret) {
         let secretIndex = 0;
         let segmentCmd: string | undefined;
-        let echoFirstArgPending = false;
+        const hasPipe = tokens.some((token) => token.isOperator && token.value === "|");
         const parts: Array<{ text: string; precededBySpace: boolean }> = [];
 
-        for (const token of tokens) {
+        for (let i = 0; i < tokens.length; i++) {
+          const token = tokens[i];
           if (token.isOperator) {
             parts.push({ text: token.value, precededBySpace: token.precededBySpace });
             if (SEGMENT_RESET_OPERATORS.has(token.value)) {
               segmentCmd = undefined;
-              echoFirstArgPending = false;
             }
             continue;
           }
 
+          // When a `cmd.exe` builtin `echo` segment contains a secret, pack all operands of
+          // that `echo` into a single ephemeral env var and emit `echo(!VAR!` (unquoted).
+          // On a pipe (`|`), parent `cmd /v:on` expands `!VAR!` BEFORE spawning the left-side
+          // pipe sub-shell (which would re-parse `&`, `^`, `|`, `<`, `>` in the password!), so
+          // defer expansion into a dedicated `cmd /s /d /v:on /c "echo(^!VAR^!)"` sub-command.
+          if (segmentCmd === undefined && /^echo[.(]?$/i.test(token.value)) {
+            let end = i + 1;
+            let echoHasSecret = false;
+            while (end < tokens.length && !tokens[end].isOperator) {
+              if (secretCandidates.some((secret) => tokens[end].value.includes(secret))) {
+                echoHasSecret = true;
+              }
+              end++;
+            }
+            if (echoHasSecret) {
+              const echoOperands = tokens.slice(i + 1, end);
+              const echoText = echoOperands
+                .map((op, idx) => (idx > 0 && op.precededBySpace ? " " : "") + op.value)
+                .join("");
+              const envVar = `${SECRET_ENV_PREFIX}${secretIndex++}`;
+              opt.env[envVar] = echoText;
+              const echoExpr = hasPipe
+                ? `cmd /s /d /v:on /c "echo(^!${envVar}^!)"`
+                : `echo(!${envVar}!`;
+              parts.push({ text: echoExpr, precededBySpace: token.precededBySpace });
+              segmentCmd = token.value;
+              i = end - 1;
+              continue;
+            }
+          }
+
           const containsSecret = secretCandidates.some((secret) => token.value.includes(secret));
           if (containsSecret) {
-            const isEchoCmd = segmentCmd !== undefined && /^echo[.(]?$/i.test(segmentCmd);
             const envVar = `${SECRET_ENV_PREFIX}${secretIndex++}`;
-
-            if (isEchoCmd) {
-              // cmd.exe builtin `echo` does not strip quotes; emit `echo(!VAR!` (unquoted
-              // delayed expansion) so raw secrets print verbatim even if they are `/?`, `on`,
-              // `off`, empty, or contain quotes/spaces/metacharacters.
-              opt.env[envVar] = token.value;
-              let precededBySpace = token.precededBySpace;
-              if (echoFirstArgPending && parts.length > 0) {
-                parts[parts.length - 1].text = "echo(";
-                precededBySpace = false;
-                echoFirstArgPending = false;
-              }
-              parts.push({ text: `!${envVar}!`, precededBySpace });
-            } else {
-              const isBatchTarget = segmentCmd !== undefined && /\.(?:cmd|bat)$/i.test(segmentCmd);
-              if (isBatchTarget && token.value.includes('"')) {
-                throw new Error(
-                  "Cannot safely pass a secret containing double quotes to a .cmd/.bat script; use ${levain.password | urlEncode} instead",
-                );
-              }
-              // Escape embedded `"` and trailing `\` for MSVCRT CommandLineToArgvW inside `"!VAR!"`
-              opt.env[envVar] = OsShell.escapeForWindowsQuotedArg(token.value);
-              parts.push({ text: `"!${envVar}!"`, precededBySpace: token.precededBySpace });
+            const isBatchTarget = segmentCmd !== undefined && /\.(?:cmd|bat)$/i.test(segmentCmd);
+            if (isBatchTarget && token.value.includes('"')) {
+              throw new Error(
+                "Cannot safely pass a secret containing double quotes to a .cmd/.bat script; use ${levain.password | urlEncode} instead",
+              );
             }
+            // Escape embedded `"` and trailing `\` for MSVCRT CommandLineToArgvW inside `"!VAR!"`
+            opt.env[envVar] = OsShell.escapeForWindowsQuotedArg(token.value);
+            parts.push({ text: `"!${envVar}!"`, precededBySpace: token.precededBySpace });
             continue;
           }
 
           if (segmentCmd === undefined) {
             segmentCmd = token.value;
-            echoFirstArgPending = /^echo$/i.test(segmentCmd);
-          } else if (echoFirstArgPending) {
-            echoFirstArgPending = false;
           }
           parts.push({
             text: OsShell.escapeNonSecretForDelayedCmd(token.value),
