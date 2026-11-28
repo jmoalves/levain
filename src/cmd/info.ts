@@ -52,7 +52,7 @@ export default class InfoCommand implements Command {
     });
 
     if (myArgs.json) {
-      const output = this.buildJsonOutput(myArgs._ ?? []);
+      const output = this.buildJsonOutput(myArgs._);
       console.log(JSON.stringify(output, null, 2));
       return;
     }
@@ -98,10 +98,7 @@ export default class InfoCommand implements Command {
       this.config.packageManager.resolvePackages(["levain"], false, false);
     }
 
-    const levainPkg = this.config.packageManager.package("levain") ??
-      this.config.repositoryManager.repository.resolvePackage("levain") ??
-      this.config.repositoryManager.repositoryInstalled.resolvePackage("levain");
-
+    const levainPkg = this.config.packageManager.package("levain");
     const packages = pkgNames.map((pkgName) => this.describePackageJson(pkgName));
 
     return {
@@ -111,7 +108,7 @@ export default class InfoCommand implements Command {
         levainHome: this.config.configPaths.levainHome,
         installed: Boolean(levainPkg?.installed),
         updateAvailable: Boolean(levainPkg?.installed && levainPkg.updateAvailable),
-        baseDir: levainPkg?.baseDir ?? null,
+        baseDir: levainPkg ? levainPkg.baseDir : null,
       },
       packages,
       installationOrder: resolvedOrder ? resolvedOrder.map((pkg) => pkg.name) : null,
@@ -122,55 +119,37 @@ export default class InfoCommand implements Command {
     const repoPkg = this.config.packageManager.package(pkgName) ??
       this.config.repositoryManager.repository.resolvePackage(pkgName);
     const installedPkg = this.config.repositoryManager.repositoryInstalled.resolvePackage(pkgName);
+    const sourcePkg = repoPkg ?? installedPkg;
 
-    if (repoPkg) {
-      const installed = Boolean(repoPkg.installed || installedPkg);
-      const installedVersion = installedPkg?.version?.versionNumber ??
-        (repoPkg.installed ? (repoPkg.version?.versionNumber ?? null) : null);
-
+    if (!sourcePkg) {
       return {
-        name: repoPkg.name,
-        exists: true,
-        installed,
-        version: repoPkg.version?.versionNumber ?? null,
-        installedVersion,
-        updateAvailable: Boolean(repoPkg.installed && repoPkg.updateAvailable),
-        baseDir: repoPkg.baseDir ?? null,
-        pkgDir: repoPkg.pkgDir ?? null,
-        repo: repoPkg.repo?.name ?? null,
-        filePath: repoPkg.filePath ?? null,
-        dependencies: repoPkg.dependencies ? [...repoPkg.dependencies] : [],
-      };
-    }
-
-    if (installedPkg) {
-      return {
-        name: installedPkg.name,
+        name: pkgName,
         exists: false,
-        installed: true,
+        installed: false,
         version: null,
-        installedVersion: installedPkg.version?.versionNumber ?? null,
+        installedVersion: null,
         updateAvailable: false,
-        baseDir: installedPkg.baseDir ?? null,
-        pkgDir: installedPkg.pkgDir ?? null,
-        repo: installedPkg.repo?.name ?? null,
-        filePath: installedPkg.filePath ?? null,
-        dependencies: installedPkg.dependencies ? [...installedPkg.dependencies] : [],
+        baseDir: null,
+        pkgDir: null,
+        repo: null,
+        filePath: null,
+        dependencies: [],
       };
     }
 
+    const installed = installedPkg !== undefined || Boolean(repoPkg?.installed);
     return {
-      name: pkgName,
-      exists: false,
-      installed: false,
-      version: null,
-      installedVersion: null,
-      updateAvailable: false,
-      baseDir: null,
-      pkgDir: null,
-      repo: null,
-      filePath: null,
-      dependencies: [],
+      name: sourcePkg.name,
+      exists: repoPkg !== undefined,
+      installed,
+      version: repoPkg?.version?.versionNumber ?? null,
+      installedVersion: installedPkg?.version?.versionNumber ?? null,
+      updateAvailable: Boolean(repoPkg && installed && repoPkg.updateAvailable),
+      baseDir: sourcePkg.baseDir,
+      pkgDir: sourcePkg.pkgDir,
+      repo: sourcePkg.repo ? sourcePkg.repo.name : null,
+      filePath: sourcePkg.filePath,
+      dependencies: sourcePkg.dependencies ? [...sourcePkg.dependencies] : [],
     };
   }
 

@@ -4,6 +4,9 @@ import { stub } from "@std/testing/mock";
 
 import LevainVersion from "../levain_version.ts";
 import t from "../lib/i18n.ts";
+import { MockPackage } from "../lib/package/mock_package.ts";
+import { EmptyRepository } from "../lib/repository/empty_repository.ts";
+import MockRepository from "../lib/repository/mock_repository.ts";
 import RepositoryFactory from "../lib/repository/repository_factory.ts";
 import TestHelper from "../lib/test/test_helper.ts";
 import { assertFind } from "../lib/test/more_asserts.ts";
@@ -135,8 +138,10 @@ Deno.test("InfoCommand --json outputs structured JSON for existing, installed, o
       "my-app.levain.yaml": "version: 2.0.0\ndependencies:\n  - dep-lib\n",
       "up-to-date.levain.yaml": "version: 1.0.0\n",
       "needs-update.levain.yaml": "version: 2.0.0\n",
+      "unversioned.levain.yaml": "cmd.env:\n  - setVar foo bar\n",
     },
     {
+      "levain.levain.yaml": "version: 0.0.1\n",
       "up-to-date.levain.yaml": "version: 1.0.0\n",
       "needs-update.levain.yaml": "version: 1.0.0\n",
       "orphan-installed.levain.yaml": "version: 0.9.0\n",
@@ -195,14 +200,16 @@ Deno.test("InfoCommand --json outputs structured JSON for existing, installed, o
       resolvedOutput.installationOrder.indexOf("dep-lib") < resolvedOutput.installationOrder.indexOf("my-app"),
     );
 
-    // Mixed missing + registry-only + existing -> installationOrder is null, every queried entry reported
+    // Mixed missing + registry-only + existing + levain + unversioned -> installationOrder is null
     stdoutLines.length = 0;
-    await cmd.execute(["--json", "--verbose", "missing-pkg", "orphan-installed", "up-to-date"]);
+    await cmd.execute(["--json", "--verbose", "missing-pkg", "orphan-installed", "unversioned", "levain"]);
     const mixedOutput = JSON.parse(stdoutLines[0]) as InfoJsonOutput;
+    assertEquals(mixedOutput.levain.installed, true);
+    assertEquals(mixedOutput.levain.updateAvailable, true);
     assertEquals(mixedOutput.installationOrder, null);
-    assertEquals(mixedOutput.packages.length, 3);
+    assertEquals(mixedOutput.packages.length, 4);
 
-    const [missing, orphan, existing] = mixedOutput.packages;
+    const [missing, orphan, unversioned, levainInfo] = mixedOutput.packages;
     assertEquals(missing, {
       name: "missing-pkg",
       exists: false,
@@ -225,10 +232,33 @@ Deno.test("InfoCommand --json outputs structured JSON for existing, installed, o
     assertEquals(orphan.updateAvailable, false);
     assert(orphan.baseDir?.endsWith("orphan-installed"));
 
-    assertEquals(existing.name, "up-to-date");
-    assertEquals(existing.exists, true);
-    assertEquals(existing.installed, true);
+    assertEquals(unversioned.name, "unversioned");
+    assertEquals(unversioned.exists, true);
+    assertEquals(unversioned.installed, false);
+    assertEquals(unversioned.version, null);
+
+    assertEquals(levainInfo.name, "levain");
+    assertEquals(levainInfo.exists, true);
+    assertEquals(levainInfo.installed, true);
+    assertEquals(levainInfo.dependencies, []);
   } finally {
     logStub.restore();
   }
+});
+
+Deno.test("InfoCommand --json handles missing levain recipe and packages without repo metadata", () => {
+  const config = TestHelper.getConfig();
+  config.repositoryManager.repository = new MockRepository("MockRepo", [new MockPackage("repo-less")]);
+  config.repositoryManager.repositories.installed = new EmptyRepository();
+
+  const cmd = new InfoCommand(config);
+  const output = cmd.buildJsonOutput(["repo-less"]);
+
+  assertEquals(output.levain.installed, false);
+  assertEquals(output.levain.updateAvailable, false);
+  assertEquals(output.levain.baseDir, null);
+  assertEquals(output.packages.length, 1);
+  assertEquals(output.packages[0].name, "repo-less");
+  assertEquals(output.packages[0].exists, true);
+  assertEquals(output.packages[0].repo, null);
 });
