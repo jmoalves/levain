@@ -87,6 +87,11 @@ Deno.test("cli_parser should route every public command, subcommand flags, globa
     { input: ["actions", "json"], expectedPositional: ["actions", "json"] },
     { input: ["actions", "--", "-env"], expectedPositional: ["actions", "-env"] },
     { input: ["info", "--verbose", "jdk"], expectedPositional: ["info", "--verbose", "jdk"] },
+    { input: ["info", "--json", "jdk"], expectedPositional: ["info", "--json", "jdk"] },
+    {
+      input: ["info", "--verbose", "--json", "jdk"],
+      expectedPositional: ["info", "--verbose", "--json", "jdk"],
+    },
     { input: ["info", "--", "jdk"], expectedPositional: ["info", "--", "jdk"] },
     { input: ["explain"], expectedPositional: ["explain"] },
     { input: ["explain", "--raw", "jdk"], expectedPositional: ["explain", "--raw", "jdk"] },
@@ -187,6 +192,11 @@ Deno.test("cli_parser should reject unknown commands, unknown options, and inval
   );
   assertEquals(shortOptErr.message.includes("--force"), false);
 
+  await assertRejects(
+    async () => await parseCliArgs(["info", "--jso", "jdk"]),
+    CliValidationError,
+    "--json",
+  );
   // Unknown option suggestion for explain (--raw, --uninstall) and required arity checks for clone
   await assertRejects(
     async () => await parseCliArgs(["explain", "--ra", "jdk"]),

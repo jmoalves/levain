@@ -1,12 +1,41 @@
 import * as log from "@std/log";
 
+import LevainVersion from "../levain_version.ts";
 import t from "../lib/i18n.ts";
 
 import type Config from "../lib/config.ts";
 import type Package from "../lib/package/package.ts";
+import PackageManager from "../lib/package/package_manager.ts";
 import { parseArgs } from "../lib/parse_args.ts";
 
 import type Command from "./command.ts";
+
+export interface PackageInfoJson {
+  name: string;
+  exists: boolean;
+  installed: boolean;
+  version: string | null;
+  installedVersion: string | null;
+  updateAvailable: boolean;
+  baseDir: string | null;
+  pkgDir: string | null;
+  repo: string | null;
+  filePath: string | null;
+  dependencies: string[];
+}
+
+export interface InfoJsonOutput {
+  levain: {
+    version: string;
+    denoVersion: string;
+    levainHome: string;
+    installed: boolean;
+    updateAvailable: boolean;
+    baseDir: string | null;
+  };
+  packages: PackageInfoJson[];
+  installationOrder: string[] | null;
+}
 
 export default class InfoCommand implements Command {
   constructor(private config: Config) {
@@ -17,9 +46,16 @@ export default class InfoCommand implements Command {
     const myArgs = parseArgs(args, {
       boolean: [
         "verbose",
+        "json",
       ],
       stopEarly: false,
     });
+
+    if (myArgs.json) {
+      const output = this.buildJsonOutput(myArgs._);
+      console.log(JSON.stringify(output, null, 2));
+      return;
+    }
 
     let pkgs: Package[] | null = null;
     if (myArgs._ && myArgs._.length > 0) {
@@ -46,6 +82,75 @@ export default class InfoCommand implements Command {
       log.info(t("cmd.info.installationOrder"));
       pkgs.forEach((pkg) => log.info(pkg.name));
     }
+  }
+
+  buildJsonOutput(rawPkgNames: string[]): InfoJsonOutput {
+    const pkgNames = [...rawPkgNames];
+    PackageManager.removeExtension(pkgNames);
+
+    let resolvedOrder: Package[] | null = null;
+    if (pkgNames.length > 0) {
+      resolvedOrder = this.config.packageManager.resolvePackages([...pkgNames], false, false);
+      if (!resolvedOrder) {
+        this.config.packageManager.resolvePackages(["levain"], false, false);
+      }
+    } else {
+      this.config.packageManager.resolvePackages(["levain"], false, false);
+    }
+
+    const levainPkg = this.config.packageManager.package("levain");
+    const packages = pkgNames.map((pkgName) => this.describePackageJson(pkgName));
+
+    return {
+      levain: {
+        version: LevainVersion.levainVersion.versionNumber,
+        denoVersion: Deno.version.deno,
+        levainHome: this.config.configPaths.levainHome,
+        installed: Boolean(levainPkg?.installed),
+        updateAvailable: Boolean(levainPkg?.installed && levainPkg.updateAvailable),
+        baseDir: levainPkg ? levainPkg.baseDir : null,
+      },
+      packages,
+      installationOrder: resolvedOrder ? resolvedOrder.map((pkg) => pkg.name) : null,
+    };
+  }
+
+  private describePackageJson(pkgName: string): PackageInfoJson {
+    const repoPkg = this.config.packageManager.package(pkgName) ??
+      this.config.repositoryManager.repository.resolvePackage(pkgName);
+    const installedPkg = this.config.repositoryManager.repositoryInstalled.resolvePackage(pkgName);
+    const sourcePkg = repoPkg ?? installedPkg;
+
+    if (!sourcePkg) {
+      return {
+        name: pkgName,
+        exists: false,
+        installed: false,
+        version: null,
+        installedVersion: null,
+        updateAvailable: false,
+        baseDir: null,
+        pkgDir: null,
+        repo: null,
+        filePath: null,
+        dependencies: [],
+      };
+    }
+
+    const installed = installedPkg !== undefined || Boolean(repoPkg?.installed);
+    return {
+      name: sourcePkg.name,
+      exists: repoPkg !== undefined,
+      installed,
+      version: repoPkg?.version?.versionNumber ?? null,
+      installedVersion: installedPkg?.version?.versionNumber ?? null,
+      updateAvailable: Boolean(repoPkg && installed && repoPkg.updateAvailable),
+      baseDir: sourcePkg.baseDir,
+      pkgDir: sourcePkg.pkgDir,
+      repo: sourcePkg.repo ? sourcePkg.repo.name : null,
+      filePath: sourcePkg.filePath,
+      dependencies: sourcePkg.dependencies ? [...sourcePkg.dependencies] : [],
+    };
   }
 
   showPackage(args: any, level: number, pkgName: string, visited: Set<string> = new Set()) {

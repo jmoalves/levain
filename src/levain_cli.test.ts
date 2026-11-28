@@ -397,6 +397,13 @@ Deno.test("LevainCli should skip update checks/regular repos/sanitizeUserPath on
     });
     assertEquals(releaseStub.calls.length, 0, "explain must skip update check");
 
+    // info --json must also skip checkLevainUpdate so machine-readable stdout is never blocked by upgrade prompts
+    await cli.execute({
+      _: ["info", "--json", "levain"],
+      levainHome: [tempHome],
+    });
+    assertEquals(releaseStub.calls.length, 0, "info --json must skip update check");
+
     // explain --uninstall without args uses installedOnly=true so it works offline without remote repo fetches
     repoInitCalls.length = 0;
     await cli.execute({
@@ -405,6 +412,13 @@ Deno.test("LevainCli should skip update checks/regular repos/sanitizeUserPath on
     });
     assertEquals(repoInitCalls, [{ forceRefresh: false, installedOnly: true }]);
     assertEquals(releaseStub.calls.length, 0);
+
+    // info with literal --json after -- is NOT --json mode and still checks for updates
+    await cli.execute({
+      _: ["info", "--", "--json"],
+      levainHome: [tempHome],
+    });
+    assertEquals(releaseStub.calls.length, 1);
 
     // actions and clean must skip repositoryManager.init and sanitizeUserPath
     repoInitCalls.length = 0;

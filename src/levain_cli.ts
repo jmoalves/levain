@@ -104,6 +104,9 @@ export default class LevainCli {
     const isExplainFullUninstall = cmd === "explain" &&
       myArgs._.includes("--uninstall") &&
       myArgs._.filter((arg: string) => !arg.startsWith("-")).length === 0;
+    const subDoubleDash = myArgs._.indexOf("--");
+    const isInfoJson = cmd === "info" &&
+      (subDoubleDash === -1 ? myArgs._ : myArgs._.slice(0, subDoubleDash)).includes("--json");
     const needsLock = Boolean(
       myArgs["levain-upgrade"] || isActivatePre || isActivateInit || LevainCli.LOCKED_COMMANDS.has(cmd),
     );
@@ -121,7 +124,10 @@ export default class LevainCli {
         );
       }
 
-      if (!myArgs["skip-levain-updates"] && !myArgs["levain-upgrade"] && !isActivateCmd && cmd !== "explain") {
+      if (
+        !myArgs["skip-levain-updates"] && !myArgs["levain-upgrade"] && !isActivateCmd && cmd !== "explain" &&
+        !isInfoJson
+      ) {
         const levainReleases = new LevainReleases(config);
         await measurePhase("checkLevainUpdate", () => levainReleases.checkLevainUpdate());
       }
